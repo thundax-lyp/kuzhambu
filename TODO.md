@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ARCHUNIT-SYSTEM-AUTH-04-03`：迁移 auth controller 与 captcha controller 的 pre-auth 构造点
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-04-SYSTEM-AUTH-AUDIT.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/AuthController.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/CaptchaController.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/assembler/AuthInterfaceAssembler.java`；`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/assembler/CaptchaInterfaceAssembler.java`；`kuzhambu-servers/biz/system/kuzhambu-system-application/src/test/java/com/thundax/kuzhambu/system/application/SystemApplicationArchitectureTest.java`
-    - 处理动作：将 pre-auth session command/query 的构造从 controller 移入 interface assembler。
-    - 验收点：RUNBOOK 中 `AuthController`、`CaptchaController` 的 pre-auth construction key 已删除，system application 架构测试通过。
-    - 重要度：8/10
-
 - [ ] `ARCHUNIT-SYSTEM-AUTH-04-04`：迁移 admin auth 登录与 token contract 及服务构造点
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-04-SYSTEM-AUTH-AUDIT.md`

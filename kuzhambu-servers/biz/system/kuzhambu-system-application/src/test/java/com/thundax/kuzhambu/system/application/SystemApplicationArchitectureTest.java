@@ -73,36 +73,6 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.audit.controller.AuditController#PageQuery:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#CreatePreAuthSessionCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#PreAuthSessionQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#PreAuthSessionQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#PreAuthSessionQuery:3"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#PreAuthSessionValueQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#PreAuthSessionValueValidateQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#PreAuthSessionValueValidateQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#RefreshPreAuthSessionCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#ReleasePreAuthSessionCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#UpsertPreAuthSessionValueCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#UpsertPreAuthSessionValueCommand:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.AuthController#UpsertPreAuthSessionValueCommand:3"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.CaptchaController#PreAuthSessionQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.CaptchaController#PreAuthSessionValueQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.system.interfaces.admin.auth.controller.CaptchaController#UpsertPreAuthSessionValueCommand:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver#GetUserQuery:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl.AdminAuthServiceImpl#AdminAccessTokenQuery:1"),
