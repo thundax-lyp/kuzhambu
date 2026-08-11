@@ -90,14 +90,14 @@ class PlatformAiControllerTest {
         private PlatformAiInvokeCommand lastCommand;
 
         @Override
-        public AiInvokeResult createPromptSuggestion(PlatformAiInvokeCommand command) {
+        public AiInvokeResult buildPromptSuggestion(PlatformAiInvokeCommand command) {
             lastMethod = "prompt";
             lastCommand = command;
             return result("PROMPT_SUGGEST", 102L);
         }
 
         @Override
-        public AiInvokeResult getVersionSummary(PlatformAiInvokeCommand command) {
+        public AiInvokeResult summarizeVersion(PlatformAiInvokeCommand command) {
             lastMethod = "summary";
             lastCommand = command;
             return result("PLATFORM_VERSION_SUMMARY", null);

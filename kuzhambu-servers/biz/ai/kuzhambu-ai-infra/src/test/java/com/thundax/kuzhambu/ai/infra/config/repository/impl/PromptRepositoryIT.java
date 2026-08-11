@@ -128,7 +128,7 @@ class PromptRepositoryIT {
                 "input text",
                 1));
 
-        when(mapper.updateCurrentVersion(4001L, 1)).thenReturn(1);
+        when(mapper.markCurrentVersion(4001L, 1)).thenReturn(1);
         repository.insertVersion(version);
         int affectedRows = repository.updateCurrentVersion(PromptTemplateIdCodec.toDomain(4001L), 1);
         int variableRows = repository.updateTemplateVariables(PromptTemplateIdCodec.toDomain(4001L), variables);
