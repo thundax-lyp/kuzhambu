@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations interface / assembler nullness`：移除 task、report、restore Assembler 的 null contract
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
-    - 范围对象：`OperationsTaskInterfaceAssembler.java`、`OperationsReportInterfaceAssembler.java`、`OperationsRestoreInterfaceAssembler.java`、`OperationsTaskAdminController.java`、`OperationsReportAdminController.java`、`OperationsRestoreAdminController.java`、`OperationsApplicationArchitectureTest.java`，均位于 `kuzhambu-servers/biz/operations/`。
-    - 处理动作：为所有 public Assembler 方法建立 non-null contract，并由 Controller 保留既有空 result 返回行为。
-    - 验收点：不存在 `COMMAND_QUERY_ASSEMBLER_NULL_RETURN:` allowlist，且相关 application/interface 测试通过。
-    - 重要度：9/10
-
 - [ ] `Operations domain / repository naming`：规范 cleanup、health Repository 方法名并同步调用点
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`

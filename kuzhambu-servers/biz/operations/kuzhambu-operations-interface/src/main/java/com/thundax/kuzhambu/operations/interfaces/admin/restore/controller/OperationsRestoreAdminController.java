@@ -49,8 +49,11 @@ public class OperationsRestoreAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsRestoreExecuteResponse execute(@Valid @RequestBody OperationsRestoreExecuteRequest request) {
-        return OperationsRestoreInterfaceAssembler.toResponse(
-                restoreApplicationService.execute(OperationsRestoreInterfaceAssembler.toCommand(request)));
+        var result = restoreApplicationService.execute(OperationsRestoreInterfaceAssembler.toCommand(request));
+        if (result == null) {
+            return null;
+        }
+        return OperationsRestoreInterfaceAssembler.toResponse(result);
     }
 
     @Operation(summary = "分页查询恢复任务", description = "operations:restore:view")
@@ -84,7 +87,10 @@ public class OperationsRestoreAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsRestoreDetailResponse detail(@Valid @RequestBody OperationsRestoreDetailRequest request) {
-        return OperationsRestoreInterfaceAssembler.toDetailResponse(
-                restoreApplicationService.detail(OperationsRestoreInterfaceAssembler.toQuery(request)));
+        var result = restoreApplicationService.detail(OperationsRestoreInterfaceAssembler.toQuery(request));
+        if (result == null) {
+            return null;
+        }
+        return OperationsRestoreInterfaceAssembler.toDetailResponse(result);
     }
 }

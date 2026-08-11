@@ -61,8 +61,11 @@ public class OperationsReportAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsReportGenerateResponse generate(@Valid @RequestBody OperationsReportGenerateRequest request) {
-        return OperationsReportInterfaceAssembler.toResponse(
-                reportApplicationService.generate(OperationsReportInterfaceAssembler.toCommand(request)));
+        var result = reportApplicationService.generate(OperationsReportInterfaceAssembler.toCommand(request));
+        if (result == null) {
+            return null;
+        }
+        return OperationsReportInterfaceAssembler.toResponse(result);
     }
 
     @Operation(summary = "分页查询报表任务", description = "operations:report:view")
@@ -96,8 +99,11 @@ public class OperationsReportAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsReportDetailResponse detail(@Valid @RequestBody OperationsReportDetailRequest request) {
-        return OperationsReportInterfaceAssembler.toDetailResponse(
-                reportApplicationService.detail(OperationsReportInterfaceAssembler.toQuery(request)));
+        var result = reportApplicationService.detail(OperationsReportInterfaceAssembler.toQuery(request));
+        if (result == null) {
+            return null;
+        }
+        return OperationsReportInterfaceAssembler.toDetailResponse(result);
     }
 
     @Operation(summary = "下载报表产物", description = "operations:report:view")

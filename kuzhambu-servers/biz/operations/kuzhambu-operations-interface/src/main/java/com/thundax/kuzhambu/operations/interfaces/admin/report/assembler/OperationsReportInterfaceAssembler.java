@@ -15,15 +15,16 @@ import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportGenerateResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportPageResponse;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class OperationsReportInterfaceAssembler {
 
     private OperationsReportInterfaceAssembler() {}
 
-    public static OperationsReportGenerateCommand toCommand(OperationsReportGenerateRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsReportGenerateCommand toCommand(@NonNull OperationsReportGenerateRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsReportGenerateCommand(
                 request.getReportType(),
                 request.getFormat(),
@@ -32,10 +33,9 @@ public final class OperationsReportInterfaceAssembler {
                 currentAdminUserId());
     }
 
-    public static OperationsReportQuery toQuery(OperationsReportPageRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsReportQuery toQuery(@NonNull OperationsReportPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsReportQuery(
                 request.getReportType(),
                 request.getFormat(),
@@ -45,24 +45,21 @@ public final class OperationsReportInterfaceAssembler {
                 request.getPeriodEnd());
     }
 
-    public static OperationsReportDetailQuery toQuery(OperationsReportDetailRequest request) {
-        if (request == null || request.getReportId() == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsReportDetailQuery toQuery(@NonNull OperationsReportDetailRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsReportDetailQuery(ReportIdCodec.toDomain(request.getReportId()));
     }
 
-    public static OperationsReportDetailQuery toQuery(Long reportId) {
-        if (reportId == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsReportDetailQuery toQuery(@NonNull Long reportId) {
+        Objects.requireNonNull(reportId, "reportId must not be null");
         return new OperationsReportDetailQuery(ReportIdCodec.toDomain(reportId));
     }
 
-    public static OperationsReportGenerateResponse toResponse(OperationsReportGenerateResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsReportGenerateResponse toResponse(@NonNull OperationsReportGenerateResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsReportGenerateResponse.builder()
                 .reportId(
                         result.getReportId() == null
@@ -72,10 +69,9 @@ public final class OperationsReportInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsReportPageResponse toResponse(OperationsReportPageResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsReportPageResponse toResponse(@NonNull OperationsReportPageResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsReportPageResponse.builder()
                 .reportId(
                         result.getReportId() == null
@@ -95,10 +91,9 @@ public final class OperationsReportInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsReportDetailResponse toDetailResponse(OperationsReportDetailResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsReportDetailResponse toDetailResponse(@NonNull OperationsReportDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsReportDetailResponse.builder()
                 .reportId(
                         result.getReportId() == null

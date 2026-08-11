@@ -65,7 +65,10 @@ public class OperationsTaskAdminController {
                 dataTypeClass = String.class),
     })
     public OperationsTaskDetailResponse detail(@Valid @RequestBody OperationsTaskDetailRequest request) {
-        return OperationsTaskInterfaceAssembler.toDetailResponse(
-                taskApplicationService.detail(OperationsTaskInterfaceAssembler.toQuery(request)));
+        var result = taskApplicationService.detail(OperationsTaskInterfaceAssembler.toQuery(request));
+        if (result == null) {
+            return null;
+        }
+        return OperationsTaskInterfaceAssembler.toDetailResponse(result);
     }
 }
