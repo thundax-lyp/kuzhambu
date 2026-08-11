@@ -8,14 +8,12 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.assembler.DiscoveryQaAdminInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.DiscoveryQaAdminRequests;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.response.DiscoveryQaAdminResponses;
-import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -123,7 +121,7 @@ public class DiscoveryQaAdminController {
     public DiscoveryQaAdminResponses.QaSessionDetailResponse getSession(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionGetRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toSessionDetailResponse(qaApplicationService.getSessionDetail(
-                new QaSessionDetailQuery(DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()))));
+                DiscoveryQaAdminInterfaceAssembler.toSessionDetailQuery(request)));
     }
 
     @Operation(summary = "分页查询会话", description = "Discovery QA 会话分页")

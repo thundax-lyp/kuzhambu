@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionComm
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
-import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaMessageSourcesQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaRetrievalTraceQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
@@ -219,12 +219,13 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
-    public List<QaSessionResult> listPortalSessions(PortalQaSessionPageQuery query) {
+    public List<QaSessionResult> listPortalSessions(PortalQaSessionQuery query, PageQuery pageQuery) {
         if (query == null) {
             throw new BizException("DISCOVERY-30006", "discovery.qa.owner-type.required", "Owner type is required");
         }
         QaOwnerRef owner = QaStringValueCodec.toOwnerRef(query.ownerType(), query.ownerId());
-        return qaSessionRepository.listByOwnerUserId(owner, query.limit()).stream()
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        return qaSessionRepository.listByOwnerUserId(owner, normalizePageSize(effectivePage.getPageSize())).stream()
                 .map(this::toSessionResult)
                 .toList();
     }

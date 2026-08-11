@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionComm
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
-import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaMessageSourcesQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaRetrievalTraceQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
@@ -26,7 +26,7 @@ public interface QaApplicationService {
 
     QaSessionExportResult exportSession(ExportQaSessionCommand command);
 
-    List<QaSessionResult> listPortalSessions(PortalQaSessionPageQuery query);
+    List<QaSessionResult> listPortalSessions(PortalQaSessionQuery query, PageQuery pageQuery);
 
     PageResult<QaSessionResult> pageSessions(QaSessionQuery query, PageQuery pageQuery);
 

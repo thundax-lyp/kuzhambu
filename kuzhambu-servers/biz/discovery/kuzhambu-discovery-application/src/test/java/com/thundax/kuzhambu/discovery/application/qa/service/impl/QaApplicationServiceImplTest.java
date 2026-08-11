@@ -23,7 +23,7 @@ import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionComm
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
-import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
@@ -331,7 +331,8 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service = service(sessionRepository);
         when(sessionRepository.listByOwnerUserId(ownerRef("USER", "1001"), 10)).thenReturn(List.of(openSession()));
 
-        List<QaSessionResult> results = service.listPortalSessions(new PortalQaSessionPageQuery("USER", "1001", 10));
+        List<QaSessionResult> results =
+                service.listPortalSessions(new PortalQaSessionQuery("USER", "1001"), new PageQuery(1, 10));
 
         assertEquals(1, results.size());
         assertEquals(5001L, results.get(0).getId());

@@ -6,11 +6,8 @@ import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
-import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
-import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
-import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
@@ -69,10 +66,9 @@ public class DiscoveryQaConversationController {
     public PageResponse<DiscoveryQaResponses.QaSessionResponse> pageSessions(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionPageRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toSessionPageResponse(
-                qaApplicationService.listPortalSessions(new PortalQaSessionPageQuery(
-                        DiscoveryQaPortalInterfaceAssembler.ownerType(),
-                        DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId()),
-                        DiscoveryQaPortalInterfaceAssembler.limit(request))),
+                qaApplicationService.listPortalSessions(
+                        DiscoveryQaPortalInterfaceAssembler.toSessionQuery(request),
+                        DiscoveryQaPortalInterfaceAssembler.toPageQuery(request)),
                 request);
     }
 
@@ -89,11 +85,8 @@ public class DiscoveryQaConversationController {
     })
     public DiscoveryQaResponses.QaSessionDetailResponse getSession(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionGetRequest request) {
-        return DiscoveryQaPortalInterfaceAssembler.toSessionDetailResponse(
-                qaApplicationService.getPortalSessionDetail(new PortalQaSessionDetailQuery(
-                        DiscoveryQaPortalInterfaceAssembler.ownerType(),
-                        DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId()),
-                        DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()))));
+        return DiscoveryQaPortalInterfaceAssembler.toSessionDetailResponse(qaApplicationService.getPortalSessionDetail(
+                DiscoveryQaPortalInterfaceAssembler.toSessionDetailQuery(request)));
     }
 
     @Operation(summary = "删除问答会话", description = "Admin 知识助手删除会话")

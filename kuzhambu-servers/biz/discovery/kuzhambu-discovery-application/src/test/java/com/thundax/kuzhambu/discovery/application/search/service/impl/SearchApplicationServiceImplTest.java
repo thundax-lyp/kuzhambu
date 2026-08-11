@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.search.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -290,7 +291,7 @@ class SearchApplicationServiceImplTest {
 
         verify(searchIndexGateway).search(keywordCaptor.capture(), any(), any(Integer.class), any(Integer.class));
         verify(searchEventRepository).save(searchEventCaptor.capture());
-        assertEquals("", query.getQueryText());
+        assertNull(query.queryText());
         assertEquals("", keywordCaptor.getValue().getRawText());
         assertEquals("", result.getQueryText());
         assertEquals("", searchEventCaptor.getValue().getQueryText());

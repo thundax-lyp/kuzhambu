@@ -1,19 +1,30 @@
 package com.thundax.kuzhambu.discovery.application.facade.assembler;
 
+import com.thundax.kuzhambu.discovery.application.report.query.DiscoveryReportSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportSummaryResult;
 import com.thundax.kuzhambu.discovery.facade.dto.DiscoveryQaTrendPointFacadeDto;
 import com.thundax.kuzhambu.discovery.facade.dto.DiscoverySearchTrendPointFacadeDto;
 import com.thundax.kuzhambu.discovery.facade.dto.DiscoveryTopQueryFacadeDto;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySummaryFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySummaryFacadeResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DiscoveryFacadeAssembler {
 
-    public DiscoverySummaryFacadeResponse toSummaryFacadeResponse(DiscoveryReportSummaryResult result) {
+    @NonNull
+    public DiscoveryReportSummaryQuery toSummaryQuery(@NonNull DiscoverySummaryFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new DiscoveryReportSummaryQuery(
+                request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType());
+    }
+
+    @NonNull
+    public DiscoverySummaryFacadeResponse toSummaryFacadeResponse(@NonNull DiscoveryReportSummaryResult result) {
         Objects.requireNonNull(result, "result");
         return DiscoverySummaryFacadeResponse.builder()
                 .periodStart(result.getPeriodStart())

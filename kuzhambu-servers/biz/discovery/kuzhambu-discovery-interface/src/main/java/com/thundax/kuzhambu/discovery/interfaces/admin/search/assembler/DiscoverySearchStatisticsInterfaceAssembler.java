@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexCleanupCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
@@ -16,6 +17,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchStatisticsSummaryResult;
 import com.thundax.kuzhambu.discovery.domain.search.codec.SearchEventIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchClickEventRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventPageRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchRequest;
@@ -32,6 +34,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.lang.NonNull;
 
 public final class DiscoverySearchStatisticsInterfaceAssembler {
 
@@ -39,7 +42,8 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
 
     private DiscoverySearchStatisticsInterfaceAssembler() {}
 
-    public static SearchQuery toQuery(DiscoverySearchRequest request) {
+    @NonNull
+    public static SearchQuery toQuery(@NonNull DiscoverySearchRequest request) {
         Objects.requireNonNull(request, "request");
         return new SearchQuery(
                 request.getQueryText(),
@@ -54,7 +58,8 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 TraceIdCodec.toDomain(newTraceId()));
     }
 
-    public static SearchEventQuery toQuery(DiscoverySearchEventPageRequest request) {
+    @NonNull
+    public static SearchEventQuery toQuery(@NonNull DiscoverySearchEventPageRequest request) {
         Objects.requireNonNull(request, "request");
         return new SearchEventQuery(
                 null,
@@ -66,7 +71,20 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 parseDate(request.getDateTo(), "dateTo"));
     }
 
-    public static SearchClickEventCreateCommand toCommand(DiscoverySearchClickEventRequest request) {
+    @NonNull
+    public static SearchEventQuery toQuery(@NonNull DiscoverySearchEventGetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SearchEventQuery(
+                DiscoveryInterfaceIdCodec.toLongValue(request.getId()), null, null, null, null, null, null);
+    }
+
+    @NonNull
+    public static SearchIndexCleanupCommand toCleanupCommand(int retentionDays) {
+        return new SearchIndexCleanupCommand(retentionDays);
+    }
+
+    @NonNull
+    public static SearchClickEventCreateCommand toCommand(@NonNull DiscoverySearchClickEventRequest request) {
         Objects.requireNonNull(request, "request");
         return new SearchClickEventCreateCommand(
                 SearchEventIdCodec.toDomain(DiscoveryInterfaceIdCodec.toLongValue(request.getSearchEventId())),
@@ -84,7 +102,8 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 TraceIdCodec.toDomain(newTraceId()));
     }
 
-    public static SearchPreviewQuery toQuery(DiscoverySearchPreviewRequest request) {
+    @NonNull
+    public static SearchPreviewQuery toQuery(@NonNull DiscoverySearchPreviewRequest request) {
         Objects.requireNonNull(request, "request");
         return new SearchPreviewQuery(
                 request.getContentType(),
@@ -95,16 +114,16 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 newTraceId());
     }
 
-    public static SearchStatisticsSummaryQuery toQuery(DiscoverySearchStatisticsSummaryRequest request) {
+    @NonNull
+    public static SearchStatisticsSummaryQuery toQuery(@NonNull DiscoverySearchStatisticsSummaryRequest request) {
         Objects.requireNonNull(request, "request");
         return new SearchStatisticsSummaryQuery(
                 parseDate(request.getDateFrom(), "dateFrom"), parseDate(request.getDateTo(), "dateTo"));
     }
 
-    public static DiscoverySearchEventResponse toResponse(SearchEventResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static DiscoverySearchEventResponse toResponse(@NonNull SearchEventResult result) {
+        Objects.requireNonNull(result, "request");
         return DiscoverySearchEventResponse.builder()
                 .id(SearchEventIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
@@ -118,10 +137,10 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoverySearchEventDetailResponse toDetailResponse(SearchEventResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static DiscoverySearchEventDetailResponse toDetailResponse(@NonNull SearchEventResult result) {
+        Objects.requireNonNull(result, "request");
+
         return DiscoverySearchEventDetailResponse.builder()
                 .id(SearchEventIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
@@ -141,10 +160,9 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoverySearchResponse toSearchResponse(SearchEventResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static DiscoverySearchResponse toSearchResponse(@NonNull SearchEventResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoverySearchResponse.builder()
                 .id(SearchEventIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
@@ -155,10 +173,9 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoverySearchStatisticsSummaryResponse toResponse(SearchStatisticsSummaryResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static DiscoverySearchStatisticsSummaryResponse toResponse(@NonNull SearchStatisticsSummaryResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoverySearchStatisticsSummaryResponse.builder()
                 .searchCount(result.getSearchCount())
                 .failedSearchCount(result.getFailedSearchCount())
@@ -168,10 +185,9 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoverySearchPreviewResponse toResponse(SearchPreviewResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static DiscoverySearchPreviewResponse toResponse(@NonNull SearchPreviewResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoverySearchPreviewResponse.builder()
                 .contentDomain(result.getContentDomain())
                 .contentType(result.getContentType())
@@ -190,7 +206,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
                 .build();
     }
 
-    public static String firstValue(List<String> values) {
+    private static String firstValue(List<String> values) {
         if (values == null || values.isEmpty()) {
             return null;
         }

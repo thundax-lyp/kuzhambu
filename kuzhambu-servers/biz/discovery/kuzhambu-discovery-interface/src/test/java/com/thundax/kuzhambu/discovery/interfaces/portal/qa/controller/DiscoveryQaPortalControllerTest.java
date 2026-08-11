@@ -233,10 +233,10 @@ class DiscoveryQaPortalControllerTest {
 
         verify(service)
                 .openSession(argThat(command -> command != null
-                        && command.getOwnerUserId() != null
-                        && command.getOwnerUserId().equals(1001L)
-                        && "黄帝问答".equals(command.getTitle())
-                        && "GLOBAL".equals(command.getScope())));
+                        && command.ownerUserId() != null
+                        && command.ownerUserId().equals(1001L)
+                        && "黄帝问答".equals(command.title())
+                        && "GLOBAL".equals(command.scope())));
         assertEquals("9001", response.getId());
         assertEquals("黄帝问答", response.getTitle());
     }
@@ -272,9 +272,9 @@ class DiscoveryQaPortalControllerTest {
 
         verify(service)
                 .openSession(argThat(command -> command != null
-                        && "SINGLE_DOCUMENT".equals(command.getContextMode())
-                        && "WANGQI_DOCUMENT".equals(command.getContextContentType())
-                        && Long.valueOf(3001L).equals(command.getContextContentId())));
+                        && "SINGLE_DOCUMENT".equals(command.contextMode())
+                        && "WANGQI_DOCUMENT".equals(command.contextContentType())
+                        && Long.valueOf(3001L).equals(command.contextContentId())));
         assertEquals("SINGLE_DOCUMENT", response.getContextMode());
         assertEquals("WANGQI_DOCUMENT", response.getContextContentType());
         assertEquals(3001L, response.getContextContentId());
@@ -290,11 +290,16 @@ class DiscoveryQaPortalControllerTest {
         request.setOwnerUserId(1001L);
         request.setPageNo(1);
         request.setPageSize(20);
-        when(service.listPortalSessions("USER", "1001", 20)).thenReturn(List.of(sessionResult()));
+        when(service.listPortalSessions(any(), any())).thenReturn(List.of(sessionResult()));
 
         var response = controller.pageSessions(request);
 
-        verify(service).listPortalSessions("USER", "1001", 20);
+        verify(service)
+                .listPortalSessions(
+                        argThat(query ->
+                                query != null && "USER".equals(query.ownerType()) && "1001".equals(query.ownerId())),
+                        argThat(pageQuery ->
+                                pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 20));
         assertEquals(1, response.getPageNo());
         assertEquals(20, response.getPageSize());
         assertEquals(1L, response.getCount());
@@ -310,11 +315,15 @@ class DiscoveryQaPortalControllerTest {
         DiscoveryQaRequests.QaSessionGetRequest request = new DiscoveryQaRequests.QaSessionGetRequest();
         request.setSessionId("5001");
         request.setOwnerUserId(1001L);
-        when(service.getPortalSessionDetail(5001L, "USER", "1001")).thenReturn(sessionDetailResult());
+        when(service.getPortalSessionDetail(any())).thenReturn(sessionDetailResult());
 
         var response = controller.getSession(request);
 
-        verify(service).getPortalSessionDetail(5001L, "USER", "1001");
+        verify(service)
+                .getPortalSessionDetail(argThat(query -> query != null
+                        && query.sessionId() == 5001L
+                        && "USER".equals(query.ownerType())
+                        && "1001".equals(query.ownerId())));
         assertEquals("5001", response.getId());
         assertEquals(1, response.getMessages().size());
         assertEquals("黄帝是谁", response.getMessages().get(0).getContent());
@@ -405,11 +414,11 @@ class DiscoveryQaPortalControllerTest {
 
         verify(knowledgeQaApplicationService)
                 .chatCompletion(argThat(command -> command != null
-                        && command.getSessionId() != null
-                        && command.getSessionId().equals(5001L)
-                        && "kuzhambu-qa".equals(command.getModel())
-                        && command.getMessages() != null
-                        && command.getMessages().size() == 2));
+                        && command.sessionId() != null
+                        && command.sessionId().equals(5001L)
+                        && "kuzhambu-qa".equals(command.model())
+                        && command.messages() != null
+                        && command.messages().size() == 2));
         assertEquals("SUCCEEDED", response.getAnswerStatus());
         assertEquals("黄帝是上古帝王", response.getAnswer());
         assertEquals(1, response.getSources().size());
@@ -448,9 +457,8 @@ class DiscoveryQaPortalControllerTest {
         assertTrue(emitter != null);
         verify(knowledgeQaApplicationService, timeout(1000))
                 .chatCompletionStream(
-                        argThat(command -> command != null
-                                && Long.valueOf(5001L).equals(command.getSessionId())
-                                && command.isStream()),
+                        argThat(command ->
+                                command != null && Long.valueOf(5001L).equals(command.sessionId()) && command.stream()),
                         any());
     }
 
@@ -510,20 +518,20 @@ class DiscoveryQaPortalControllerTest {
 
     private static boolean matchesDeleteCommand(DeleteQaSessionCommand command) {
         return command != null
-                && Long.valueOf(5001L).equals(command.getSessionId())
-                && "USER".equals(command.getOwnerType())
-                && "1001".equals(command.getOwnerId())
-                && Boolean.FALSE.equals(command.getAdminOperation());
+                && Long.valueOf(5001L).equals(command.sessionId())
+                && "USER".equals(command.ownerType())
+                && "1001".equals(command.ownerId())
+                && Boolean.FALSE.equals(command.adminOperation());
     }
 
     private static boolean matchesExportCommand(ExportQaSessionCommand command) {
         return command != null
-                && Long.valueOf(5001L).equals(command.getSessionId())
-                && Long.valueOf(1001L).equals(command.getRequesterUserId())
-                && "USER".equals(command.getOwnerType())
-                && "1001".equals(command.getOwnerId())
-                && Boolean.FALSE.equals(command.getAdminOperation())
-                && "CSV".equals(command.getFormat());
+                && Long.valueOf(5001L).equals(command.sessionId())
+                && Long.valueOf(1001L).equals(command.requesterUserId())
+                && "USER".equals(command.ownerType())
+                && "1001".equals(command.ownerId())
+                && Boolean.FALSE.equals(command.adminOperation())
+                && "CSV".equals(command.format());
     }
 
     private static QaSessionResult sessionResult() {
@@ -571,9 +579,11 @@ class DiscoveryQaPortalControllerTest {
     }
 
     private void assertPostMappingProduces(
-            Class<?> type, String methodName, String expectedProduces, Class<?>... parameters) throws Exception {
+            Class<?> type, String methodName, String expectedPath, String expectedProduces, Class<?>... parameters)
+            throws Exception {
         Method method = type.getDeclaredMethod(methodName, parameters);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
         assertEquals(expectedProduces, mapping.produces()[0]);
     }
 

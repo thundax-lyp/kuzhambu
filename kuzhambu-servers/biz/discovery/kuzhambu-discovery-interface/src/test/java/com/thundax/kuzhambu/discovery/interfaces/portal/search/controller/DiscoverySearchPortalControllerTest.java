@@ -131,7 +131,7 @@ class DiscoverySearchPortalControllerTest {
         var response = controller.search(request);
 
         verify(service).search(queryCaptor.capture(), any());
-        assertEquals("", queryCaptor.getValue().getQueryText());
+        assertEquals("", queryCaptor.getValue().queryText());
         assertEquals(0, response.getTotalCount());
     }
 
@@ -211,7 +211,7 @@ class DiscoverySearchPortalControllerTest {
 
         verify(service)
                 .getPreview(argThat(
-                        query -> "SANCAI_ENTRY".equals(query.getContentType()) && "1001".equals(query.getContentId())));
+                        query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId())));
         assertEquals("黄帝", response.getTitle());
         assertEquals("正文", response.getBodyText());
         assertEquals("/classics/sancai/1001", response.getTargetPath());
@@ -235,9 +235,9 @@ class DiscoverySearchPortalControllerTest {
         Boolean result = controller.click(request);
 
         verify(service)
-                .recordClick(argThat(command -> "1".equals(SearchEventIdCodec.toStringValue(command.getSearchEventId()))
-                        && "SANCAI_ENTRY".equals(command.getResultGroupKey())
-                        && "/classics/sancai/1001".equals(command.getTargetPath())));
+                .recordClick(argThat(command -> "1".equals(SearchEventIdCodec.toStringValue(command.searchEventId()))
+                        && "SANCAI_ENTRY".equals(command.resultGroupKey())
+                        && "/classics/sancai/1001".equals(command.targetPath())));
         assertTrue(result);
     }
 

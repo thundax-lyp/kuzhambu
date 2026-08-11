@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionComm
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
@@ -15,6 +16,8 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.Dis
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.response.DiscoveryQaAdminResponses;
 import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class DiscoveryQaAdminInterfaceAssembler {
 
@@ -22,10 +25,16 @@ public final class DiscoveryQaAdminInterfaceAssembler {
 
     private static final String DEFAULT_KNOWLEDGE_BASE_NAME = "kuzhambu-qa";
 
-    public static DiscoveryQaAdminResponses.QaSessionResponse toSessionResponse(QaSessionResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static QaSessionDetailQuery toSessionDetailQuery(
+            @NonNull DiscoveryQaAdminRequests.QaSessionGetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new QaSessionDetailQuery(DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()));
+    }
+
+    @NonNull
+    public static DiscoveryQaAdminResponses.QaSessionResponse toSessionResponse(@NonNull QaSessionResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaAdminResponses.QaSessionResponse.builder()
                 .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .ownerUserId(result.getOwnerUserId())
@@ -41,11 +50,10 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .build();
     }
 
+    @NonNull
     public static DiscoveryQaAdminResponses.QaSessionDetailResponse toSessionDetailResponse(
-            QaSessionDetailResult result) {
-        if (result == null) {
-            return null;
-        }
+            @NonNull QaSessionDetailResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaAdminResponses.QaSessionDetailResponse.builder()
                 .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .ownerUserId(result.getOwnerUserId())
@@ -62,11 +70,10 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .build();
     }
 
+    @NonNull
     public static DiscoveryQaAdminResponses.QaSessionExportResponse toSessionExportResponse(
-            QaSessionExportResult result) {
-        if (result == null) {
-            return null;
-        }
+            @NonNull QaSessionExportResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaAdminResponses.QaSessionExportResponse.builder()
                 .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
@@ -81,10 +88,10 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoveryQaAdminResponses.QaKnowledgeHealthResponse toHealthResponse(KnowledgeHealthResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static DiscoveryQaAdminResponses.QaKnowledgeHealthResponse toHealthResponse(
+            @NonNull KnowledgeHealthResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaAdminResponses.QaKnowledgeHealthResponse.builder()
                 .knowledgeBaseName(DEFAULT_KNOWLEDGE_BASE_NAME)
                 .status(result.isAvailable() ? "AVAILABLE" : "UNAVAILABLE")
@@ -95,10 +102,10 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoveryQaAdminResponses.QaSyncItemResponse toSyncItemResponse(KnowledgeSyncItemResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static DiscoveryQaAdminResponses.QaSyncItemResponse toSyncItemResponse(
+            @NonNull KnowledgeSyncItemResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaAdminResponses.QaSyncItemResponse.builder()
                 .sourceId(result.getSourceId())
                 .contentType(result.getContentType())
@@ -118,49 +125,50 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .build();
     }
 
+    @NonNull
     public static SyncKnowledgeContentCommand toSyncKnowledgeContentCommand(
-            DiscoveryQaAdminRequests.KnowledgeSyncRequest request) {
+            @NonNull DiscoveryQaAdminRequests.KnowledgeSyncRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SyncKnowledgeContentCommand(
-                request == null ? null : request.getContentType(),
-                request == null ? null : request.getContentId(),
-                request == null ? null : request.getCurrentVersionNo(),
-                request == null ? null : request.getRequestId(),
-                request == null ? null : request.getTraceId());
+                request.getContentType(),
+                request.getContentId(),
+                request.getCurrentVersionNo(),
+                request.getRequestId(),
+                request.getTraceId());
     }
 
+    @NonNull
     public static KnowledgeSyncItemQuery toKnowledgeSyncItemQuery(
-            DiscoveryQaAdminRequests.KnowledgeSyncPageRequest request) {
-        if (request == null) {
-            return new KnowledgeSyncItemQuery(null, null);
-        }
+            @NonNull DiscoveryQaAdminRequests.KnowledgeSyncPageRequest request) {
+        Objects.requireNonNull(request, "request");
         return new KnowledgeSyncItemQuery(request.getContentType(), request.getSyncStatus());
     }
 
+    @NonNull
     public static DeleteQaSessionCommand toDeleteQaSessionCommand(
-            DiscoveryQaAdminRequests.QaSessionDeleteRequest request) {
+            @NonNull DiscoveryQaAdminRequests.QaSessionDeleteRequest request) {
+        Objects.requireNonNull(request, "request");
         return new DeleteQaSessionCommand(
-                request == null ? null : DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
-                null,
-                null,
-                true);
+                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()), null, null, true);
     }
 
-    public static QaSessionQuery toQaSessionQuery(DiscoveryQaAdminRequests.QaSessionPageRequest request) {
-        if (request == null) {
-            return new QaSessionQuery(null, null, null);
-        }
+    @NonNull
+    public static QaSessionQuery toQaSessionQuery(@NonNull DiscoveryQaAdminRequests.QaSessionPageRequest request) {
+        Objects.requireNonNull(request, "request");
         return new QaSessionQuery(request.getTitle(), request.getOpenedAtStart(), request.getOpenedAtEnd());
     }
 
+    @NonNull
     public static ExportQaSessionCommand toExportQaSessionCommand(
-            DiscoveryQaAdminRequests.QaSessionExportRequest request) {
+            @NonNull DiscoveryQaAdminRequests.QaSessionExportRequest request) {
+        Objects.requireNonNull(request, "request");
         return new ExportQaSessionCommand(
-                request == null ? null : DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
-                request == null ? null : request.getRequesterUserId(),
+                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
+                request.getRequesterUserId(),
                 null,
                 null,
                 true,
-                request == null ? null : request.getFormat());
+                request.getFormat());
     }
 
     private static List<DiscoveryQaAdminResponses.QaMessageResponse> toMessageResponses(List<QaMessageResult> results) {

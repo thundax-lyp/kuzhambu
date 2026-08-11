@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatSource;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionMessage;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.ChatCompletionStreamHandler;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
@@ -886,7 +887,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         return payload;
     }
 
-    private List<Map<String, Object>> recentMessages(List<ChatCompletionCommand.ChatMessage> messages) {
+    private List<Map<String, Object>> recentMessages(List<ChatCompletionMessage> messages) {
         if (messages == null || messages.isEmpty()) {
             return List.of();
         }
@@ -1120,7 +1121,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         return options;
     }
 
-    private List<KnowledgeChatMessage> toKnowledgeMessages(List<ChatCompletionCommand.ChatMessage> messages) {
+    private List<KnowledgeChatMessage> toKnowledgeMessages(List<ChatCompletionMessage> messages) {
         if (messages == null || messages.isEmpty()) {
             return List.of();
         }
@@ -1131,11 +1132,11 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 .collect(Collectors.toList());
     }
 
-    private String extractLatestQuestion(List<ChatCompletionCommand.ChatMessage> messages) {
+    private String extractLatestQuestion(List<ChatCompletionMessage> messages) {
         return messages.stream()
                 .filter(Objects::nonNull)
                 .filter(message -> MESSAGE_ROLE_USER.equalsIgnoreCase(message.role()))
-                .map(ChatCompletionCommand.ChatMessage::content)
+                .map(ChatCompletionMessage::content)
                 .filter(StringUtils::isNotBlank)
                 .reduce((first, second) -> second)
                 .orElseThrow(() -> new BizException(

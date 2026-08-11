@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.facade.impl;
 
 import com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoveryFacadeAssembler;
-import com.thundax.kuzhambu.discovery.application.report.query.DiscoveryReportSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
 import com.thundax.kuzhambu.discovery.facade.DiscoveryFacade;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySummaryFacadeRequest;
@@ -29,7 +28,6 @@ public class DiscoveryFacadeImpl implements DiscoveryFacade {
             return null;
         }
         return discoveryFacadeAssembler.toSummaryFacadeResponse(
-                discoveryReportApplicationService.summary(new DiscoveryReportSummaryQuery(
-                        request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType())));
+                discoveryReportApplicationService.summary(discoveryFacadeAssembler.toSummaryQuery(request)));
     }
 }

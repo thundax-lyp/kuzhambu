@@ -6,12 +6,9 @@ import java.util.Map;
 public record ChatCompletionCommand(
         Long sessionId,
         String model,
-        List<ChatMessage> messages,
+        List<ChatCompletionMessage> messages,
         boolean stream,
         Map<String, Object> metadata,
         Map<String, Object> options,
         String requestId,
-        String traceId) {
-
-    public record ChatMessage(String role, String content) {}
-}
+        String traceId) {}

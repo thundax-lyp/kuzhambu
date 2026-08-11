@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.task;
 
-import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexCleanupCommand;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexCleanupApplicationService;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +24,6 @@ public class DiscoverySearchDeletedDocumentCleanupTask {
     @Scheduled(cron = "${kuzhambu.discovery.search.deleted-cleanup.cron:0 0 3 * * ?}")
     public Integer cleanupDeletedDocuments() {
         return searchIndexCleanupApplicationService.cleanupDeletedDocuments(
-                new SearchIndexCleanupCommand(retentionDays));
+                DiscoverySearchStatisticsInterfaceAssembler.toCleanupCommand(retentionDays));
     }
 }

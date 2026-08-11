@@ -63,46 +63,6 @@ class RepositoryApiHardRulesArchitectureTest {
         List<ArchitectureRuleAllowance> allowances = new ArrayList<ArchitectureRuleAllowance>();
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/DiscoveryQaPortalStreamController.java",
-                "method=chatCompletionsStream",
-                "method=chatCompletionsStream path=chat/completions/stream");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/DiscoveryQaPortalController.java",
-                "method=openSession",
-                "method=openSession path=session/open",
-                "method=exportSession",
-                "method=exportSession path=session/export",
-                "method=chatCompletions",
-                "method=chatCompletions path=chat/completions");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/DiscoveryQaConversationStreamController.java",
-                "method=chatCompletionsStream",
-                "method=chatCompletionsStream path=chat/completions/stream");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/DiscoveryQaAdminController.java",
-                "method=getKnowledgeHealth path=knowledge/health",
-                "method=syncKnowledge",
-                "method=syncKnowledge path=knowledge/sync",
-                "method=exportSession",
-                "method=exportSession path=session/export");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/DiscoveryQaConversationController.java",
-                "method=openSession",
-                "method=openSession path=session/open",
-                "method=exportSession",
-                "method=exportSession path=session/export",
-                "method=chatCompletions",
-                "method=chatCompletions path=chat/completions");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/controller/DiscoverySearchStatisticsController.java",
-                "method=getStatisticsSummary path=summary");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAdminController.java",
                 "method=summary",
                 "method=summary path=summary",

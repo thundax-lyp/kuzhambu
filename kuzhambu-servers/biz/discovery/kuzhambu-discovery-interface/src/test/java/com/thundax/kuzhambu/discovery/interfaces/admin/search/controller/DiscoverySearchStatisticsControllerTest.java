@@ -71,8 +71,8 @@ class DiscoverySearchStatisticsControllerTest {
                 DiscoverySearchEventGetRequest.class);
         assertPostMapping(
                 DiscoverySearchStatisticsController.class,
-                "getStatisticsSummary",
-                "summary",
+                "getSummary",
+                "summary/get",
                 DiscoverySearchStatisticsSummaryRequest.class);
         assertPostMapping(
                 DiscoverySearchStatisticsController.class,
@@ -219,10 +219,10 @@ class DiscoverySearchStatisticsControllerTest {
         ArgumentCaptor<SearchQuery> queryCaptor = ArgumentCaptor.forClass(SearchQuery.class);
 
         verify(service).search(queryCaptor.capture(), any());
-        assertEquals("辞官", queryCaptor.getValue().getQueryText());
-        assertEquals("ADMIN", queryCaptor.getValue().getOperatorType());
-        assertTrue(queryCaptor.getValue().getRequestId() != null);
-        assertTrue(queryCaptor.getValue().getTraceId() != null);
+        assertEquals("辞官", queryCaptor.getValue().queryText());
+        assertEquals("ADMIN", queryCaptor.getValue().operatorType());
+        assertTrue(queryCaptor.getValue().requestId() != null);
+        assertTrue(queryCaptor.getValue().traceId() != null);
         assertEquals("1", response.getId());
         assertEquals(1, response.getTotalCount());
         assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());
@@ -305,7 +305,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         verify(service)
                 .getPreview(argThat(
-                        query -> "SANCAI_ENTRY".equals(query.getContentType()) && "1001".equals(query.getContentId())));
+                        query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId())));
         assertEquals("黄帝", response.getTitle());
         assertEquals("正文", response.getBodyText());
         assertEquals("/classics/sancai/1001", response.getTargetPath());
@@ -401,15 +401,15 @@ class DiscoverySearchStatisticsControllerTest {
                 .thenReturn(new SearchStatisticsSummaryResult(
                         12L, 2L, 3L, 9L, List.of(new SearchStatisticsSummaryResult.TopQueryItem("黄帝", 5L))));
 
-        var response = controller.getStatisticsSummary(request);
+        var response = controller.getSummary(request);
 
         ArgumentCaptor<SearchStatisticsSummaryQuery> queryCaptor =
                 ArgumentCaptor.forClass(SearchStatisticsSummaryQuery.class);
         verify(service).getStatisticsSummary(queryCaptor.capture());
         assertEquals(
-                Instant.ofEpochMilli(1_767_225_600_000L), queryCaptor.getValue().getDateFrom());
+                Instant.ofEpochMilli(1_767_225_600_000L), queryCaptor.getValue().dateFrom());
         assertEquals(
-                Instant.ofEpochMilli(1_767_312_000_000L), queryCaptor.getValue().getDateTo());
+                Instant.ofEpochMilli(1_767_312_000_000L), queryCaptor.getValue().dateTo());
         assertEquals(12L, response.getSearchCount());
         assertEquals(2L, response.getFailedSearchCount());
         assertEquals(3L, response.getZeroResultSearchCount());

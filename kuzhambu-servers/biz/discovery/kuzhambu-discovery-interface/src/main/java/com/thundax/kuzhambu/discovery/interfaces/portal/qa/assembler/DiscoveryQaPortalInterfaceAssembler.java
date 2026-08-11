@@ -1,10 +1,14 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionMessage;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
@@ -20,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
 public final class DiscoveryQaPortalInterfaceAssembler {
 
@@ -31,7 +36,8 @@ public final class DiscoveryQaPortalInterfaceAssembler {
 
     private DiscoveryQaPortalInterfaceAssembler() {}
 
-    public static OpenQaSessionCommand toOpenSessionCommand(DiscoveryQaRequests.OpenSessionRequest request) {
+    public static @NonNull OpenQaSessionCommand toOpenSessionCommand(
+            @NonNull DiscoveryQaRequests.OpenSessionRequest request) {
         Objects.requireNonNull(request, "request");
         return new OpenQaSessionCommand(
                 request.getOwnerUserId(),
@@ -44,12 +50,14 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 request.getTraceId());
     }
 
-    public static ChatCompletionCommand toChatCompletionCommand(DiscoveryQaRequests.ChatCompletionsRequest request) {
+    public static @NonNull ChatCompletionCommand toChatCompletionCommand(
+            @NonNull DiscoveryQaRequests.ChatCompletionsRequest request) {
+        Objects.requireNonNull(request, "request");
         return toChatCompletionCommand(request, Boolean.TRUE.equals(request.getStream()));
     }
 
-    public static ChatCompletionCommand toChatCompletionCommand(
-            DiscoveryQaRequests.ChatCompletionsRequest request, boolean stream) {
+    public static @NonNull ChatCompletionCommand toChatCompletionCommand(
+            @NonNull DiscoveryQaRequests.ChatCompletionsRequest request, boolean stream) {
         Objects.requireNonNull(request, "request");
         return new ChatCompletionCommand(
                 DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
@@ -58,8 +66,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                         ? List.of()
                         : request.getMessages().stream()
                                 .filter(Objects::nonNull)
-                                .map(message ->
-                                        new ChatCompletionCommand.ChatMessage(message.getRole(), message.getContent()))
+                                .map(message -> new ChatCompletionMessage(message.getRole(), message.getContent()))
                                 .toList(),
                 stream,
                 request.getMetadata(),
@@ -68,7 +75,8 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 request.getTraceId());
     }
 
-    public static DeleteQaSessionCommand toDeleteSessionCommand(DiscoveryQaRequests.QaSessionDeleteRequest request) {
+    public static @NonNull DeleteQaSessionCommand toDeleteSessionCommand(
+            @NonNull DiscoveryQaRequests.QaSessionDeleteRequest request) {
         Objects.requireNonNull(request, "request");
         return new DeleteQaSessionCommand(
                 DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
@@ -77,7 +85,8 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 false);
     }
 
-    public static ExportQaSessionCommand toExportSessionCommand(DiscoveryQaRequests.QaSessionExportRequest request) {
+    public static @NonNull ExportQaSessionCommand toExportSessionCommand(
+            @NonNull DiscoveryQaRequests.QaSessionExportRequest request) {
         Objects.requireNonNull(request, "request");
         return new ExportQaSessionCommand(
                 DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
@@ -88,18 +97,35 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 request.getFormat());
     }
 
-    public static String ownerType() {
+    public static @NonNull PortalQaSessionQuery toSessionQuery(
+            @NonNull DiscoveryQaRequests.QaSessionPageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new PortalQaSessionQuery(ownerType(), ownerId(request.getOwnerUserId()));
+    }
+
+    public static @NonNull PageQuery toPageQuery(@NonNull DiscoveryQaRequests.QaSessionPageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new PageQuery(pageNo(request), limit(request));
+    }
+
+    public static @NonNull PortalQaSessionDetailQuery toSessionDetailQuery(
+            @NonNull DiscoveryQaRequests.QaSessionGetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new PortalQaSessionDetailQuery(
+                ownerType(),
+                ownerId(request.getOwnerUserId()),
+                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()));
+    }
+
+    private static String ownerType() {
         return OWNER_TYPE_USER;
     }
 
-    public static String ownerId(Long ownerUserId) {
+    private static String ownerId(Long ownerUserId) {
         return ownerUserId == null ? null : String.valueOf(ownerUserId);
     }
 
-    public static Integer limit(DiscoveryQaRequests.QaSessionPageRequest request) {
-        if (request == null) {
-            return DEFAULT_PAGE_SIZE;
-        }
+    private static Integer limit(DiscoveryQaRequests.QaSessionPageRequest request) {
         if (request.getLimit() != null) {
             return request.getLimit();
         }
@@ -109,10 +135,16 @@ public final class DiscoveryQaPortalInterfaceAssembler {
         return DEFAULT_PAGE_SIZE;
     }
 
-    public static DiscoveryQaResponses.OpenSessionResponse toOpenSessionResponse(QaSessionResult result) {
-        if (result == null) {
-            return null;
+    private static Integer pageNo(DiscoveryQaRequests.QaSessionPageRequest request) {
+        if (request.getPageNo() == null) {
+            return DEFAULT_PAGE_NO;
         }
+        return request.getPageNo();
+    }
+
+    public static @NonNull DiscoveryQaResponses.OpenSessionResponse toOpenSessionResponse(
+            @NonNull QaSessionResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaResponses.OpenSessionResponse.builder()
                 .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .ownerUserId(result.getOwnerUserId())
@@ -127,27 +159,26 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 .build();
     }
 
-    public static PageResponse<DiscoveryQaResponses.QaSessionResponse> toSessionPageResponse(
-            List<QaSessionResult> results, DiscoveryQaRequests.QaSessionPageRequest request) {
-        List<QaSessionResult> safeResults = results == null ? List.of() : results;
-        int pageNo = request == null || request.getPageNo() == null ? DEFAULT_PAGE_NO : request.getPageNo();
+    public static @NonNull PageResponse<DiscoveryQaResponses.QaSessionResponse> toSessionPageResponse(
+            @NonNull List<QaSessionResult> results, @NonNull DiscoveryQaRequests.QaSessionPageRequest request) {
+        Objects.requireNonNull(results, "results");
+        Objects.requireNonNull(request, "request");
+        int pageNo = pageNo(request);
         int pageSize = limit(request);
         PageResponse<DiscoveryQaResponses.QaSessionResponse> response = new PageResponse<>();
         response.setPageNo(pageNo);
         response.setPageSize(pageSize);
-        response.setCount(safeResults.size());
-        response.setTotalPage(safeResults.isEmpty() ? 0 : 1);
-        response.setRecords(safeResults.stream()
+        response.setCount(results.size());
+        response.setTotalPage(results.isEmpty() ? 0 : 1);
+        response.setRecords(results.stream()
                 .filter(Objects::nonNull)
                 .map(DiscoveryQaPortalInterfaceAssembler::toSessionResponse)
                 .toList());
         return response;
     }
 
-    public static DiscoveryQaResponses.QaSessionResponse toSessionResponse(QaSessionResult result) {
-        if (result == null) {
-            return null;
-        }
+    public static @NonNull DiscoveryQaResponses.QaSessionResponse toSessionResponse(@NonNull QaSessionResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaResponses.QaSessionResponse.builder()
                 .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .ownerUserId(result.getOwnerUserId())
@@ -162,10 +193,9 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoveryQaResponses.QaSessionDetailResponse toSessionDetailResponse(QaSessionDetailResult result) {
-        if (result == null) {
-            return null;
-        }
+    public static @NonNull DiscoveryQaResponses.QaSessionDetailResponse toSessionDetailResponse(
+            @NonNull QaSessionDetailResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaResponses.QaSessionDetailResponse.detailBuilder()
                 .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .ownerUserId(result.getOwnerUserId())
@@ -187,10 +217,9 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoveryQaResponses.QaSessionExportResponse toSessionExportResponse(QaSessionExportResult result) {
-        if (result == null) {
-            return null;
-        }
+    public static @NonNull DiscoveryQaResponses.QaSessionExportResponse toSessionExportResponse(
+            @NonNull QaSessionExportResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoveryQaResponses.QaSessionExportResponse.builder()
                 .id(DiscoveryInterfaceIdCodec.toStringValue(result.getId()))
                 .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
@@ -205,10 +234,9 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoveryQaResponses.ChatCompletionsResponse toChatCompletionsResponse(ChatCompletionResult result) {
-        if (result == null) {
-            return null;
-        }
+    public static @NonNull DiscoveryQaResponses.ChatCompletionsResponse toChatCompletionsResponse(
+            @NonNull ChatCompletionResult result) {
+        Objects.requireNonNull(result, "result");
         DiscoveryQaResponses.ChatCompletionUsage usage = null;
         if (result.getUsage() != null) {
             usage = DiscoveryQaResponses.ChatCompletionUsage.builder()

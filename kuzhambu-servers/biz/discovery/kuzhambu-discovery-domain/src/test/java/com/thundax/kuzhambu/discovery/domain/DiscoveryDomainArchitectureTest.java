@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSuppo
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class DiscoveryDomainArchitectureTest extends AbstractArchitectureTest {
