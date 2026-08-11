@@ -23,7 +23,6 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdenti
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,9 +56,7 @@ public class UserAccountApplicationServiceImpl implements UserAccountApplication
     public void change(ChangeUserAccountCommand command) {
         userService.changeInfo(command.userCommand());
         PrincipalIdentity identity = upsertIdentity(command.userId(), command.loginName());
-        if (StringUtils.isNotBlank(command.encryptedPassword())) {
-            upsertPassword(command.userId(), identity.getId(), command.encryptedPassword());
-        }
+        command.encryptedPassword().ifPresent(password -> upsertPassword(command.userId(), identity.getId(), password));
     }
 
     private PrincipalIdentity upsertIdentity(UserId userId, String loginName) {

@@ -306,8 +306,9 @@ public class UserController {
 
         User entity = UserInterfaceAssembler.toDomain(bean, request);
 
-        String encryptedPassword =
-                StringUtils.isBlank(request.getLoginPass()) ? null : PasswordHelper.encrypt(request.getLoginPass());
+        Optional<String> encryptedPassword = StringUtils.isBlank(request.getLoginPass())
+                ? Optional.empty()
+                : Optional.of(PasswordHelper.encrypt(request.getLoginPass()));
         userAccountService.change(
                 UserInterfaceAssembler.toChangeUserAccountCommand(request, encryptedPassword, entity.getId()));
 

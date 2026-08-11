@@ -406,13 +406,18 @@ public final class UserInterfaceAssembler {
     @NonNull
     public static CreateUserAccountCommand toCreateUserAccountCommand(
             @NonNull UserSaveRequest request, @NonNull String encryptedPassword) {
+        Objects.requireNonNull(request, "request must not be null");
+        Objects.requireNonNull(encryptedPassword, "encryptedPassword must not be null");
         return new CreateUserAccountCommand(
                 toCreateCommand(request, encryptedPassword), request.getLoginName(), encryptedPassword);
     }
 
     @NonNull
     public static ChangeUserAccountCommand toChangeUserAccountCommand(
-            @NonNull UserSaveRequest request, String encryptedPassword, @NonNull UserId userId) {
+            @NonNull UserSaveRequest request, @NonNull Optional<String> encryptedPassword, @NonNull UserId userId) {
+        Objects.requireNonNull(request, "request must not be null");
+        Objects.requireNonNull(encryptedPassword, "encryptedPassword must not be null");
+        Objects.requireNonNull(userId, "userId must not be null");
         return new ChangeUserAccountCommand(
                 toChangeInfoCommand(request), userId, request.getLoginName(), encryptedPassword);
     }
