@@ -652,7 +652,7 @@ class AiWorkerInvocationApplicationServiceTest {
         private final AtomicReference<AiCandidate> savedCandidate = new AtomicReference<>();
 
         @Override
-        public AiInvocationLog getInvocationLogById(AiCallId callId) {
+        public AiInvocationLog getByCallId(AiCallId callId) {
             return null;
         }
 
@@ -680,7 +680,7 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
-        public PageResult<AiInvocationLog> pageInvocationLogsByFilter(
+        public PageResult<AiInvocationLog> pageByFilter(
                 String scope,
                 AiBusinessCapability capability,
                 AiContentRef contentRef,
@@ -706,7 +706,7 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
-        public AiCandidate getCandidateById(AiCandidateId candidateId) {
+        public AiCandidate getByCandidateId(AiCandidateId candidateId) {
             return null;
         }
 

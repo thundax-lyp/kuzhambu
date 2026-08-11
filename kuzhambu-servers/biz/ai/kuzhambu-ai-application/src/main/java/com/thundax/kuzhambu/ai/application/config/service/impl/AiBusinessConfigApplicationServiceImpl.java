@@ -103,7 +103,7 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
                 || config.getModelId() == null) {
             throw new BizException("AI business capability, prompt template and model are required");
         }
-        PromptTemplate promptTemplate = promptRepository.getTemplateById(config.getPromptTemplateId());
+        PromptTemplate promptTemplate = promptRepository.getByTemplateId(config.getPromptTemplateId());
         AiModel model = aiModelRepository.getById(config.getModelId());
         if (!config.promptMatches(promptTemplate) || !config.modelMatches(model)) {
             throw new BizException("AI business config does not match prompt template or model capability");

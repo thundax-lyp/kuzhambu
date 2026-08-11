@@ -17,7 +17,7 @@ import java.util.List;
 
 public interface AiInvocationRepository {
 
-    AiInvocationLog getInvocationLogById(AiCallId callId);
+    AiInvocationLog getByCallId(AiCallId callId);
 
     AiCallId insertInvocationLog(AiInvocationLog invocationLog);
 
@@ -49,7 +49,7 @@ public interface AiInvocationRepository {
         return records;
     }
 
-    PageResult<AiInvocationLog> pageInvocationLogsByFilter(
+    PageResult<AiInvocationLog> pageByFilter(
             String scope,
             AiBusinessCapability capability,
             AiContentRef contentRef,
@@ -69,7 +69,7 @@ public interface AiInvocationRepository {
             Instant requestedAtStart,
             Instant requestedAtEnd);
 
-    AiCandidate getCandidateById(AiCandidateId candidateId);
+    AiCandidate getByCandidateId(AiCandidateId candidateId);
 
     AiCandidateId insertCandidate(AiCandidate candidate);
 

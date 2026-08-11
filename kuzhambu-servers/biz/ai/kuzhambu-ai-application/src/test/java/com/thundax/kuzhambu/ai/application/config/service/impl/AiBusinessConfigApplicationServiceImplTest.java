@@ -110,12 +110,12 @@ class AiBusinessConfigApplicationServiceImplTest {
     private record FakePromptRepository(AiBusinessCapability capability) implements PromptRepository {
 
         @Override
-        public PromptTemplate getTemplateById(PromptTemplateId templateId) {
+        public PromptTemplate getByTemplateId(PromptTemplateId templateId) {
             return new PromptTemplate(templateId, capability, "模板", null, true, 1, null);
         }
 
         @Override
-        public PromptTemplate getTemplateByCapability(AiBusinessCapability capability) {
+        public PromptTemplate getByCapability(AiBusinessCapability capability) {
             return null;
         }
 
@@ -135,12 +135,12 @@ class AiBusinessConfigApplicationServiceImplTest {
         }
 
         @Override
-        public PromptVersion getCurrentVersionByTemplateId(PromptTemplateId templateId) {
+        public PromptVersion getByCurrentTemplateId(PromptTemplateId templateId) {
             return null;
         }
 
         @Override
-        public PromptVersion getVersionById(PromptVersionId versionId) {
+        public PromptVersion getByVersionId(PromptVersionId versionId) {
             return null;
         }
 
@@ -165,7 +165,7 @@ class AiBusinessConfigApplicationServiceImplTest {
         }
 
         @Override
-        public int replaceTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
+        public int updateTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
             return 0;
         }
     }

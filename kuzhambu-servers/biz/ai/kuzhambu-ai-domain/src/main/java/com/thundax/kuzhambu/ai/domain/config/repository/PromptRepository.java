@@ -10,9 +10,9 @@ import java.util.List;
 
 public interface PromptRepository {
 
-    PromptTemplate getTemplateById(PromptTemplateId templateId);
+    PromptTemplate getByTemplateId(PromptTemplateId templateId);
 
-    PromptTemplate getTemplateByCapability(AiBusinessCapability capability);
+    PromptTemplate getByCapability(AiBusinessCapability capability);
 
     List<PromptTemplate> list(AiBusinessCapability capability, Boolean enabled);
 
@@ -20,9 +20,9 @@ public interface PromptRepository {
 
     int updateTemplate(PromptTemplate template);
 
-    PromptVersion getCurrentVersionByTemplateId(PromptTemplateId templateId);
+    PromptVersion getByCurrentTemplateId(PromptTemplateId templateId);
 
-    PromptVersion getVersionById(PromptVersionId versionId);
+    PromptVersion getByVersionId(PromptVersionId versionId);
 
     List<PromptVersion> listVersions(PromptTemplateId templateId);
 
@@ -32,5 +32,5 @@ public interface PromptRepository {
 
     List<PromptVariable> listVariables(PromptTemplateId templateId);
 
-    int replaceTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables);
+    int updateTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables);
 }

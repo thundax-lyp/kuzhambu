@@ -181,7 +181,7 @@ class AiBusinessInvokeConfigResolverTest {
             List<PromptVariable> variables, String variablesSnapshotJson, boolean templateEnabled) {
         return new PromptRepository() {
             @Override
-            public PromptTemplate getTemplateById(PromptTemplateId templateId) {
+            public PromptTemplate getByTemplateId(PromptTemplateId templateId) {
                 return new PromptTemplate(
                         templateId,
                         AiBusinessCapability.CLASSICS_SUMMARY,
@@ -193,7 +193,7 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public PromptTemplate getTemplateByCapability(AiBusinessCapability capability) {
+            public PromptTemplate getByCapability(AiBusinessCapability capability) {
                 return null;
             }
 
@@ -213,7 +213,7 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public PromptVersion getCurrentVersionByTemplateId(PromptTemplateId templateId) {
+            public PromptVersion getByCurrentTemplateId(PromptTemplateId templateId) {
                 PromptVersion version = new PromptVersion();
                 version.setId(new PromptVersionId(6L));
                 version.setTemplateId(templateId);
@@ -230,7 +230,7 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public PromptVersion getVersionById(PromptVersionId versionId) {
+            public PromptVersion getByVersionId(PromptVersionId versionId) {
                 PromptVersion version = getCurrentVersion(new PromptTemplateId(6L));
                 version.setId(versionId);
                 return version;
@@ -257,7 +257,7 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public int replaceTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
+            public int updateTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
                 return 0;
             }
         };

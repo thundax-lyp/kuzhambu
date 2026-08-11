@@ -179,12 +179,12 @@ class PromptApplicationServiceImplTest {
     private static class ConflictPromptRepository implements PromptRepository {
 
         @Override
-        public PromptTemplate getTemplateById(PromptTemplateId templateId) {
+        public PromptTemplate getByTemplateId(PromptTemplateId templateId) {
             return existingTemplate(templateId, AiBusinessCapability.CLASSICS_SUMMARY);
         }
 
         @Override
-        public PromptTemplate getTemplateByCapability(AiBusinessCapability capability) {
+        public PromptTemplate getByCapability(AiBusinessCapability capability) {
             return null;
         }
 
@@ -204,7 +204,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public PromptVersion getCurrentVersionByTemplateId(PromptTemplateId templateId) {
+        public PromptVersion getByCurrentTemplateId(PromptTemplateId templateId) {
             PromptVersion version = new PromptVersion();
             version.setTemplateId(templateId);
             version.setVersionNo(1);
@@ -212,7 +212,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public PromptVersion getVersionById(PromptVersionId versionId) {
+        public PromptVersion getByVersionId(PromptVersionId versionId) {
             return null;
         }
 
@@ -237,7 +237,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public int replaceTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
+        public int updateTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
             return 0;
         }
     }
@@ -256,7 +256,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public int replaceTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
+        public int updateTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
             replaceVariablesCount++;
             return variables == null ? 0 : variables.size();
         }

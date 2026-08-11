@@ -175,7 +175,7 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return toFacadeDto(aiInvocationRepository.getInvocationLogById(AiCallIdCodec.toDomain(request.getCallId())));
+        return toFacadeDto(aiInvocationRepository.getByCallId(AiCallIdCodec.toDomain(request.getCallId())));
     }
 
     @Override
@@ -185,7 +185,7 @@ public class AiFacadeImpl implements AiFacade {
             return null;
         }
         return toFacadeDto(
-                aiInvocationRepository.getCandidateById(AiCandidateIdCodec.toDomain(request.getCandidateId())));
+                aiInvocationRepository.getByCandidateId(AiCandidateIdCodec.toDomain(request.getCandidateId())));
     }
 
     @Override

@@ -50,7 +50,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public AiInvocationLog getInvocationLogById(AiCallId callId) {
+    public AiInvocationLog getByCallId(AiCallId callId) {
         return toInvocationLogDomain(aiInvocationMapper.selectOne(new LambdaQueryWrapper<AiInvocationLogDO>()
                 .eq(AiInvocationLogDO::getCallId, AiCallIdCodec.toValue(callId))));
     }
@@ -124,7 +124,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public PageResult<AiInvocationLog> pageInvocationLogsByFilter(
+    public PageResult<AiInvocationLog> pageByFilter(
             String scope,
             AiBusinessCapability capability,
             AiContentRef contentRef,
@@ -177,7 +177,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public AiCandidate getCandidateById(AiCandidateId candidateId) {
+    public AiCandidate getByCandidateId(AiCandidateId candidateId) {
         return toCandidateDomain(aiInvocationMapper.selectCandidate(AiCandidateIdCodec.toValue(candidateId)));
     }
 

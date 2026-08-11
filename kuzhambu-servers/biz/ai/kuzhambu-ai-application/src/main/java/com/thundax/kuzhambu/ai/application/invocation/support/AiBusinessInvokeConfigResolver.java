@@ -86,12 +86,12 @@ public class AiBusinessInvokeConfigResolver {
             throw new BizException("AI prompt version is required");
         }
         PromptVersion promptVersion =
-                promptRepository.getVersionById(command.prompt().promptVersionId());
+                promptRepository.getByVersionId(command.prompt().promptVersionId());
         if (promptVersion == null || promptVersion.getTemplateId() == null) {
             throw new BizException(
                     "AI prompt version is not configured: " + command.prompt().promptVersionId());
         }
-        PromptTemplate promptTemplate = promptRepository.getTemplateById(promptVersion.getTemplateId());
+        PromptTemplate promptTemplate = promptRepository.getByTemplateId(promptVersion.getTemplateId());
         AiBusinessCapability capability = command.context().capability();
         if (promptTemplate == null || !promptTemplate.isEnabled() || promptTemplate.getCapability() != capability) {
             throw new BizException("AI business config prompt template is disabled or mismatched: "
@@ -111,12 +111,12 @@ public class AiBusinessInvokeConfigResolver {
         if (config == null || config.getPromptTemplateId() == null) {
             throw new BizException("AI business config prompt template is required");
         }
-        PromptTemplate promptTemplate = promptRepository.getTemplateById(config.getPromptTemplateId());
+        PromptTemplate promptTemplate = promptRepository.getByTemplateId(config.getPromptTemplateId());
         if (!config.promptMatches(promptTemplate)) {
             throw new BizException("AI business config prompt template is disabled or mismatched: "
                     + PromptTemplateIdCodec.toValue(config.getPromptTemplateId()));
         }
-        PromptVersion promptVersion = promptRepository.getCurrentVersionByTemplateId(config.getPromptTemplateId());
+        PromptVersion promptVersion = promptRepository.getByCurrentTemplateId(config.getPromptTemplateId());
         if (promptVersion == null) {
             throw new BizException("AI prompt current version is not configured: "
                     + PromptTemplateIdCodec.toValue(config.getPromptTemplateId()));
