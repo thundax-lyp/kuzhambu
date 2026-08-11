@@ -33,9 +33,9 @@ public class StorageContentApplicationServiceImpl implements StorageContentAppli
             return null;
         }
         StorageQuery storageQuery = new StorageQuery();
-        storageQuery.setId(query.getId());
-        storageQuery.setReferenceStatus(query.getReferenceStatus());
-        applyReferenceOwner(storageQuery, query.getReferenceOwnerRef());
+        storageQuery.setId(query.id());
+        storageQuery.setReferenceStatus(query.referenceStatus());
+        applyReferenceOwner(storageQuery, query.referenceOwnerRef());
         return storageQuery;
     }
 
