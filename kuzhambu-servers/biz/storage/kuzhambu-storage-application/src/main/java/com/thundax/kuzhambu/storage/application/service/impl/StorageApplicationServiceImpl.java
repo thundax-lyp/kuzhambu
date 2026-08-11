@@ -75,7 +75,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public StoredObject get(GetStorageObjectQuery query) {
-        StoredObjectId id = query == null ? null : query.getId();
+        StoredObjectId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }

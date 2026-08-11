@@ -115,7 +115,7 @@ class StorageObjectDeleteContractTest {
                 (proxy, method, args) -> {
                     if ("get".equals(method.getName())) {
                         GetStorageObjectQuery query = (GetStorageObjectQuery) args[0];
-                        StoredObjectId id = query == null ? null : query.getId();
+                        StoredObjectId id = query == null ? null : query.id();
                         if (id == null || id.value() == 404L) {
                             return null;
                         }
