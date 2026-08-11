@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations interface / controller verbs`：迁移 Controller action method 与 path，并更新 report E2E mock
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
-    - 范围对象：`OperationsBackupAdminController.java`、`OperationsCleanupAdminController.java`、`OperationsDashboardAdminController.java`、`OperationsHealthAdminController.java`、`OperationsHealthAlertAdminController.java`、`OperationsReportAdminController.java`、`OperationsRestoreAdminController.java`、`OperationsTaskAdminController.java`、`OperationsInterfaceArchitectureTest.java`（均位于 `kuzhambu-servers/biz/operations/kuzhambu-operations-interface/`）；`kuzhambu-apps/admin-web/e2e/operations/report/report.spec.ts`。
-    - 处理动作：按 RUNBOOK 映射替换不在白名单内的 Controller action method/path，并同步 report E2E mock。
-    - 验收点：Controller verb allowlist 已删除，interface 架构测试和 report E2E 通过。
-    - 重要度：9/10
-
 - [ ] `Operations allowlist closure`：完成全量验证并清理任务现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`、`docs/00-governance/TODO-RULES.md`

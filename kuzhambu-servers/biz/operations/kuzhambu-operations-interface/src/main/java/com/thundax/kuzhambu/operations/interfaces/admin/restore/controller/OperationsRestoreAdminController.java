@@ -40,7 +40,7 @@ public class OperationsRestoreAdminController {
     @Operation(summary = "从备份执行恢复", description = "operations:restore:execute")
     @HasPermission("operations:restore:execute")
     @IgnoreSysLogger
-    @PostMapping("execute")
+    @PostMapping("create")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -48,7 +48,7 @@ public class OperationsRestoreAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsRestoreExecuteResponse execute(@Valid @RequestBody OperationsRestoreExecuteRequest request) {
+    public OperationsRestoreExecuteResponse create(@Valid @RequestBody OperationsRestoreExecuteRequest request) {
         var result = restoreApplicationService.execute(OperationsRestoreInterfaceAssembler.toCommand(request));
         if (result == null) {
             return null;
@@ -78,7 +78,7 @@ public class OperationsRestoreAdminController {
     @Operation(summary = "获取恢复任务详情", description = "operations:restore:view")
     @HasPermission("operations:restore:view")
     @IgnoreSysLogger
-    @PostMapping("detail")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -86,7 +86,7 @@ public class OperationsRestoreAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsRestoreDetailResponse detail(@Valid @RequestBody OperationsRestoreDetailRequest request) {
+    public OperationsRestoreDetailResponse getDetail(@Valid @RequestBody OperationsRestoreDetailRequest request) {
         var result = restoreApplicationService.detail(OperationsRestoreInterfaceAssembler.toQuery(request));
         if (result == null) {
             return null;

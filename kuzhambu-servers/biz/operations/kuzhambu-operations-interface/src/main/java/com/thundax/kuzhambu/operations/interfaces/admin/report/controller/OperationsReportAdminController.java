@@ -52,7 +52,7 @@ public class OperationsReportAdminController {
     @Operation(summary = "发起报表生成", description = "operations:report:generate")
     @HasPermission("operations:report:generate")
     @IgnoreSysLogger
-    @PostMapping("generate")
+    @PostMapping("create")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -60,7 +60,7 @@ public class OperationsReportAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsReportGenerateResponse generate(@Valid @RequestBody OperationsReportGenerateRequest request) {
+    public OperationsReportGenerateResponse create(@Valid @RequestBody OperationsReportGenerateRequest request) {
         var result = reportApplicationService.generate(OperationsReportInterfaceAssembler.toCommand(request));
         if (result == null) {
             return null;
@@ -90,7 +90,7 @@ public class OperationsReportAdminController {
     @Operation(summary = "获取报表任务详情", description = "operations:report:view")
     @HasPermission("operations:report:view")
     @IgnoreSysLogger
-    @PostMapping("detail")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -98,7 +98,7 @@ public class OperationsReportAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsReportDetailResponse detail(@Valid @RequestBody OperationsReportDetailRequest request) {
+    public OperationsReportDetailResponse getDetail(@Valid @RequestBody OperationsReportDetailRequest request) {
         var result = reportApplicationService.detail(OperationsReportInterfaceAssembler.toQuery(request));
         if (result == null) {
             return null;

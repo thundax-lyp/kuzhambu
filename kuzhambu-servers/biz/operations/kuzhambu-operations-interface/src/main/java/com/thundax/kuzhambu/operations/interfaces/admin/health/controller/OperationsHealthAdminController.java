@@ -42,7 +42,7 @@ public class OperationsHealthAdminController {
     @Operation(summary = "查询健康摘要", description = "operations:health:view")
     @HasPermission("operations:health:view")
     @IgnoreSysLogger
-    @PostMapping("summary")
+    @PostMapping("list")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -50,7 +50,8 @@ public class OperationsHealthAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public List<OperationsHealthSummaryResponse> summary(@Valid @RequestBody OperationsHealthSummaryRequest request) {
+    public List<OperationsHealthSummaryResponse> listSummary(
+            @Valid @RequestBody OperationsHealthSummaryRequest request) {
         return healthCheckApplicationService.summary().stream()
                 .map(OperationsHealthInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
@@ -78,7 +79,7 @@ public class OperationsHealthAdminController {
     @Operation(summary = "查询健康趋势", description = "operations:health:view")
     @HasPermission("operations:health:view")
     @IgnoreSysLogger
-    @PostMapping("trend")
+    @PostMapping("list")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -86,7 +87,7 @@ public class OperationsHealthAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public List<OperationsHealthTrendResponse> trend(@Valid @RequestBody OperationsHealthTrendRequest request) {
+    public List<OperationsHealthTrendResponse> listTrend(@Valid @RequestBody OperationsHealthTrendRequest request) {
         return healthCheckApplicationService.trend(OperationsHealthInterfaceAssembler.toQuery(request)).stream()
                 .map(OperationsHealthInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());

@@ -56,7 +56,7 @@ public class OperationsTaskAdminController {
     @Operation(summary = "获取长任务详情", description = "operations:task:view")
     @HasPermission("operations:task:view")
     @IgnoreSysLogger
-    @PostMapping("detail")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -64,7 +64,7 @@ public class OperationsTaskAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsTaskDetailResponse detail(@Valid @RequestBody OperationsTaskDetailRequest request) {
+    public OperationsTaskDetailResponse getDetail(@Valid @RequestBody OperationsTaskDetailRequest request) {
         var result = taskApplicationService.detail(OperationsTaskInterfaceAssembler.toQuery(request));
         if (result == null) {
             return null;

@@ -40,7 +40,7 @@ public class OperationsCleanupAdminController {
     @Operation(summary = "执行清理任务", description = "operations:cleanup:execute")
     @HasPermission("operations:cleanup:execute")
     @IgnoreSysLogger
-    @PostMapping("execute")
+    @PostMapping("create")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -48,7 +48,7 @@ public class OperationsCleanupAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsCleanupExecuteResponse execute(@Valid @RequestBody OperationsCleanupExecuteRequest request) {
+    public OperationsCleanupExecuteResponse create(@Valid @RequestBody OperationsCleanupExecuteRequest request) {
         var result = cleanupApplicationService.execute(OperationsCleanupInterfaceAssembler.toCommand(request));
         return result == null
                 ? OperationsCleanupExecuteResponse.builder().build()
@@ -77,7 +77,7 @@ public class OperationsCleanupAdminController {
     @Operation(summary = "获取清理任务详情", description = "operations:cleanup:view")
     @HasPermission("operations:cleanup:view")
     @IgnoreSysLogger
-    @PostMapping("detail")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -85,7 +85,7 @@ public class OperationsCleanupAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsCleanupDetailResponse detail(@Valid @RequestBody OperationsCleanupDetailRequest request) {
+    public OperationsCleanupDetailResponse getDetail(@Valid @RequestBody OperationsCleanupDetailRequest request) {
         var result = cleanupApplicationService.detail(OperationsCleanupInterfaceAssembler.toQuery(request));
         return result == null ? null : OperationsCleanupInterfaceAssembler.toDetailResponse(result);
     }
