@@ -22,7 +22,7 @@ export const pageTasks = (query: PageQuery<OperationsTaskPageQuery> = {}) => {
 };
 
 export const getTaskDetail = (command: OperationsTaskDetailCommand) => {
-    return postJson<OperationsTaskRecord, OperationsTaskDetailCommand>("/operations/task/detail", {
+    return postJson<OperationsTaskRecord, OperationsTaskDetailCommand>("/operations/task/get", {
         body: command
     });
 };

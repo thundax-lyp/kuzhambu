@@ -42,7 +42,7 @@ public class OperationsHealthAdminController {
     @Operation(summary = "查询健康摘要", description = "operations:health:view")
     @HasPermission("operations:health:view")
     @IgnoreSysLogger
-    @PostMapping("list")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -87,7 +87,7 @@ public class OperationsHealthAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public List<OperationsHealthTrendResponse> listTrend(@Valid @RequestBody OperationsHealthTrendRequest request) {
+    public List<OperationsHealthTrendResponse> getTrend(@Valid @RequestBody OperationsHealthTrendRequest request) {
         return healthCheckApplicationService.trend(OperationsHealthInterfaceAssembler.toQuery(request)).stream()
                 .map(OperationsHealthInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());

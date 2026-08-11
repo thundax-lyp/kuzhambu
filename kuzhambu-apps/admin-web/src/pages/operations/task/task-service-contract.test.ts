@@ -31,7 +31,7 @@ describe("operations tasks service contracts", () => {
         });
 
         await service.getTaskDetail({ snapshotId: "1001" });
-        expect(postJson).toHaveBeenCalledWith("/operations/task/detail", {
+        expect(postJson).toHaveBeenCalledWith("/operations/task/get", {
             body: {
                 snapshotId: "1001"
             }
