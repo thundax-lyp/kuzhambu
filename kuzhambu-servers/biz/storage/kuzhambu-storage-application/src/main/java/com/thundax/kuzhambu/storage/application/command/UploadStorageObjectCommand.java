@@ -6,23 +6,14 @@ import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteS
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import java.io.InputStream;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class UploadStorageObjectCommand {
-    private InputStream inputStream;
-    private String originalFilename;
-    private String contentType;
-    private StorageByteSize size;
-    private List<String> allowedSuffixes;
-    private StorageOwnerRef ownerRef;
-    private StoredObjectStatus objectStatus;
-    private StoredObjectReferenceStatus referenceStatus;
-    private String remarks;
-}
+public record UploadStorageObjectCommand(
+        InputStream inputStream,
+        String originalFilename,
+        String contentType,
+        StorageByteSize size,
+        List<String> allowedSuffixes,
+        StorageOwnerRef ownerRef,
+        StoredObjectStatus objectStatus,
+        StoredObjectReferenceStatus referenceStatus,
+        String remarks) {}

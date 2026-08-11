@@ -380,28 +380,26 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Transactional(rollbackFor = Exception.class)
     public StoredObject upload(UploadStorageObjectCommand command) {
         validateUploadFile(
-                command == null ? null : command.getInputStream(),
-                command == null ? null : command.getOriginalFilename(),
-                command == null || command.getSize() == null
-                        ? 0L
-                        : command.getSize().value(),
-                command == null ? null : command.getAllowedSuffixes());
+                command == null ? null : command.inputStream(),
+                command == null ? null : command.originalFilename(),
+                command == null || command.size() == null ? 0L : command.size().value(),
+                command == null ? null : command.allowedSuffixes());
 
         StoredObject storage = new StoredObject();
-        storage.setObjectStatus(command.getObjectStatus());
-        storage.setReferenceStatus(command.getReferenceStatus());
-        storage.setRemarks(command.getRemarks());
-        applyFileMetadata(command.getOriginalFilename(), command.getContentType(), storage);
+        storage.setObjectStatus(command.objectStatus());
+        storage.setReferenceStatus(command.referenceStatus());
+        storage.setRemarks(command.remarks());
+        applyFileMetadata(command.originalFilename(), command.contentType(), storage);
         try {
-            long declaredSize = command.getSize().value();
+            long declaredSize = command.size().value();
             applyStoredObject(
                     storage,
                     storedObjectContentRepository.save(
-                            storage, StorageInputStreamLimiter.limit(command.getInputStream(), declaredSize)));
+                            storage, StorageInputStreamLimiter.limit(command.inputStream(), declaredSize)));
         } catch (IOException exception) {
             throw new BizException(exception.getMessage());
         }
-        if (!command.getSize().value().equals(storage.getSize())) {
+        if (!command.size().value().equals(storage.getSize())) {
             deleteStoredObjectContent(storage);
             throw new BizException("文件大小与声明大小不一致");
         }

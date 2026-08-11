@@ -157,31 +157,31 @@ class StorageObjectUploadContractTest {
         @Override
         public StoredObject upload(UploadStorageObjectCommand command) {
             if (command == null
-                    || command.getInputStream() == null
-                    || command.getSize() == null
-                    || command.getSize().value() <= 0L) {
+                    || command.inputStream() == null
+                    || command.size() == null
+                    || command.size().value() <= 0L) {
                 throw new BizException("文件不能为空");
             }
-            if (!"png".equalsIgnoreCase(extension(command.getOriginalFilename()))) {
+            if (!"png".equalsIgnoreCase(extension(command.originalFilename()))) {
                 throw new BizException("无效的后缀名");
             }
-            if ("technical.png".equals(command.getOriginalFilename())) {
+            if ("technical.png".equals(command.originalFilename())) {
                 throw new BizException(
                         BizExceptionBoundaryAspect.TECHNICAL_FAILURE_CODE,
                         BizExceptionBoundaryAspect.TECHNICAL_FAILURE_MESSAGE_KEY,
                         BizExceptionBoundaryAspect.TECHNICAL_FAILURE_MESSAGE);
             }
-            assertEquals("sancai.png", command.getOriginalFilename());
-            assertEquals("image/png", command.getContentType());
-            assertEquals(5L, command.getSize().value());
-            assertEquals(StorageOwnerType.USER, command.getOwnerRef().ownerType());
-            assertEquals("user-1", command.getOwnerRef().ownerId());
+            assertEquals("sancai.png", command.originalFilename());
+            assertEquals("image/png", command.contentType());
+            assertEquals(5L, command.size().value());
+            assertEquals(StorageOwnerType.USER, command.ownerRef().ownerType());
+            assertEquals("user-1", command.ownerRef().ownerId());
 
             StoredObject storage = new StoredObject();
             storage.setId(StoredObjectIdCodec.toDomain(10L));
-            storage.setOriginalFilename(command.getOriginalFilename());
-            storage.setContentType(command.getContentType());
-            storage.setSize(command.getSize().value());
+            storage.setOriginalFilename(command.originalFilename());
+            storage.setContentType(command.contentType());
+            storage.setSize(command.size().value());
             storage.setAccessEndpoint("/api/storage/object/10/content");
             return storage;
         }
