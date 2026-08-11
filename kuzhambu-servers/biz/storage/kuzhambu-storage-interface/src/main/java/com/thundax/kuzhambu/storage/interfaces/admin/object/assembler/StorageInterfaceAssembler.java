@@ -1,7 +1,17 @@
 package com.thundax.kuzhambu.storage.interfaces.admin.object.assembler;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
+import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.RemoveStorageObjectCommand;
+import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
+import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
+import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
+import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -10,19 +20,30 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadSta
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartNumber;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartPartSize;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageByteSize;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageMimeType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.AbortMultipartUploadRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.CompleteMultipartUploadRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.InitMultipartUploadRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StorageSortRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.UploadMultipartPartRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.AbortMultipartUploadResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.CompleteMultipartUploadResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.InitMultipartUploadResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.StorageObjectResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.UploadMultipartPartResponse;
+import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
+import org.springframework.web.multipart.MultipartFile;
 
 public final class StorageInterfaceAssembler {
 
@@ -41,6 +62,93 @@ public final class StorageInterfaceAssembler {
                 emptyToNull(request.getOriginalFilename()),
                 emptyToNull(request.getRemarks()),
                 sortDirectionFrom(request.getSortDirection()));
+    }
+
+    @NonNull
+    public static StorageSortCommand toSortCommand(@NonNull StorageSortRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new StorageSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request.getOrderedIds(),
+                        "orderedIds",
+                        com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions::invalidParameter),
+                StoredObjectIdCodec::toDomain));
+    }
+
+    @NonNull
+    public static GetStorageObjectQuery toGetStorageObjectQuery(@NonNull String storageObjectId) {
+        return new GetStorageObjectQuery(StoredObjectIdCodec.toDomain(storageObjectId));
+    }
+
+    @NonNull
+    public static GetStorageObjectQuery toGetStorageObjectQuery(@NonNull Long storageObjectId) {
+        return new GetStorageObjectQuery(StoredObjectIdCodec.toDomain(storageObjectId));
+    }
+
+    @NonNull
+    public static RemoveStorageObjectCommand toRemoveStorageObjectCommand(@NonNull StoredObjectId id) {
+        return new RemoveStorageObjectCommand(id);
+    }
+
+    @NonNull
+    public static OpenReadableStorageContentQuery toOpenReadableContentQuery(@NonNull String storageObjectId) {
+        return new OpenReadableStorageContentQuery(StoredObjectIdCodec.toDomain(storageObjectId));
+    }
+
+    @NonNull
+    public static UploadStorageObjectCommand toUploadStorageObjectCommand(
+            MultipartFile file, String ownerType, String ownerId) throws IOException {
+        return new UploadStorageObjectCommand(
+                file == null ? null : file.getInputStream(),
+                file == null ? null : file.getOriginalFilename(),
+                file == null ? null : file.getContentType(),
+                file == null ? null : new StorageByteSize(file.getSize()),
+                List.of(
+                        "jpg", "jpeg", "png", "gif", "webp", "pdf", "txt", "md", "csv", "json", "html", "zip", "docx",
+                        "xlsx", "pptx"),
+                StorageOwnerRef.ofNullable(ownerTypeFrom(ownerType), StringUtils.trimToNull(ownerId)),
+                null,
+                null,
+                null);
+    }
+
+    @NonNull
+    public static InitMultipartUploadCommand toInitMultipartUploadCommand(@NonNull InitMultipartUploadRequest request) {
+        return new InitMultipartUploadCommand(
+                toMultipartUploadId(request.getUploadId()),
+                StorageOwnerRef.ofNullable(
+                        ownerTypeFrom(request.getOwnerType()), StringUtils.trimToNull(request.getOwnerId())),
+                request.getBusinessType(),
+                request.getOriginalFilename(),
+                toStorageMimeType(request.getMimeType()),
+                null,
+                null,
+                null,
+                toStorageByteSize(request.getTotalSize()),
+                toMultipartPartSize(request.getPartSize()));
+    }
+
+    @NonNull
+    public static UploadMultipartPartCommand toUploadMultipartPartCommand(
+            @NonNull UploadMultipartPartRequest request, MultipartFile file) throws IOException {
+        return new UploadMultipartPartCommand(
+                toMultipartUploadId(request.getUploadId()),
+                toMultipartPartNumber(request.getPartNumber()),
+                request.getEtag(),
+                toStorageByteSize(request.getSize()),
+                file == null ? null : file.getInputStream());
+    }
+
+    @NonNull
+    public static CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(
+            @NonNull CompleteMultipartUploadRequest request) {
+        return new CompleteMultipartUploadCommand(toMultipartUploadId(request.getUploadId()), null, null, null, null);
+    }
+
+    @NonNull
+    public static AbortMultipartUploadCommand toAbortMultipartUploadCommand(
+            @NonNull AbortMultipartUploadRequest request) {
+        return new AbortMultipartUploadCommand(toMultipartUploadId(request.getUploadId()));
     }
 
     @NonNull
@@ -129,6 +237,26 @@ public final class StorageInterfaceAssembler {
     }
 
     private static StorageMimeType mimeTypeFrom(String value) {
+        return StringUtils.isBlank(value) ? null : new StorageMimeType(value);
+    }
+
+    private static MultipartUploadId toMultipartUploadId(String value) {
+        return StringUtils.isBlank(value) ? null : new MultipartUploadId(value);
+    }
+
+    private static MultipartPartNumber toMultipartPartNumber(Integer value) {
+        return value == null ? null : new MultipartPartNumber(value);
+    }
+
+    private static StorageByteSize toStorageByteSize(Long value) {
+        return value == null ? null : new StorageByteSize(value);
+    }
+
+    private static MultipartPartSize toMultipartPartSize(Long value) {
+        return value == null ? null : new MultipartPartSize(value);
+    }
+
+    private static StorageMimeType toStorageMimeType(String value) {
         return StringUtils.isBlank(value) ? null : new StorageMimeType(value);
     }
 

@@ -28,14 +28,6 @@
     - 验收点：7 个 contract 均为无 Lombok record，逐项 Maven 架构测试通过。
     - 重要度：9/10
 
-- [ ] `StorageObjectController`：迁移 Interface 内 Command/Query 构造
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`StorageObjectController.java`、`StorageInterfaceAssembler.java`、`StorageApplicationArchitectureTest.java`
-    - 处理动作：把 9 个 Controller 直接构造移至 InterfaceAssembler，并删除对应 allowance key。
-    - 验收点：Controller 不再直接构造 application contract，Storage application/interface 测试通过。
-    - 重要度：8/10
-
 - [ ] `Storage multipart API`：清理 multipart Controller 动词 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
