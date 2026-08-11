@@ -27,7 +27,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
     }
 
     @Override
-    public AiBatchJob get(AiBatchJobId batchId) {
+    public AiBatchJob getById(AiBatchJobId batchId) {
         return AiBatchJobPersistenceAssembler.toDomain(aiBatchJobMapper.selectOne(
                 new LambdaQueryWrapper<AiBatchJobDO>().eq(AiBatchJobDO::getId, AiBatchJobIdCodec.toValue(batchId))));
     }

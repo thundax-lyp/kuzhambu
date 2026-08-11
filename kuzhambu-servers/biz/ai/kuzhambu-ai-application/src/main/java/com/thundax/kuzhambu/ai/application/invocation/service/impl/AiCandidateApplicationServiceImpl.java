@@ -51,7 +51,7 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
     }
 
     private AiCandidate getRequired(AiCandidateId candidateId) {
-        AiCandidate candidate = repository.getCandidate(candidateId);
+        AiCandidate candidate = repository.getCandidateById(candidateId);
         if (candidate == null) {
             throw new DomainException(
                     "AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + candidateId);

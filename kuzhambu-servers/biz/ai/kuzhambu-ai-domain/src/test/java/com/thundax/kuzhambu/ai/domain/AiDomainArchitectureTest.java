@@ -30,12 +30,6 @@ class AiDomainArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertRepositoryPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(
-                classes,
-                NamingArchitectureRuleSupport.legacyRepositoryInterfaceMethodNameAllowances(
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiBatchJobRepository.get",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository.getCandidate",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository.getInvocationLog",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository.matchesContentRef",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository.pageInvocationLogs"));
+                classes, NamingArchitectureRuleSupport.legacyRepositoryInterfaceMethodNameAllowances());
     }
 }

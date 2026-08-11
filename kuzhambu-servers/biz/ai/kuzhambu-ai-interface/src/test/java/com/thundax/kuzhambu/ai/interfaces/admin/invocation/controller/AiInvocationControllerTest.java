@@ -177,7 +177,7 @@ class AiInvocationControllerTest {
     void pageInvocationLogsShouldPassFiltersToRepository() {
         AiInvocationRepository repository = new FakeRepository() {
             @Override
-            public PageResult<AiInvocationLog> pageInvocationLogs(
+            public PageResult<AiInvocationLog> pageInvocationLogsByFilter(
                     String scope,
                     AiBusinessCapability capability,
                     AiContentRef contentRef,
@@ -298,7 +298,7 @@ class AiInvocationControllerTest {
     private static AiInvocationRepository currentInvocationRepository() {
         return new FakeRepository() {
             @Override
-            public AiCandidate getCandidate(AiCandidateId candidateId) {
+            public AiCandidate getCandidateById(AiCandidateId candidateId) {
                 assertEquals(AiCandidateIdCodec.toDomain(22L), candidateId);
                 return currentCandidate();
             }
@@ -487,7 +487,7 @@ class AiInvocationControllerTest {
 
     private static class FakeRepository implements AiInvocationRepository {
         @Override
-        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog getInvocationLog(
+        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog getInvocationLogById(
                 AiCallId callId) {
             return null;
         }
@@ -517,7 +517,7 @@ class AiInvocationControllerTest {
         }
 
         @Override
-        public PageResult<AiInvocationLog> pageInvocationLogs(
+        public PageResult<AiInvocationLog> pageInvocationLogsByFilter(
                 String scope,
                 AiBusinessCapability capability,
                 AiContentRef contentRef,
@@ -543,7 +543,7 @@ class AiInvocationControllerTest {
         }
 
         @Override
-        public AiCandidate getCandidate(AiCandidateId candidateId) {
+        public AiCandidate getCandidateById(AiCandidateId candidateId) {
             return null;
         }
 

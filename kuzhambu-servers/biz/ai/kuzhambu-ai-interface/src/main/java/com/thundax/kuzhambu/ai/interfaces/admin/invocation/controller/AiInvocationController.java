@@ -72,7 +72,7 @@ public class AiInvocationController {
     @PostMapping(value = "invocation-log/get")
     public InvocationLogResponse getInvocationLog(@Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
         return toInvocationLogResponse(
-                invocationRepository.getInvocationLog(AiCallIdCodec.toDomain(request.getCallId())));
+                invocationRepository.getInvocationLogById(AiCallIdCodec.toDomain(request.getCallId())));
     }
 
     @Operation(summary = "分页查询AI调用记录", description = "ai:invocation:view")
@@ -90,7 +90,7 @@ public class AiInvocationController {
             @Valid @RequestBody AiInvocationRequests.InvocationLogPageRequest request) {
         PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
         return PageResponseHelper.fromPageResult(
-                invocationRepository.pageInvocationLogs(
+                invocationRepository.pageInvocationLogsByFilter(
                         request.getScope(),
                         toCapability(request.getCapability()),
                         AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()),
@@ -141,7 +141,7 @@ public class AiInvocationController {
     @PostMapping(value = "candidate/get")
     public CandidateResponse getCandidate(@Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
         return toCandidateResponse(
-                invocationRepository.getCandidate(AiCandidateIdCodec.toDomain(request.getCandidateId())));
+                invocationRepository.getCandidateById(AiCandidateIdCodec.toDomain(request.getCandidateId())));
     }
 
     @Operation(summary = "获取AI候选列表", description = "ai:invocation:view")

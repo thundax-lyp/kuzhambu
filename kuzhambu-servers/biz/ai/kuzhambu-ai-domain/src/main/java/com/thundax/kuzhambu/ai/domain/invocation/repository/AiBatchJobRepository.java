@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface AiBatchJobRepository {
 
-    AiBatchJob get(AiBatchJobId batchId);
+    AiBatchJob getById(AiBatchJobId batchId);
 
     AiBatchJobId insert(AiBatchJob batchJob);
 

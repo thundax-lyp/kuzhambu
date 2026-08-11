@@ -242,7 +242,7 @@ public class AiBatchJobApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJob get(AiBatchJobId batchId) {
+        public AiBatchJob getById(AiBatchJobId batchId) {
             return job != null && batchId.equals(job.getId()) ? copy(job) : null;
         }
 

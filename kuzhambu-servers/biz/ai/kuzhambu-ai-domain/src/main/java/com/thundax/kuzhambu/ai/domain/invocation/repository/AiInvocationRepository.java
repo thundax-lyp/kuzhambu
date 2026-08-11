@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.ai.domain.invocation.repository;
 
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
@@ -18,7 +17,7 @@ import java.util.List;
 
 public interface AiInvocationRepository {
 
-    AiInvocationLog getInvocationLog(AiCallId callId);
+    AiInvocationLog getInvocationLogById(AiCallId callId);
 
     AiCallId insertInvocationLog(AiInvocationLog invocationLog);
 
@@ -43,14 +42,14 @@ public interface AiInvocationRepository {
             List<AiBatchJobId> batchIds, AiContentRef contentRef) {
         List<AiInvocationLog> records = new java.util.ArrayList<>();
         for (AiInvocationLog record : listInvocationLogsByBatches(batchIds)) {
-            if (matchesContentRef(record == null ? null : record.getContentRef(), contentRef)) {
+            if (AiInvocationContentRefMatcher.matches(record == null ? null : record.getContentRef(), contentRef)) {
                 records.add(record);
             }
         }
         return records;
     }
 
-    PageResult<AiInvocationLog> pageInvocationLogs(
+    PageResult<AiInvocationLog> pageInvocationLogsByFilter(
             String scope,
             AiBusinessCapability capability,
             AiContentRef contentRef,
@@ -70,7 +69,7 @@ public interface AiInvocationRepository {
             Instant requestedAtStart,
             Instant requestedAtEnd);
 
-    AiCandidate getCandidate(AiCandidateId candidateId);
+    AiCandidate getCandidateById(AiCandidateId candidateId);
 
     AiCandidateId insertCandidate(AiCandidate candidate);
 
@@ -98,25 +97,10 @@ public interface AiInvocationRepository {
     default List<AiCandidate> listCandidatesByBatchesAndContent(List<AiBatchJobId> batchIds, AiContentRef contentRef) {
         List<AiCandidate> records = new java.util.ArrayList<>();
         for (AiCandidate record : listCandidatesByBatches(batchIds)) {
-            if (matchesContentRef(record == null ? null : record.getContentRef(), contentRef)) {
+            if (AiInvocationContentRefMatcher.matches(record == null ? null : record.getContentRef(), contentRef)) {
                 records.add(record);
             }
         }
         return records;
-    }
-
-    private static boolean matchesContentRef(AiContentRef actual, AiContentRef expected) {
-        String expectedType = AiContentRefCodec.toContentType(expected);
-        Long expectedId = AiContentRefCodec.toContentId(expected);
-        if (expectedType == null && expectedId == null) {
-            return true;
-        }
-        if (actual == null) {
-            return false;
-        }
-        String actualType = AiContentRefCodec.toContentType(actual);
-        Long actualId = AiContentRefCodec.toContentId(actual);
-        return (expectedType == null || expectedType.equals(actualType))
-                && (expectedId == null || expectedId.equals(actualId));
     }
 }

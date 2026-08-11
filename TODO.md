@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI invocation repositories`：清理调用仓储方法命名 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`AiBatchJobRepository.java`、`AiInvocationRepository.java`、`AiDomainArchitectureTest.java`、`RepositoryApiHardRulesArchitectureTest.java`
-    - 处理动作：按 RUNBOOK 的固定映射改名调用仓储方法，并移出 `matchesContentRef`。
-    - 验收点：4 个调用仓储 domain 与 shared-test key 均不存在，`mvn -pl biz/ai/kuzhambu-ai-domain -am test` 通过。
-    - 重要度：9/10
-
 - [ ] `AiInvocationController`：清理调用管理 Controller 动词 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`

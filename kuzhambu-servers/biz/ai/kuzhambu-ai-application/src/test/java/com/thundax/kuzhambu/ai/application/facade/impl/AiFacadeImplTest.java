@@ -481,7 +481,7 @@ class AiFacadeImplTest {
     @Test
     void getInvocationLogShouldMapUsageSnapshot() {
         AiInvocationRepository aiInvocationRepository = mock(AiInvocationRepository.class);
-        when(aiInvocationRepository.getInvocationLog(AiCallIdCodec.toDomain(301L)))
+        when(aiInvocationRepository.getInvocationLogById(AiCallIdCodec.toDomain(301L)))
                 .thenReturn(invocationLog());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),

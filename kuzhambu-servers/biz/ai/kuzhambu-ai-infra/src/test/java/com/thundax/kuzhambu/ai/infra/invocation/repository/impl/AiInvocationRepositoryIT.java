@@ -106,7 +106,7 @@ class AiInvocationRepositoryIT {
         assertEquals("{\"artifact\":\"s3://ai/call/7001.json\"}", savedCall.getArtifactReferenceJson());
 
         when(mapper.selectOne(any())).thenReturn(savedCall);
-        AiInvocationLog loadedRecord = repository.getInvocationLog(AiCallIdCodec.toDomain(7001L));
+        AiInvocationLog loadedRecord = repository.getInvocationLogById(AiCallIdCodec.toDomain(7001L));
 
         assertEquals(TraceIdCodec.toDomain("trace-1"), loadedRecord.getTraceId());
         assertEquals(20, loadedRecord.getUsage().getOutputTokens());
@@ -155,7 +155,7 @@ class AiInvocationRepositoryIT {
         when(mapper.selectCandidate(7101L)).thenReturn(savedCandidate);
         when(mapper.selectCandidates("ENTRY", 9001L, null, AiBusinessCapability.CLASSICS_TRANSLATE.value(), "REJECTED"))
                 .thenReturn(List.of(savedCandidate));
-        AiCandidate loadedCandidate = repository.getCandidate(AiCandidateIdCodec.toDomain(7101L));
+        AiCandidate loadedCandidate = repository.getCandidateById(AiCandidateIdCodec.toDomain(7101L));
         List<AiCandidate> loadedCandidates = repository.listCandidates(
                 AiContentRef.of("ENTRY", 9001L),
                 null,
@@ -214,7 +214,7 @@ class AiInvocationRepositoryIT {
                         20))
                 .thenReturn(List.of(dataObject));
 
-        PageResult<AiInvocationLog> page = repository.pageInvocationLogs(
+        PageResult<AiInvocationLog> page = repository.pageInvocationLogsByFilter(
                 "classics",
                 AiBusinessCapability.CLASSICS_SUMMARY,
                 AiContentRef.of("SANCAI_ENTRY", 9002L),
