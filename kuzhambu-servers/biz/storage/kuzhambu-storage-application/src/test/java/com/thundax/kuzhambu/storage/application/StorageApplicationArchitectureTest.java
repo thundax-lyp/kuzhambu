@@ -77,8 +77,6 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
                 constructionViolation(
                         "com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController#UploadStorageObjectCommand:1"),
                 constructionViolation(
-                        "com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController#OpenReadableStorageContentQuery:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController#InitMultipartUploadCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController#UploadMultipartPartCommand:1"),

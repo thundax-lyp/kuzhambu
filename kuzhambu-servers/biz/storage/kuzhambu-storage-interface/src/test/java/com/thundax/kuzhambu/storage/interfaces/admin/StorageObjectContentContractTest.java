@@ -89,14 +89,12 @@ class StorageObjectContentContractTest {
                 (proxy, method, args) -> {
                     if ("openReadableContent".equals(method.getName())) {
                         OpenReadableStorageContentQuery query = (OpenReadableStorageContentQuery) args[0];
-                        if (query == null
-                                || query.getId() == null
-                                || query.getId().value() == 404L) {
+                        if (query == null || query.id() == null || query.id().value() == 404L) {
                             throw new BizException("Storage object not found");
                         }
                         StoredObject storage = new StoredObject();
-                        storage.setId(query.getId());
-                        storage.setOriginalFilename(query.getId().value() == 11L ? "三才图.png" : "sancai.png");
+                        storage.setId(query.id());
+                        storage.setOriginalFilename(query.id().value() == 11L ? "三才图.png" : "sancai.png");
                         storage.setContentType("image/png");
                         storage.setSize(11L);
                         return new StoredObjectContentResult(

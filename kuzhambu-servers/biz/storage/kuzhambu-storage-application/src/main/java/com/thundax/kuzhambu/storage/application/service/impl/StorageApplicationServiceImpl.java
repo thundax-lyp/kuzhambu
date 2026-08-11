@@ -439,7 +439,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public StoredObjectContentResult openReadableContent(OpenReadableStorageContentQuery query) {
-        StoredObjectId id = query == null ? null : query.getId();
+        StoredObjectId id = query == null ? null : query.id();
         if (id == null) {
             throw new BizException("Storage object id can not be empty");
         }
