@@ -255,8 +255,8 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Transactional(rollbackFor = Exception.class)
     public int changeObjectStatus(ChangeStorageObjectStatusCommand command) {
         StoredObject storage = new StoredObject();
-        storage.setId(command.getId());
-        storage.setObjectStatus(command.getObjectStatus());
+        storage.setId(command.id());
+        storage.setObjectStatus(command.objectStatus());
         return dao.updateObjectStatus(storage);
     }
 
