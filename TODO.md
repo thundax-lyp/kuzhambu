@@ -28,14 +28,6 @@
     - 验收点：7 个 contract 均为无 Lombok record，逐项 Maven 架构测试通过。
     - 重要度：9/10
 
-- [ ] `Storage multipart API`：清理 multipart Controller 动词 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`StorageObjectController.java`、`StorageInterfaceArchitectureTest.java`、`StorageObjectMultipartUploadContractTest.java`、`storage-object-service.ts`、`storage-object-service.test.ts`、`storage-object.spec.ts`、`RepositoryApiHardRulesArchitectureTest.java`
-    - 处理动作：改名 multipart 初始化和分片上传方法/路径，并同步测试、前端调用和 allowlist。
-    - 验收点：Storage Controller 通配 allowance 不存在，Maven interface 测试通过。
-    - 重要度：8/10
-
 - [ ] `AI and Storage allowlist verification`：执行格式化、静态门禁与全量受影响模块测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
