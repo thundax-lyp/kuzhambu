@@ -107,7 +107,7 @@ public class UserAccountApplicationServiceImpl implements UserAccountApplication
                 PrincipalCredentialStatus.ACTIVE,
                 false,
                 0,
-                DEFAULT_PASSWORD_FAILED_LIMIT,
+                credential.getFailedLimit(),
                 null,
                 credential.getExpiresAt(),
                 null));
