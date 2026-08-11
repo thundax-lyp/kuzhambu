@@ -80,7 +80,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Transactional(rollbackFor = Exception.class)
     public MultipartUploadPart uploadPart(UploadMultipartPartCommand command) {
         MultipartUploadPart part = toMultipartPart(command);
-        if (part == null || command == null || command.getInputStream() == null) {
+        if (part == null || command == null || command.inputStream() == null) {
             throw new BizException("Multipart upload part content can not be null");
         }
         if (part == null || StringUtils.isBlank(part.getUploadId())) {
@@ -95,7 +95,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             throw new BizException("Multipart upload part already exists: " + part.getPartNumber());
         }
         part.setPartPath(resolveMultipartPartObjectKey(session, part.getPartNumber()));
-        persistMultipartPartContent(part, command.getInputStream());
+        persistMultipartPartContent(part, command.inputStream());
         part.setId(multipartUploadRepository.insertMultipartPart(part));
 
         session.setUploadStatus(MultipartUploadStatus.UPLOADING);
@@ -380,10 +380,10 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             return null;
         }
         MultipartUploadPart part = new MultipartUploadPart();
-        part.setUploadIdRef(command.getUploadId());
-        part.setPartNumberRef(command.getPartNumber());
-        part.setEtag(command.getEtag());
-        part.setSizeRef(command.getSize());
+        part.setUploadIdRef(command.uploadId());
+        part.setPartNumberRef(command.partNumber());
+        part.setEtag(command.etag());
+        part.setSizeRef(command.size());
         return part;
     }
 

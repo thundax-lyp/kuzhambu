@@ -73,17 +73,17 @@ class StorageObjectMultipartUploadContractTest {
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         InitMultipartUploadCommand command = commandRef.get();
-        assertEquals("upload-1", command.getUploadId().value());
-        assertEquals("bizA", command.getBusinessType());
-        assertEquals(StorageOwnerType.USER, command.getOwnerRef().ownerType());
-        assertEquals("owner-1", command.getOwnerRef().ownerId());
-        assertEquals("sancai.png", command.getOriginalFilename());
-        assertEquals("image/png", command.getMimeType().value());
-        assertNull(command.getBucketName());
-        assertNull(command.getObjectKey());
-        assertNull(command.getProviderUploadId());
-        assertEquals(100L, command.getTotalSize().value());
-        assertEquals(5L, command.getPartSize().value());
+        assertEquals("upload-1", command.uploadId().value());
+        assertEquals("bizA", command.businessType());
+        assertEquals(StorageOwnerType.USER, command.ownerRef().ownerType());
+        assertEquals("owner-1", command.ownerRef().ownerId());
+        assertEquals("sancai.png", command.originalFilename());
+        assertEquals("image/png", command.mimeType().value());
+        assertNull(command.bucketName());
+        assertNull(command.objectKey());
+        assertNull(command.providerUploadId());
+        assertEquals(100L, command.totalSize().value());
+        assertEquals(5L, command.partSize().value());
 
         assertEquals("upload-1", json.get("uploadId").asText());
         assertEquals(false, json.has("providerUploadId"));
@@ -127,12 +127,12 @@ class StorageObjectMultipartUploadContractTest {
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         UploadMultipartPartCommand command = commandRef.get();
-        assertEquals("upload-1", command.getUploadId().value());
-        assertEquals(2, command.getPartNumber().value());
-        assertEquals("etag-2", command.getEtag());
-        assertEquals(16L, command.getSize().value());
-        assertNotNull(command.getInputStream());
-        assertTrue(command.getInputStream().available() > 0);
+        assertEquals("upload-1", command.uploadId().value());
+        assertEquals(2, command.partNumber().value());
+        assertEquals("etag-2", command.etag());
+        assertEquals(16L, command.size().value());
+        assertNotNull(command.inputStream());
+        assertTrue(command.inputStream().available() > 0);
 
         assertEquals("upload-1", json.get("uploadId").asText());
         assertEquals(2, json.get("partNumber").asInt());
@@ -165,11 +165,11 @@ class StorageObjectMultipartUploadContractTest {
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         CompleteMultipartUploadCommand command = commandRef.get();
-        assertEquals("upload-2", command.getUploadId().value());
-        assertNull(command.getBucketName());
-        assertNull(command.getObjectKey());
-        assertNull(command.getSize());
-        assertNull(command.getAccessEndpoint());
+        assertEquals("upload-2", command.uploadId().value());
+        assertNull(command.bucketName());
+        assertNull(command.objectKey());
+        assertNull(command.size());
+        assertNull(command.accessEndpoint());
 
         assertEquals("22", json.get("id").asText());
         assertEquals("upload-2", json.get("uploadId").asText());
@@ -234,24 +234,24 @@ class StorageObjectMultipartUploadContractTest {
                         InitMultipartUploadCommand command = (InitMultipartUploadCommand) args[0];
                         commandRef.set(command);
                         MultipartUploadSession session = new MultipartUploadSession();
-                        session.setUploadId(command.getUploadId().value());
+                        session.setUploadId(command.uploadId().value());
                         session.setProviderUploadId(
-                                command.getProviderUploadId() == null
+                                command.providerUploadId() == null
                                         ? null
-                                        : command.getProviderUploadId().value());
-                        session.setBusinessType(command.getBusinessType());
-                        session.setOriginalFilename(command.getOriginalFilename());
-                        session.setMimeType(command.getMimeType().value());
+                                        : command.providerUploadId().value());
+                        session.setBusinessType(command.businessType());
+                        session.setOriginalFilename(command.originalFilename());
+                        session.setMimeType(command.mimeType().value());
                         session.setBucketName(
-                                command.getBucketName() == null
+                                command.bucketName() == null
                                         ? null
-                                        : command.getBucketName().value());
+                                        : command.bucketName().value());
                         session.setObjectKey(
-                                command.getObjectKey() == null
+                                command.objectKey() == null
                                         ? null
-                                        : command.getObjectKey().value());
-                        session.setTotalSize(command.getTotalSize().value());
-                        session.setPartSize(command.getPartSize().value());
+                                        : command.objectKey().value());
+                        session.setTotalSize(command.totalSize().value());
+                        session.setPartSize(command.partSize().value());
                         return session;
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -268,10 +268,10 @@ class StorageObjectMultipartUploadContractTest {
                         UploadMultipartPartCommand command = (UploadMultipartPartCommand) args[0];
                         commandRef.set(command);
                         MultipartUploadPart part = new MultipartUploadPart();
-                        part.setUploadId(command.getUploadId().value());
-                        part.setPartNumber(command.getPartNumber().value());
-                        part.setEtag(command.getEtag());
-                        part.setSize(command.getSize().value());
+                        part.setUploadId(command.uploadId().value());
+                        part.setPartNumber(command.partNumber().value());
+                        part.setEtag(command.etag());
+                        part.setSize(command.size().value());
                         return part;
                     }
                     throw new UnsupportedOperationException(method.getName());
