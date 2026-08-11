@@ -42,7 +42,7 @@ public class OperationsHealthAdminController {
     @Operation(summary = "查询健康摘要", description = "operations:health:view")
     @HasPermission("operations:health:view")
     @IgnoreSysLogger
-    @PostMapping("get")
+    @PostMapping("list")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -79,7 +79,7 @@ public class OperationsHealthAdminController {
     @Operation(summary = "查询健康趋势", description = "operations:health:view")
     @HasPermission("operations:health:view")
     @IgnoreSysLogger
-    @PostMapping("list")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
