@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Portal QA responses`：完成 response builder 与 interface allowlist 收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 12A
-    - 范围对象：`DiscoveryQaResponses.java`、`DiscoveryQaPortalInterfaceAssembler.java`、`DiscoveryQaPortalStreamController.java`、`DiscoveryQaConversationStreamController.java`、`DiscoveryInterfaceArchitectureTest.java`
-    - 处理动作：将 allowlisted Portal QA response 改为 builder 构造并删除 response 与 assembler nullness allowlist。
-    - 验收点：`QaSessionDetailResponse.detailBuilder()` 可用，且 interface architecture test 不含 response/nullness allowlist。
-    - 重要度：8/10
-
 ## 待审阅任务项
 
 - [ ] `Discovery Portal QA API`：迁移 Portal QA endpoint 与调用方
