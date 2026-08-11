@@ -73,7 +73,7 @@ describe("qa service contracts", () => {
             }
         });
 
-        await service.createChatCompletion({
+        await service.createQaChatCompletion({
             messages: [{ content: "礼学是什么？", role: "user" }],
             metadata: {
                 contextMode: "GENERAL",

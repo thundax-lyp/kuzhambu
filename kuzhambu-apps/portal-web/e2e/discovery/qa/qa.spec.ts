@@ -36,16 +36,13 @@ const createQaMockHandlers = async (page: Page) => {
         });
     });
 
-    await page.route(
-        "**/kuzhambu-api/api/portal/discovery/qa/chat/submit",
-        async (route) => {
-            chatPayload = readRequestBody(route.request().postData());
-            await route.fulfill({
-                contentType: "text/event-stream",
-                body: 'event:completed\ndata:{"answerStatus":"SUCCEEDED","choices":[{"finishReason":"stop","index":0,"message":{"content":"礼学可作为礼制相关内容的检索扩展。","role":"assistant"}}],"id":"chat-1","model":"kuzhambu-qa","questionMessageId":"1","answerMessageId":"2","sessionId":"7001","sources":[{"contentId":1001,"contentType":"ENTRY","knowledgeBase":"SANCAI_ENTRY","sourceId":"SANCAI_ENTRY:1001","sourcePath":"/knowledge/atlas?level=detail&entityId=1001","sourceStatus":"AVAILABLE","sourceRank":1,"titleSnapshot":"礼制条目"}]}\n\n'
-            });
-        }
-    );
+    await page.route("**/kuzhambu-api/api/portal/discovery/qa/chat/submit", async (route) => {
+        chatPayload = readRequestBody(route.request().postData());
+        await route.fulfill({
+            contentType: "text/event-stream",
+            body: 'event:completed\ndata:{"answerStatus":"SUCCEEDED","choices":[{"finishReason":"stop","index":0,"message":{"content":"礼学可作为礼制相关内容的检索扩展。","role":"assistant"}}],"id":"chat-1","model":"kuzhambu-qa","questionMessageId":"1","answerMessageId":"2","sessionId":"7001","sources":[{"contentId":1001,"contentType":"ENTRY","knowledgeBase":"SANCAI_ENTRY","sourceId":"SANCAI_ENTRY:1001","sourcePath":"/knowledge/atlas?level=detail&entityId=1001","sourceStatus":"AVAILABLE","sourceRank":1,"titleSnapshot":"礼制条目"}]}\n\n'
+        });
+    });
 
     return {
         getOpenSessionPayload: () => openSessionPayload,

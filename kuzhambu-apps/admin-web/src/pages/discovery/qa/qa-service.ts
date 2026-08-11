@@ -192,22 +192,19 @@ export const submitChatCompletion = async ({
         }
     };
 
-    await postEventStream<DiscoveryQaChatCompletionCommand>(
-        "/discovery/qa/chat/submit",
-        {
-            body: {
-                ...command,
-                stream: true
-            },
-            onChunk: (chunk) => {
-                pending += chunk;
-                const blocks = pending.split(/\r?\n\r?\n/);
-                pending = blocks.pop() ?? "";
-                blocks.forEach(handleBlock);
-            },
-            signal
-        }
-    );
+    await postEventStream<DiscoveryQaChatCompletionCommand>("/discovery/qa/chat/submit", {
+        body: {
+            ...command,
+            stream: true
+        },
+        onChunk: (chunk) => {
+            pending += chunk;
+            const blocks = pending.split(/\r?\n\r?\n/);
+            pending = blocks.pop() ?? "";
+            blocks.forEach(handleBlock);
+        },
+        signal
+    });
 
     if (pending.trim()) {
         handleBlock(pending);

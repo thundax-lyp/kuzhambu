@@ -142,22 +142,19 @@ export const submitChatCompletion = async ({
         }
     };
 
-    await postEventStream<DiscoveryQaChatCompletionRequest>(
-        "/portal/discovery/qa/chat/submit",
-        {
-            body: {
-                ...request,
-                stream: true
-            },
-            onChunk: (chunk) => {
-                pending += chunk;
-                const blocks = pending.split(/\r?\n\r?\n/);
-                pending = blocks.pop() ?? "";
-                blocks.forEach(handleBlock);
-            },
-            signal
-        }
-    );
+    await postEventStream<DiscoveryQaChatCompletionRequest>("/portal/discovery/qa/chat/submit", {
+        body: {
+            ...request,
+            stream: true
+        },
+        onChunk: (chunk) => {
+            pending += chunk;
+            const blocks = pending.split(/\r?\n\r?\n/);
+            pending = blocks.pop() ?? "";
+            blocks.forEach(handleBlock);
+        },
+        signal
+    });
 
     if (pending.trim()) {
         handleBlock(pending);
