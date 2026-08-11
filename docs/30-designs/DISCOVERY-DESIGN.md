@@ -206,23 +206,23 @@ Admin：
 
 Portal：
 
-- `POST /api/portal/discovery/qa/session/open`
+- `POST /api/portal/discovery/qa/session/init`
 - `POST /api/portal/discovery/qa/session/page`
 - `POST /api/portal/discovery/qa/session/get`
 - `POST /api/portal/discovery/qa/session/delete`
-- `POST /api/portal/discovery/qa/session/export`
-- `POST /api/portal/discovery/qa/chat/completions`
+- `POST /api/portal/discovery/qa/session/download`
+- `POST /api/portal/discovery/qa/chat/create`
 
 Admin：
 
-- `POST /api/discovery/qa-admin/knowledge/health`
+- `POST /api/discovery/qa-admin/knowledge/get`
 - `POST /api/discovery/qa-admin/knowledge/rebuild`
-- `POST /api/discovery/qa-admin/knowledge/sync`
+- `POST /api/discovery/qa-admin/knowledge/update`
 - `POST /api/discovery/qa-admin/knowledge/sync/page`
 - `POST /api/discovery/qa-admin/session/page`
 - `POST /api/discovery/qa-admin/session/get`
 - `POST /api/discovery/qa-admin/session/delete`
-- `POST /api/discovery/qa-admin/session/export`
+- `POST /api/discovery/qa-admin/session/download`
 
 当前协议要求：
 
@@ -326,7 +326,7 @@ Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档
 
 - 搜索和问答不依赖知识图谱作为必需前置。
 - 权限过滤发生在结果展示和问答上下文生成前。
-- Portal QA 正式问答入口固定为 `POST /api/portal/discovery/qa/chat/completions`。
+- Portal QA 正式问答入口固定为 `POST /api/portal/discovery/qa/chat/create`。
 - Admin QA 可查看知识库健康、同步状态、会话详情、会话删除和导出，并跳转 FastGPT 排查来源和 provider trace。
 - Frontend 不直连 provider，Workers 不承载正式 Discovery QA 问答运行时或知识同步任务。
 

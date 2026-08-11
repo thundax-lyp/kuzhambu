@@ -10,16 +10,6 @@
 
 ## 当前任务项
 
-## 待审阅任务项
-
-- [ ] `Discovery interface contract closure`：清除 Controller 动词 allowlist 并同步 API 文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 12D
-    - 范围对象：`DiscoveryInterfaceArchitectureTest.java`、`DISCOVERY-QA-KNOWLEDGE-SPECIAL-DESIGN.md`、`DISCOVERY-DESIGN.md`
-    - 处理动作：删除 Controller 动词 allowlist 并将两个设计文档更新为新 endpoint。
-    - 验收点：interface architecture test 不引用 allowlist helper，两个设计文档不含旧 endpoint。
-    - 重要度：9/10
-
 - [ ] `Discovery allowlist 清理收口`：执行全量验证并清理任务现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` Verification、Closure；`docs/00-governance/TODO-RULES.md`
@@ -27,5 +17,7 @@
     - 处理动作：运行最终 Maven、Spotless、Checkstyle 和静态扫描，确认变更范围后删除 RUNBOOK 与已完成 TODO。
     - 验收点：全部验证通过、工作区无关变更已排除、RUNBOOK 已删除且 `TODO.md` 不保留已完成项。
     - 重要度：10/10
+
+## 待审阅任务项
 
 ## 待讨论项
