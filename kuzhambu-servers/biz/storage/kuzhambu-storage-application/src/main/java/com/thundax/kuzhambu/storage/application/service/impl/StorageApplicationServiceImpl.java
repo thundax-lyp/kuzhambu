@@ -263,10 +263,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int changeReferenceStatus(ChangeStorageReferenceStatusCommand command) {
-        if (command == null || command.getId() == null) {
+        if (command == null || command.id() == null) {
             return 0;
         }
-        return updateReferenceStatusByObjectId(command.getId());
+        return updateReferenceStatusByObjectId(command.id());
     }
 
     @Override
