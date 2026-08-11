@@ -83,15 +83,15 @@ public class StorageObjectApplicationServiceImpl implements StorageObjectApplica
             return null;
         }
         StorageQuery storageQuery = new StorageQuery();
-        storageQuery.setIds(query.getIds());
+        storageQuery.setIds(query.ids());
         storageQuery.setContentType(
-                query.getMimeType() == null ? null : query.getMimeType().value());
-        storageQuery.setObjectStatus(query.getObjectStatus());
-        storageQuery.setReferenceStatus(query.getReferenceStatus());
-        applyReferenceOwner(storageQuery, query.getReferenceOwnerRef());
-        storageQuery.setOriginalFilename(query.getOriginalFilename());
-        storageQuery.setRemarks(query.getRemarks());
-        storageQuery.setSortDirection(query.getSortDirection());
+                query.mimeType() == null ? null : query.mimeType().value());
+        storageQuery.setObjectStatus(query.objectStatus());
+        storageQuery.setReferenceStatus(query.referenceStatus());
+        applyReferenceOwner(storageQuery, query.referenceOwnerRef());
+        storageQuery.setOriginalFilename(query.originalFilename());
+        storageQuery.setRemarks(query.remarks());
+        storageQuery.setSortDirection(query.sortDirection());
         return storageQuery;
     }
 
