@@ -161,31 +161,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 allowances,
                 "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/KnowledgeGraphWorkbenchController.java",
                 "method=listManuscriptTree path=manuscript-tree");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskController.java",
-                "method=streamTask");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementController.java",
-                "method=translate",
-                "method=translate path=translate",
-                "method=summarize",
-                "method=summarize path=summary",
-                "method=generateTags",
-                "method=generateTags path=tags",
-                "method=generateQa",
-                "method=generateQa path=qa",
-                "method=analyzeImage",
-                "method=analyzeImage path=image-analysis",
-                "method=fuseVisualContext",
-                "method=fuseVisualContext path=fusion",
-                "method=describeVisual",
-                "method=describeVisual path=visual",
-                "method=generateImage",
-                "method=generateImage path=image-gen",
-                "method=splitEntry",
-                "method=splitEntry path=split");
         return allowances;
     }
 

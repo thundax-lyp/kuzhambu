@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI refinement architecture allowances`：删除 Refinement Controller 通配 allowance
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`AiRefinementTaskController.java`、`AiInterfaceArchitectureTest.java`、`RepositoryApiHardRulesArchitectureTest.java`
-    - 处理动作：即时能力整改通过后删除两个 Controller 的通配 allowance 与无用 import。
-    - 验收点：AI interface 模块架构测试通过且两个通配 key 不存在。
-    - 重要度：8/10
-
 - [ ] `Storage record contracts 7.1–7.7`：转换第一组 Storage Command 为 record
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`

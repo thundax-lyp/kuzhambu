@@ -57,9 +57,7 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
-        return List.of(
-                legacyControllerActionVerbAllowance("AiRefinementTaskController"),
-                legacyControllerActionVerbAllowance("AiRefinementController"));
+        return Collections.emptyList();
     }
 
     private static ArchitectureRuleAllowance aiInvocationActionVerbAllowance(String violation) {
@@ -87,12 +85,5 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
                         + violation,
                 "AI platform endpoints retain legacy action names outside the shared verb whitelist.",
                 "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
-    }
-
-    private static ArchitectureRuleAllowance legacyControllerActionVerbAllowance(String controller) {
-        return ArchitectureRuleAllowance.of(
-                "CONTROLLER_ACTION_VERB:*" + controller + ".java*",
-                "AI controller retains legacy action names or paths outside the shared verb whitelist.",
-                "Rename the controller method and action path with a shared verb, update callers, then remove this allowance.");
     }
 }
