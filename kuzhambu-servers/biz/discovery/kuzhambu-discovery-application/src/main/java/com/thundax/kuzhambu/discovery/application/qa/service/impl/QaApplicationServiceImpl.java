@@ -152,7 +152,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             requireOwner(session, command.ownerType(), command.ownerId());
         }
         QaSessionId sessionId = QaSessionIdCodec.toDomain(command.sessionId());
-        int updated = qaSessionRepository.markRemoved(sessionId, Instant.now());
+        int updated = qaSessionRepository.delete(sessionId, Instant.now());
         if (updated == 0) {
             QaSession latest = qaSessionRepository.getBySessionId(sessionId);
             if (latest == null) {

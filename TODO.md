@@ -10,24 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery facade assembler`：移除 application facade assembler nullness 例外
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 9
-    - 范围对象：`DiscoveryFacadeAssembler.java`、`DiscoverySearchPublicationFacadeAssembler.java`、`DiscoveryApplicationArchitectureTest.java`
-    - 处理动作：为 facade assembler 的 public 方法补齐非空输入输出并清理 nullness 例外。
-    - 验收点：`BoundaryAssemblerNullnessAllowances.legacyClasses(...)` 中两类对象不再列出。
-    - 重要度：7/10
-
-- [ ] `Discovery QA repository`：修正软删除仓储命名并删除 domain allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-02-DISCOVERY.md` 任务 10
-    - 范围对象：`QaSessionRepository.java`、`QaSessionRepositoryImpl.java`、`QaApplicationServiceImpl.java`、`QaSessionMapper.java`、`QaApplicationServiceImplTest.java`、`QaSessionRepositoryImplTest.java`、`DiscoveryDomainArchitectureTest.java`
-    - 处理动作：将 `markRemoved` 重命名为 `delete` 并同步更新直接调用。
-    - 验收点：`DiscoveryDomainArchitectureTest.java` 不再依赖 `legacyRepositoryInterfaceMethodNameAllowances`。
-    - 重要度：7/10
-
-## 待审阅任务项
-
 - [ ] `Discovery Portal QA responses`：完成 response builder 与 interface allowlist 收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 12A
@@ -35,6 +17,8 @@
     - 处理动作：将 allowlisted Portal QA response 改为 builder 构造并删除 response 与 assembler nullness allowlist。
     - 验收点：`QaSessionDetailResponse.detailBuilder()` 可用，且 interface architecture test 不含 response/nullness allowlist。
     - 重要度：8/10
+
+## 待审阅任务项
 
 - [ ] `Discovery Portal QA API`：迁移 Portal QA endpoint 与调用方
     - 任务类型：执行任务

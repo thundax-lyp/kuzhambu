@@ -134,26 +134,26 @@ class QaSessionRepositoryImplTest {
     }
 
     @Test
-    void markRemovedShouldDelegateConditionalUpdate() {
+    void deleteShouldDelegateConditionalUpdate() {
         QaSessionMapper mapper = mock(QaSessionMapper.class);
         QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
         Instant removedAt = Instant.now();
-        when(mapper.markRemoved(4001L, removedAt)).thenReturn(1);
+        when(mapper.delete(4001L, removedAt)).thenReturn(1);
 
-        int updated = repository.markRemoved(QaSessionIdCodec.toDomain(4001L), removedAt);
+        int updated = repository.delete(QaSessionIdCodec.toDomain(4001L), removedAt);
 
         assertEquals(1, updated);
-        verify(mapper).markRemoved(eq(4001L), eq(removedAt));
+        verify(mapper).delete(eq(4001L), eq(removedAt));
     }
 
     @Test
-    void markRemovedShouldReturnZeroWhenAlreadyRemoved() {
+    void deleteShouldReturnZeroWhenAlreadyRemoved() {
         QaSessionMapper mapper = mock(QaSessionMapper.class);
         QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
         Instant removedAt = Instant.now();
-        when(mapper.markRemoved(4001L, removedAt)).thenReturn(0);
+        when(mapper.delete(4001L, removedAt)).thenReturn(0);
 
-        int updated = repository.markRemoved(QaSessionIdCodec.toDomain(4001L), removedAt);
+        int updated = repository.delete(QaSessionIdCodec.toDomain(4001L), removedAt);
 
         assertEquals(0, updated);
     }
