@@ -22,6 +22,9 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
@@ -228,7 +231,7 @@ class QaApplicationServiceImplTest {
         when(sourceRepository.listByMessageId(any())).thenReturn(List.of());
         when(traceRepository.getByTraceId(any())).thenReturn(new QaRetrievalTrace());
 
-        QaSessionDetailResult result = service.getSessionDetail(5001L);
+        QaSessionDetailResult result = service.getSessionDetail(new QaSessionDetailQuery(5001L));
 
         assertEquals(5001L, result.getId());
         assertEquals("黄帝问答", result.getTitle());
@@ -318,8 +321,9 @@ class QaApplicationServiceImplTest {
         session.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
-        BizException exception =
-                assertThrows(BizException.class, () -> service.getPortalSessionDetail(5001L, "USER", "1001"));
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.getPortalSessionDetail(new PortalQaSessionDetailQuery("USER", "1001", 5001L)));
 
         assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
     }
@@ -330,7 +334,7 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service = service(sessionRepository);
         when(sessionRepository.listByOwnerUserId(ownerRef("USER", "1001"), 10)).thenReturn(List.of(openSession()));
 
-        List<QaSessionResult> results = service.listPortalSessions("USER", "1001", 10);
+        List<QaSessionResult> results = service.listPortalSessions(new PortalQaSessionPageQuery("USER", "1001", 10));
 
         assertEquals(1, results.size());
         assertEquals(5001L, results.get(0).getId());

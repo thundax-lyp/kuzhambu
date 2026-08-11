@@ -48,22 +48,8 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {
-        return List.of(
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                                + "QaApplicationService.getPortalSessionDetail(java.lang.Long, java.lang.String, java.lang.String)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                        + "QaApplicationService.getSessionDetail(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                                + "QaApplicationService.listPortalSessions(java.lang.String, java.lang.String, java.lang.Integer)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                        + "QaApplicationService.listSourcesByMessageId(java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                        + "QaApplicationService.getTraceByTraceId(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.report.service."
-                                + "DiscoveryReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"));
+        return List.of(rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.report.service."
+                + "DiscoveryReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {

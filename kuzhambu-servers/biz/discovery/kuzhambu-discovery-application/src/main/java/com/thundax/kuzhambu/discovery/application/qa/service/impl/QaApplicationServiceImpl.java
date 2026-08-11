@@ -11,6 +11,11 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaMessageSourcesQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaRetrievalTraceQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
@@ -214,9 +219,12 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
-    public List<QaSessionResult> listPortalSessions(String ownerType, String ownerId, Integer limit) {
-        QaOwnerRef owner = QaStringValueCodec.toOwnerRef(ownerType, ownerId);
-        return qaSessionRepository.listByOwnerUserId(owner, limit).stream()
+    public List<QaSessionResult> listPortalSessions(PortalQaSessionPageQuery query) {
+        if (query == null) {
+            throw new BizException("DISCOVERY-30006", "discovery.qa.owner-type.required", "Owner type is required");
+        }
+        QaOwnerRef owner = QaStringValueCodec.toOwnerRef(query.ownerType(), query.ownerId());
+        return qaSessionRepository.listByOwnerUserId(owner, query.limit()).stream()
                 .map(this::toSessionResult)
                 .toList();
     }
@@ -241,9 +249,12 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
-    public QaSessionDetailResult getPortalSessionDetail(Long sessionId, String ownerType, String ownerId) {
-        QaSession session = requireSession(sessionId);
-        requireOwner(session, ownerType, ownerId);
+    public QaSessionDetailResult getPortalSessionDetail(PortalQaSessionDetailQuery query) {
+        if (query == null) {
+            throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
+        }
+        QaSession session = requireSession(query.sessionId());
+        requireOwner(session, query.ownerType(), query.ownerId());
         if (session.isRemoved()) {
             throw removedSessionException();
         }
@@ -251,11 +262,11 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
-    public QaSessionDetailResult getSessionDetail(Long sessionId) {
-        if (sessionId == null) {
+    public QaSessionDetailResult getSessionDetail(QaSessionDetailQuery query) {
+        if (query == null || query.sessionId() == null) {
             throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
         }
-        QaSession session = requireSession(sessionId);
+        QaSession session = requireSession(query.sessionId());
         return toSessionDetailResult(session);
     }
 
@@ -304,7 +315,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
-    public List<QaSourceResult> listSourcesByMessageId(Long messageId) {
+    public List<QaSourceResult> listSourcesByMessageId(QaMessageSourcesQuery query) {
+        Long messageId = query == null ? null : query.messageId();
         if (messageId == null) {
             throw new BizException("DISCOVERY-30007", "discovery.qa.message-id.required", "Message id is required");
         }
@@ -312,7 +324,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
-    public QaTraceResult getTraceByTraceId(Long traceId) {
+    public QaTraceResult getTraceByTraceId(QaRetrievalTraceQuery query) {
+        Long traceId = query == null ? null : query.traceId();
         if (traceId == null) {
             throw new BizException("DISCOVERY-30008", "discovery.qa.trace-id.required", "Trace id is required");
         }
