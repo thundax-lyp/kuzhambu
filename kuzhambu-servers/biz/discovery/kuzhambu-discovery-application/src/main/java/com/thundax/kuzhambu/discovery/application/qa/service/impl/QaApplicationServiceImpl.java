@@ -118,13 +118,13 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 null,
                 null,
                 DEFAULT_OWNER_TYPE,
-                String.valueOf(command.getOwnerUserId()),
+                String.valueOf(command.ownerUserId()),
                 DEFAULT_KNOWLEDGE_BASE_NAME,
-                StringUtils.defaultIfBlank(command.getTitle(), "问答会话"),
-                StringUtils.defaultIfBlank(command.getScope(), "GLOBAL"),
-                StringUtils.defaultIfBlank(command.getContextMode(), "GENERAL"),
-                command.getContextContentType(),
-                command.getContextContentId(),
+                StringUtils.defaultIfBlank(command.title(), "问答会话"),
+                StringUtils.defaultIfBlank(command.scope(), "GLOBAL"),
+                StringUtils.defaultIfBlank(command.contextMode(), "GENERAL"),
+                command.contextContentType(),
+                command.contextContentId(),
                 "OPEN",
                 now,
                 now,
@@ -136,17 +136,17 @@ public class QaApplicationServiceImpl implements QaApplicationService {
 
     @Override
     public void deleteSession(DeleteQaSessionCommand command) {
-        if (command == null || command.getSessionId() == null) {
+        if (command == null || command.sessionId() == null) {
             throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
         }
-        QaSession session = requireSession(command.getSessionId());
+        QaSession session = requireSession(command.sessionId());
         if (session.isRemoved()) {
             throw removedSessionException();
         }
-        if (!Boolean.TRUE.equals(command.getAdminOperation())) {
-            requireOwner(session, command.getOwnerType(), command.getOwnerId());
+        if (!Boolean.TRUE.equals(command.adminOperation())) {
+            requireOwner(session, command.ownerType(), command.ownerId());
         }
-        QaSessionId sessionId = QaSessionIdCodec.toDomain(command.getSessionId());
+        QaSessionId sessionId = QaSessionIdCodec.toDomain(command.sessionId());
         int updated = qaSessionRepository.markRemoved(sessionId, Instant.now());
         if (updated == 0) {
             QaSession latest = qaSessionRepository.getBySessionId(sessionId);
@@ -162,9 +162,9 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     @Override
     public QaSessionExportResult exportSession(ExportQaSessionCommand command) {
         validateExportCommand(command);
-        QaSession session = requireSession(command.getSessionId());
-        if (!Boolean.TRUE.equals(command.getAdminOperation())) {
-            requireOwner(session, command.getOwnerType(), command.getOwnerId());
+        QaSession session = requireSession(command.sessionId());
+        if (!Boolean.TRUE.equals(command.adminOperation())) {
+            requireOwner(session, command.ownerType(), command.ownerId());
             if (session.isRemoved()) {
                 throw removedSessionException();
             }
@@ -178,7 +178,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 null,
                 EXPORT_STATUS_PROCESSING,
                 null,
-                command.getRequesterUserId(),
+                command.requesterUserId(),
                 requestedAt,
                 null);
         Long exportId = qaSessionExportRepository.save(export);
@@ -348,20 +348,20 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     private void validateOpenSessionCommand(OpenQaSessionCommand command) {
-        if (command == null || command.getOwnerUserId() == null) {
+        if (command == null || command.ownerUserId() == null) {
             throw new BizException(
                     "DISCOVERY-30002", "discovery.qa.open-session.invalid", "Open QA session command is invalid");
         }
-        if (!SINGLE_DOCUMENT_CONTEXT_MODE.equals(command.getContextMode())) {
+        if (!SINGLE_DOCUMENT_CONTEXT_MODE.equals(command.contextMode())) {
             return;
         }
-        if (StringUtils.isBlank(command.getContextContentType()) || command.getContextContentId() == null) {
+        if (StringUtils.isBlank(command.contextContentType()) || command.contextContentId() == null) {
             throw new BizException(
                     "DISCOVERY-30011",
                     "discovery.qa.single-document-context.required",
                     "Single document context requires content type and content id");
         }
-        if (!WANGQI_DOCUMENT_CONTEXT_TYPE.equals(command.getContextContentType())) {
+        if (!WANGQI_DOCUMENT_CONTEXT_TYPE.equals(command.contextContentType())) {
             throw new BizException(
                     "DISCOVERY-30012",
                     "discovery.qa.single-document-context.unsupported",
@@ -385,8 +385,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     private ClassicsQaKnowledgeFacadeDto getSingleDocumentKnowledge(OpenQaSessionCommand command) {
         ClassicsQaKnowledgeFacadeResponse response =
                 classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
-                        .contentType(command.getContextContentType())
-                        .contentId(String.valueOf(command.getContextContentId()))
+                        .contentType(command.contextContentType())
+                        .contentId(String.valueOf(command.contextContentId()))
                         .build());
         if (response == null || response.getKnowledge() == null) {
             throw new BizException(
@@ -403,10 +403,10 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     private void validateExportCommand(ExportQaSessionCommand command) {
-        if (command == null || command.getSessionId() == null) {
+        if (command == null || command.sessionId() == null) {
             throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
         }
-        if (StringUtils.isNotBlank(command.getFormat()) && !EXPORT_FORMAT_CSV.equalsIgnoreCase(command.getFormat())) {
+        if (StringUtils.isNotBlank(command.format()) && !EXPORT_FORMAT_CSV.equalsIgnoreCase(command.format())) {
             throw new BizException(
                     "DISCOVERY-30010", "discovery.qa.export-format.invalid", "Only CSV export is supported");
         }

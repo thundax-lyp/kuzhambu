@@ -117,7 +117,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     public ChatCompletionResult chatCompletion(ChatCompletionCommand command) {
         validateCommand(command);
 
-        QaSession session = qaSessionRepository.getBySessionId(QaSessionIdCodec.toDomain(command.getSessionId()));
+        QaSession session = qaSessionRepository.getBySessionId(QaSessionIdCodec.toDomain(command.sessionId()));
         if (session == null) {
             throw new BizException("DISCOVERY-30001", "discovery.qa.session.not-found", "QA session does not exist");
         }
@@ -130,7 +130,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         validateContextMetadata(command, session);
 
         String model = resolveModel(command, session);
-        String question = extractLatestQuestion(command.getMessages());
+        String question = extractLatestQuestion(command.messages());
         com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement =
                 discoveryKnowledgeEnhancementProvider.enhance(question);
         ClassicsQaKnowledgeFacadeDto singleDocumentKnowledge =
@@ -143,7 +143,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
         QaMessage questionMessage = new QaMessage(
                 null,
-                command.getSessionId(),
+                command.sessionId(),
                 MESSAGE_ROLE_USER,
                 question,
                 "SENT",
@@ -204,7 +204,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                         Instant.now(),
                         "Provider failed; answered by local retrieval: " + providerFailureReason);
                 return new ChatCompletionResult(
-                        command.getSessionId(),
+                        command.sessionId(),
                         messageIdValue(questionMessagePk),
                         messageIdValue(answerMessagePk),
                         question,
@@ -220,14 +220,14 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                         Map.of("fallback", "local-keyword-retrieval"));
             }
             QaMessage failedMessage =
-                    createFailureMessage(command.getSessionId(), model, contextTurnCount, failureReason, now);
+                    createFailureMessage(command.sessionId(), model, contextTurnCount, failureReason, now);
             QaMessageId failedMessagePk = qaMessageRepository.save(failedMessage);
             failedMessage.setId(failedMessagePk);
             saveTrace(
                     command, session, failedMessage, question, providerRequest, null, now, now, providerFailureReason);
 
             return new ChatCompletionResult(
-                    command.getSessionId(),
+                    command.sessionId(),
                     messageIdValue(questionMessagePk),
                     messageIdValue(failedMessagePk),
                     question,
@@ -258,7 +258,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         saveTrace(command, session, answerMessage, question, providerRequest, chatResult, now, Instant.now(), null);
 
         return new ChatCompletionResult(
-                command.getSessionId(),
+                command.sessionId(),
                 messageIdValue(questionMessagePk),
                 messageIdValue(answerMessagePk),
                 question,
@@ -275,7 +275,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             ChatCompletionCommand command, ChatCompletionStreamHandler streamHandler) {
         validateCommand(command);
 
-        QaSession session = qaSessionRepository.getBySessionId(QaSessionIdCodec.toDomain(command.getSessionId()));
+        QaSession session = qaSessionRepository.getBySessionId(QaSessionIdCodec.toDomain(command.sessionId()));
         if (session == null) {
             throw new BizException("DISCOVERY-30001", "discovery.qa.session.not-found", "QA session does not exist");
         }
@@ -288,7 +288,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         validateContextMetadata(command, session);
 
         String model = resolveModel(command, session);
-        String question = extractLatestQuestion(command.getMessages());
+        String question = extractLatestQuestion(command.messages());
         com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement =
                 discoveryKnowledgeEnhancementProvider.enhance(question);
         ClassicsQaKnowledgeFacadeDto singleDocumentKnowledge =
@@ -301,7 +301,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
         QaMessage questionMessage = new QaMessage(
                 null,
-                command.getSessionId(),
+                command.sessionId(),
                 MESSAGE_ROLE_USER,
                 question,
                 "SENT",
@@ -366,7 +366,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                         Instant.now(),
                         "Provider failed; answered by local retrieval: " + providerFailureReason);
                 return new ChatCompletionResult(
-                        command.getSessionId(),
+                        command.sessionId(),
                         messageIdValue(questionMessagePk),
                         messageIdValue(answerMessagePk),
                         question,
@@ -382,14 +382,14 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                         Map.of("fallback", "local-keyword-retrieval"));
             }
             QaMessage failedMessage =
-                    createFailureMessage(command.getSessionId(), model, contextTurnCount, failureReason, now);
+                    createFailureMessage(command.sessionId(), model, contextTurnCount, failureReason, now);
             QaMessageId failedMessagePk = qaMessageRepository.save(failedMessage);
             failedMessage.setId(failedMessagePk);
             saveTrace(
                     command, session, failedMessage, question, providerRequest, null, now, now, providerFailureReason);
 
             return new ChatCompletionResult(
-                    command.getSessionId(),
+                    command.sessionId(),
                     messageIdValue(questionMessagePk),
                     messageIdValue(failedMessagePk),
                     question,
@@ -420,7 +420,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         saveTrace(command, session, answerMessage, question, providerRequest, chatResult, now, Instant.now(), null);
 
         return new ChatCompletionResult(
-                command.getSessionId(),
+                command.sessionId(),
                 messageIdValue(questionMessagePk),
                 messageIdValue(answerMessagePk),
                 question,
@@ -444,7 +444,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             String model,
             String question,
             ClassicsQaKnowledgeFacadeDto knowledge) {
-        List<Map<String, Object>> recentMessages = recentMessages(command.getMessages());
+        List<Map<String, Object>> recentMessages = recentMessages(command.messages());
         List<Map<String, Object>> sources = List.of(sourcePayload(knowledge));
         Map<String, Object> context = contextPayload(session);
         DiscoveryAiFacadeRequest request = DiscoveryAiFacadeRequest.builder()
@@ -453,15 +453,15 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 .modelId(DEFAULT_AI_MODEL_ID)
                 .modelName(StringUtils.defaultIfBlank(model, DEFAULT_AI_MODEL_NAME))
                 .promptVersionId(DEFAULT_AI_PROMPT_VERSION_ID)
-                .requestId(command.getRequestId())
-                .traceId(command.getTraceId())
+                .requestId(command.requestId())
+                .traceId(command.traceId())
                 .promptMessagesJson(writeJson(promptMessages(question, recentMessages)))
                 .promptVariablesJson(writeJson(Map.of("context", context, "sources", sources)))
                 .promptHash(null)
                 .inputPayloadJson(
                         writeJson(inputPayload(command, session, question, knowledge, recentMessages, sources)))
                 .outputSchemaJson(writeJson(outputSchema()))
-                .stream(command.isStream())
+                .stream(command.stream())
                 .forceJson(true)
                 .locale(DEFAULT_LOCALE)
                 .build();
@@ -521,7 +521,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
         if (StringUtils.isNotBlank(failureReason)) {
             QaMessage failedMessage =
-                    createFailureMessage(command.getSessionId(), model, contextTurnCount, failureReason, startedAt);
+                    createFailureMessage(command.sessionId(), model, contextTurnCount, failureReason, startedAt);
             QaMessageId failedMessagePk = qaMessageRepository.save(failedMessage);
             failedMessage.setId(failedMessagePk);
             saveAiTrace(
@@ -536,7 +536,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                     Instant.now(),
                     failureReason);
             return new ChatCompletionResult(
-                    command.getSessionId(),
+                    command.sessionId(),
                     questionMessagePk,
                     messageIdValue(failedMessagePk),
                     question,
@@ -570,7 +570,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 Instant.now(),
                 null);
         return new ChatCompletionResult(
-                command.getSessionId(),
+                command.sessionId(),
                 questionMessagePk,
                 messageIdValue(answerMessagePk),
                 question,
@@ -829,8 +829,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         payload.put("knowledge", knowledgePayload(knowledge));
         payload.put("recentMessages", recentMessages);
         payload.put("sources", sources);
-        payload.put("requestId", command.getRequestId());
-        payload.put("traceId", command.getTraceId());
+        payload.put("requestId", command.requestId());
+        payload.put("traceId", command.traceId());
         return payload;
     }
 
@@ -892,12 +892,11 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         }
         List<Map<String, Object>> mapped = messages.stream()
                 .filter(Objects::nonNull)
-                .filter(message ->
-                        StringUtils.isNotBlank(message.getRole()) || StringUtils.isNotBlank(message.getContent()))
+                .filter(message -> StringUtils.isNotBlank(message.role()) || StringUtils.isNotBlank(message.content()))
                 .map(message -> {
                     Map<String, Object> payload = new LinkedHashMap<>();
-                    payload.put("role", message.getRole());
-                    payload.put("content", message.getContent());
+                    payload.put("role", message.role());
+                    payload.put("content", message.content());
                     return payload;
                 })
                 .toList();
@@ -1068,8 +1067,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     }
 
     private String resolveModel(ChatCompletionCommand command, QaSession session) {
-        if (StringUtils.isNotBlank(command.getModel())) {
-            return command.getModel();
+        if (StringUtils.isNotBlank(command.model())) {
+            return command.model();
         }
         if (session != null && StringUtils.isNotBlank(session.getKnowledgeBaseName())) {
             return session.getKnowledgeBaseName();
@@ -1085,8 +1084,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement) {
         return new KnowledgeChatRequest(
                 model,
-                toKnowledgeMessages(command.getMessages()),
-                command.isStream(),
+                toKnowledgeMessages(command.messages()),
+                command.stream(),
                 enrichedMetadata(command, question, enhancement),
                 enrichedOptions(command, session));
     }
@@ -1096,22 +1095,22 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             String question,
             com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement) {
         Map<String, Object> metadata = new LinkedHashMap<>();
-        if (command.getMetadata() != null) {
-            metadata.putAll(command.getMetadata());
+        if (command.metadata() != null) {
+            metadata.putAll(command.metadata());
         }
-        if (StringUtils.isNotBlank(command.getRequestId())) {
-            metadata.putIfAbsent("requestId", command.getRequestId());
+        if (StringUtils.isNotBlank(command.requestId())) {
+            metadata.putIfAbsent("requestId", command.requestId());
         }
-        if (StringUtils.isNotBlank(command.getTraceId())) {
-            metadata.putIfAbsent("traceId", command.getTraceId());
+        if (StringUtils.isNotBlank(command.traceId())) {
+            metadata.putIfAbsent("traceId", command.traceId());
         }
         return metadata;
     }
 
     private Map<String, Object> enrichedOptions(ChatCompletionCommand command, QaSession session) {
         Map<String, Object> options = new LinkedHashMap<>();
-        if (command.getOptions() != null) {
-            options.putAll(command.getOptions());
+        if (command.options() != null) {
+            options.putAll(command.options());
         }
         if (isSingleDocumentSession(session)) {
             options.put("contextMode", session.getContextMode());
@@ -1127,7 +1126,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         }
         return messages.stream()
                 .filter(Objects::nonNull)
-                .map(message -> new KnowledgeChatMessage(message.getRole(), message.getContent()))
+                .map(message -> new KnowledgeChatMessage(message.role(), message.content()))
                 .filter(message -> StringUtils.isNotBlank(message.role()) || StringUtils.isNotBlank(message.content()))
                 .collect(Collectors.toList());
     }
@@ -1135,8 +1134,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     private String extractLatestQuestion(List<ChatCompletionCommand.ChatMessage> messages) {
         return messages.stream()
                 .filter(Objects::nonNull)
-                .filter(message -> MESSAGE_ROLE_USER.equalsIgnoreCase(message.getRole()))
-                .map(ChatCompletionCommand.ChatMessage::getContent)
+                .filter(message -> MESSAGE_ROLE_USER.equalsIgnoreCase(message.role()))
+                .map(ChatCompletionCommand.ChatMessage::content)
                 .filter(StringUtils::isNotBlank)
                 .reduce((first, second) -> second)
                 .orElseThrow(() -> new BizException(
@@ -1155,7 +1154,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             List<KnowledgeChatChoice> choices) {
         return new QaMessage(
                 null,
-                command.getSessionId(),
+                command.sessionId(),
                 MESSAGE_ROLE_ASSISTANT,
                 answer,
                 ANSWER_STATUS_SUCCEEDED,
@@ -1176,7 +1175,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             AiAnswerPayload answerPayload) {
         return new QaMessage(
                 null,
-                command.getSessionId(),
+                command.sessionId(),
                 MESSAGE_ROLE_ASSISTANT,
                 answerPayload.answer(),
                 ANSWER_STATUS_SUCCEEDED,
@@ -1193,7 +1192,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             ChatCompletionCommand command, String model, int contextTurnCount, Instant sentAt, String answer) {
         return new QaMessage(
                 null,
-                command.getSessionId(),
+                command.sessionId(),
                 MESSAGE_ROLE_ASSISTANT,
                 answer,
                 ANSWER_STATUS_SUCCEEDED,
@@ -1224,7 +1223,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     }
 
     private int contextTurnCount(ChatCompletionCommand command) {
-        return Math.max(0, command.getMessages().size() - 1);
+        return Math.max(0, command.messages().size() - 1);
     }
 
     private Long messageIdValue(QaMessageId messageId) {
@@ -1233,9 +1232,9 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
     private void validateCommand(ChatCompletionCommand command) {
         if (command == null
-                || command.getSessionId() == null
-                || command.getMessages() == null
-                || command.getMessages().isEmpty()) {
+                || command.sessionId() == null
+                || command.messages() == null
+                || command.messages().isEmpty()) {
             throw new BizException(
                     "DISCOVERY-30003", "discovery.qa.chat-completion.invalid", "Chat completion command is invalid");
         }
@@ -1245,7 +1244,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         if (!isSingleDocumentSession(session)) {
             return;
         }
-        Map<String, Object> metadata = command.getMetadata() == null ? Map.of() : command.getMetadata();
+        Map<String, Object> metadata = command.metadata() == null ? Map.of() : command.metadata();
         if (!StringUtils.equals(session.getContextMode(), metadataString(metadata.get("contextMode")))
                 || !StringUtils.equals(
                         session.getContextContentType(), metadataString(metadata.get("contextContentType")))

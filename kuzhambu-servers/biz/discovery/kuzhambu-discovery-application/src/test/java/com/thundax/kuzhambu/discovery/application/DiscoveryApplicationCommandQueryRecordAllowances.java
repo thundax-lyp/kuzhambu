@@ -24,8 +24,6 @@ final class DiscoveryApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand"),
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand"),

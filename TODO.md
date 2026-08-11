@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Discovery application QA Command`：将六个 QA Command 迁移为 record
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 1
-    - 范围对象：`AskQuestionCommand.java`、`ChatCompletionCommand.java`、`DeleteQaSessionCommand.java`、`ExportQaSessionCommand.java`、`OpenQaSessionCommand.java`、`SyncKnowledgeContentCommand.java`、`DiscoveryApplicationCommandQueryRecordAllowances.java`
-    - 处理动作：将六个 QA Command 改为 record 并删除对应 allowlist key。
-    - 验收点：六个 key 已删除且 application 模块测试通过。
-    - 重要度：8/10
-
 - [ ] `Discovery application Search Command/Query`：将七个 Search Contract 迁移为 record
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 2

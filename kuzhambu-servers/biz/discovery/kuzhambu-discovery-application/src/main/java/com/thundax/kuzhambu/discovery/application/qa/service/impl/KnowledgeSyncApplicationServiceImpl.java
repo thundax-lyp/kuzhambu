@@ -160,10 +160,10 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             return toResult(new QaKnowledgeSyncItem(
                     null,
                     sourceIdValue(sourceId(command)),
-                    command.getContentType(),
-                    command.getContentId(),
+                    command.contentType(),
+                    command.contentId(),
                     KNOWLEDGE_BASE_NAME,
-                    command.getCurrentVersionNo(),
+                    command.currentVersionNo(),
                     null,
                     resolveProvider(),
                     null,
@@ -235,8 +235,8 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
         try {
             ClassicsQaKnowledgeFacadeResponse sourceResponse =
                     classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
-                            .contentType(command.getContentType())
-                            .contentId(String.valueOf(command.getContentId()))
+                            .contentType(command.contentType())
+                            .contentId(String.valueOf(command.contentId()))
                             .build());
             if (sourceResponse == null || sourceResponse.getKnowledge() == null) {
                 return disableContentIfNeeded(command, existingItem, sourceId, now);
@@ -278,8 +278,8 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
 
             QaKnowledgeSyncItem syncItem = existingItem == null ? new QaKnowledgeSyncItem() : existingItem;
             syncItem.setSourceId(sourceId);
-            syncItem.setContentType(command.getContentType());
-            syncItem.setContentId(command.getContentId());
+            syncItem.setContentType(command.contentType());
+            syncItem.setContentId(command.contentId());
             syncItem.setKnowledgeBaseName(knowledgeBaseName);
             syncItem.setCurrentVersionNo(currentVersionNo);
             syncItem.setKnowledgeRevision(knowledgeRevision);
@@ -301,10 +301,10 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
         } catch (Exception ex) {
             QaKnowledgeSyncItem failedItem = existingItem == null ? new QaKnowledgeSyncItem() : existingItem;
             failedItem.setSourceId(sourceId);
-            failedItem.setContentType(command.getContentType());
-            failedItem.setContentId(command.getContentId());
+            failedItem.setContentType(command.contentType());
+            failedItem.setContentId(command.contentId());
             failedItem.setKnowledgeBaseName(KNOWLEDGE_BASE_NAME);
-            failedItem.setCurrentVersionNo(command.getCurrentVersionNo());
+            failedItem.setCurrentVersionNo(command.currentVersionNo());
             failedItem.setKnowledgeRevision(null);
             failedItem.setProvider(resolveProvider());
             failedItem.setExternalKnowledgeBaseId(externalKnowledgeBaseId);
@@ -328,7 +328,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             QaKnowledgeSyncItem existingItem,
             KnowledgeSourceId sourceId,
             Instant now) {
-        if (!isWangqiOrMingCustoms(command.getContentType())) {
+        if (!isWangqiOrMingCustoms(command.contentType())) {
             throw new BizException(
                     "DISCOVERY-30011", "discovery.qa.sync.source-missing", "QA knowledge source is not available");
         }
@@ -337,7 +337,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             return syncDeletedContent(command, sourceId, now, "Sync item does not exist", null);
         }
 
-        return deleteSyncItem(existingItem, sourceId, now, command.getRequestId(), command.getTraceId());
+        return deleteSyncItem(existingItem, sourceId, now, command.requestId(), command.traceId());
     }
 
     private List<QaKnowledgeSyncItem> listItemsForPageQuery(KnowledgeSyncItemQuery query) {
@@ -409,8 +409,8 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
 
     private Map<String, Object> buildSyncOptions(SyncKnowledgeContentCommand command, String triggerType) {
         Map<String, Object> options = new HashMap<>();
-        options.put("requestId", StringUtils.defaultString(command.getRequestId()));
-        options.put("traceId", StringUtils.defaultString(command.getTraceId()));
+        options.put("requestId", StringUtils.defaultString(command.requestId()));
+        options.put("traceId", StringUtils.defaultString(command.traceId()));
         options.put("triggerType", StringUtils.defaultString(triggerType));
         return options;
     }
@@ -445,7 +445,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private Integer chooseVersionNo(SyncKnowledgeContentCommand command, KnowledgeDocument document) {
-        Integer currentVersionNo = command.getCurrentVersionNo();
+        Integer currentVersionNo = command.currentVersionNo();
         if (currentVersionNo != null) {
             return currentVersionNo;
         }
@@ -462,10 +462,10 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             String knowledgeRevision) {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("sourceId", sourceIdValue(sourceId(command)));
-        metadata.put("contentType", command.getContentType());
+        metadata.put("contentType", command.contentType());
         metadata.put(
                 "contentId",
-                command.getContentId() == null ? null : command.getContentId().toString());
+                command.contentId() == null ? null : command.contentId().toString());
         metadata.put("knowledgeBase", KNOWLEDGE_BASE_NAME);
         if (currentVersionNo != null) {
             metadata.put("currentVersionNo", currentVersionNo);
@@ -510,10 +510,10 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             QaKnowledgeSyncItem existingItem) {
         QaKnowledgeSyncItem failedItem = existingItem == null ? new QaKnowledgeSyncItem() : existingItem;
         failedItem.setSourceId(sourceId);
-        failedItem.setContentType(command.getContentType());
-        failedItem.setContentId(command.getContentId());
+        failedItem.setContentType(command.contentType());
+        failedItem.setContentId(command.contentId());
         failedItem.setKnowledgeBaseName(KNOWLEDGE_BASE_NAME);
-        failedItem.setCurrentVersionNo(command.getCurrentVersionNo());
+        failedItem.setCurrentVersionNo(command.currentVersionNo());
         failedItem.setKnowledgeRevision(null);
         failedItem.setProvider(resolveProvider());
         failedItem.setExternalKnowledgeBaseId(null);
@@ -590,7 +590,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private void validateCommand(SyncKnowledgeContentCommand command) {
-        if (command == null || StringUtils.isBlank(command.getContentType()) || command.getContentId() == null) {
+        if (command == null || StringUtils.isBlank(command.contentType()) || command.contentId() == null) {
             throw new BizException("DISCOVERY-30001", "discovery.qa.sync.command.invalid", "Sync command is invalid");
         }
     }
@@ -647,7 +647,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private KnowledgeSourceId sourceId(SyncKnowledgeContentCommand command) {
-        return QaStringValueCodec.toKnowledgeSourceId(command.getContentType() + ":" + command.getContentId());
+        return QaStringValueCodec.toKnowledgeSourceId(command.contentType() + ":" + command.contentId());
     }
 
     private String sourceIdValue(KnowledgeSourceId sourceId) {
