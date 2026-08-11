@@ -63,7 +63,7 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
                         result == null || result.getLatestGraphVersion() == null
                                 ? null
                                 : KnowledgeGraphExtractionInterfaceAssembler.toResponse(result.getLatestGraphVersion()))
-                .qualitySummary(toResponse(result == null ? null : result.getQualitySummary()))
+                .qualitySummary(toOptionalQualitySummaryResponse(result == null ? null : result.getQualitySummary()))
                 .build();
     }
 
@@ -144,6 +144,11 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
     public static KnowledgeGraphWorkbenchResponses.QualitySummaryResponse toResponse(
             @NonNull QualitySummaryResult result) {
         Objects.requireNonNull(result, "result must not be null");
+        return toOptionalQualitySummaryResponse(result);
+    }
+
+    private static KnowledgeGraphWorkbenchResponses.QualitySummaryResponse toOptionalQualitySummaryResponse(
+            QualitySummaryResult result) {
         return KnowledgeGraphWorkbenchResponses.QualitySummaryResponse.builder()
                 .entityCoverageRate(result == null ? null : result.getEntityCoverageRate())
                 .relationAccuracyRate(result == null ? null : result.getRelationAccuracyRate())
