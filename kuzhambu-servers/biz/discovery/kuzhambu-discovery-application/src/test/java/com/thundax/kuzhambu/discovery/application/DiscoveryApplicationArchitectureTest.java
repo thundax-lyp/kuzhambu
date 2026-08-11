@@ -58,23 +58,7 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyAssemblerNullReturnAllowances() {
-        return List.of(
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toQuery:SearchQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toCommand:SearchClickEventCreateCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toQuery:SearchPreviewQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchEventQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toCommand:SearchClickEventCreateCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchPreviewQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchStatisticsSummaryQuery:1"));
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance nullReturnViolation(String ownerMethodAndType) {

@@ -30,6 +30,7 @@ import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCode
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public final class DiscoverySearchStatisticsInterfaceAssembler {
@@ -39,9 +40,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
     private DiscoverySearchStatisticsInterfaceAssembler() {}
 
     public static SearchQuery toQuery(DiscoverySearchRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new SearchQuery(
                 request.getQueryText(),
                 request.getKnowledgeBases(),
@@ -56,9 +55,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
     }
 
     public static SearchEventQuery toQuery(DiscoverySearchEventPageRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new SearchEventQuery(
                 null,
                 request.getQueryText(),
@@ -70,9 +67,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
     }
 
     public static SearchClickEventCreateCommand toCommand(DiscoverySearchClickEventRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new SearchClickEventCreateCommand(
                 SearchEventIdCodec.toDomain(DiscoveryInterfaceIdCodec.toLongValue(request.getSearchEventId())),
                 request.getContentDomain(),
@@ -90,9 +85,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
     }
 
     public static SearchPreviewQuery toQuery(DiscoverySearchPreviewRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new SearchPreviewQuery(
                 request.getContentType(),
                 request.getContentId(),
@@ -103,9 +96,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
     }
 
     public static SearchStatisticsSummaryQuery toQuery(DiscoverySearchStatisticsSummaryRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new SearchStatisticsSummaryQuery(
                 parseDate(request.getDateFrom(), "dateFrom"), parseDate(request.getDateTo(), "dateTo"));
     }

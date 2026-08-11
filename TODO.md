@@ -10,13 +10,13 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA interface assembler`：移除 portal 搜索转换器 null return
+- [ ] `Discovery facade assembler`：移除 application facade assembler nullness 例外
     - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 8
-    - 范围对象：`DiscoverySearchPortalInterfaceAssembler.java`、`DiscoverySearchStatisticsInterfaceAssembler.java`、`DiscoveryApplicationArchitectureTest.java`
-    - 处理动作：移除 portal search 与 admin statistics assembler 的 null return 分支。
-    - 验收点：`legacyAssemblerNullReturnAllowances` 中这八个 search/statistics key 清空。
-    - 重要度：8/10
+    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 9
+    - 范围对象：`DiscoveryFacadeAssembler.java`、`DiscoverySearchPublicationFacadeAssembler.java`、`DiscoveryApplicationArchitectureTest.java`
+    - 处理动作：为 facade assembler 的 public 方法补齐非空输入输出并清理 nullness 例外。
+    - 验收点：`BoundaryAssemblerNullnessAllowances.legacyClasses(...)` 中两类对象不再列出。
+    - 重要度：7/10
 
 ## 待审阅任务项
 
