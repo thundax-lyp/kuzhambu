@@ -59,8 +59,8 @@ class AiInvocationControllerTest {
                 InvocationLogPageRequest.class);
         assertPostMapping(
                 AiInvocationController.class,
-                "summarizeInvocationLogs",
-                "invocation-log/summary",
+                "getInvocationLogSummary",
+                "invocation-log/summary/get",
                 "ai:invocation:view",
                 InvocationSummaryRequest.class);
         assertPostMapping(
@@ -77,8 +77,8 @@ class AiInvocationControllerTest {
                 CandidateRejectRequest.class);
         assertPostMapping(
                 AiInvocationController.class,
-                "markCandidateApplied",
-                "candidate/mark-applied",
+                "applyCandidate",
+                "candidate/apply",
                 "ai:invocation:edit",
                 CandidateMarkAppliedRequest.class);
         assertPostMapping(
@@ -113,7 +113,7 @@ class AiInvocationControllerTest {
         CandidateMarkAppliedRequest request = new CandidateMarkAppliedRequest();
         request.setCandidateId(22L);
 
-        CandidateResponse response = controller.markCandidateApplied(request);
+        CandidateResponse response = controller.applyCandidate(request);
 
         assertEquals(22L, response.getCandidateId());
         assertEquals("TEXT", response.getResultFormat());
@@ -177,7 +177,7 @@ class AiInvocationControllerTest {
     void pageInvocationLogsShouldPassFiltersToRepository() {
         AiInvocationRepository repository = new FakeRepository() {
             @Override
-            public PageResult<AiInvocationLog> pageInvocationLogs(
+            public PageResult<AiInvocationLog> page(
                     String scope,
                     AiBusinessCapability capability,
                     AiContentRef contentRef,
@@ -254,7 +254,7 @@ class AiInvocationControllerTest {
         request.setPeriodStart(Instant.parse("2026-07-01T00:00:00Z"));
         request.setPeriodEnd(Instant.parse("2026-07-02T00:00:00Z"));
 
-        var response = controller.summarizeInvocationLogs(request);
+        var response = controller.getInvocationLogSummary(request);
 
         assertEquals(2L, response.getInvocationCount());
         assertEquals(1L, response.getSucceededInvocationCount());
@@ -298,7 +298,7 @@ class AiInvocationControllerTest {
     private static AiInvocationRepository currentInvocationRepository() {
         return new FakeRepository() {
             @Override
-            public AiCandidate getCandidate(AiCandidateId candidateId) {
+            public AiCandidate getByCandidateId(AiCandidateId candidateId) {
                 assertEquals(AiCandidateIdCodec.toDomain(22L), candidateId);
                 return currentCandidate();
             }
@@ -487,8 +487,7 @@ class AiInvocationControllerTest {
 
     private static class FakeRepository implements AiInvocationRepository {
         @Override
-        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog getInvocationLog(
-                AiCallId callId) {
+        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog getByCallId(AiCallId callId) {
             return null;
         }
 
@@ -517,7 +516,7 @@ class AiInvocationControllerTest {
         }
 
         @Override
-        public PageResult<AiInvocationLog> pageInvocationLogs(
+        public PageResult<AiInvocationLog> page(
                 String scope,
                 AiBusinessCapability capability,
                 AiContentRef contentRef,
@@ -543,7 +542,7 @@ class AiInvocationControllerTest {
         }
 
         @Override
-        public AiCandidate getCandidate(AiCandidateId candidateId) {
+        public AiCandidate getByCandidateId(AiCandidateId candidateId) {
             return null;
         }
 

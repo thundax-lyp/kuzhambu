@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSuppo
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class AiDomainArchitectureTest extends AbstractArchitectureTest {
@@ -29,20 +30,6 @@ class AiDomainArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertDomainEnumPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertRepositoryPlacement(classes, BASE_PACKAGE);
-        NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(
-                classes,
-                NamingArchitectureRuleSupport.legacyRepositoryInterfaceMethodNameAllowances(
-                        "com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository.get",
-                        "com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository.get",
-                        "com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository.get",
-                        "com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository.getCurrentVersion",
-                        "com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository.getVersion",
-                        "com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository.markCurrentVersion",
-                        "com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository.replaceVariables",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiBatchJobRepository.get",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository.getCandidate",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository.getInvocationLog",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository.matchesContentRef",
-                        "com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository.pageInvocationLogs"));
+        NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(classes, Collections.emptyList());
     }
 }

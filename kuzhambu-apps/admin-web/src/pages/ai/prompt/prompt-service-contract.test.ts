@@ -82,7 +82,7 @@ describe("prompt service ID contracts", () => {
                     ]
                 ],
                 [
-                    "/ai/config/prompt/version/current",
+                    "/ai/config/prompt/version/latest",
                     {
                         id: 2002,
                         templateId: 1001,

@@ -32,13 +32,13 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
-    public PromptTemplate get(PromptTemplateId templateId) {
+    public PromptTemplate getByTemplateId(PromptTemplateId templateId) {
         return PromptTemplatePersistenceAssembler.toDomain(
                 promptMapper.selectById(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
-    public PromptTemplate get(AiBusinessCapability capability) {
+    public PromptTemplate getByCapability(AiBusinessCapability capability) {
         return PromptTemplatePersistenceAssembler.toDomain(
                 promptMapper.selectTemplateByCapability(capability == null ? null : capability.value()));
     }
@@ -81,13 +81,13 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
-    public PromptVersion getCurrentVersion(PromptTemplateId templateId) {
+    public PromptVersion getByCurrentTemplateId(PromptTemplateId templateId) {
         return PromptVersionPersistenceAssembler.toDomain(
                 promptMapper.selectCurrentVersion(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
-    public PromptVersion getVersion(PromptVersionId versionId) {
+    public PromptVersion getByVersionId(PromptVersionId versionId) {
         return PromptVersionPersistenceAssembler.toDomain(
                 promptMapper.selectVersionById(PromptVersionIdCodec.toValue(versionId)));
     }
@@ -109,7 +109,7 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
-    public int markCurrentVersion(PromptTemplateId templateId, int versionNo) {
+    public int updateCurrentVersion(PromptTemplateId templateId, int versionNo) {
         return promptMapper.markCurrentVersion(PromptTemplateIdCodec.toValue(templateId), versionNo);
     }
 
@@ -120,7 +120,7 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
-    public int replaceVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
+    public int updateTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
         promptMapper.deleteVariables(PromptTemplateIdCodec.toValue(templateId));
         int affectedRows = 0;
         if (variables == null) {

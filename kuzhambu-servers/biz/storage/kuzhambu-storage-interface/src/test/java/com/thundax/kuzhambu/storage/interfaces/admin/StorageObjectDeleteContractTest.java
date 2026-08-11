@@ -115,7 +115,7 @@ class StorageObjectDeleteContractTest {
                 (proxy, method, args) -> {
                     if ("get".equals(method.getName())) {
                         GetStorageObjectQuery query = (GetStorageObjectQuery) args[0];
-                        StoredObjectId id = query == null ? null : query.getId();
+                        StoredObjectId id = query == null ? null : query.id();
                         if (id == null || id.value() == 404L) {
                             return null;
                         }
@@ -130,7 +130,7 @@ class StorageObjectDeleteContractTest {
                     }
                     if ("remove".equals(method.getName())) {
                         RemoveStorageObjectCommand command = (RemoveStorageObjectCommand) args[0];
-                        StoredObjectId id = command == null ? null : command.getId();
+                        StoredObjectId id = command == null ? null : command.id();
                         if (referencedIds.contains(id.value())) {
                             throw new RuntimeException("Storage 对象已被其他业务引用，无法删除");
                         }

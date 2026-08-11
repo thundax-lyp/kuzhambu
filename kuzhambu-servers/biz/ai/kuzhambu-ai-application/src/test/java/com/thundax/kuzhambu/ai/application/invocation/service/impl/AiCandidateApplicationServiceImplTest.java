@@ -192,7 +192,7 @@ class AiCandidateApplicationServiceImplTest {
         }
 
         @Override
-        public AiInvocationLog getInvocationLog(AiCallId callId) {
+        public AiInvocationLog getByCallId(AiCallId callId) {
             return null;
         }
 
@@ -219,7 +219,7 @@ class AiCandidateApplicationServiceImplTest {
         }
 
         @Override
-        public PageResult<AiInvocationLog> pageInvocationLogs(
+        public PageResult<AiInvocationLog> page(
                 String scope,
                 AiBusinessCapability capability,
                 AiContentRef contentRef,
@@ -245,7 +245,7 @@ class AiCandidateApplicationServiceImplTest {
         }
 
         @Override
-        public AiCandidate getCandidate(AiCandidateId candidateId) {
+        public AiCandidate getByCandidateId(AiCandidateId candidateId) {
             return candidate;
         }
 

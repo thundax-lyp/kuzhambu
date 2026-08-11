@@ -22,8 +22,8 @@ class PlatformAiControllerTest {
         assertEquals(
                 "/api/ai/platform",
                 PlatformAiController.class.getAnnotation(RequestMapping.class).value()[0]);
-        assertPostMapping("buildPromptSuggestion", "prompt-suggestion", "ai:prompt:edit");
-        assertPostMapping("summarizeVersion", "version-summary", "ai:prompt:view");
+        assertPostMapping("createPromptSuggestion", "prompt-suggestion/create", "ai:prompt:edit");
+        assertPostMapping("getVersionSummary", "version-summary/get", "ai:prompt:view");
     }
 
     @Test
@@ -31,7 +31,7 @@ class PlatformAiControllerTest {
         RecordingPlatformAiApplicationService service = new RecordingPlatformAiApplicationService();
         PlatformAiController controller = new PlatformAiController(service);
 
-        InvokeResponse response = controller.buildPromptSuggestion(request());
+        InvokeResponse response = controller.createPromptSuggestion(request());
 
         assertEquals("prompt", service.lastMethod);
         assertEquals("req-1", service.lastCommand.requestId().value());
@@ -45,7 +45,7 @@ class PlatformAiControllerTest {
         RecordingPlatformAiApplicationService service = new RecordingPlatformAiApplicationService();
         PlatformAiController controller = new PlatformAiController(service);
 
-        InvokeResponse response = controller.summarizeVersion(request());
+        InvokeResponse response = controller.getVersionSummary(request());
 
         assertEquals("summary", service.lastMethod);
         assertEquals("PLATFORM_VERSION_SUMMARY", response.getCapability());

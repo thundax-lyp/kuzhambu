@@ -116,7 +116,7 @@ export const uploadMultipartPart = (request: UploadMultipartPartCommand) => {
     body.append("size", request.size.toString());
     body.append("file", request.file);
 
-    return postFormDataWithProgress("/storage/object/multipart/uploadPart", body, {
+    return postFormDataWithProgress("/storage/object/multipart/part/upload", body, {
         signal: request.signal,
         onProgress: request.onProgress
     });
@@ -125,7 +125,7 @@ export const uploadMultipartPart = (request: UploadMultipartPartCommand) => {
 export const initMultipartUpload = (request: InitMultipartUploadCommand) => {
     const { signal, ...body } = request;
     return postJson<InitMultipartUploadRecord, InitMultipartUploadCommand>(
-        "/storage/object/multipart/initiate",
+        "/storage/object/multipart/init",
         {
             body,
             signal

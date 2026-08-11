@@ -181,7 +181,7 @@ class AiBusinessInvokeConfigResolverTest {
             List<PromptVariable> variables, String variablesSnapshotJson, boolean templateEnabled) {
         return new PromptRepository() {
             @Override
-            public PromptTemplate get(PromptTemplateId templateId) {
+            public PromptTemplate getByTemplateId(PromptTemplateId templateId) {
                 return new PromptTemplate(
                         templateId,
                         AiBusinessCapability.CLASSICS_SUMMARY,
@@ -193,7 +193,7 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public PromptTemplate get(AiBusinessCapability capability) {
+            public PromptTemplate getByCapability(AiBusinessCapability capability) {
                 return null;
             }
 
@@ -213,7 +213,7 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public PromptVersion getCurrentVersion(PromptTemplateId templateId) {
+            public PromptVersion getByCurrentTemplateId(PromptTemplateId templateId) {
                 PromptVersion version = new PromptVersion();
                 version.setId(new PromptVersionId(6L));
                 version.setTemplateId(templateId);
@@ -230,8 +230,8 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public PromptVersion getVersion(PromptVersionId versionId) {
-                PromptVersion version = getCurrentVersion(new PromptTemplateId(6L));
+            public PromptVersion getByVersionId(PromptVersionId versionId) {
+                PromptVersion version = getByCurrentTemplateId(new PromptTemplateId(6L));
                 version.setId(versionId);
                 return version;
             }
@@ -247,7 +247,7 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public int markCurrentVersion(PromptTemplateId templateId, int versionNo) {
+            public int updateCurrentVersion(PromptTemplateId templateId, int versionNo) {
                 return 0;
             }
 
@@ -257,7 +257,7 @@ class AiBusinessInvokeConfigResolverTest {
             }
 
             @Override
-            public int replaceVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
+            public int updateTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
                 return 0;
             }
         };
@@ -266,12 +266,12 @@ class AiBusinessInvokeConfigResolverTest {
     private static class FakeBusinessConfigRepository implements AiBusinessConfigRepository {
 
         @Override
-        public AiBusinessConfig get(AiBusinessConfigId id) {
+        public AiBusinessConfig getById(AiBusinessConfigId id) {
             return config();
         }
 
         @Override
-        public AiBusinessConfig get(AiBusinessCapability capability) {
+        public AiBusinessConfig getByCapability(AiBusinessCapability capability) {
             return config();
         }
 
@@ -316,7 +316,7 @@ class AiBusinessInvokeConfigResolverTest {
     private static class FakeModelRepository implements AiModelRepository {
 
         @Override
-        public AiModel get(AiModelId id) {
+        public AiModel getById(AiModelId id) {
             return new AiModel(
                     new AiModelId(2001L),
                     AiApiSource.OPENAI,
@@ -333,7 +333,7 @@ class AiBusinessInvokeConfigResolverTest {
 
         @Override
         public List<AiModel> list(String apiSource, Boolean enabled) {
-            return List.of(get(new AiModelId(2001L)));
+            return List.of(getById(new AiModelId(2001L)));
         }
 
         @Override

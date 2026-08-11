@@ -41,12 +41,12 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
 
     @Override
     public AiBusinessConfig get(GetAiBusinessConfigQuery query) {
-        return aiBusinessConfigRepository.get(query == null ? null : query.businessConfigId());
+        return aiBusinessConfigRepository.getById(query == null ? null : query.businessConfigId());
     }
 
     @Override
     public AiBusinessConfig getByCapability(GetAiBusinessConfigByCapabilityQuery query) {
-        return aiBusinessConfigRepository.get(query == null ? null : query.capability());
+        return aiBusinessConfigRepository.getByCapability(query == null ? null : query.capability());
     }
 
     @Override
@@ -63,7 +63,7 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
         if (config.getId() == null) {
             config.setPriority(aiBusinessConfigRepository.maxPriority() + 1);
         } else {
-            AiBusinessConfig existing = aiBusinessConfigRepository.get(config.getId());
+            AiBusinessConfig existing = aiBusinessConfigRepository.getById(config.getId());
             config.setPriority(
                     existing == null ? aiBusinessConfigRepository.maxPriority() + 1 : existing.getPriority());
         }
@@ -77,7 +77,7 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
         if (config == null || config.getId() == null) {
             throw new BizException("AI business config id is required");
         }
-        AiBusinessConfig existing = aiBusinessConfigRepository.get(config.getId());
+        AiBusinessConfig existing = aiBusinessConfigRepository.getById(config.getId());
         if (existing != null && existing.getCapability() != config.getCapability()) {
             throw new BizException("AI business config capability cannot be changed");
         }
@@ -103,8 +103,8 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
                 || config.getModelId() == null) {
             throw new BizException("AI business capability, prompt template and model are required");
         }
-        PromptTemplate promptTemplate = promptRepository.get(config.getPromptTemplateId());
-        AiModel model = aiModelRepository.get(config.getModelId());
+        PromptTemplate promptTemplate = promptRepository.getByTemplateId(config.getPromptTemplateId());
+        AiModel model = aiModelRepository.getById(config.getModelId());
         if (!config.promptMatches(promptTemplate) || !config.modelMatches(model)) {
             throw new BizException("AI business config does not match prompt template or model capability");
         }

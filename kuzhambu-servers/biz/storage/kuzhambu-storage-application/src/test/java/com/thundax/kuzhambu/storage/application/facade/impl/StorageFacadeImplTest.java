@@ -63,18 +63,18 @@ class StorageFacadeImplTest {
         ArgumentCaptor<AddStorageReferencesCommand> addCaptor =
                 ArgumentCaptor.forClass(AddStorageReferencesCommand.class);
         verify(storageReferenceApplicationService).addReferences(addCaptor.capture());
-        assertEquals(1, addCaptor.getValue().getReferences().size());
-        assertEquals("400000000001", addCaptor.getValue().getReferences().get(0).getReferenceOwnerId());
+        assertEquals(1, addCaptor.getValue().references().size());
+        assertEquals("400000000001", addCaptor.getValue().references().get(0).getReferenceOwnerId());
         assertEquals(
                 StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value(),
-                addCaptor.getValue().getReferences().get(0).getReferenceOwnerType());
+                addCaptor.getValue().references().get(0).getReferenceOwnerType());
 
         ArgumentCaptor<ChangeStorageReferenceStatusCommand> statusCaptor =
                 ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
         verify(storageReferenceApplicationService).changeReferenceStatus(statusCaptor.capture());
         assertEquals(
-                StoredObjectIdCodec.toDomain(7001L), statusCaptor.getValue().getId());
-        assertEquals("REFERENCED", statusCaptor.getValue().getReferenceStatus().value());
+                StoredObjectIdCodec.toDomain(7001L), statusCaptor.getValue().id());
+        assertEquals("REFERENCED", statusCaptor.getValue().referenceStatus().value());
     }
 
     @Test
@@ -141,10 +141,10 @@ class StorageFacadeImplTest {
         assertEquals(7001L, response.getStoredObjects().get(0).getId());
         ArgumentCaptor<ListStorageObjectsQuery> queryCaptor = ArgumentCaptor.forClass(ListStorageObjectsQuery.class);
         verify(storageObjectApplicationService).list(queryCaptor.capture());
-        assertNull(queryCaptor.getValue().getObjectStatus());
-        assertNull(queryCaptor.getValue().getReferenceStatus());
-        assertNull(queryCaptor.getValue().getReferenceOwnerRef());
-        assertNull(queryCaptor.getValue().getRemarks());
+        assertNull(queryCaptor.getValue().objectStatus());
+        assertNull(queryCaptor.getValue().referenceStatus());
+        assertNull(queryCaptor.getValue().referenceOwnerRef());
+        assertNull(queryCaptor.getValue().remarks());
     }
 
     @Test
@@ -222,9 +222,9 @@ class StorageFacadeImplTest {
         ArgumentCaptor<InitMultipartUploadCommand> commandCaptor =
                 ArgumentCaptor.forClass(InitMultipartUploadCommand.class);
         verify(multipartUploadApplicationService).init(commandCaptor.capture());
-        assertNull(commandCaptor.getValue().getBucketName());
-        assertNull(commandCaptor.getValue().getObjectKey());
-        assertNull(commandCaptor.getValue().getProviderUploadId());
+        assertNull(commandCaptor.getValue().bucketName());
+        assertNull(commandCaptor.getValue().objectKey());
+        assertNull(commandCaptor.getValue().providerUploadId());
     }
 
     @Test
@@ -327,10 +327,10 @@ class StorageFacadeImplTest {
         ArgumentCaptor<CompleteMultipartUploadCommand> commandCaptor =
                 ArgumentCaptor.forClass(CompleteMultipartUploadCommand.class);
         verify(multipartUploadApplicationService).complete(commandCaptor.capture());
-        assertNull(commandCaptor.getValue().getBucketName());
-        assertNull(commandCaptor.getValue().getObjectKey());
-        assertNull(commandCaptor.getValue().getSize());
-        assertNull(commandCaptor.getValue().getAccessEndpoint());
+        assertNull(commandCaptor.getValue().bucketName());
+        assertNull(commandCaptor.getValue().objectKey());
+        assertNull(commandCaptor.getValue().size());
+        assertNull(commandCaptor.getValue().accessEndpoint());
     }
 
     @Test

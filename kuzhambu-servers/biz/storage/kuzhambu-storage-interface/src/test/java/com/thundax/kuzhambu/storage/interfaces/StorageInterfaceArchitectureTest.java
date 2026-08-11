@@ -42,22 +42,25 @@ class StorageInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(
                 Path.of("src/main/java"));
-        ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
-                Path.of("src/main/java"), legacyActionVerbAllowances());
+        ApiAnnotationArchitectureRuleSupport.assertControllerActionsAvoidAmbiguousVerbs(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
+                Collections.singletonList(Path.of("src/main/java")), nullableUploadOwnerAllowances());
     }
 
-    private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
+    private static List<ArchitectureRuleAllowance> nullableUploadOwnerAllowances() {
         return List.of(
-                ArchitectureRuleAllowance.of(
-                        "CONTROLLER_ACTION_VERB:*StorageObjectController.java*",
-                        "Storage multipart controller retains legacy initiate and uploadPart action names while preserving the established multipart HTTP contract.",
-                        "Rename the multipart controller methods and action paths with shared verbs, update clients, then remove this allowance."));
+                new ArchitectureRuleAllowance(
+                        "BOUNDARY_ASSEMBLER_NULL_PARAMETER:com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler#toUploadStorageObjectCommand:ownerType:String:1",
+                        "Storage uploads may be unowned.",
+                        "Keep the optional owner contract explicit at the controller boundary."),
+                new ArchitectureRuleAllowance(
+                        "BOUNDARY_ASSEMBLER_NULL_PARAMETER:com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler#toUploadStorageObjectCommand:ownerId:String:1",
+                        "Storage uploads may be unowned.",
+                        "Keep the optional owner contract explicit at the controller boundary."));
     }
 }

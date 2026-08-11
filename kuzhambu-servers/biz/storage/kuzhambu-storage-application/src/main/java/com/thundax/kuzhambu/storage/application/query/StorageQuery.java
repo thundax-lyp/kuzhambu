@@ -5,24 +5,25 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectRefere
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class StorageQuery {
-    private StoredObjectId id;
-    private List<StoredObjectId> ids;
-    private String contentType;
-    private String referenceOwnerId;
-    private String referenceOwnerType;
-    private StoredObjectStatus objectStatus;
-    private StoredObjectReferenceStatus referenceStatus;
-    private String originalFilename;
-    private String remarks;
-    private SortDirection sortDirection = SortDirection.ASC;
+public record StorageQuery(
+        StoredObjectId id,
+        List<StoredObjectId> ids,
+        String contentType,
+        String referenceOwnerId,
+        String referenceOwnerType,
+        StoredObjectStatus objectStatus,
+        StoredObjectReferenceStatus referenceStatus,
+        String originalFilename,
+        String remarks,
+        SortDirection sortDirection) {
+    public StorageQuery() {
+        this(null, null, null, null, null, null, null, null, null, SortDirection.ASC);
+    }
+
+    public StorageQuery {
+        if (sortDirection == null) {
+            sortDirection = SortDirection.ASC;
+        }
+    }
 }

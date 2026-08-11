@@ -184,7 +184,12 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         if (query == null || query.eventId() == null) {
             throw new BizException("Search event id is required");
         }
-        return toSearchEventResult(searchEventRepository.getById(SearchEventIdCodec.toDomain(query.eventId())));
+        SearchEvent searchEvent = searchEventRepository.getById(SearchEventIdCodec.toDomain(query.eventId()));
+        if (searchEvent == null) {
+            throw new BizException(
+                    "DISCOVERY-20002", "discovery.search.event.not-found", "Search event does not exist");
+        }
+        return toSearchEventResult(searchEvent);
     }
 
     @Override

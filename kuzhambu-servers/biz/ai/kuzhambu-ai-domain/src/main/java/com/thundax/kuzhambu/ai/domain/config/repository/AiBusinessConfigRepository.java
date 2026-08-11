@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface AiBusinessConfigRepository {
 
-    AiBusinessConfig get(AiBusinessConfigId id);
+    AiBusinessConfig getById(AiBusinessConfigId id);
 
-    AiBusinessConfig get(AiBusinessCapability capability);
+    AiBusinessConfig getByCapability(AiBusinessCapability capability);
 
     List<AiBusinessConfig> list(AiBusinessCapability capability, Boolean enabled);
 

@@ -100,7 +100,7 @@ class PromptRepositoryIT {
         assertEquals(true, savedTemplate.getEnabled());
 
         when(mapper.selectTemplateByCapability("CLASSICS_TRANSLATE")).thenReturn(savedTemplate);
-        PromptTemplate loadedTemplate = repository.get(AiBusinessCapability.CLASSICS_TRANSLATE);
+        PromptTemplate loadedTemplate = repository.getByCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
 
         assertEquals("Classics translate", loadedTemplate.getName());
         assertEquals(1, loadedTemplate.getCurrentVersionNo());
@@ -130,8 +130,8 @@ class PromptRepositoryIT {
 
         when(mapper.markCurrentVersion(4001L, 1)).thenReturn(1);
         repository.insertVersion(version);
-        int affectedRows = repository.markCurrentVersion(PromptTemplateIdCodec.toDomain(4001L), 1);
-        int variableRows = repository.replaceVariables(PromptTemplateIdCodec.toDomain(4001L), variables);
+        int affectedRows = repository.updateCurrentVersion(PromptTemplateIdCodec.toDomain(4001L), 1);
+        int variableRows = repository.updateTemplateVariables(PromptTemplateIdCodec.toDomain(4001L), variables);
 
         ArgumentCaptor<PromptVersionDO> versionCaptor = ArgumentCaptor.forClass(PromptVersionDO.class);
         ArgumentCaptor<PromptVariableDO> variableCaptor = ArgumentCaptor.forClass(PromptVariableDO.class);

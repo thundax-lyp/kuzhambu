@@ -1,7 +1,10 @@
 package com.thundax.kuzhambu.storage.application.facade.assembler;
 
+import com.thundax.kuzhambu.storage.application.command.RemoveStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.query.GetReadableStorageContentQuery;
+import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
 import com.thundax.kuzhambu.storage.application.query.ListStorageObjectsQuery;
+import com.thundax.kuzhambu.storage.application.query.ListStorageReferencesQuery;
 import com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery;
 import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
@@ -14,6 +17,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObject
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.util.List;
@@ -25,6 +29,30 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StorageReadableContentFacadeAssembler {
+
+    @NonNull
+    public RemoveStorageObjectCommand toRemoveStorageObjectCommand(@NonNull RemoveStorageFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new RemoveStorageObjectCommand(toStoredObjectId(request));
+    }
+
+    @NonNull
+    public GetStorageObjectQuery toGetStorageObjectQuery(@NonNull Long storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
+        return new GetStorageObjectQuery(StoredObjectIdCodec.toDomain(storageObjectId));
+    }
+
+    @NonNull
+    public ListStorageReferencesQuery toListStorageReferencesQuery(@NonNull StoredObjectId storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
+        return new ListStorageReferencesQuery(storageObjectId);
+    }
+
+    @NonNull
+    public ListStorageReferencesQuery toListStorageReferencesQuery(@NonNull Long storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
+        return new ListStorageReferencesQuery(toStoredObjectId(storageObjectId));
+    }
 
     @NonNull
     public GetReadableStorageContentQuery toReadableContentQuery(@NonNull OpenStorageFacadeRequest request) {
@@ -48,6 +76,17 @@ public class StorageReadableContentFacadeAssembler {
             return null;
         }
         return StoredObjectIdCodec.toDomain(request.getStorageObjectId());
+    }
+
+    private StoredObjectId toStoredObjectId(RemoveStorageFacadeRequest request) {
+        if (request.getStorageObjectId() == null) {
+            return null;
+        }
+        return StoredObjectIdCodec.toDomain(request.getStorageObjectId());
+    }
+
+    private StoredObjectId toStoredObjectId(Long storageObjectId) {
+        return StoredObjectIdCodec.toDomain(storageObjectId);
     }
 
     @NonNull

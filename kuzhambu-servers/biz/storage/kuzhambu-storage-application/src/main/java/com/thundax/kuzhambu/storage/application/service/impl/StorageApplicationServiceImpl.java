@@ -75,7 +75,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public StoredObject get(GetStorageObjectQuery query) {
-        StoredObjectId id = query == null ? null : query.getId();
+        StoredObjectId id = query == null ? null : query.id();
         if (id == null) {
             return null;
         }
@@ -84,21 +84,21 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public List<StoredObject> list(StorageQuery query) {
-        if (query != null && query.getIds() != null) {
-            return dao.listByIds(query.getIds());
+        if (query != null && query.ids() != null) {
+            return dao.listByIds(query.ids());
         }
         StorageReferenceOwnerType referenceOwnerType =
-                StorageReferenceOwnerTypeCodec.toDomain(query == null ? null : query.getReferenceOwnerType());
-        String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
+                StorageReferenceOwnerTypeCodec.toDomain(query == null ? null : query.referenceOwnerType());
+        String referenceOwnerId = query == null ? null : query.referenceOwnerId();
         List<StoredObject> storages = dao.list(
-                StorageMimeTypeCodec.toDomain(query == null ? null : query.getContentType()),
-                query == null ? null : query.getObjectStatus(),
-                query == null ? null : query.getReferenceStatus(),
+                StorageMimeTypeCodec.toDomain(query == null ? null : query.contentType()),
+                query == null ? null : query.objectStatus(),
+                query == null ? null : query.referenceStatus(),
                 referenceOwnerId,
                 referenceOwnerType,
-                query == null ? null : query.getOriginalFilename(),
-                query == null ? null : query.getRemarks(),
-                query == null ? null : query.getSortDirection());
+                query == null ? null : query.originalFilename(),
+                query == null ? null : query.remarks(),
+                query == null ? null : query.sortDirection());
         fillReferenceOwnerTypes(storages);
         return storages;
     }
@@ -108,17 +108,17 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         StorageQuery storageQuery = toStorageQuery(query);
         PageQuery page = pageQuery == null ? new PageQuery() : pageQuery;
         StorageReferenceOwnerType referenceOwnerType =
-                StorageReferenceOwnerTypeCodec.toDomain(storageQuery.getReferenceOwnerType());
-        String referenceOwnerId = storageQuery.getReferenceOwnerId();
+                StorageReferenceOwnerTypeCodec.toDomain(storageQuery.referenceOwnerType());
+        String referenceOwnerId = storageQuery.referenceOwnerId();
         PageResult<StoredObject> storagePage = dao.page(
-                StorageMimeTypeCodec.toDomain(storageQuery.getContentType()),
-                storageQuery.getObjectStatus(),
-                storageQuery.getReferenceStatus(),
+                StorageMimeTypeCodec.toDomain(storageQuery.contentType()),
+                storageQuery.objectStatus(),
+                storageQuery.referenceStatus(),
                 referenceOwnerId,
                 referenceOwnerType,
-                storageQuery.getOriginalFilename(),
-                storageQuery.getRemarks(),
-                storageQuery.getSortDirection(),
+                storageQuery.originalFilename(),
+                storageQuery.remarks(),
+                storageQuery.sortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
         fillReferenceOwnerTypes(storagePage.getRecords());
@@ -130,19 +130,42 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (query == null) {
             return storageQuery;
         }
-        storageQuery.setContentType(
-                query.getMimeType() == null ? null : query.getMimeType().value());
-        storageQuery.setObjectStatus(query.getObjectStatus());
-        storageQuery.setReferenceStatus(query.getReferenceStatus());
-        StorageOwnerRef ownerRef = query.getReferenceOwnerRef();
+        storageQuery = new StorageQuery(
+                null,
+                null,
+                query.mimeType() == null ? null : query.mimeType().value(),
+                storageQuery.referenceOwnerId(),
+                storageQuery.referenceOwnerType(),
+                query.objectStatus(),
+                query.referenceStatus(),
+                storageQuery.originalFilename(),
+                storageQuery.remarks(),
+                storageQuery.sortDirection());
+        StorageOwnerRef ownerRef = query.referenceOwnerRef();
         if (ownerRef != null) {
-            storageQuery.setReferenceOwnerId(ownerRef.ownerId());
-            storageQuery.setReferenceOwnerType(ownerRef.ownerTypeValue());
+            storageQuery = new StorageQuery(
+                    storageQuery.id(),
+                    storageQuery.ids(),
+                    storageQuery.contentType(),
+                    ownerRef.ownerId(),
+                    ownerRef.ownerTypeValue(),
+                    storageQuery.objectStatus(),
+                    storageQuery.referenceStatus(),
+                    storageQuery.originalFilename(),
+                    storageQuery.remarks(),
+                    storageQuery.sortDirection());
         }
-        storageQuery.setOriginalFilename(query.getOriginalFilename());
-        storageQuery.setRemarks(query.getRemarks());
-        storageQuery.setSortDirection(query.getSortDirection());
-        return storageQuery;
+        return new StorageQuery(
+                storageQuery.id(),
+                storageQuery.ids(),
+                storageQuery.contentType(),
+                storageQuery.referenceOwnerId(),
+                storageQuery.referenceOwnerType(),
+                storageQuery.objectStatus(),
+                storageQuery.referenceStatus(),
+                query.originalFilename(),
+                query.remarks(),
+                query.sortDirection());
     }
 
     private void fillReferenceOwnerTypes(List<StoredObject> storages) {
@@ -193,7 +216,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Transactional(rollbackFor = Exception.class)
     public void sort(StorageSortCommand command) {
         List<StoredObjectId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
+                command == null || command.orderedIds() == null ? Collections.emptyList() : command.orderedIds();
         if (orderedIdList.isEmpty()) {
             throw new BizException(
                     ErrorCode.SORT_EMPTY_INPUT.getCode(),
@@ -220,7 +243,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int remove(RemoveStorageObjectCommand command) {
-        StoredObjectId id = command == null ? null : command.getId();
+        StoredObjectId id = command == null ? null : command.id();
         if (id == null) {
             return 0;
         }
@@ -255,18 +278,18 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Transactional(rollbackFor = Exception.class)
     public int changeObjectStatus(ChangeStorageObjectStatusCommand command) {
         StoredObject storage = new StoredObject();
-        storage.setId(command.getId());
-        storage.setObjectStatus(command.getObjectStatus());
+        storage.setId(command.id());
+        storage.setObjectStatus(command.objectStatus());
         return dao.updateObjectStatus(storage);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int changeReferenceStatus(ChangeStorageReferenceStatusCommand command) {
-        if (command == null || command.getId() == null) {
+        if (command == null || command.id() == null) {
             return 0;
         }
-        return updateReferenceStatusByObjectId(command.getId());
+        return updateReferenceStatusByObjectId(command.id());
     }
 
     @Override
@@ -275,7 +298,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (command == null) {
             return 0;
         }
-        StorageOwnerRef ownerRef = command.getOwnerRef();
+        StorageOwnerRef ownerRef = command.ownerRef();
         Set<StoredObjectId> impactedObjectIds = impactedObjectIdsByOwner(ownerRef);
         int removed = businessRepository.deleteByOwner(ownerRef);
         updateReferenceStatusByObjectId(impactedObjectIds);
@@ -288,7 +311,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (command == null) {
             return;
         }
-        List<StoredObjectReference> candidates = command.getReferences();
+        List<StoredObjectReference> candidates = command.references();
         if (candidates == null || candidates.isEmpty()) {
             return;
         }
@@ -380,28 +403,26 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Transactional(rollbackFor = Exception.class)
     public StoredObject upload(UploadStorageObjectCommand command) {
         validateUploadFile(
-                command == null ? null : command.getInputStream(),
-                command == null ? null : command.getOriginalFilename(),
-                command == null || command.getSize() == null
-                        ? 0L
-                        : command.getSize().value(),
-                command == null ? null : command.getAllowedSuffixes());
+                command == null ? null : command.inputStream(),
+                command == null ? null : command.originalFilename(),
+                command == null || command.size() == null ? 0L : command.size().value(),
+                command == null ? null : command.allowedSuffixes());
 
         StoredObject storage = new StoredObject();
-        storage.setObjectStatus(command.getObjectStatus());
-        storage.setReferenceStatus(command.getReferenceStatus());
-        storage.setRemarks(command.getRemarks());
-        applyFileMetadata(command.getOriginalFilename(), command.getContentType(), storage);
+        storage.setObjectStatus(command.objectStatus());
+        storage.setReferenceStatus(command.referenceStatus());
+        storage.setRemarks(command.remarks());
+        applyFileMetadata(command.originalFilename(), command.contentType(), storage);
         try {
-            long declaredSize = command.getSize().value();
+            long declaredSize = command.size().value();
             applyStoredObject(
                     storage,
                     storedObjectContentRepository.save(
-                            storage, StorageInputStreamLimiter.limit(command.getInputStream(), declaredSize)));
+                            storage, StorageInputStreamLimiter.limit(command.inputStream(), declaredSize)));
         } catch (IOException exception) {
             throw new BizException(exception.getMessage());
         }
-        if (!command.getSize().value().equals(storage.getSize())) {
+        if (!command.size().value().equals(storage.getSize())) {
             deleteStoredObjectContent(storage);
             throw new BizException("文件大小与声明大小不一致");
         }
@@ -413,35 +434,34 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     public List<StoredObjectReference> listReferences(StorageQuery query) {
         StoredObject entity = new StoredObject();
-        entity.setId(query.getId());
+        entity.setId(query.id());
         return businessRepository.listReferences(entity);
     }
 
     @Override
     public boolean existsReadableContent(StorageQuery query) {
-        StoredObject storage = query == null ? null : get(new GetStorageObjectQuery(query.getId()));
+        StoredObject storage = query == null ? null : get(new GetStorageObjectQuery(query.id()));
         if (storage == null) {
             return false;
         }
         if (StoredObjectStatus.ACTIVE != storage.getObjectStatus()) {
             return false;
         }
-        if (query.getReferenceStatus() != null && query.getReferenceStatus() != storage.getReferenceStatus()) {
+        if (query.referenceStatus() != null && query.referenceStatus() != storage.getReferenceStatus()) {
             return false;
         }
-        if (StringUtils.isNotBlank(query.getReferenceOwnerType())
-                || StringUtils.isNotBlank(query.getReferenceOwnerId())) {
-            return StringUtils.isNotBlank(query.getReferenceOwnerType())
-                    && StringUtils.isNotBlank(query.getReferenceOwnerId())
+        if (StringUtils.isNotBlank(query.referenceOwnerType()) || StringUtils.isNotBlank(query.referenceOwnerId())) {
+            return StringUtils.isNotBlank(query.referenceOwnerType())
+                    && StringUtils.isNotBlank(query.referenceOwnerId())
                     && businessRepository.exists(new StoredObjectReference(
-                            query.getId(), query.getReferenceOwnerId(), query.getReferenceOwnerType(), null));
+                            query.id(), query.referenceOwnerId(), query.referenceOwnerType(), null));
         }
         return StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus();
     }
 
     @Override
     public StoredObjectContentResult openReadableContent(OpenReadableStorageContentQuery query) {
-        StoredObjectId id = query == null ? null : query.getId();
+        StoredObjectId id = query == null ? null : query.id();
         if (id == null) {
             throw new BizException("Storage object id can not be empty");
         }
@@ -510,56 +530,59 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     }
 
     private CreateStorageCommand toCreateStorageCommand(StoredObject storage) {
-        CreateStorageCommand command = new CreateStorageCommand();
-        command.setId(storage.getId());
-        command.setOriginalFilename(storage.getOriginalFilename());
-        command.setContentType(storage.getContentType());
-        command.setName(storage.getName());
-        command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeTypeRef());
-        command.setBucketName(storage.getBucketNameRef());
-        command.setObjectKey(storage.getObjectKeyRef());
-        command.setSize(storage.getSizeRef());
-        command.setAccessEndpoint(storage.getAccessEndpoint());
-        command.setObjectStatus(storage.getObjectStatus());
-        command.setReferenceStatus(storage.getReferenceStatus());
-        command.setRemarks(storage.getRemarks());
-        return command;
+        return new CreateStorageCommand(
+                storage == null ? null : storage.getId(),
+                storage == null ? null : storage.getOriginalFilename(),
+                storage == null ? null : storage.getContentType(),
+                storage == null ? null : storage.getName(),
+                storage == null ? null : storage.getExtendName(),
+                storage == null ? null : storage.getMimeTypeRef(),
+                null,
+                storage == null ? null : storage.getBucketNameRef(),
+                storage == null ? null : storage.getObjectKeyRef(),
+                storage == null ? null : storage.getSizeRef(),
+                storage == null ? null : storage.getAccessEndpoint(),
+                storage == null ? null : storage.getObjectStatus(),
+                storage == null ? null : storage.getReferenceStatus(),
+                storage == null ? null : storage.getRemarks());
     }
 
     private StoredObject toStoredObject(CreateStorageCommand command) {
         StoredObject storage = new StoredObject();
-        storage.setId(command.getId());
-        storage.setOriginalFilename(command.getOriginalFilename());
-        storage.setContentType(command.getContentType());
-        storage.setName(command.getName());
-        storage.setExtendName(command.getExtendName());
-        storage.setMimeTypeRef(command.getMimeType());
-        storage.setBucketNameRef(command.getBucketName());
-        storage.setObjectKeyRef(command.getObjectKey());
-        storage.setSizeRef(command.getSize());
-        storage.setAccessEndpoint(command.getAccessEndpoint());
-        storage.setObjectStatus(command.getObjectStatus());
-        storage.setReferenceStatus(command.getReferenceStatus());
-        storage.setRemarks(command.getRemarks());
+        if (command == null) {
+            return storage;
+        }
+        storage.setId(command.id());
+        storage.setOriginalFilename(command.originalFilename());
+        storage.setContentType(command.contentType());
+        storage.setName(command.name());
+        storage.setExtendName(command.extendName());
+        storage.setMimeTypeRef(command.mimeType());
+        storage.setBucketNameRef(command.bucketName());
+        storage.setObjectKeyRef(command.objectKey());
+        storage.setSizeRef(command.size());
+        storage.setAccessEndpoint(command.accessEndpoint());
+        storage.setObjectStatus(command.objectStatus());
+        storage.setReferenceStatus(command.referenceStatus());
+        storage.setRemarks(command.remarks());
         return storage;
     }
 
     private StoredObject toStoredObject(ChangeStorageCommand command) {
         StoredObject storage = new StoredObject();
-        storage.setId(command.getId());
-        storage.setOriginalFilename(command.getOriginalFilename());
-        storage.setContentType(command.getContentType());
-        storage.setName(command.getName());
-        storage.setExtendName(command.getExtendName());
-        storage.setMimeTypeRef(command.getMimeType());
-        storage.setBucketNameRef(command.getBucketName());
-        storage.setObjectKeyRef(command.getObjectKey());
-        storage.setSizeRef(command.getSize());
-        storage.setAccessEndpoint(command.getAccessEndpoint());
-        storage.setObjectStatus(command.getObjectStatus());
-        storage.setReferenceStatus(command.getReferenceStatus());
-        storage.setRemarks(command.getRemarks());
+        storage.setId(command.id());
+        storage.setOriginalFilename(command.originalFilename());
+        storage.setContentType(command.contentType());
+        storage.setName(command.name());
+        storage.setExtendName(command.extendName());
+        storage.setMimeTypeRef(command.mimeType());
+        storage.setBucketNameRef(command.bucketName());
+        storage.setObjectKeyRef(command.objectKey());
+        storage.setSizeRef(command.size());
+        storage.setAccessEndpoint(command.accessEndpoint());
+        storage.setObjectStatus(command.objectStatus());
+        storage.setReferenceStatus(command.referenceStatus());
+        storage.setRemarks(command.remarks());
         return storage;
     }
 }

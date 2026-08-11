@@ -212,7 +212,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
         if (batchId == null) {
             throw new BizException("AI batchId is required");
         }
-        AiBatchJob job = aiBatchJobRepository.get(batchId);
+        AiBatchJob job = aiBatchJobRepository.getById(batchId);
         if (job == null) {
             throw new BizException("AI batch job not found: " + batchId);
         }

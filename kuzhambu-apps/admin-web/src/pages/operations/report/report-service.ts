@@ -1,4 +1,4 @@
-/* eslint-disable local/service-helper-contract-types, local/service-method-verb-prefix */
+/* eslint-disable local/service-helper-contract-types */
 
 import { ADMIN_API_BASE_URL, postJson } from "@/api/http";
 import type { Page, PageQuery } from "@/types/page";

@@ -296,10 +296,17 @@ class StorageApplicationServiceUploadTest {
         when(storageRepository.getById(StoredObjectIdCodec.toDomain(100L))).thenReturn(storage);
         when(referenceRepository.exists(any())).thenReturn(false);
 
-        StorageQuery query = new StorageQuery();
-        query.setId(StoredObjectIdCodec.toDomain(100L));
-        query.setReferenceOwnerType(StorageOwnerType.USER.value());
-        query.setReferenceOwnerId("owner-2");
+        StorageQuery query = new StorageQuery(
+                StoredObjectIdCodec.toDomain(100L),
+                null,
+                null,
+                "owner-2",
+                StorageOwnerType.USER.value(),
+                null,
+                null,
+                null,
+                null,
+                null);
 
         assertFalse(service.existsReadableContent(query));
     }

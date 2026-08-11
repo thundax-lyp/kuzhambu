@@ -7,12 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -23,49 +18,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
         "@GetMapping", "@PostMapping", "@PutMapping", "@DeleteMapping", "@PatchMapping"
     };
     private static final String[] REST_CONTROLLER_ANNOTATIONS = {"@RestController", "@WrappedApiController"};
-    private static final List<String> CONTROLLER_ACTION_VERBS = List.of(
-            "page",
-            "list",
-            "get",
-            "init",
-            "add",
-            "create",
-            "complete",
-            "remove",
-            "delete",
-            "abort",
-            "update",
-            "change",
-            "sort",
-            "move",
-            "upload",
-            "download",
-            "reset",
-            "login",
-            "logout",
-            "refresh",
-            "load",
-            "request",
-            "latest",
-            "search",
-            "click",
-            "rebuild",
-            "preview",
-            "apply",
-            "deprecate",
-            "reject",
-            "review",
-            "approve",
-            "recover",
-            "submit",
-            "confirm",
-            "cancel",
-            "publish",
-            "revoke",
-            "offline",
-            "content",
-            "extract",
-            "regenerate");
+    private static final List<String> AMBIGUOUS_ACTION_VERBS =
+            List.of("save", "do", "handle", "process", "operate", "action", "manage");
 
     private static final Pattern REST_CONTROLLER_CLASS_PATTERN = Pattern.compile(
             "((?:@[A-Za-z0-9_.]+(?:\\([^)]*\\))?\\s+)*)public\\s+class\\s+([A-Za-z0-9_]+Controller)\\b");
@@ -83,10 +37,6 @@ public final class ApiAnnotationArchitectureRuleSupport {
             Pattern.compile("new\\s+([A-Za-z0-9_]+Response)\\s*\\(");
 
     private ApiAnnotationArchitectureRuleSupport() {}
-
-    static List<String> controllerActionVerbs() {
-        return CONTROLLER_ACTION_VERBS;
-    }
 
     public static ArchRule requestClassAnnotationsRequired(String basePackage) {
         return ModelAnnotationArchitectureRuleSupport.requestClassAnnotationsRequired(basePackage);
@@ -157,36 +107,19 @@ public final class ApiAnnotationArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
-    public static void assertControllerActionsUseVerbWhitelist(Path sourceRoot) throws IOException {
-        assertControllerActionsUseVerbWhitelist(sourceRoot, List.of());
-    }
-
-    public static void assertControllerActionsUseVerbWhitelist(
-            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) throws IOException {
+    public static void assertControllerActionsAvoidAmbiguousVerbs(Path sourceRoot) throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
-        Map<String, ArchitectureRuleAllowance> allowlist = actionVerbAllowlist(legacyAllowances);
-        Set<String> matchedAllowances = new HashSet<String>();
         List<String> violations = new ArrayList<String>();
 
         try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
-                    .forEach(path -> collectControllerActionVerbViolations(root, path, violations));
+                    .forEach(path -> collectAmbiguousControllerActionVerbViolations(root, path, violations));
         }
 
-        List<String> unexpectedViolations = new ArrayList<String>();
-        for (String violation : violations) {
-            if (!isActionVerbAllowlisted("CONTROLLER_ACTION_VERB:" + violation, allowlist, matchedAllowances)) {
-                unexpectedViolations.add(violation);
-            }
-        }
-        Set<String> staleAllowances = new HashSet<String>(allowlist.keySet());
-        staleAllowances.removeAll(matchedAllowances);
         assertTrue(
-                "Controller action methods and PostMapping action paths must use allowed verbs "
-                        + CONTROLLER_ACTION_VERBS + ". Legacy allowances must include a description and remediation "
-                        + "and are rejected when stale. Violations: " + unexpectedViolations + ". Stale allowances: "
-                        + staleAllowances,
-                unexpectedViolations.isEmpty() && staleAllowances.isEmpty());
+                "Controller action methods and PostMapping action paths must not use ambiguous verbs "
+                        + AMBIGUOUS_ACTION_VERBS + ". Violations: " + violations,
+                violations.isEmpty());
     }
 
     public static void assertOperationDeclaresAccessAnnotation(Path sourceRoot) throws IOException {
@@ -507,7 +440,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         }
     }
 
-    private static void collectControllerActionVerbViolations(Path root, Path path, List<String> violations) {
+    private static void collectAmbiguousControllerActionVerbViolations(Path root, Path path, List<String> violations) {
         String content = ArchitectureSourceSupport.readSource(path);
         if (restControllerClassAnnotations(content).length() == 0) {
             return;
@@ -521,7 +454,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
                 previousMethodEnd = matcher.end();
                 continue;
             }
-            if (!hasAllowedActionVerb(methodName)) {
+            if (hasAmbiguousActionVerb(methodName)) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName);
             }
             collectPostMappingActionPathViolations(root, path, methodName, annotations, violations);
@@ -537,7 +470,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
                 continue;
             }
             String action = lastConcretePathSegment(matcher.group(2));
-            if (action.length() > 0 && !CONTROLLER_ACTION_VERBS.contains(action)) {
+            if (hasAmbiguousActionPathSegment(action)) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName + " path="
                         + matcher.group(2));
             }
@@ -935,8 +868,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
         return segments.length >= 4 && segments[2].length() > 0 && segments[3].length() > 0;
     }
 
-    private static boolean hasAllowedActionVerb(String methodName) {
-        for (String verb : CONTROLLER_ACTION_VERBS) {
+    private static boolean hasAmbiguousActionVerb(String methodName) {
+        for (String verb : AMBIGUOUS_ACTION_VERBS) {
             if (methodName.equals(verb)
                     || methodName.startsWith(verb)
                             && methodName.length() > verb.length()
@@ -947,29 +880,9 @@ public final class ApiAnnotationArchitectureRuleSupport {
         return false;
     }
 
-    private static Map<String, ArchitectureRuleAllowance> actionVerbAllowlist(
-            Collection<ArchitectureRuleAllowance> legacyAllowances) {
-        Map<String, ArchitectureRuleAllowance> allowlist = new LinkedHashMap<String, ArchitectureRuleAllowance>();
-        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
-            if (allowlist.put(allowance.key(), allowance) != null) {
-                throw new IllegalArgumentException("Duplicate architecture allowlist key: " + allowance.key());
-            }
-        }
-        return allowlist;
-    }
-
-    private static boolean isActionVerbAllowlisted(
-            String key, Map<String, ArchitectureRuleAllowance> allowlist, Set<String> matchedAllowances) {
-        if (allowlist.containsKey(key)) {
-            matchedAllowances.add(key);
-            return true;
-        }
-        for (String allowanceKey : allowlist.keySet()) {
-            if (allowanceKey.contains("*")
-                    && Pattern.compile(Pattern.quote(allowanceKey).replace("*", "\\E.*\\Q"))
-                            .matcher(key)
-                            .matches()) {
-                matchedAllowances.add(allowanceKey);
+    private static boolean hasAmbiguousActionPathSegment(String action) {
+        for (String verb : AMBIGUOUS_ACTION_VERBS) {
+            if (action.equals(verb) || action.startsWith(verb + "-")) {
                 return true;
             }
         }

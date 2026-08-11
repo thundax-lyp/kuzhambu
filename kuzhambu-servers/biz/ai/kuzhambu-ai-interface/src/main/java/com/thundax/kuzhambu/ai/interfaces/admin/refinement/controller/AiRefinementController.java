@@ -52,8 +52,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "翻译")
-    @PostMapping(value = "translate")
-    public AiRefinementResponses.CandidateResultResponse translate(
+    @PostMapping(value = "translation/create")
+    public AiRefinementResponses.CandidateResultResponse createTranslation(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_TRANSLATE, refinementService::translate);
     }
@@ -68,8 +68,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "摘要")
-    @PostMapping(value = "summary")
-    public AiRefinementResponses.CandidateResultResponse summarize(
+    @PostMapping(value = "summary/create")
+    public AiRefinementResponses.CandidateResultResponse createSummary(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_SUMMARY, refinementService::summarize);
     }
@@ -84,8 +84,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "标签")
-    @PostMapping(value = "tags")
-    public AiRefinementResponses.CandidateResultResponse generateTags(
+    @PostMapping(value = "tags/create")
+    public AiRefinementResponses.CandidateResultResponse createTags(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_TAGS, refinementService::generateTags);
     }
@@ -100,8 +100,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "问答")
-    @PostMapping(value = "qa")
-    public AiRefinementResponses.CandidateResultResponse generateQa(
+    @PostMapping(value = "qa/create")
+    public AiRefinementResponses.CandidateResultResponse createQa(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_QA, refinementService::generateQa);
     }
@@ -116,8 +116,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "图片理解")
-    @PostMapping(value = "image-analysis")
-    public AiRefinementResponses.CandidateResultResponse analyzeImage(
+    @PostMapping(value = "image-analysis/create")
+    public AiRefinementResponses.CandidateResultResponse createImageAnalysis(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_IMAGE_ANALYSIS, refinementService::analyzeImage);
     }
@@ -132,8 +132,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "信息融合")
-    @PostMapping(value = "fusion")
-    public AiRefinementResponses.CandidateResultResponse fuseVisualContext(
+    @PostMapping(value = "visual-fusion/create")
+    public AiRefinementResponses.CandidateResultResponse createVisualFusion(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_FUSION, refinementService::fuseVisualContext);
     }
@@ -148,8 +148,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "视觉描述")
-    @PostMapping(value = "visual")
-    public AiRefinementResponses.CandidateResultResponse describeVisual(
+    @PostMapping(value = "visual-description/create")
+    public AiRefinementResponses.CandidateResultResponse createVisualDescription(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_VISUAL, refinementService::describeVisual);
     }
@@ -164,8 +164,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "生图")
-    @PostMapping(value = "image-gen")
-    public AiRefinementResponses.CandidateResultResponse generateImage(
+    @PostMapping(value = "image/create")
+    public AiRefinementResponses.CandidateResultResponse createImage(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_IMAGE_GEN, refinementService::generateImage);
     }
@@ -180,8 +180,8 @@ public class AiRefinementController {
     })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "条目拆分")
-    @PostMapping(value = "split")
-    public AiRefinementResponses.CandidateResultResponse splitEntry(
+    @PostMapping(value = "entry-split/create")
+    public AiRefinementResponses.CandidateResultResponse createEntrySplit(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
         return invoke(request, CAPABILITY_SPLIT, refinementService::splitEntry);
     }

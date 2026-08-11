@@ -1,5 +1,3 @@
-/* eslint-disable local/service-method-verb-prefix */
-
 import { postJson } from "@/api/http";
 import type { Page, PageQuery } from "@/types/page";
 import type {

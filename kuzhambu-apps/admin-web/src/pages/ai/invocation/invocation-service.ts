@@ -32,7 +32,7 @@ export const listInvocationCapabilities = () => {
 
 export const getInvocationSummary = (query: AiInvocationSummaryQuery = {}) => {
     return postJson<AiInvocationSummaryRecord, AiInvocationSummaryQuery>(
-        "/ai/invocation/invocation-log/summary",
+        "/ai/invocation/invocation-log/summary/get",
         {
             body: query
         }

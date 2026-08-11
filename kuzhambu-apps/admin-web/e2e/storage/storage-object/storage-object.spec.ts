@@ -233,7 +233,7 @@ test.describe("storage object page", () => {
             });
         });
         await page.route(
-            "**/kuzhambu-admin-api/api/storage/object/multipart/initiate",
+            "**/kuzhambu-admin-api/api/storage/object/multipart/init",
             async (route) => {
                 initiatedPayload = route.request().postDataJSON();
                 await route.fulfill({
@@ -252,7 +252,7 @@ test.describe("storage object page", () => {
             }
         );
         await page.route(
-            "**/kuzhambu-admin-api/api/storage/object/multipart/uploadPart",
+            "**/kuzhambu-admin-api/api/storage/object/multipart/part/upload",
             async (route) => {
                 uploadPartRequestCount += 1;
                 await new Promise((resolve) => setTimeout(resolve, 120));
@@ -362,7 +362,7 @@ test.describe("storage object page", () => {
             });
         });
         await page.route(
-            "**/kuzhambu-admin-api/api/storage/object/multipart/initiate",
+            "**/kuzhambu-admin-api/api/storage/object/multipart/init",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -380,7 +380,7 @@ test.describe("storage object page", () => {
             }
         );
         await page.route(
-            "**/kuzhambu-admin-api/api/storage/object/multipart/uploadPart",
+            "**/kuzhambu-admin-api/api/storage/object/multipart/part/upload",
             async (route) => {
                 uploadPartRequestCount += 1;
                 await new Promise((resolve) => setTimeout(resolve, 300));

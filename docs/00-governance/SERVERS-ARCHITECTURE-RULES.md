@@ -117,7 +117,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_ANNOTATION_REST_CLASS_SYS_LOGGER_REQUIRED`：后台 REST API 入口类必须声明 `@SysLogger` 或显式 `@IgnoreSysLogger`。
 - `SERVERS_ANNOTATION_REST_CLASS_TAG_BUSINESS_NAME`：`@Tag` 必须使用稳定业务分组名，不得使用数字排序前缀。
 - `SERVERS_ANNOTATION_REST_METHOD_MAPPING_REQUIRED`：REST API 入口类中的公开 HTTP 方法必须且只能声明一个方法级 HTTP 映射；JSON 请求必须使用 `@PostMapping`，非 JSON 读取必须使用 `@GetMapping`；不得使用方法级 `@RequestMapping`、`@PutMapping`、`@DeleteMapping` 或 `@PatchMapping`。
-- `SERVERS_ANNOTATION_REST_ACTION_VERB_WHITELIST`：REST API 入口类中的公开 HTTP 方法名必须以共享动作白名单开头；`@PostMapping` 方法级路径的最后一个非路径变量片段也必须来自同一白名单。白名单与 admin-web service method ESLint 白名单一一对应；禁用模糊 `save`，新增和更新必须明确使用 `add` / `update`。当前共享动作白名单已包含 `extract` 和 `regenerate`，因此抽取和重生成类后端动作必须显式使用 `extract*` / `regenerate*` 与 `/extract` / `/regenerate`，不得绕回 `update`、`change` 或其他别名。
+- `SERVERS_ANNOTATION_REST_ACTION_AMBIGUOUS_VERB_FORBIDDEN`：REST API 入口类中的公开 HTTP 方法名，以及 `@PostMapping` 方法级路径最后一个非路径变量片段，不得使用模糊动作 `save`、`do`、`handle`、`process`、`operate`、`action`、`manage`。该规则由 ArchUnit 稳定门禁；新增和更新应使用能表达业务规则的动作，不得以泛化动词掩盖实际语义。
 - `SERVERS_ANNOTATION_REST_METHOD_OPERATION_REQUIRED`：REST API 入口类中的公开 HTTP 方法必须声明 OpenAPI 3 `@Operation`；认证公开入口和文件流入口也必须声明。
 - `SERVERS_ANNOTATION_REST_METHOD_ACCESS_MARK_REQUIRED`：声明 `@Operation` 的 REST API 方法必须由方法级或类级 `@HasPermission` / `@PublicApi` 表达访问口径；公开认证入口必须使用 `@PublicApi`。
 - `SERVERS_ANNOTATION_REST_METHOD_DOC_AND_LOG_REQUIRED`：后台 REST API 方法必须声明 `@ApiImplicitParams`，并声明 `@SysLogger` 或显式 `@IgnoreSysLogger`。
@@ -163,3 +163,4 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_REVIEW_ASSEMBLER_COMPLEXITY`：InterfaceAssembler 和 PersistenceAssembler 只做模型转换；出现业务分支、权限判断或持久化访问时应回收到 application、domain 或 infra 对应职责内。
 - `SERVERS_REVIEW_SPRING_META_BEAN_SINGLE_CONSTRUCTOR`：通过派生注解、组合注解或其他 Spring 语义间接注册的类级 Bean 也应有且仅有一个构造器；如框架绑定类或特殊装配方式存在约束，按框架约定单独评审。
 - `SERVERS_REVIEW_TEST_CONSTRUCTION_EXPLICIT`：当生产类收敛为单构造器后，测试应通过 mock、stub 或测试工厂显式补齐依赖，不得为了测试便利重新引入第二构造器。
+- `SERVERS_REVIEW_ACTION_BUSINESS_SEMANTICS`：Service、Controller 方法与 action URL 应使用准确表达业务规则和操作语义的动作；不要求跨层使用同一个动词，也不使用封闭允许词表。评审应结合调用语义、权限和状态变化判断名称是否准确。

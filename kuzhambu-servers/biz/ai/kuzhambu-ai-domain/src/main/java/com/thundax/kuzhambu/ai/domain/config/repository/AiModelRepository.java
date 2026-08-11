@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface AiModelRepository {
 
-    AiModel get(AiModelId id);
+    AiModel getById(AiModelId id);
 
     List<AiModel> list(String apiSource, Boolean enabled);
 

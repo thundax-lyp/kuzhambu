@@ -44,7 +44,7 @@ class ClassicsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(
                 Path.of("src/main/java"));
-        ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(Path.of("src/main/java"));
+        ApiAnnotationArchitectureRuleSupport.assertControllerActionsAvoidAmbiguousVerbs(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 Path.of("src/main/java"));

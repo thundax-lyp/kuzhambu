@@ -71,8 +71,7 @@ public class AiInvocationController {
     @SysLogger(value = "调用读取")
     @PostMapping(value = "invocation-log/get")
     public InvocationLogResponse getInvocationLog(@Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
-        return toInvocationLogResponse(
-                invocationRepository.getInvocationLog(AiCallIdCodec.toDomain(request.getCallId())));
+        return toInvocationLogResponse(invocationRepository.getByCallId(AiCallIdCodec.toDomain(request.getCallId())));
     }
 
     @Operation(summary = "分页查询AI调用记录", description = "ai:invocation:view")
@@ -90,7 +89,7 @@ public class AiInvocationController {
             @Valid @RequestBody AiInvocationRequests.InvocationLogPageRequest request) {
         PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
         return PageResponseHelper.fromPageResult(
-                invocationRepository.pageInvocationLogs(
+                invocationRepository.page(
                         request.getScope(),
                         toCapability(request.getCapability()),
                         AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()),
@@ -115,8 +114,8 @@ public class AiInvocationController {
     })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "调用统计")
-    @PostMapping(value = "invocation-log/summary")
-    public InvocationSummaryResponse summarizeInvocationLogs(
+    @PostMapping(value = "invocation-log/summary/get")
+    public InvocationSummaryResponse getInvocationLogSummary(
             @Valid @RequestBody AiInvocationRequests.InvocationSummaryRequest request) {
         return AiInvocationInterfaceAssembler.toSummaryResponse(
                 request,
@@ -141,7 +140,7 @@ public class AiInvocationController {
     @PostMapping(value = "candidate/get")
     public CandidateResponse getCandidate(@Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
         return toCandidateResponse(
-                invocationRepository.getCandidate(AiCandidateIdCodec.toDomain(request.getCandidateId())));
+                invocationRepository.getByCandidateId(AiCandidateIdCodec.toDomain(request.getCandidateId())));
     }
 
     @Operation(summary = "获取AI候选列表", description = "ai:invocation:view")
@@ -194,8 +193,8 @@ public class AiInvocationController {
     })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "候选已应用")
-    @PostMapping(value = "candidate/mark-applied")
-    public CandidateResponse markCandidateApplied(
+    @PostMapping(value = "candidate/apply")
+    public CandidateResponse applyCandidate(
             @Valid @RequestBody AiInvocationRequests.CandidateMarkAppliedRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(aiCandidateApplicationService.markApplied(
                 AiInvocationInterfaceAssembler.toMarkAppliedCommand(request)));
@@ -277,8 +276,8 @@ public class AiInvocationController {
     })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量成功")
-    @PostMapping(value = "batch/record-success")
-    public BatchJobResponse recordBatchSuccess(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
+    @PostMapping(value = "batch/success/update")
+    public BatchJobResponse updateBatchSuccess(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(
                 batchJobService.recordSuccess(AiInvocationInterfaceAssembler.toRecordBatchSuccessCommand(request)));
     }
@@ -293,8 +292,8 @@ public class AiInvocationController {
     })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量失败")
-    @PostMapping(value = "batch/record-failure")
-    public BatchJobResponse recordBatchFailure(@Valid @RequestBody AiInvocationRequests.BatchFailureRequest request) {
+    @PostMapping(value = "batch/failure/update")
+    public BatchJobResponse updateBatchFailure(@Valid @RequestBody AiInvocationRequests.BatchFailureRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(
                 batchJobService.recordFailure(AiInvocationInterfaceAssembler.toRecordBatchFailureCommand(request)));
     }
@@ -309,8 +308,8 @@ public class AiInvocationController {
     })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "批量派发判断")
-    @PostMapping(value = "batch/can-dispatch")
-    public Boolean canDispatchBatch(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
+    @PostMapping(value = "batch/dispatch/get")
+    public Boolean getBatchDispatchable(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
         return batchJobService.canDispatchNextUnit(AiInvocationInterfaceAssembler.toCanDispatchBatchQuery(request));
     }
 

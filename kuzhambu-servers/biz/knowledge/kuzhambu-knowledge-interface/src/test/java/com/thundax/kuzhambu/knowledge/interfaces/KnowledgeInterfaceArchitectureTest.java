@@ -31,8 +31,7 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
 
     @Test
     void interfaceApiAnnotationsShouldKeepContractShape() throws Exception {
-        ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
-                Path.of("src/main/java"), legacyActionVerbAllowances());
+        ApiAnnotationArchitectureRuleSupport.assertControllerActionsAvoidAmbiguousVerbs(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
@@ -47,10 +46,6 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
         return modelAnnotationAllowances(ModelAnnotationArchitectureRuleSupport.NAME_REQUEST_REQUIRED_ANNOTATIONS);
     }
 
-    private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
-        return List.of(actionVerbAllowance("KnowledgeGraphWorkbenchController"));
-    }
-
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
         return modelAnnotationAllowances(ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS);
     }
@@ -63,12 +58,5 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
                                 "Knowledge legacy API model is pending annotation normalization.",
                                 "Add the required model annotations or migrate the protocol shape, then remove this allowance."))
                 .toList();
-    }
-
-    private static ArchitectureRuleAllowance actionVerbAllowance(String controller) {
-        return ArchitectureRuleAllowance.of(
-                "CONTROLLER_ACTION_VERB:*" + controller + ".java*",
-                "Knowledge controller retains legacy action names or paths outside the shared verb whitelist.",
-                "Rename the controller method and action path with a shared verb, update callers, then remove this allowance.");
     }
 }

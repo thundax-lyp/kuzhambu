@@ -166,7 +166,7 @@ class AiWorkerModelConfigResolverTest {
                 null);
 
         @Override
-        public AiModel get(AiModelId id) {
+        public AiModel getById(AiModelId id) {
             return model;
         }
 
@@ -205,12 +205,12 @@ class AiWorkerModelConfigResolverTest {
         }
 
         @Override
-        public AiBusinessConfig get(AiBusinessConfigId id) {
+        public AiBusinessConfig getById(AiBusinessConfigId id) {
             return config;
         }
 
         @Override
-        public AiBusinessConfig get(AiBusinessCapability capability) {
+        public AiBusinessConfig getByCapability(AiBusinessCapability capability) {
             return config;
         }
 

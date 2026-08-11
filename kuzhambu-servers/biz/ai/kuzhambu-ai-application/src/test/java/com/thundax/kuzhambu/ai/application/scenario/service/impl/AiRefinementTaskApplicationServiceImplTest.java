@@ -736,7 +736,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiInvocationLog getInvocationLog(AiCallId callId) {
+        public AiInvocationLog getByCallId(AiCallId callId) {
             throw new UnsupportedOperationException();
         }
 
@@ -782,7 +782,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public PageResult<AiInvocationLog> pageInvocationLogs(
+        public PageResult<AiInvocationLog> page(
                 String scope,
                 AiBusinessCapability capability,
                 AiContentRef contentRef,
@@ -808,7 +808,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiCandidate getCandidate(AiCandidateId candidateId) {
+        public AiCandidate getByCandidateId(AiCandidateId candidateId) {
             throw new UnsupportedOperationException();
         }
 
