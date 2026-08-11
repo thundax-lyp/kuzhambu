@@ -609,6 +609,24 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
+    void getEventShouldRejectUnknownSearchEventId() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                mock(SearchClickEventRepository.class),
+                new SearchQueryNormalizer(),
+                mock(SearchIndexGateway.class),
+                mock(QueryUnderstandingApplicationService.class));
+        when(searchEventRepository.getById(searchEventId("404"))).thenReturn(null);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.getEvent(new SearchEventQuery(404L, null, null, null, null, null, null)));
+
+        assertEquals("DISCOVERY-20002", exception.getCode());
+    }
+
+    @Test
     void pageEventsShouldUseFirstIntentAndStatusFilter() {
         SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
         SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
