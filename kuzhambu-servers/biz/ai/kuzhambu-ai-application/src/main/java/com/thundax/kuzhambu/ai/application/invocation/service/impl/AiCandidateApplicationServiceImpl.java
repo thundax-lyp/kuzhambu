@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplica
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
-import com.thundax.kuzhambu.common.core.exception.DomainException;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.time.Instant;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +53,7 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
     private AiCandidate getRequired(AiCandidateId candidateId) {
         AiCandidate candidate = repository.getByCandidateId(candidateId);
         if (candidate == null) {
-            throw new DomainException(
+            throw new BizException(
                     "AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + candidateId);
         }
         return candidate;
@@ -62,7 +62,7 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
     private void updateRequired(AiCandidate candidate) {
         int updated = repository.updateCandidate(candidate);
         if (updated != 1) {
-            throw new DomainException(
+            throw new BizException(
                     "AI-INVOCATION-409",
                     "ai.candidate.update-failed",
                     "AI candidate update failed: " + candidate.getId());

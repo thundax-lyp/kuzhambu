@@ -25,7 +25,6 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryVersionResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
@@ -33,6 +32,7 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.common.web.response.DictResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
@@ -483,7 +483,7 @@ public class SancaiAdminController {
         if (version == null
                 || version.getContentType() != ClassicsContentType.SANCAI_ENTRY
                 || !ClassicsContentIdCodec.toDomain(entryId).equals(version.getContentId())) {
-            throw new BizException("三才图会版本不属于当前条目");
+            throw new ApiException("三才图会版本不属于当前条目");
         }
         return version;
     }

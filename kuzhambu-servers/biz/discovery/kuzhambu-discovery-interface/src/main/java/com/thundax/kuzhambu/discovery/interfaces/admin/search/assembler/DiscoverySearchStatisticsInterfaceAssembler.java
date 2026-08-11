@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler;
 
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexCleanupCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
@@ -288,7 +288,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
         try {
             return Instant.parse(value);
         } catch (DateTimeParseException exception) {
-            throw new BizException(
+            throw new ApiException(
                     "DISCOVERY-40002",
                     "discovery.search.admin.invalid-date",
                     fieldName + " must be ISO-8601 format",

@@ -13,6 +13,7 @@ class RepositorySourceHardRulesArchitectureTest {
         SourceHardRuleArchitectureRuleSupport.assertBusinessLayersDoNotUseTopLevelToolPackages(SERVER_SOURCE_ROOT);
         SourceHardRuleArchitectureRuleSupport
                 .assertApplicationAndRepositoryImplementationsDoNotUseIllegalArgumentException(SERVER_SOURCE_ROOT);
+        SourceHardRuleArchitectureRuleSupport.assertBusinessLayersUseBoundedExceptionTypes(SERVER_SOURCE_ROOT);
         TransactionArchitectureRuleSupport.assertServerTransactionalOnlyOnApplicationServiceOrFacadeUseCases(
                 SERVER_SOURCE_ROOT);
     }

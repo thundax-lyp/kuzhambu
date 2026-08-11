@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -131,7 +132,7 @@ public class SancaiAssetAdminController {
                             currentUsed == null ? true : currentUsed,
                             replaceImageId == null ? -1L : replaceImageId)));
         } catch (IOException exception) {
-            throw new BizException("三才图片上传失败：" + exception.getMessage());
+            throw new ApiException("三才图片上传失败：" + exception.getMessage());
         }
     }
 

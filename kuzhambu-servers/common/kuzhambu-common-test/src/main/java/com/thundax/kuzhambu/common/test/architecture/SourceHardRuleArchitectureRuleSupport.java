@@ -28,6 +28,9 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_VARIABLE_PATTERN =
             Pattern.compile("(?:java\\.lang\\.)?IllegalArgumentException\\s+(\\w+)\\b");
     private static final Pattern THROW_VARIABLE_PATTERN = Pattern.compile("\\bthrow\\s+(\\w+)\\s*;");
+    private static final Pattern DOMAIN_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("DomainException");
+    private static final Pattern BIZ_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("BizException");
+    private static final Pattern API_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("ApiException");
     private static final Pattern COMMENTS_AND_LITERALS_PATTERN =
             Pattern.compile("(?s)/\\*.*?\\*/|//[^\\r\\n]*|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'");
 
@@ -53,6 +56,13 @@ public final class SourceHardRuleArchitectureRuleSupport {
                 sourceRoot,
                 SourceHardRuleArchitectureRuleSupport::hasIllegalArgumentExceptionBusinessExit,
                 "Application and repository implementation sources must not throw IllegalArgumentException");
+    }
+
+    public static void assertBusinessLayersUseBoundedExceptionTypes(Path sourceRoot) throws IOException {
+        assertNoSourceMatches(
+                sourceRoot,
+                SourceHardRuleArchitectureRuleSupport::hasExceptionBoundaryViolation,
+                "Business production sources must throw DomainException only from domain, BizException only from application, and ApiException only from interfaces");
     }
 
     private static void assertNoSourceMatches(Path sourceRoot, Pattern pattern, String message) throws IOException {
@@ -115,10 +125,59 @@ public final class SourceHardRuleArchitectureRuleSupport {
         }
     }
 
+    private static boolean hasExceptionBoundaryViolation(Path path) {
+        try {
+            String source = withoutCommentsAndLiterals(Files.readString(path));
+            return (isBusinessLayerSource(source, "domain")
+                            && (hasExceptionExit(source, "BizException", BIZ_EXCEPTION_EXIT_PATTERN)
+                                    || hasExceptionExit(source, "ApiException", API_EXCEPTION_EXIT_PATTERN)))
+                    || (isBusinessLayerSource(source, "application")
+                            && (hasExceptionExit(source, "DomainException", DOMAIN_EXCEPTION_EXIT_PATTERN)
+                                    || hasExceptionExit(source, "ApiException", API_EXCEPTION_EXIT_PATTERN)))
+                    || (isBusinessLayerSource(source, "interfaces")
+                            && (hasExceptionExit(source, "DomainException", DOMAIN_EXCEPTION_EXIT_PATTERN)
+                                    || hasExceptionExit(source, "BizException", BIZ_EXCEPTION_EXIT_PATTERN)));
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to read source file " + path, exception);
+        }
+    }
+
     private static boolean isApplicationOrRepositoryImplementationSource(String source) {
         return source.matches(
                 "(?s)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
                         + "storage|system)\\.(?:application(?:\\.|;)|infra\\.[\\w.]+\\.repository\\.impl(?:\\.|;)).*");
+    }
+
+    private static boolean isBusinessLayerSource(String source, String layer) {
+        return source.matches(
+                "(?s)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
+                        + "storage|system)\\."
+                        + layer
+                        + "(?:\\.|;).*");
+    }
+
+    private static Pattern exceptionExitPattern(String exceptionType) {
+        return Pattern.compile("\\bthrow\\s+new\\s+(?:(?:[A-Za-z_$][\\w$]*\\.)*)?" + exceptionType + "\\s*\\(");
+    }
+
+    private static boolean hasExceptionExit(String source, String exceptionType, Pattern directExitPattern) {
+        if (directExitPattern.matcher(source).find()) {
+            return true;
+        }
+        Pattern variablePattern =
+                Pattern.compile("\\bcatch\\s*\\(\\s*(?:(?:[A-Za-z_$][\\w$]*\\.)*)?" + exceptionType + "\\s+(\\w+)\\b");
+        Set<String> exceptionVariables = new HashSet<String>();
+        Matcher declarationMatcher = variablePattern.matcher(source);
+        while (declarationMatcher.find()) {
+            exceptionVariables.add(declarationMatcher.group(1));
+        }
+        Matcher throwMatcher = THROW_VARIABLE_PATTERN.matcher(source);
+        while (throwMatcher.find()) {
+            if (exceptionVariables.contains(throwMatcher.group(1))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String withoutCommentsAndLiterals(String source) {
