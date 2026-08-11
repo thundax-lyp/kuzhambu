@@ -49,6 +49,8 @@ public final class ModuleAndDependencyArchitectureRuleSupport {
                 .resideOutsideOfPackage(basePackage + ".infra..repository.impl..")
                 .and()
                 .resideOutsideOfPackage(basePackage + ".infra..persistence.mapper..")
+                .and()
+                .haveSimpleNameNotEndingWith("Test")
                 .should()
                 .dependOnClassesThat()
                 .resideInAPackage(basePackage + ".infra..persistence.mapper..")

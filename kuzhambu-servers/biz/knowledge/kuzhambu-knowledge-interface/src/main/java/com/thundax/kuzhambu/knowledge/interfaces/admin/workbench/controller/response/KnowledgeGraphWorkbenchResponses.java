@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
@@ -13,6 +15,31 @@ import lombok.Getter;
 public final class KnowledgeGraphWorkbenchResponses {
 
     private KnowledgeGraphWorkbenchResponses() {}
+
+    @Getter
+    @Builder
+    @Schema(name = "KnowledgeGraphWorkbenchTaskResponse", description = "知识图谱工作台抽取任务响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TaskResponse implements Serializable {
+        @JsonUnwrapped
+        private GraphExtractionResponses.TaskResponse task;
+
+        @JsonIgnore
+        public String getTaskId() {
+            return task == null ? null : task.getTaskId();
+        }
+
+        @JsonIgnore
+        public String getTaskType() {
+            return task == null ? null : task.getTaskType();
+        }
+
+        @JsonIgnore
+        public String getStatus() {
+            return task == null ? null : task.getStatus();
+        }
+    }
 
     @Getter
     @Builder
@@ -101,7 +128,7 @@ public final class KnowledgeGraphWorkbenchResponses {
 
         @Schema(name = "latestExtractionTask", description = "最近抽取任务")
         @JsonProperty("latestExtractionTask")
-        private GraphExtractionResponses.TaskResponse latestExtractionTask;
+        private TaskResponse latestExtractionTask;
 
         @Schema(name = "latestGraphVersion", description = "最新图谱版本")
         @JsonProperty("latestGraphVersion")

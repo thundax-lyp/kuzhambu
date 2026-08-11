@@ -7,7 +7,6 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.workbench.service.KnowledgeGraphWorkbenchApplicationService;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.assembler.KnowledgeGraphWorkbenchInterfaceAssembler;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller.request.KnowledgeGraphWorkbenchRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller.response.KnowledgeGraphWorkbenchResponses;
@@ -82,7 +81,7 @@ public class KnowledgeGraphWorkbenchController {
     @HasPermission("knowledge:graph:edit")
     @SysLogger(value = "按稿件抽取图谱")
     @PostMapping("manuscript/extract")
-    public GraphExtractionResponses.TaskResponse extractManuscript(
+    public KnowledgeGraphWorkbenchResponses.TaskResponse extractManuscript(
             @Valid @RequestBody KnowledgeGraphWorkbenchRequests.ManuscriptExtractRequest request) {
         return KnowledgeGraphWorkbenchInterfaceAssembler.toTaskResponse(workbenchApplicationService.extractManuscript(
                 request == null ? null : request.getSourceContentType(),

@@ -7,16 +7,19 @@ import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGrap
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.ManuscriptTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.QualitySummaryResult;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler.KnowledgeGraphExtractionInterfaceAssembler;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller.response.KnowledgeGraphWorkbenchResponses;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class KnowledgeGraphWorkbenchInterfaceAssembler {
 
     private KnowledgeGraphWorkbenchInterfaceAssembler() {}
 
+    @NonNull
     public static List<KnowledgeGraphWorkbenchResponses.ManuscriptTreeNodeResponse> toTreeResponses(
-            List<ManuscriptTreeNodeResult> results) {
+            @NonNull List<ManuscriptTreeNodeResult> results) {
+        Objects.requireNonNull(results, "results must not be null");
         return results == null
                 ? List.of()
                 : results.stream()
@@ -24,8 +27,10 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
                         .toList();
     }
 
+    @NonNull
     public static KnowledgeGraphWorkbenchResponses.ManuscriptTreeNodeResponse toResponse(
-            ManuscriptTreeNodeResult result) {
+            @NonNull ManuscriptTreeNodeResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return KnowledgeGraphWorkbenchResponses.ManuscriptTreeNodeResponse.builder()
                 .nodeKey(result == null ? null : result.getNodeKey())
                 .parentKey(result == null ? null : result.getParentKey())
@@ -41,7 +46,10 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
                 .build();
     }
 
-    public static KnowledgeGraphWorkbenchResponses.ManuscriptDetailResponse toResponse(ManuscriptDetailResult result) {
+    @NonNull
+    public static KnowledgeGraphWorkbenchResponses.ManuscriptDetailResponse toResponse(
+            @NonNull ManuscriptDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return KnowledgeGraphWorkbenchResponses.ManuscriptDetailResponse.builder()
                 .sourceContentType(result == null ? null : result.getSourceContentType())
                 .sourceContentId(result == null ? null : result.getSourceContentId())
@@ -50,7 +58,7 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
                 .sourcePath(result == null ? null : result.getSourcePath())
                 .currentVersionNo(result == null ? null : result.getCurrentVersionNo())
                 .graphStatus(result == null ? null : result.getGraphStatus())
-                .latestExtractionTask(toTaskResponse(result == null ? null : result.getLatestExtractionTask()))
+                .latestExtractionTask(toOptionalTaskResponse(result == null ? null : result.getLatestExtractionTask()))
                 .latestGraphVersion(
                         result == null || result.getLatestGraphVersion() == null
                                 ? null
@@ -59,14 +67,27 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
                 .build();
     }
 
-    public static GraphExtractionResponses.TaskResponse toTaskResponse(GraphExtractionTaskResult result) {
+    @NonNull
+    public static KnowledgeGraphWorkbenchResponses.TaskResponse toTaskResponse(
+            @NonNull GraphExtractionTaskResult result) {
+        Objects.requireNonNull(result, "result must not be null");
+        return toOptionalTaskResponse(result);
+    }
+
+    private static KnowledgeGraphWorkbenchResponses.TaskResponse toOptionalTaskResponse(
+            GraphExtractionTaskResult result) {
         if (result == null) {
             return null;
         }
-        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(result);
+        return KnowledgeGraphWorkbenchResponses.TaskResponse.builder()
+                .task(KnowledgeGraphExtractionInterfaceAssembler.toResponse(result))
+                .build();
     }
 
-    public static KnowledgeGraphWorkbenchResponses.CandidateSummaryResponse toResponse(CandidateSummaryResult result) {
+    @NonNull
+    public static KnowledgeGraphWorkbenchResponses.CandidateSummaryResponse toResponse(
+            @NonNull CandidateSummaryResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return KnowledgeGraphWorkbenchResponses.CandidateSummaryResponse.builder()
                 .taskId(result == null ? null : result.getTaskId())
                 .aiCandidateId(result == null ? null : result.getAiCandidateId())
@@ -108,7 +129,10 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
         return values == null ? List.of() : values;
     }
 
-    public static KnowledgeGraphWorkbenchResponses.CandidateApplyResponse toResponse(CandidateApplyResult result) {
+    @NonNull
+    public static KnowledgeGraphWorkbenchResponses.CandidateApplyResponse toResponse(
+            @NonNull CandidateApplyResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return KnowledgeGraphWorkbenchResponses.CandidateApplyResponse.builder()
                 .taskId(result == null ? null : result.getTaskId())
                 .graphVersionId(result == null ? null : result.getGraphVersionId())
@@ -116,7 +140,10 @@ public final class KnowledgeGraphWorkbenchInterfaceAssembler {
                 .build();
     }
 
-    public static KnowledgeGraphWorkbenchResponses.QualitySummaryResponse toResponse(QualitySummaryResult result) {
+    @NonNull
+    public static KnowledgeGraphWorkbenchResponses.QualitySummaryResponse toResponse(
+            @NonNull QualitySummaryResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return KnowledgeGraphWorkbenchResponses.QualitySummaryResponse.builder()
                 .entityCoverageRate(result == null ? null : result.getEntityCoverageRate())
                 .relationAccuracyRate(result == null ? null : result.getRelationAccuracyRate())

@@ -1,11 +1,15 @@
 package com.thundax.kuzhambu.discovery.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
+import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
+import com.thundax.kuzhambu.common.test.architecture.ConcurrencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
@@ -21,10 +25,14 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     void applicationCommandAndQuerySourcesShouldDeclareFieldsOnly() {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
+        ModuleAndDependencyArchitectureRuleSupport.assertApplicationLayerBoundary(classes, BASE_PACKAGE);
+        ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "discovery");
+        AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
         TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(classes, Collections.emptyList());
         NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
         PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
+        SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptySet());
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
                 classes, Collections.emptySet());
@@ -40,6 +48,13 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationQueriesDoNotOwnPageState(
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
+        ConcurrencyArchitectureRuleSupport.shouldNotUseCompletableFutureAsyncWithoutExecutor(BASE_PACKAGE)
+                .check(classes);
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
     }
