@@ -71,13 +71,13 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     @Override
     public SearchEventResult search(SearchQuery query, PageQuery pageQuery) {
         validateSearchQuery(query);
-        normalizeSearchQuery(query);
+        query = normalizeSearchQuery(query);
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         long startNanos = System.nanoTime();
         QueryUnderstandingResult understandingResult = null;
         String normalizedQueryText =
-                searchQueryNormalizer.normalizeKeyword(query.getQueryText()).getNormalizedText();
+                searchQueryNormalizer.normalizeKeyword(query.queryText()).getNormalizedText();
         SearchScope scope = searchQueryNormalizer.normalizeScope(toSearchScope(query));
         try {
             understandingResult = queryUnderstandingApplicationService.understand(query);
@@ -120,7 +120,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     @Override
     public SearchPreviewResult getPreview(SearchPreviewQuery query) {
         validatePreviewQuery(query);
-        SearchPreviewResult result = searchIndexGateway.getPreview(query.getContentType(), query.getContentId());
+        SearchPreviewResult result = searchIndexGateway.getPreview(query.contentType(), query.contentId());
         if (result == null) {
             throw new BizException(
                     "DISCOVERY-20003",
@@ -133,7 +133,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     @Override
     public Boolean recordClick(SearchClickEventCreateCommand command) {
         validateClickCommand(command);
-        SearchEventId searchEventId = command.getSearchEventId();
+        SearchEventId searchEventId = command.searchEventId();
         SearchEvent searchEvent = searchEventRepository.getById(searchEventId);
         if (searchEvent == null) {
             throw new BizException(
@@ -142,18 +142,18 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         searchClickEventRepository.save(new SearchClickEvent(
                 null,
                 searchEventId,
-                command.getContentDomain(),
-                command.getContentType(),
-                command.getContentId(),
-                command.getContentTitle(),
-                command.getResultGroupKey(),
-                command.getResultRank(),
-                command.getGroupRank(),
-                command.getTargetPath(),
-                command.getOperatorType(),
-                command.getOperatorId(),
-                RequestIdCodec.toValue(command.getRequestId()),
-                TraceIdCodec.toValue(command.getTraceId()),
+                command.contentDomain(),
+                command.contentType(),
+                command.contentId(),
+                command.contentTitle(),
+                command.resultGroupKey(),
+                command.resultRank(),
+                command.groupRank(),
+                command.targetPath(),
+                command.operatorType(),
+                command.operatorId(),
+                RequestIdCodec.toValue(command.requestId()),
+                TraceIdCodec.toValue(command.traceId()),
                 Instant.now()));
         return Boolean.TRUE;
     }
@@ -189,8 +189,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     @Override
     public SearchStatisticsSummaryResult getStatisticsSummary(SearchStatisticsSummaryQuery query) {
-        Instant dateFrom = query == null ? null : query.getDateFrom();
-        Instant dateTo = query == null ? null : query.getDateTo();
+        Instant dateFrom = query == null ? null : query.dateFrom();
+        Instant dateTo = query == null ? null : query.dateTo();
         List<SearchEvent> searchEvents = searchEventRepository.listByCreatedAtRange(dateFrom, dateTo);
         List<SearchEvent> logs = searchEvents == null ? Collections.emptyList() : searchEvents;
         long clickCount = searchClickEventRepository.countByCreatedAtRange(dateFrom, dateTo);
@@ -212,7 +212,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             Long searchLatencyMs) {
         return new SearchEvent(
                 null,
-                query.getQueryText(),
+                query.queryText(),
                 normalizedQueryText,
                 resolveDisplayQueryText(understandingResult, normalizedQueryText),
                 resolveIntentType(understandingResult),
@@ -223,10 +223,10 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 "SUCCEEDED",
                 null,
                 null,
-                query.getOperatorType(),
-                query.getOperatorId(),
-                RequestIdCodec.toValue(query.getRequestId()),
-                TraceIdCodec.toValue(query.getTraceId()),
+                query.operatorType(),
+                query.operatorId(),
+                RequestIdCodec.toValue(query.requestId()),
+                TraceIdCodec.toValue(query.traceId()),
                 Instant.now());
     }
 
@@ -242,7 +242,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 : "DISCOVERY-20001";
         return new SearchEvent(
                 null,
-                query.getQueryText(),
+                query.queryText(),
                 normalizedQueryText,
                 resolveDisplayQueryText(understandingResult, normalizedQueryText),
                 resolveIntentType(understandingResult),
@@ -253,10 +253,10 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 "FAILED",
                 failureCode,
                 exception.getMessage(),
-                query.getOperatorType(),
-                query.getOperatorId(),
-                RequestIdCodec.toValue(query.getRequestId()),
-                TraceIdCodec.toValue(query.getTraceId()),
+                query.operatorType(),
+                query.operatorId(),
+                RequestIdCodec.toValue(query.requestId()),
+                TraceIdCodec.toValue(query.traceId()),
                 Instant.now());
     }
 
@@ -286,18 +286,18 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private SearchScope toSearchScope(SearchQuery query) {
         SearchScope scope = new SearchScope(
-                query.getKnowledgeBases(),
-                query.getCategoryCodes(),
-                query.getTagNames(),
+                query.knowledgeBases(),
+                query.categoryCodes(),
+                query.tagNames(),
                 Collections.emptyList(),
-                query.getDateFrom(),
-                query.getDateTo());
+                query.dateFrom(),
+                query.dateTo());
         return scope;
     }
 
     private String resolveSearchText(SearchQuery query, QueryUnderstandingResult understandingResult) {
         if (understandingResult == null) {
-            return query.getQueryText();
+            return query.queryText();
         }
         if (!isBlank(understandingResult.getRewrittenQueryText())) {
             return understandingResult.getRewrittenQueryText();
@@ -305,7 +305,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         if (!isBlank(understandingResult.getNormalizedQueryText())) {
             return understandingResult.getNormalizedQueryText();
         }
-        return query.getQueryText();
+        return query.queryText();
     }
 
     private String resolveDisplayQueryText(QueryUnderstandingResult understandingResult, String fallbackText) {
@@ -361,10 +361,24 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         }
     }
 
-    private void normalizeSearchQuery(SearchQuery query) {
-        if (query.getQueryText() == null) {
-            query.setQueryText("");
+    private SearchQuery normalizeSearchQuery(SearchQuery query) {
+        if (query == null) {
+            throw new BizException("Search query is required");
         }
+        if (query.queryText() == null) {
+            return new SearchQuery(
+                    "",
+                    query.knowledgeBases(),
+                    query.categoryCodes(),
+                    query.tagNames(),
+                    query.dateFrom(),
+                    query.dateTo(),
+                    query.operatorType(),
+                    query.operatorId(),
+                    query.requestId(),
+                    query.traceId());
+        }
+        return query;
     }
 
     private int normalizePageSize(int pageSize) {
@@ -372,18 +386,18 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     private void validatePreviewQuery(SearchPreviewQuery query) {
-        if (query == null || isBlank(query.getContentType()) || isBlank(query.getContentId())) {
+        if (query == null || isBlank(query.contentType()) || isBlank(query.contentId())) {
             throw new BizException("Search preview query is incomplete");
         }
     }
 
     private void validateClickCommand(SearchClickEventCreateCommand command) {
         if (command == null
-                || command.getSearchEventId() == null
-                || isBlank(command.getContentDomain())
-                || isBlank(command.getContentType())
-                || isBlank(command.getContentId())
-                || isBlank(command.getResultGroupKey())) {
+                || command.searchEventId() == null
+                || isBlank(command.contentDomain())
+                || isBlank(command.contentType())
+                || isBlank(command.contentId())
+                || isBlank(command.resultGroupKey())) {
             throw new BizException("Search click event command is incomplete");
         }
     }

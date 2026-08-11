@@ -60,17 +60,17 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
         if (query == null) {
             throw new BizException("Search query is required");
         }
-        if (StringUtils.isBlank(query.getQueryText())) {
+        if (StringUtils.isBlank(query.queryText())) {
             return new QueryUnderstandingResult(
                     "",
                     "",
                     SearchIntentType.KEYWORD_SEARCH.value(),
                     List.of(),
-                    RequestIdCodec.toValue(query.getRequestId()),
-                    TraceIdCodec.toValue(query.getTraceId()));
+                    RequestIdCodec.toValue(query.requestId()),
+                    TraceIdCodec.toValue(query.traceId()));
         }
         String normalizedQueryText =
-                searchQueryNormalizer.normalizeKeyword(query.getQueryText()).getNormalizedText();
+                searchQueryNormalizer.normalizeKeyword(query.queryText()).getNormalizedText();
         var enhancement = knowledgeEnhancementProvider.enhance(normalizedQueryText);
         try {
             DiscoveryAiFacadeRequest aiRequest = DiscoveryAiFacadeRequest.builder()
@@ -79,8 +79,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     .modelId(DEFAULT_MODEL_ID)
                     .modelName(DEFAULT_MODEL_NAME)
                     .promptVersionId(DEFAULT_PROMPT_VERSION_ID)
-                    .requestId(RequestIdCodec.toValue(query.getRequestId()))
-                    .traceId(TraceIdCodec.toValue(query.getTraceId()))
+                    .requestId(RequestIdCodec.toValue(query.requestId()))
+                    .traceId(TraceIdCodec.toValue(query.traceId()))
                     .promptMessagesJson(payloadBuilder.buildPromptMessagesJson(query, normalizedQueryText, enhancement))
                     .inputPayloadJson(payloadBuilder.buildInputPayloadJson(query, normalizedQueryText, enhancement))
                     .outputSchemaJson(payloadBuilder.buildOutputSchemaJson())
@@ -109,8 +109,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 normalizedQueryText,
                 SearchIntentType.KEYWORD_SEARCH.value(),
                 safeList(enhancement.recognizedEntities()),
-                RequestIdCodec.toValue(query.getRequestId()),
-                TraceIdCodec.toValue(query.getTraceId()));
+                RequestIdCodec.toValue(query.requestId()),
+                TraceIdCodec.toValue(query.traceId()));
     }
 
     private QueryUnderstandingResult toResult(
@@ -126,8 +126,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     normalizedQueryText,
                     SearchIntentType.KEYWORD_SEARCH.value(),
                     safeList(defaultRecognizedEntities),
-                    RequestIdCodec.toValue(query.getRequestId()),
-                    TraceIdCodec.toValue(query.getTraceId()));
+                    RequestIdCodec.toValue(query.requestId()),
+                    TraceIdCodec.toValue(query.traceId()));
         }
         try {
             JsonNode root = OBJECT_MAPPER.readTree(aiResult.getResultPayload());
@@ -145,8 +145,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     rewrittenQueryText,
                     intent,
                     recognizedEntities,
-                    RequestIdCodec.toValue(query.getRequestId()),
-                    TraceIdCodec.toValue(query.getTraceId()));
+                    RequestIdCodec.toValue(query.requestId()),
+                    TraceIdCodec.toValue(query.traceId()));
         } catch (JsonProcessingException exception) {
             throw new BizException(
                     "DISCOVERY-20004",
@@ -161,7 +161,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 null,
                 null,
                 null,
-                query.getQueryText(),
+                query.queryText(),
                 result.getNormalizedQueryText(),
                 result.getRewrittenQueryText(),
                 parseIntent(result.getIntent()),
@@ -169,8 +169,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 "SUCCEEDED",
                 null,
                 null,
-                RequestIdCodec.toValue(query.getRequestId()),
-                TraceIdCodec.toValue(query.getTraceId()),
+                RequestIdCodec.toValue(query.requestId()),
+                TraceIdCodec.toValue(query.traceId()),
                 Instant.now());
     }
 
@@ -186,7 +186,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 null,
                 null,
                 null,
-                query.getQueryText(),
+                query.queryText(),
                 normalizedQueryText,
                 normalizedQueryText,
                 SearchIntentType.UNKNOWN,
@@ -194,8 +194,8 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 "FAILED",
                 failureCode,
                 exception.getMessage(),
-                RequestIdCodec.toValue(query.getRequestId()),
-                TraceIdCodec.toValue(query.getTraceId()),
+                RequestIdCodec.toValue(query.requestId()),
+                TraceIdCodec.toValue(query.traceId()),
                 Instant.now());
     }
 

@@ -22,20 +22,7 @@ final class DiscoveryApplicationCommandQueryRecordAllowances {
                 legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand"),
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationPrepareCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.command.SearchPublicationReferenceCommand"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchPublicationCategoryAggregationQuery"),
-                legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchQuery"),
-                legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery"));
+                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand"));
     }
 
     private static ArchitectureRuleAllowance legacy(String key) {

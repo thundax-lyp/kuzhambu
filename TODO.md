@@ -10,16 +10,6 @@
 
 ## 当前任务项
 
-## 待审阅任务项
-
-- [ ] `Discovery application Search Command/Query`：将七个 Search Contract 迁移为 record
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 2
-    - 范围对象：`SearchClickEventCreateCommand.java`、`SearchPublicationPrepareCommand.java`、`SearchPublicationReferenceCommand.java`、`SearchPreviewQuery.java`、`SearchPublicationCategoryAggregationQuery.java`、`SearchQuery.java`、`SearchStatisticsSummaryQuery.java`、`DiscoveryApplicationCommandQueryRecordAllowances.java`、`DiscoveryApplicationArchitectureTest.java`
-    - 处理动作：将七个 Search Command/Query 改为 record 并删除 record allowlist 文件。
-    - 验收点：不存在 `DiscoveryApplicationCommandQueryRecordAllowances.java` 且 application 模块测试通过。
-    - 重要度：8/10
-
 - [ ] `Discovery application Search service`：以专用 Contract 替换 Search 和索引服务裸参数
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 3
@@ -27,6 +17,8 @@
     - 处理动作：将四个 Search/索引服务入口改为单一专用 Command 或 Query 参数。
     - 验收点：四个 `METHOD_SHAPE` key 已删除且 application 模块测试通过。
     - 重要度：8/10
+
+## 待审阅任务项
 
 - [ ] `Discovery application QA service`：以专用 Query 替换 QA 查询裸参数
     - 任务类型：执行任务
