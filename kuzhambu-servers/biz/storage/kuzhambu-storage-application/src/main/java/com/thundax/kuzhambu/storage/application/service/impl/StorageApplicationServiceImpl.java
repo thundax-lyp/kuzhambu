@@ -288,7 +288,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (command == null) {
             return;
         }
-        List<StoredObjectReference> candidates = command.getReferences();
+        List<StoredObjectReference> candidates = command.references();
         if (candidates == null || candidates.isEmpty()) {
             return;
         }

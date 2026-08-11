@@ -63,11 +63,11 @@ class StorageFacadeImplTest {
         ArgumentCaptor<AddStorageReferencesCommand> addCaptor =
                 ArgumentCaptor.forClass(AddStorageReferencesCommand.class);
         verify(storageReferenceApplicationService).addReferences(addCaptor.capture());
-        assertEquals(1, addCaptor.getValue().getReferences().size());
-        assertEquals("400000000001", addCaptor.getValue().getReferences().get(0).getReferenceOwnerId());
+        assertEquals(1, addCaptor.getValue().references().size());
+        assertEquals("400000000001", addCaptor.getValue().references().get(0).getReferenceOwnerId());
         assertEquals(
                 StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value(),
-                addCaptor.getValue().getReferences().get(0).getReferenceOwnerType());
+                addCaptor.getValue().references().get(0).getReferenceOwnerType());
 
         ArgumentCaptor<ChangeStorageReferenceStatusCommand> statusCaptor =
                 ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
