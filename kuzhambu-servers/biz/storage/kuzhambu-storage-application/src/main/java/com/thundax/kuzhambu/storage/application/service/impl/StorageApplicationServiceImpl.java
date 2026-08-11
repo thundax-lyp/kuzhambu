@@ -275,7 +275,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (command == null) {
             return 0;
         }
-        StorageOwnerRef ownerRef = command.getOwnerRef();
+        StorageOwnerRef ownerRef = command.ownerRef();
         Set<StoredObjectId> impactedObjectIds = impactedObjectIdsByOwner(ownerRef);
         int removed = businessRepository.deleteByOwner(ownerRef);
         updateReferenceStatusByObjectId(impactedObjectIds);
