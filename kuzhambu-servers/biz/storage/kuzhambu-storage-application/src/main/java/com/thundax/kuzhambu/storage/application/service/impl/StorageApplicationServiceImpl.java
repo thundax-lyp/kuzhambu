@@ -547,19 +547,19 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     private StoredObject toStoredObject(ChangeStorageCommand command) {
         StoredObject storage = new StoredObject();
-        storage.setId(command.getId());
-        storage.setOriginalFilename(command.getOriginalFilename());
-        storage.setContentType(command.getContentType());
-        storage.setName(command.getName());
-        storage.setExtendName(command.getExtendName());
-        storage.setMimeTypeRef(command.getMimeType());
-        storage.setBucketNameRef(command.getBucketName());
-        storage.setObjectKeyRef(command.getObjectKey());
-        storage.setSizeRef(command.getSize());
-        storage.setAccessEndpoint(command.getAccessEndpoint());
-        storage.setObjectStatus(command.getObjectStatus());
-        storage.setReferenceStatus(command.getReferenceStatus());
-        storage.setRemarks(command.getRemarks());
+        storage.setId(command.id());
+        storage.setOriginalFilename(command.originalFilename());
+        storage.setContentType(command.contentType());
+        storage.setName(command.name());
+        storage.setExtendName(command.extendName());
+        storage.setMimeTypeRef(command.mimeType());
+        storage.setBucketNameRef(command.bucketName());
+        storage.setObjectKeyRef(command.objectKey());
+        storage.setSizeRef(command.size());
+        storage.setAccessEndpoint(command.accessEndpoint());
+        storage.setObjectStatus(command.objectStatus());
+        storage.setReferenceStatus(command.referenceStatus());
+        storage.setRemarks(command.remarks());
         return storage;
     }
 }
