@@ -193,7 +193,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Transactional(rollbackFor = Exception.class)
     public void sort(StorageSortCommand command) {
         List<StoredObjectId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
+                command == null || command.orderedIds() == null ? Collections.emptyList() : command.orderedIds();
         if (orderedIdList.isEmpty()) {
             throw new BizException(
                     ErrorCode.SORT_EMPTY_INPUT.getCode(),
