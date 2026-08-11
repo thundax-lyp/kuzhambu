@@ -234,7 +234,7 @@ public class OperationsHealthAlertStrategy {
         }
         try {
             Instant now = Instant.now();
-            HealthAlertRecord alert = healthAlertRepository.getOpenBySource(sourceRefType, sourceRefId, alertType);
+            HealthAlertRecord alert = healthAlertRepository.findOpenBySource(sourceRefType, sourceRefId, alertType);
             boolean createAlert = alert == null;
             if (alert == null) {
                 alert = new HealthAlertRecord();

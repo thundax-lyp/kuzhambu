@@ -137,9 +137,9 @@ class OperationsHealthAlertStrategyTest {
         strategy.recordLongTaskFailed(6001L, "task failed");
 
         assertEquals(4, healthAlertRepository.alerts.size());
-        HealthAlertRecord cleanupAlert = healthAlertRepository.getOpenBySource("CLEANUP", 7001L, "CLEANUP_FAILED");
-        HealthAlertRecord reportAlert = healthAlertRepository.getOpenBySource("REPORT", 8001L, "REPORT_FAILED");
-        HealthAlertRecord taskAlert = healthAlertRepository.getOpenBySource("LONG_TASK", 6001L, "LONG_TASK_FAILED");
+        HealthAlertRecord cleanupAlert = healthAlertRepository.findOpenBySource("CLEANUP", 7001L, "CLEANUP_FAILED");
+        HealthAlertRecord reportAlert = healthAlertRepository.findOpenBySource("REPORT", 8001L, "REPORT_FAILED");
+        HealthAlertRecord taskAlert = healthAlertRepository.findOpenBySource("LONG_TASK", 6001L, "LONG_TASK_FAILED");
         assertEquals(OperationsHealthAlertStrategy.ALERT_LEVEL_WARNING, cleanupAlert.getAlertLevel());
         assertEquals(OperationsHealthRecoveryLinkFactory.ACTION_OPEN_CLEANUP_DETAIL, cleanupAlert.getRecoveryAction());
         assertEquals(OperationsHealthRecoveryLinkFactory.ACTION_NONE, reportAlert.getRecoveryAction());
@@ -273,7 +273,7 @@ class OperationsHealthAlertStrategyTest {
         }
 
         @Override
-        public HealthAlertRecord getOpenBySource(String sourceRefType, Long sourceRefId, String alertType) {
+        public HealthAlertRecord findOpenBySource(String sourceRefType, Long sourceRefId, String alertType) {
             return alerts.stream()
                     .filter(alert -> sourceRefType.equals(alert.getSourceRefType()))
                     .filter(alert -> sourceRefId == null

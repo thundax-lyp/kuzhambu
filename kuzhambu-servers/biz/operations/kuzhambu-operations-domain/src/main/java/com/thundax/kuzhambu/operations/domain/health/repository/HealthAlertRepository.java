@@ -9,7 +9,7 @@ public interface HealthAlertRepository {
 
     HealthAlertRecord getById(HealthAlertId id);
 
-    HealthAlertRecord getOpenBySource(String sourceRefType, Long sourceRefId, String alertType);
+    HealthAlertRecord findOpenBySource(String sourceRefType, Long sourceRefId, String alertType);
 
     PageResult<HealthAlertRecord> page(
             String component,

@@ -422,7 +422,7 @@ class OperationsDashboardApplicationServiceImplTest {
         }
 
         @Override
-        public HealthAlertRecord getOpenBySource(String sourceRefType, Long sourceRefId, String alertType) {
+        public HealthAlertRecord findOpenBySource(String sourceRefType, Long sourceRefId, String alertType) {
             return null;
         }
 

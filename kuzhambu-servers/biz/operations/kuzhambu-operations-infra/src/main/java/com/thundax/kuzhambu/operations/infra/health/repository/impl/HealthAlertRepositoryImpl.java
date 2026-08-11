@@ -35,7 +35,7 @@ public class HealthAlertRepositoryImpl implements HealthAlertRepository {
     }
 
     @Override
-    public HealthAlertRecord getOpenBySource(String sourceRefType, Long sourceRefId, String alertType) {
+    public HealthAlertRecord findOpenBySource(String sourceRefType, Long sourceRefId, String alertType) {
         LambdaQueryWrapper<HealthAlertDO> wrapper = new LambdaQueryWrapper<HealthAlertDO>()
                 .eq(HealthAlertDO::getSourceRefType, sourceRefType)
                 .eq(HealthAlertDO::getAlertType, alertType)

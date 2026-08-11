@@ -104,7 +104,7 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
     }
 
     @Override
-    public int deleteItemsByJobId(CleanupJobId jobId) {
+    public int deleteByJobId(CleanupJobId jobId) {
         return itemMapper.delete(
                 new LambdaQueryWrapper<CleanupItemDO>().eq(CleanupItemDO::getCleanupId, jobId.value()));
     }

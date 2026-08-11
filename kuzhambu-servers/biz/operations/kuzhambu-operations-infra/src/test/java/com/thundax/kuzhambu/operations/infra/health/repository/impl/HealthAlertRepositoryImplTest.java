@@ -36,12 +36,12 @@ class HealthAlertRepositoryImplTest {
     }
 
     @Test
-    void getOpenBySourceShouldMatchOpenAlertAndLatestRecord() {
+    void findOpenBySourceShouldMatchOpenAlertAndLatestRecord() {
         HealthAlertMapper mapper = mock(HealthAlertMapper.class);
         HealthAlertRepositoryImpl repository = new HealthAlertRepositoryImpl(mapper);
         when(mapper.selectOne(any())).thenReturn(dataObject(9201L, "ACTIVE"));
 
-        HealthAlertRecord result = repository.getOpenBySource("BACKUP", 9001L, "BACKUP_FAILED");
+        HealthAlertRecord result = repository.findOpenBySource("BACKUP", 9001L, "BACKUP_FAILED");
 
         assertNotNull(result);
         assertEquals(9201L, result.getId().value());
@@ -59,12 +59,12 @@ class HealthAlertRepositoryImplTest {
     }
 
     @Test
-    void getOpenBySourceShouldSupportNullSourceRefId() {
+    void findOpenBySourceShouldSupportNullSourceRefId() {
         HealthAlertMapper mapper = mock(HealthAlertMapper.class);
         HealthAlertRepositoryImpl repository = new HealthAlertRepositoryImpl(mapper);
         when(mapper.selectOne(any())).thenReturn(dataObject(9202L, "ACKED"));
 
-        HealthAlertRecord result = repository.getOpenBySource("HEALTH", null, "HEALTH_STALE");
+        HealthAlertRecord result = repository.findOpenBySource("HEALTH", null, "HEALTH_STALE");
 
         assertNotNull(result);
         assertEquals("ACKED", result.getAlertStatus());

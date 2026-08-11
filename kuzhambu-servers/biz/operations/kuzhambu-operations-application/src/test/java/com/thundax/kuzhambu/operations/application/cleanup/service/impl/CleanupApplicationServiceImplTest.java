@@ -351,7 +351,7 @@ class CleanupApplicationServiceImplTest {
         }
 
         @Override
-        public int deleteItemsByJobId(CleanupJobId jobId) {
+        public int deleteByJobId(CleanupJobId jobId) {
             return itemsByCleanupId.remove(jobId.value()) == null ? 0 : 1;
         }
 

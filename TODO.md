@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations domain / repository naming`：规范 cleanup、health Repository 方法名并同步调用点
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
-    - 范围对象：`CleanupJobRepository.java`、`CleanupJobRepositoryImpl.java`、`HealthAlertRepository.java`、`HealthAlertRepositoryImpl.java`、`OperationsHealthAlertStrategy.java`、`OperationsDomainArchitectureTest.java`、`HealthAlertRepositoryImplTest.java`、`OperationsHealthAlertStrategyTest.java`、`OperationsDashboardApplicationServiceImplTest.java`、`CleanupApplicationServiceImplTest.java`，均位于 `kuzhambu-servers/biz/operations/`。
-    - 处理动作：将 `deleteItemsByJobId` 重命名为 `deleteByJobId`，并将 `getOpenBySource` 重命名为 `findOpenBySource`。
-    - 验收点：旧方法名在 `biz/operations` 无匹配，domain/application/infra 测试通过。
-    - 重要度：8/10
-
 - [ ] `Operations interface / response annotations`：为 backup、cleanup、dashboard Response 补齐模型注解
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
