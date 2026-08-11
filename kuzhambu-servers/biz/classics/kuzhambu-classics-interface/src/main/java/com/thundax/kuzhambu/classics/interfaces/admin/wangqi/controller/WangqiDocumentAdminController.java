@@ -193,7 +193,7 @@ public class WangqiDocumentAdminController {
                     service.changeSourceFile(WangqiDocumentInterfaceAssembler.toSourceFileCommand(id, file));
             return WangqiDocumentInterfaceAssembler.toSourceFileResponse(result);
         } catch (IOException exception) {
-            throw new ApiException("王圻原始文件上传失败：" + exception.getMessage());
+            throw new ApiException("CLASSICS_UPLOAD_FAILED", "classics.upload.failed", "王圻原始文件上传失败", exception);
         }
     }
 

@@ -132,7 +132,7 @@ public class SancaiAssetAdminController {
                             currentUsed == null ? true : currentUsed,
                             replaceImageId == null ? -1L : replaceImageId)));
         } catch (IOException exception) {
-            throw new ApiException("三才图片上传失败：" + exception.getMessage());
+            throw new ApiException("CLASSICS_UPLOAD_FAILED", "classics.upload.failed", "三才图片上传失败", exception);
         }
     }
 

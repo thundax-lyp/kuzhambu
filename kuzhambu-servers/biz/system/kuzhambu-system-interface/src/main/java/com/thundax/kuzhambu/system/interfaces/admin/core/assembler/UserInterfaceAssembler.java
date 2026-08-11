@@ -9,8 +9,10 @@ import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQue
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeUserAccountCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
+import com.thundax.kuzhambu.system.application.core.command.CreateUserAccountCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.command.RemoveUserCommand;
@@ -399,5 +401,19 @@ public final class UserInterfaceAssembler {
 
     private static String emptyToNull(String value) {
         return StringUtils.isEmpty(value) ? null : value;
+    }
+
+    @NonNull
+    public static CreateUserAccountCommand toCreateUserAccountCommand(
+            @NonNull UserSaveRequest request, @NonNull String encryptedPassword) {
+        return new CreateUserAccountCommand(
+                toCreateCommand(request, encryptedPassword), request.getLoginName(), encryptedPassword);
+    }
+
+    @NonNull
+    public static ChangeUserAccountCommand toChangeUserAccountCommand(
+            @NonNull UserSaveRequest request, String encryptedPassword, @NonNull UserId userId) {
+        return new ChangeUserAccountCommand(
+                toChangeInfoCommand(request), userId, request.getLoginName(), encryptedPassword);
     }
 }

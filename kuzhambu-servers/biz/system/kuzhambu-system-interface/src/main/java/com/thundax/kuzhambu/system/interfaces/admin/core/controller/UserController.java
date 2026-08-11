@@ -17,7 +17,6 @@ import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
@@ -27,13 +26,11 @@ import com.thundax.kuzhambu.system.application.core.service.CurrentUserProfileAp
 import com.thundax.kuzhambu.system.application.core.service.DepartmentManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DictionaryManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleManagementApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserAccountApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserManagementApplicationService;
 import com.thundax.kuzhambu.system.application.core.utils.SysApiUtils;
-import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
-import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
-import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
@@ -99,7 +96,6 @@ import org.springframework.web.multipart.MultipartFile;
 @WrappedApiController
 public class UserController {
 
-    private static final int DEFAULT_PASSWORD_FAILED_LIMIT = 0;
     private static final String PRIVATE_KEY_ITEM = "privateKey";
     private static final String USER_RANK_DICT_TYPE = "user_rank";
     private static final String USER_STATUS_DICT_TYPE = "user_status";
@@ -109,7 +105,7 @@ public class UserController {
     private final DictionaryManagementApplicationService dictService;
     private final RoleManagementApplicationService roleService;
     private final PrincipalIdentityApplicationService principalIdentityService;
-    private final PrincipalCredentialApplicationService principalCredentialService;
+    private final UserAccountApplicationService userAccountService;
     private final PreAuthSessionApplicationService preAuthSessionService;
     private final CurrentUserResolver currentUserResolver;
     private final CurrentUserProfileApplicationService currentUserService;
@@ -122,7 +118,7 @@ public class UserController {
             DictionaryManagementApplicationService dictService,
             RoleManagementApplicationService roleService,
             PrincipalIdentityApplicationService principalIdentityService,
-            PrincipalCredentialApplicationService principalCredentialService,
+            UserAccountApplicationService userAccountService,
             PreAuthSessionApplicationService preAuthSessionService,
             CurrentUserResolver currentUserResolver,
             CurrentUserProfileApplicationService currentUserService,
@@ -133,7 +129,7 @@ public class UserController {
         this.dictService = dictService;
         this.roleService = roleService;
         this.principalIdentityService = principalIdentityService;
-        this.principalCredentialService = principalCredentialService;
+        this.userAccountService = userAccountService;
         this.preAuthSessionService = preAuthSessionService;
         this.currentUserResolver = currentUserResolver;
         this.currentUserService = currentUserService;
@@ -262,9 +258,8 @@ public class UserController {
             }
         }
 
-        entity.setId(userService.create(UserInterfaceAssembler.toCreateCommand(request, encryptedPassword)));
-        PrincipalIdentity accountIdentity = upsertAccountIdentity(entity, request.getLoginName());
-        upsertPassword(entity, encryptedPassword, accountIdentity);
+        entity.setId(userAccountService.create(
+                UserInterfaceAssembler.toCreateUserAccountCommand(request, encryptedPassword)));
 
         return toResponse(entity);
     }
@@ -311,12 +306,10 @@ public class UserController {
 
         User entity = UserInterfaceAssembler.toDomain(bean, request);
 
-        userService.changeInfo(UserInterfaceAssembler.toChangeInfoCommand(request));
-
-        PrincipalIdentity accountIdentity = upsertAccountIdentity(entity, request.getLoginName());
-        if (StringUtils.isNotBlank(request.getLoginPass())) {
-            upsertPassword(entity, PasswordHelper.encrypt(request.getLoginPass()), accountIdentity);
-        }
+        String encryptedPassword =
+                StringUtils.isBlank(request.getLoginPass()) ? null : PasswordHelper.encrypt(request.getLoginPass());
+        userAccountService.change(
+                UserInterfaceAssembler.toChangeUserAccountCommand(request, encryptedPassword, entity.getId()));
 
         return toResponse(entity);
     }
@@ -719,59 +712,6 @@ public class UserController {
         }
         return principalIdentityService.get(identityQuery(
                 PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)), PrincipalIdentityType.USER_ACCOUNT));
-    }
-
-    private void upsertPassword(User user, String encryptedPassword, PrincipalIdentity accountIdentity) {
-        if (accountIdentity == null || StringUtils.isBlank(encryptedPassword)) {
-            return;
-        }
-        PrincipalCredential credential = principalCredentialService.get(
-                credentialQuery(accountIdentity.getId(), PrincipalCredentialType.USER_PASSWORD));
-        if (credential == null) {
-            credential = new PrincipalCredential();
-            credential.setPrincipalKey(PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(user.getId())));
-            credential.setIdentityId(accountIdentity.getId());
-            credential.setCredentialType(PrincipalCredentialType.USER_PASSWORD);
-            credential.setCredentialValue(encryptedPassword);
-            credential.setStatus(PrincipalCredentialStatus.ACTIVE);
-            credential.setNeedChangePassword(false);
-            credential.setFailedCount(0);
-            credential.setFailedLimit(DEFAULT_PASSWORD_FAILED_LIMIT);
-            principalCredentialService.create(UserInterfaceAssembler.toCreatePrincipalCredentialCommand(credential));
-            return;
-        }
-        credential.setCredentialValue(encryptedPassword);
-        credential.setStatus(PrincipalCredentialStatus.ACTIVE);
-        credential.setNeedChangePassword(false);
-        credential.setFailedCount(0);
-        credential.setLockedUntil(null);
-        credential.setLastVerifiedAt(null);
-        principalCredentialService.change(UserInterfaceAssembler.toChangePrincipalCredentialCommand(credential));
-    }
-
-    private PrincipalIdentity upsertAccountIdentity(User user, String loginName) {
-        if (user == null || user.getId() == null || StringUtils.isBlank(loginName)) {
-            return null;
-        }
-        PrincipalKey principalKey = PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(user.getId()));
-        PrincipalIdentity accountIdentity = getAccountIdentity(user.getId());
-        if (accountIdentity == null) {
-            accountIdentity = new PrincipalIdentity();
-            accountIdentity.setPrincipalKey(principalKey);
-            accountIdentity.setType(PrincipalIdentityType.USER_ACCOUNT);
-            accountIdentity.setIdentityValue(loginName);
-            accountIdentity.setStatus(PrincipalIdentityStatus.ENABLED);
-            accountIdentity.setId(principalIdentityService.create(
-                    UserInterfaceAssembler.toCreatePrincipalIdentityCommand(accountIdentity)));
-            return accountIdentity;
-        }
-
-        accountIdentity.setPrincipalKey(principalKey);
-        accountIdentity.setType(PrincipalIdentityType.USER_ACCOUNT);
-        accountIdentity.setIdentityValue(loginName);
-        accountIdentity.setStatus(PrincipalIdentityStatus.ENABLED);
-        principalIdentityService.change(UserInterfaceAssembler.toChangePrincipalIdentityCommand(accountIdentity));
-        return accountIdentity;
     }
 
     private void validatePassword(String password) {
