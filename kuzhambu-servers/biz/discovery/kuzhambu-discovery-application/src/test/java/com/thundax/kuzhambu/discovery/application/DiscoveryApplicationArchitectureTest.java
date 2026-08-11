@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.discovery.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
-import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
@@ -21,8 +20,7 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     void applicationCommandAndQuerySourcesShouldDeclareFieldsOnly() {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
-        LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(
-                classes, legacyApplicationServiceBoundaryAllowances());
+        LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(classes, Collections.emptyList());
         NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
         PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptySet());
@@ -30,7 +28,7 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
                 classes, Collections.emptySet());
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
-                Path.of("src/main/java"), DiscoveryApplicationCommandQueryRecordAllowances.legacyAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-discovery-interface/src/main/java")),
                 legacyCommandQueryConstructionAllowances());
@@ -41,57 +39,11 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")),
-                BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoveryFacadeAssembler",
-                        "com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoverySearchPublicationFacadeAssembler"));
-    }
-
-    private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {
-        return List.of(
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.search.service."
-                        + "SearchApplicationService.getEvent(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                                + "QaApplicationService.getPortalSessionDetail(java.lang.Long, java.lang.String, java.lang.String)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                        + "QaApplicationService.getSessionDetail(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                                + "QaApplicationService.listPortalSessions(java.lang.String, java.lang.String, java.lang.Integer)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                        + "QaApplicationService.listSourcesByMessageId(java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.qa.service."
-                        + "QaApplicationService.getTraceByTraceId(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.search.service."
-                                + "SearchIndexSyncApplicationService.syncUpsert(java.lang.String, java.lang.String, java.lang.Integer)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.search.service."
-                                + "SearchIndexSyncApplicationService.syncDelete(java.lang.String, java.lang.String, java.lang.Integer, java.time.Instant)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.search.service."
-                        + "SearchIndexCleanupApplicationService.cleanupDeletedDocuments(int)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.report.service."
-                                + "DiscoveryReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"));
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
     }
 
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
-        return List.of(
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#SyncKnowledgeContentCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#KnowledgeSyncItemQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#KnowledgeSyncItemQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#DeleteQaSessionCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#QaSessionQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#QaSessionQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#ExportQaSessionCommand:1"));
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {
@@ -102,31 +54,7 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyAssemblerNullReturnAllowances() {
-        return List.of(
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler#toOpenSessionCommand:OpenQaSessionCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler#toChatCompletionCommand:ChatCompletionCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler#toDeleteSessionCommand:DeleteQaSessionCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler#toExportSessionCommand:ExportQaSessionCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toQuery:SearchQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toCommand:SearchClickEventCreateCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler#toQuery:SearchPreviewQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchEventQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toCommand:SearchClickEventCreateCommand:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchPreviewQuery:1"),
-                nullReturnViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler#toQuery:SearchStatisticsSummaryQuery:1"));
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance nullReturnViolation(String ownerMethodAndType) {

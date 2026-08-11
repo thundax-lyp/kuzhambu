@@ -43,7 +43,7 @@ public class QaTraceAssembler {
                 messageId,
                 question,
                 resolveProvider(session, command, chatResult),
-                command == null ? null : command.getModel(),
+                command == null ? null : command.model(),
                 extractExternalKnowledgeItemIds(sources),
                 chatResult == null ? null : chatResult.id(),
                 resolveProviderRequestId(command, chatResult),
@@ -111,7 +111,7 @@ public class QaTraceAssembler {
     }
 
     private String resolveProvider(QaSession session, ChatCompletionCommand command, KnowledgeChatResult chatResult) {
-        String configuredModel = command == null ? null : command.getModel();
+        String configuredModel = command == null ? null : command.model();
         if (StringUtils.isNotBlank(configuredModel)) {
             return configuredModel;
         }
@@ -128,8 +128,8 @@ public class QaTraceAssembler {
         if (chatResult != null && StringUtils.isNotBlank(chatResult.id())) {
             return chatResult.id();
         }
-        if (command != null && StringUtils.isNotBlank(command.getTraceId())) {
-            return command.getTraceId();
+        if (command != null && StringUtils.isNotBlank(command.traceId())) {
+            return command.traceId();
         }
         return null;
     }
@@ -198,8 +198,8 @@ public class QaTraceAssembler {
         if (aiRequest != null && StringUtils.isNotBlank(aiRequest.getRequestId())) {
             return aiRequest.getRequestId();
         }
-        if (command != null && StringUtils.isNotBlank(command.getTraceId())) {
-            return command.getTraceId();
+        if (command != null && StringUtils.isNotBlank(command.traceId())) {
+            return command.traceId();
         }
         return null;
     }

@@ -1,10 +1,11 @@
 package com.thundax.kuzhambu.discovery.application.search.service;
 
-import java.time.Instant;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexSyncDeleteCommand;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexSyncUpsertCommand;
 
 public interface SearchIndexSyncApplicationService {
 
-    Boolean syncUpsert(String contentType, String contentId, Integer currentVersionNo);
+    Boolean syncUpsert(SearchIndexSyncUpsertCommand command);
 
-    Boolean syncDelete(String contentType, String contentId, Integer currentVersionNo, Instant occurredAt);
+    Boolean syncDelete(SearchIndexSyncDeleteCommand command);
 }

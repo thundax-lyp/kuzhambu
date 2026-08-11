@@ -23,9 +23,9 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
 
         SearchQuery query = DiscoverySearchPortalInterfaceAssembler.toQuery(request);
 
-        assertEquals("ANONYMOUS", query.getOperatorType());
-        assertNotNull(query.getRequestId());
-        assertNotNull(query.getTraceId());
+        assertEquals("ANONYMOUS", query.operatorType());
+        assertNotNull(query.requestId());
+        assertNotNull(query.traceId());
     }
 
     @Test
@@ -37,9 +37,9 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
 
         SearchQuery query = DiscoverySearchPortalInterfaceAssembler.toQuery(request);
 
-        assertEquals("", query.getQueryText());
-        assertNull(query.getDateFrom());
-        assertNull(query.getDateTo());
+        assertEquals("", query.queryText());
+        assertNull(query.dateFrom());
+        assertNull(query.dateTo());
     }
 
     @Test
@@ -50,8 +50,8 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
 
         SearchQuery query = DiscoverySearchPortalInterfaceAssembler.toQuery(request);
 
-        assertEquals(Instant.parse("2026-01-02T00:00:00Z"), query.getDateFrom());
-        assertEquals(Instant.parse("2026-01-31T23:59:59.999Z"), query.getDateTo());
+        assertEquals(Instant.parse("2026-01-02T00:00:00Z"), query.dateFrom());
+        assertEquals(Instant.parse("2026-01-31T23:59:59.999Z"), query.dateTo());
     }
 
     @Test
@@ -67,10 +67,10 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
 
         SearchClickEventCreateCommand command = DiscoverySearchPortalInterfaceAssembler.toCommand(request);
 
-        assertEquals("ANONYMOUS", command.getOperatorType());
-        assertEquals("1", SearchEventIdCodec.toStringValue(command.getSearchEventId()));
-        assertNotNull(command.getRequestId());
-        assertNotNull(command.getTraceId());
+        assertEquals("ANONYMOUS", command.operatorType());
+        assertEquals("1", SearchEventIdCodec.toStringValue(command.searchEventId()));
+        assertNotNull(command.requestId());
+        assertNotNull(command.traceId());
     }
 
     @Test
@@ -81,10 +81,10 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
 
         SearchPreviewQuery query = DiscoverySearchPortalInterfaceAssembler.toQuery(request);
 
-        assertEquals("SANCAI_ENTRY", query.getContentType());
-        assertEquals("1001", query.getContentId());
-        assertEquals("ANONYMOUS", query.getOperatorType());
-        assertNotNull(query.getRequestId());
-        assertNotNull(query.getTraceId());
+        assertEquals("SANCAI_ENTRY", query.contentType());
+        assertEquals("1001", query.contentId());
+        assertEquals("ANONYMOUS", query.operatorType());
+        assertNotNull(query.requestId());
+        assertNotNull(query.traceId());
     }
 }

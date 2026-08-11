@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.report.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.discovery.application.report.query.DiscoveryReportSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportSummaryResult;
 import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportSummaryResult.QaTrendPointResult;
 import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportSummaryResult.SearchTrendPointResult;
@@ -38,7 +39,11 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
     }
 
     @Override
-    public DiscoveryReportSummaryResult summary(Instant periodStart, Instant periodEnd, String bucketType) {
+    public DiscoveryReportSummaryResult summary(DiscoveryReportSummaryQuery query) {
+        Instant periodStart = query.periodStart();
+        Instant periodEnd = query.periodEnd();
+        String bucketType = query.bucketType();
+
         List<SearchEvent> searchEvents = searchEventRepository.listByCreatedAtRange(periodStart, periodEnd);
         List<QaSession> qaSessions = qaSessionRepository.listByOpenedAtRange(periodStart, periodEnd);
         return new DiscoveryReportSummaryResult(

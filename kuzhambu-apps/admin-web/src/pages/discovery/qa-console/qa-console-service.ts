@@ -51,8 +51,8 @@ export interface KnowledgeSyncItemPageQuery {
     syncStatus?: string | null;
 }
 
-export const getKnowledgeHealth = () => {
-    return postJson<KnowledgeHealthRecord>("/discovery/qa-admin/knowledge/health");
+export const getKnowledge = () => {
+    return postJson<KnowledgeHealthRecord>("/discovery/qa-admin/knowledge/get");
 };
 
 export const rebuildKnowledge = (command: KnowledgeRebuildCommand = {}) => {
@@ -61,9 +61,9 @@ export const rebuildKnowledge = (command: KnowledgeRebuildCommand = {}) => {
     });
 };
 
-export const createKnowledgeSync = (command: KnowledgeSyncContentCommand) => {
+export const updateKnowledge = (command: KnowledgeSyncContentCommand) => {
     return postJson<KnowledgeSyncItemRecord, KnowledgeSyncContentCommand>(
-        "/discovery/qa-admin/knowledge/sync",
+        "/discovery/qa-admin/knowledge/update",
         {
             body: command
         }
@@ -103,9 +103,9 @@ export const deleteQaSession = (command: DiscoveryQaSessionDeleteCommand) => {
     });
 };
 
-export const createQaSessionExport = (command: DiscoveryQaSessionExportCommand) => {
+export const downloadQaSession = (command: DiscoveryQaSessionExportCommand) => {
     return postJson<DiscoveryQaSessionExportRecord, DiscoveryQaSessionExportCommand>(
-        "/discovery/qa-admin/session/export",
+        "/discovery/qa-admin/session/download",
         {
             body: command
         }

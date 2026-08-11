@@ -78,7 +78,7 @@ class DiscoveryQaStreamError extends Error {
 
 export const createQaSession = (command: DiscoveryQaOpenSessionCommand) => {
     return postJson<DiscoveryQaSessionRecord, DiscoveryQaOpenSessionCommand>(
-        "/discovery/qa/session/open",
+        "/discovery/qa/session/init",
         {
             body: command
         }
@@ -109,9 +109,9 @@ export const deleteQaSession = (command: DiscoveryQaDeleteSessionCommand) => {
     });
 };
 
-export const createQaSessionExport = (command: DiscoveryQaExportSessionCommand) => {
+export const downloadQaSession = (command: DiscoveryQaExportSessionCommand) => {
     return postJson<DiscoveryQaExportSessionRecord, DiscoveryQaExportSessionCommand>(
-        "/discovery/qa/session/export",
+        "/discovery/qa/session/download",
         {
             body: command
         }
@@ -120,7 +120,7 @@ export const createQaSessionExport = (command: DiscoveryQaExportSessionCommand) 
 
 export const createQaChatCompletion = (command: DiscoveryQaChatCompletionCommand) => {
     return postJson<DiscoveryQaChatCompletionRecord, DiscoveryQaChatCompletionCommand>(
-        "/discovery/qa/chat/completions",
+        "/discovery/qa/chat/create",
         {
             body: command
         }
@@ -152,7 +152,7 @@ const parseSseBlock = (block: string) => {
     };
 };
 
-export const createQaChatCompletionStream = async ({
+export const submitChatCompletion = async ({
     command,
     onCompleted,
     onDelta,
@@ -192,22 +192,19 @@ export const createQaChatCompletionStream = async ({
         }
     };
 
-    await postEventStream<DiscoveryQaChatCompletionCommand>(
-        "/discovery/qa/chat/completions/stream",
-        {
-            body: {
-                ...command,
-                stream: true
-            },
-            onChunk: (chunk) => {
-                pending += chunk;
-                const blocks = pending.split(/\r?\n\r?\n/);
-                pending = blocks.pop() ?? "";
-                blocks.forEach(handleBlock);
-            },
-            signal
-        }
-    );
+    await postEventStream<DiscoveryQaChatCompletionCommand>("/discovery/qa/chat/submit", {
+        body: {
+            ...command,
+            stream: true
+        },
+        onChunk: (chunk) => {
+            pending += chunk;
+            const blocks = pending.split(/\r?\n\r?\n/);
+            pending = blocks.pop() ?? "";
+            blocks.forEach(handleBlock);
+        },
+        signal
+    });
 
     if (pending.trim()) {
         handleBlock(pending);

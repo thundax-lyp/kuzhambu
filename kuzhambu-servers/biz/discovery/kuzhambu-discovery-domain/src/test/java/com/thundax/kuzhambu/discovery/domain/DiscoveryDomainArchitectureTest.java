@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSuppo
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class DiscoveryDomainArchitectureTest extends AbstractArchitectureTest {
@@ -29,9 +30,6 @@ class DiscoveryDomainArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertDomainEnumPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertRepositoryPlacement(classes, BASE_PACKAGE);
-        NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(
-                classes,
-                NamingArchitectureRuleSupport.legacyRepositoryInterfaceMethodNameAllowances(
-                        "com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository.markRemoved"));
+        NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(classes, List.of());
     }
 }

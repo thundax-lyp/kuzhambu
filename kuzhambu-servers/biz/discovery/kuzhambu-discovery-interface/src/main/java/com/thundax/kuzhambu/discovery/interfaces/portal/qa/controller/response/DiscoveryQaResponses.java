@@ -8,15 +8,15 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 public final class DiscoveryQaResponses {
 
     private DiscoveryQaResponses() {}
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaOpenSessionResponse", description = "Discovery Portal 问答创建会话响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -64,7 +64,7 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaSessionResponse", description = "Discovery Portal 问答会话响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -112,11 +112,51 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder(builderMethodName = "detailBuilder")
     @Schema(name = "DiscoveryQaSessionDetailResponse", description = "Discovery Portal 问答会话详情响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class QaSessionDetailResponse extends QaSessionResponse {
+    public static class QaSessionDetailResponse implements Serializable {
+
+        @Schema(name = "id", description = "会话 ID")
+        @JsonProperty(value = "id")
+        private String id;
+
+        @Schema(name = "ownerUserId", description = "拥有者用户号")
+        @JsonProperty(value = "ownerUserId")
+        private Long ownerUserId;
+
+        @Schema(name = "title", description = "会话标题")
+        @JsonProperty(value = "title")
+        private String title;
+
+        @Schema(name = "scope", description = "作用域")
+        @JsonProperty(value = "scope")
+        private String scope;
+
+        @Schema(name = "contextMode", description = "上下文模式")
+        @JsonProperty(value = "contextMode")
+        private String contextMode;
+
+        @Schema(name = "contextContentType", description = "上下文内容类型")
+        @JsonProperty(value = "contextContentType")
+        private String contextContentType;
+
+        @Schema(name = "contextContentId", description = "上下文内容标识")
+        @JsonProperty(value = "contextContentId")
+        private Long contextContentId;
+
+        @Schema(name = "status", description = "会话状态")
+        @JsonProperty(value = "status")
+        private String status;
+
+        @Schema(name = "openedAt", description = "创建时间")
+        @JsonProperty(value = "openedAt")
+        private Long openedAt;
+
+        @Schema(name = "lastMessageAt", description = "最后消息时间")
+        @JsonProperty(value = "lastMessageAt")
+        private Long lastMessageAt;
 
         @Schema(name = "messages", description = "会话消息")
         @JsonProperty(value = "messages")
@@ -124,7 +164,7 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaSessionExportResponse", description = "Discovery Portal 问答会话导出响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -172,7 +212,7 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaMessageResponse", description = "Discovery Portal 问答消息响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -216,7 +256,7 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaChatCompletionsResponse", description = "Discovery Portal 问答提问响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -268,7 +308,7 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaChatCompletionChoice", description = "聊天补全候选")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -288,7 +328,7 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaChatCompletionMessage", description = "聊天补全消息")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -304,7 +344,7 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaChatCompletionUsage", description = "token 用量")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -324,7 +364,7 @@ public final class DiscoveryQaResponses {
     }
 
     @Getter
-    @Setter
+    @Builder
     @Schema(name = "DiscoveryQaSourceResponse", description = "Discovery Portal 问答来源响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

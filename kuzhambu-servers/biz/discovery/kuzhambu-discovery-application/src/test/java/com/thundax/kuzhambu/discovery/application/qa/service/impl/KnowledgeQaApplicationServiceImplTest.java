@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionMessage;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
@@ -395,21 +396,14 @@ class KnowledgeQaApplicationServiceImplTest {
 
     private static ChatCompletionCommand command() {
         return new ChatCompletionCommand(
-                5001L,
-                null,
-                List.of(new ChatCompletionCommand.ChatMessage("user", "什么是三才？")),
-                false,
-                null,
-                null,
-                null,
-                null);
+                5001L, null, List.of(new ChatCompletionMessage("user", "什么是三才？")), false, null, null, null, null);
     }
 
     private static ChatCompletionCommand wangqiCommand(Long contextContentId) {
         return new ChatCompletionCommand(
                 5001L,
                 null,
-                List.of(new ChatCompletionCommand.ChatMessage("user", "这份文档说了什么？")),
+                List.of(new ChatCompletionMessage("user", "这份文档说了什么？")),
                 false,
                 Map.of(
                         "contextMode",
@@ -428,13 +422,13 @@ class KnowledgeQaApplicationServiceImplTest {
                 5001L,
                 null,
                 List.of(
-                        new ChatCompletionCommand.ChatMessage("user", "第一问"),
-                        new ChatCompletionCommand.ChatMessage("assistant", "第一答"),
-                        new ChatCompletionCommand.ChatMessage("user", "第二问"),
-                        new ChatCompletionCommand.ChatMessage("assistant", "第二答"),
-                        new ChatCompletionCommand.ChatMessage("user", "第三问"),
-                        new ChatCompletionCommand.ChatMessage("assistant", "第三答"),
-                        new ChatCompletionCommand.ChatMessage("user", "当前问题")),
+                        new ChatCompletionMessage("user", "第一问"),
+                        new ChatCompletionMessage("assistant", "第一答"),
+                        new ChatCompletionMessage("user", "第二问"),
+                        new ChatCompletionMessage("assistant", "第二答"),
+                        new ChatCompletionMessage("user", "第三问"),
+                        new ChatCompletionMessage("assistant", "第三答"),
+                        new ChatCompletionMessage("user", "当前问题")),
                 false,
                 Map.of(
                         "contextMode",

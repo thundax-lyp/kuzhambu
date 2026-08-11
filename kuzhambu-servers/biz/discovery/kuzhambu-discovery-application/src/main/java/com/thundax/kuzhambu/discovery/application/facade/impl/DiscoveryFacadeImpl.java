@@ -27,7 +27,7 @@ public class DiscoveryFacadeImpl implements DiscoveryFacade {
         if (request == null) {
             return null;
         }
-        return discoveryFacadeAssembler.toSummaryFacadeResponse(discoveryReportApplicationService.summary(
-                request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType()));
+        return discoveryFacadeAssembler.toSummaryFacadeResponse(
+                discoveryReportApplicationService.summary(discoveryFacadeAssembler.toSummaryQuery(request)));
     }
 }

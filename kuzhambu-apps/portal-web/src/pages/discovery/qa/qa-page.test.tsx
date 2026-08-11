@@ -6,11 +6,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DiscoveryQaPage } from "./qa-page";
 
 const mocks = vi.hoisted(() => ({
-    createQaChatCompletionStream: vi.fn(),
+    submitChatCompletion: vi.fn(),
     deleteQaSession: vi.fn(),
-    exportQaSession: vi.fn(),
+    downloadQaSession: vi.fn(),
     getQaSession: vi.fn(),
-    openQaSession: vi.fn(),
+    initQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
     postEventStream: vi.fn(),
     postJson: vi.fn()
@@ -91,11 +91,11 @@ const pressTextareaKey = async (
 
 describe("DiscoveryQaPage", () => {
     afterEach(() => {
-        mocks.createQaChatCompletionStream.mockReset();
+        mocks.submitChatCompletion.mockReset();
         mocks.deleteQaSession.mockReset();
-        mocks.exportQaSession.mockReset();
+        mocks.downloadQaSession.mockReset();
         mocks.getQaSession.mockReset();
-        mocks.openQaSession.mockReset();
+        mocks.initQaSession.mockReset();
         mocks.pageQaSessions.mockReset();
         mocks.postEventStream.mockReset();
         mocks.postJson.mockReset();
@@ -104,7 +104,7 @@ describe("DiscoveryQaPage", () => {
     });
 
     it("auto opens session on first question and then sends chat/completions", async () => {
-        mocks.openQaSession.mockResolvedValueOnce({
+        mocks.initQaSession.mockResolvedValueOnce({
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
@@ -115,7 +115,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+        mocks.submitChatCompletion.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             model: "kuzhambu-qa",
             choices: [
@@ -165,7 +165,7 @@ describe("DiscoveryQaPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.openQaSession.mock.calls[0]?.[0]).toEqual({
+        expect(mocks.initQaSession.mock.calls[0]?.[0]).toEqual({
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
@@ -175,7 +175,7 @@ describe("DiscoveryQaPage", () => {
             title: "知识中心问答",
             traceId: null
         });
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             onDelta: expect.any(Function),
             request: {
                 model: "kuzhambu-qa",
@@ -196,7 +196,7 @@ describe("DiscoveryQaPage", () => {
     });
 
     it("sends question with Enter and keeps Shift Enter for multiline input", async () => {
-        mocks.openQaSession.mockResolvedValueOnce({
+        mocks.initQaSession.mockResolvedValueOnce({
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
@@ -207,7 +207,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+        mocks.submitChatCompletion.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             choices: [
                 {
@@ -226,13 +226,13 @@ describe("DiscoveryQaPage", () => {
 
         setTextareaValue(container, "question", "第一行");
         await pressTextareaKey(container, "question", "Enter", true);
-        expect(mocks.openQaSession).not.toHaveBeenCalled();
-        expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+        expect(mocks.initQaSession).not.toHaveBeenCalled();
+        expect(mocks.submitChatCompletion).not.toHaveBeenCalled();
 
         await pressTextareaKey(container, "question", "Enter");
 
-        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.initQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "第一行", role: "user" }],
                 sessionId: "2101"
@@ -253,7 +253,7 @@ describe("DiscoveryQaPage", () => {
         });
 
         await expect(
-            qaService.createQaChatCompletionStream({
+            qaService.submitChatCompletion({
                 onError,
                 request: {
                     messages: [{ content: "礼器是什么？", role: "user" }],

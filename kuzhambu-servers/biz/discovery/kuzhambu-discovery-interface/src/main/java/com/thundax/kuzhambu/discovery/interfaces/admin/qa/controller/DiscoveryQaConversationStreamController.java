@@ -53,7 +53,7 @@ public class DiscoveryQaConversationStreamController {
     @Operation(summary = "OpenAI 风格流式提问", description = "Admin 知识助手 OpenAI 风格 SSE 提问")
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
-    @PostMapping(value = "chat/completions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping(value = "chat/submit", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -61,7 +61,7 @@ public class DiscoveryQaConversationStreamController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public SseEmitter chatCompletionsStream(@Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
+    public SseEmitter submitChatCompletion(@Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
         SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT_MILLIS);
         try {
             CompletableFuture<Void> future =

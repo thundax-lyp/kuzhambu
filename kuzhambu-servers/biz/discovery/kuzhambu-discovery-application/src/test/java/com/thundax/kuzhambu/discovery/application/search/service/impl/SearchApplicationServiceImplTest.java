@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.search.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -290,7 +291,7 @@ class SearchApplicationServiceImplTest {
 
         verify(searchIndexGateway).search(keywordCaptor.capture(), any(), any(Integer.class), any(Integer.class));
         verify(searchEventRepository).save(searchEventCaptor.capture());
-        assertEquals("", query.getQueryText());
+        assertNull(query.queryText());
         assertEquals("", keywordCaptor.getValue().getRawText());
         assertEquals("", result.getQueryText());
         assertEquals("", searchEventCaptor.getValue().getQueryText());
@@ -647,7 +648,7 @@ class SearchApplicationServiceImplTest {
 
         var result = service.pageEvents(
                 new SearchEventQuery(
-                        "黄帝", List.of("ENTITY", "KEYWORD"), List.of("SUCCEEDED", "FAILED"), "user-1", null, null),
+                        null, "黄帝", List.of("ENTITY", "KEYWORD"), List.of("SUCCEEDED", "FAILED"), "user-1", null, null),
                 new PageQuery(1, 20));
 
         verify(searchEventRepository).page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20);
@@ -671,7 +672,7 @@ class SearchApplicationServiceImplTest {
         when(searchEventRepository.page(null, null, null, null, 1, 200))
                 .thenReturn(PageResult.of(1, 200, 0, List.of()));
 
-        service.pageEvents(new SearchEventQuery(null, null, null, null, null, null), new PageQuery(1, 10_000));
+        service.pageEvents(new SearchEventQuery(null, null, null, null, null, null, null), new PageQuery(1, 10_000));
 
         verify(searchEventRepository).page(null, null, null, null, 1, 200);
     }
@@ -694,7 +695,7 @@ class SearchApplicationServiceImplTest {
         pageQuery.setPageSize(0);
         when(searchEventRepository.page(null, null, null, null, 1, 10)).thenReturn(PageResult.of(1, 10, 0, List.of()));
 
-        service.pageEvents(new SearchEventQuery(null, null, null, null, null, null), pageQuery);
+        service.pageEvents(new SearchEventQuery(null, null, null, null, null, null, null), pageQuery);
 
         verify(searchEventRepository).page(null, null, null, null, 1, 10);
     }

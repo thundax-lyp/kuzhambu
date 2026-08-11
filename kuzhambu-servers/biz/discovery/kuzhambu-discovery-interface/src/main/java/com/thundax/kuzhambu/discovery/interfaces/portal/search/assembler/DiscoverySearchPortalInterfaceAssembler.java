@@ -23,7 +23,9 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import org.springframework.lang.NonNull;
 
 public final class DiscoverySearchPortalInterfaceAssembler {
 
@@ -31,10 +33,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
 
     private DiscoverySearchPortalInterfaceAssembler() {}
 
-    public static SearchQuery toQuery(DiscoverySearchRequest request) {
-        if (request == null) {
-            return null;
-        }
+    public static @NonNull SearchQuery toQuery(@NonNull DiscoverySearchRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchQuery(
                 normalizeQueryText(request.getQueryText()),
                 request.getKnowledgeBases(),
@@ -48,10 +48,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 TraceIdCodec.toDomain(newTraceId()));
     }
 
-    public static SearchClickEventCreateCommand toCommand(DiscoverySearchClickEventRequest request) {
-        if (request == null) {
-            return null;
-        }
+    public static @NonNull SearchClickEventCreateCommand toCommand(@NonNull DiscoverySearchClickEventRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchClickEventCreateCommand(
                 SearchEventIdCodec.toDomain(DiscoveryInterfaceIdCodec.toLongValue(request.getSearchEventId())),
                 request.getContentDomain(),
@@ -68,10 +66,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 TraceIdCodec.toDomain(newTraceId()));
     }
 
-    public static SearchPreviewQuery toQuery(DiscoverySearchPreviewRequest request) {
-        if (request == null) {
-            return null;
-        }
+    public static @NonNull SearchPreviewQuery toQuery(@NonNull DiscoverySearchPreviewRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchPreviewQuery(
                 request.getContentType(),
                 request.getContentId(),
@@ -81,10 +77,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 newTraceId());
     }
 
-    public static DiscoverySearchResponse toResponse(SearchEventResult result) {
-        if (result == null) {
-            return null;
-        }
+    public static @NonNull DiscoverySearchResponse toResponse(@NonNull SearchEventResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoverySearchResponse.builder()
                 .id(SearchEventIdCodec.toStringValue(result.getId()))
                 .queryText(result.getQueryText())
@@ -95,10 +89,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 .build();
     }
 
-    public static DiscoverySearchPreviewResponse toResponse(SearchPreviewResult result) {
-        if (result == null) {
-            return null;
-        }
+    public static @NonNull DiscoverySearchPreviewResponse toResponse(@NonNull SearchPreviewResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoverySearchPreviewResponse.builder()
                 .contentDomain(result.getContentDomain())
                 .contentType(result.getContentType())
