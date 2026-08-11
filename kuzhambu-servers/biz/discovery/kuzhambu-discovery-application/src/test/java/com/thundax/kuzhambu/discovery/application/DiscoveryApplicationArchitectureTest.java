@@ -21,8 +21,7 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     void applicationCommandAndQuerySourcesShouldDeclareFieldsOnly() {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
-        LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(
-                classes, legacyApplicationServiceBoundaryAllowances());
+        LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(classes, Collections.emptyList());
         NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
         PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptySet());
@@ -45,11 +44,6 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
                 BoundaryAssemblerNullnessAllowances.legacyClasses(
                         "com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoveryFacadeAssembler",
                         "com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoverySearchPublicationFacadeAssembler"));
-    }
-
-    private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {
-        return List.of(rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.discovery.application.report.service."
-                + "DiscoveryReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"));
     }
 
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {

@@ -10,16 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery application report`：以专用 Query 替换报表裸参数并清理 application 边界 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 5
-    - 范围对象：`DiscoveryReportApplicationService.java`、`DiscoveryReportApplicationServiceImpl.java`、`DiscoveryReportSummaryQuery.java`、`DiscoveryApplicationArchitectureTest.java`
-    - 处理动作：将 `summary` 改为单一 Query 参数并删除最后的 ApplicationService 边界 allowlist。
-    - 验收点：`legacyApplicationServiceBoundaryAllowances` 不存在且 application 模块测试通过。
-    - 重要度：7/10
-
-## 待审阅任务项
-
 - [ ] `Discovery QA interface assembler`：移除 controller 构造和 null Command/Query 返回 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 6 至 8
@@ -27,6 +17,8 @@
     - 处理动作：将 application Contract 构造移入 assembler，并消除 assembler 的 null Command/Query 返回。
     - 验收点：`legacyCommandQueryConstructionAllowances` 和 `legacyAssemblerNullReturnAllowances` 不存在且 application/interface 模块测试通过。
     - 重要度：8/10
+
+## 待审阅任务项
 
 - [ ] `Discovery facade assembler`：移除 application facade assembler nullness allowlist
     - 任务类型：执行任务

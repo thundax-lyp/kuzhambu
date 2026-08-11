@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.discovery.application.report.query.DiscoveryReportSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportSummaryResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
@@ -30,8 +31,8 @@ class DiscoveryReportApplicationServiceImplTest {
         when(qaSessionRepository.listByOpenedAtRange(date(1_718_000_000_000L), date(1_720_419_200_000L)))
                 .thenReturn(List.of(qaSession(date(1_718_086_400_000L)), qaSession(date(1_718_864_000_000L))));
 
-        DiscoveryReportSummaryResult result =
-                service.summary(date(1_718_000_000_000L), date(1_720_419_200_000L), "WEEK");
+        DiscoveryReportSummaryResult result = service.summary(
+                new DiscoveryReportSummaryQuery(date(1_718_000_000_000L), date(1_720_419_200_000L), "WEEK"));
 
         assertEquals(4L, result.getSearchCount());
         assertEquals(2L, result.getQaCount());
@@ -57,8 +58,8 @@ class DiscoveryReportApplicationServiceImplTest {
         when(qaSessionRepository.listByOpenedAtRange(date(1_718_000_000_000L), date(1_720_419_200_000L)))
                 .thenReturn(List.of());
 
-        DiscoveryReportSummaryResult result =
-                service.summary(date(1_718_000_000_000L), date(1_720_419_200_000L), "DAY");
+        DiscoveryReportSummaryResult result = service.summary(
+                new DiscoveryReportSummaryQuery(date(1_718_000_000_000L), date(1_720_419_200_000L), "DAY"));
 
         assertEquals(2L, result.getSearchCount());
         assertEquals(0L, result.getAvgSearchLatencyMs());
