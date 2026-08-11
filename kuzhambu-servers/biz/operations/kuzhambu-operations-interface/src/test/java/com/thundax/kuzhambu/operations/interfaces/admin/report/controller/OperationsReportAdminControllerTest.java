@@ -36,8 +36,8 @@ class OperationsReportAdminControllerTest {
         assertRequestMapping(OperationsReportAdminController.class, "/api/operations/report");
         assertPostMapping(
                 OperationsReportAdminController.class,
-                "generate",
-                "generate",
+                "create",
+                "create",
                 "operations:report:generate",
                 OperationsReportGenerateRequest.class);
         assertPostMapping(
@@ -48,8 +48,8 @@ class OperationsReportAdminControllerTest {
                 OperationsReportPageRequest.class);
         assertPostMapping(
                 OperationsReportAdminController.class,
-                "detail",
-                "detail",
+                "getDetail",
+                "get",
                 "operations:report:view",
                 OperationsReportDetailRequest.class);
         assertGetMapping(
@@ -118,7 +118,7 @@ class OperationsReportAdminControllerTest {
         generateRequest.setFormat("PDF");
         generateRequest.setPeriodStart(Instant.ofEpochMilli(1_718_000_000_000L));
         generateRequest.setPeriodEnd(Instant.ofEpochMilli(1_718_086_400_000L));
-        var generateResponse = controller.generate(generateRequest);
+        var generateResponse = controller.create(generateRequest);
         assertEquals(9001L, generateResponse.getReportId());
         assertEquals("PENDING", generateResponse.getReportStatus());
 
@@ -134,7 +134,7 @@ class OperationsReportAdminControllerTest {
 
         OperationsReportDetailRequest detailRequest = new OperationsReportDetailRequest();
         detailRequest.setReportId(9001L);
-        var detailResponse = controller.detail(detailRequest);
+        var detailResponse = controller.getDetail(detailRequest);
         assertEquals(9001L, detailResponse.getReportId());
         assertEquals("req-1", detailResponse.getRequestId());
 
@@ -148,25 +148,24 @@ class OperationsReportAdminControllerTest {
                 contentResponse.getHeader("Content-Disposition"));
 
         verify(service)
-                .generate(argThat(command -> command != null
-                        && "WEEKLY".equals(command.getReportType())
-                        && "PDF".equals(command.getFormat())));
+                .generate(argThat(command ->
+                        command != null && "WEEKLY".equals(command.reportType()) && "PDF".equals(command.format())));
         verify(service)
                 .page(
                         argThat(query -> query != null
-                                && "WEEKLY".equals(query.getReportType())
-                                && "PDF".equals(query.getFormat())
-                                && "SUCCEEDED".equals(query.getReportStatus())),
+                                && "WEEKLY".equals(query.reportType())
+                                && "PDF".equals(query.format())
+                                && "SUCCEEDED".equals(query.reportStatus())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)
                 .detail(argThat(query -> query != null
-                        && query.getReportId() != null
-                        && query.getReportId().value().equals(9001L)));
+                        && query.reportId() != null
+                        && query.reportId().value().equals(9001L)));
         verify(service)
                 .download(argThat(query -> query != null
-                        && query.getReportId() != null
-                        && query.getReportId().value().equals(9001L)));
+                        && query.reportId() != null
+                        && query.reportId().value().equals(9001L)));
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

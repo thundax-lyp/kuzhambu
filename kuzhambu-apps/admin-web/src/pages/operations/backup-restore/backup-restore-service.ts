@@ -33,7 +33,7 @@ export interface RestoreDetailCommand {
 }
 
 export const createManualBackup = () => {
-    return postJson<OperationsBackupRecord, Record<string, never>>("/operations/backup/execute", {
+    return postJson<OperationsBackupRecord, Record<string, never>>("/operations/backup/create", {
         body: {}
     });
 };
@@ -48,13 +48,13 @@ export const pageBackups = (query: PageQuery<BackupLedgerQuery> = {}) => {
 };
 
 export const getBackupDetail = (command: BackupDetailCommand) => {
-    return postJson<OperationsBackupRecord, BackupDetailCommand>("/operations/backup/detail", {
+    return postJson<OperationsBackupRecord, BackupDetailCommand>("/operations/backup/get", {
         body: command
     });
 };
 
 export const recoverBackup = (command: RestoreExecuteCommand) => {
-    return postJson<OperationsRestoreRecord, RestoreExecuteCommand>("/operations/restore/execute", {
+    return postJson<OperationsRestoreRecord, RestoreExecuteCommand>("/operations/restore/create", {
         body: command
     });
 };
@@ -69,7 +69,7 @@ export const pageRestores = (query: PageQuery<RestoreLedgerQuery> = {}) => {
 };
 
 export const getRestoreDetail = (command: RestoreDetailCommand) => {
-    return postJson<OperationsRestoreRecord, RestoreDetailCommand>("/operations/restore/detail", {
+    return postJson<OperationsRestoreRecord, RestoreDetailCommand>("/operations/restore/get", {
         body: command
     });
 };

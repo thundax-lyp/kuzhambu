@@ -63,56 +63,6 @@ class RepositoryApiHardRulesArchitectureTest {
         List<ArchitectureRuleAllowance> allowances = new ArrayList<ArchitectureRuleAllowance>();
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAdminController.java",
-                "method=summary",
-                "method=summary path=summary",
-                "method=trend",
-                "method=trend path=trend");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAlertAdminController.java",
-                "method=ack",
-                "method=ack path=ack");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/dashboard/controller/OperationsDashboardAdminController.java",
-                "method=overview",
-                "method=overview path=overview");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/cleanup/controller/OperationsCleanupAdminController.java",
-                "method=execute",
-                "method=execute path=execute",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/task/controller/OperationsTaskAdminController.java",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/report/controller/OperationsReportAdminController.java",
-                "method=generate",
-                "method=generate path=generate",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/backup/controller/OperationsBackupAdminController.java",
-                "method=execute",
-                "method=execute path=execute",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/OperationsRestoreAdminController.java",
-                "method=execute",
-                "method=execute path=execute",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java",
                 "method=initiate",
                 "method=initiate path=multipart/initiate",

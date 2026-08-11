@@ -56,7 +56,7 @@ describe("operations health service contracts", () => {
                 pageSize: 10
             }
         });
-        expect(postJson).toHaveBeenNthCalledWith(2, "/operations/health/alerts/ack", {
+        expect(postJson).toHaveBeenNthCalledWith(2, "/operations/health/alerts/confirm", {
             body: { alertId: "9201" }
         });
         expect(postJson).toHaveBeenNthCalledWith(3, "/operations/health/alerts/recover", {

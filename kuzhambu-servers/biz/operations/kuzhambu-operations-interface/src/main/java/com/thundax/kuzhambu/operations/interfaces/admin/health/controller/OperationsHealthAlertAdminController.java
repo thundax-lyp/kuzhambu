@@ -58,7 +58,7 @@ public class OperationsHealthAlertAdminController {
     @Operation(summary = "确认健康告警", description = "operations:health:manage")
     @HasPermission("operations:health:manage")
     @SysLogger(value = "确认健康告警")
-    @PostMapping("ack")
+    @PostMapping("confirm")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -66,7 +66,7 @@ public class OperationsHealthAlertAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public void ack(@Valid @RequestBody OperationsHealthAlertAckRequest request) {
+    public void confirm(@Valid @RequestBody OperationsHealthAlertAckRequest request) {
         healthAlertApplicationService.ack(OperationsHealthAlertInterfaceAssembler.toCommand(request));
     }
 

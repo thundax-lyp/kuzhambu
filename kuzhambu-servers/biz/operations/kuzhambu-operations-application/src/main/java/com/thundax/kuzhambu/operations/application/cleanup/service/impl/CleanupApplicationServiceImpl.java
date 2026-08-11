@@ -110,14 +110,14 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
     private OperationsCleanupDetailResult executeInternal(
             OperationsCleanupExecuteCommand command, boolean requireRequesterUserId) {
         validateExecuteCommand(command, requireRequesterUserId);
-        String cleanupType = OperationsCleanupSupport.normalizeType(command.getCleanupType());
+        String cleanupType = OperationsCleanupSupport.normalizeType(command.cleanupType());
         if (!OperationsCleanupSupport.isSupportedType(cleanupType)) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
-                    "Operations cleanup type is not supported: " + command.getCleanupType());
+                    "Operations cleanup type is not supported: " + command.cleanupType());
         }
 
-        Instant requestedAt = command.getRequestedAt() == null ? Instant.now() : command.getRequestedAt();
-        int limit = effectiveLimit(command.getLimit());
+        Instant requestedAt = command.requestedAt() == null ? Instant.now() : command.requestedAt();
+        int limit = effectiveLimit(command.limit());
         CleanupJob cleanupJob = new CleanupJob(
                 null,
                 cleanupType,
@@ -126,15 +126,15 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                 0,
                 0,
                 null,
-                command.getRequesterUserId(),
+                command.requesterUserId(),
                 requestedAt,
                 null,
                 new ArrayList<>());
         CleanupJobId cleanupId = cleanupJobRepository.insert(cleanupJob);
         cleanupJob.setId(cleanupId);
         try {
-            List<CleanupItem> cleanupItems = discoverCleanupItems(
-                    cleanupId.value(), cleanupType, requestedAt, command.getRetentionDays(), limit);
+            List<CleanupItem> cleanupItems =
+                    discoverCleanupItems(cleanupId.value(), cleanupType, requestedAt, command.retentionDays(), limit);
             int successCount = 0;
             int failedCount = 0;
             for (CleanupItem item : cleanupItems) {
@@ -185,9 +185,9 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<CleanupJob> jobPage = cleanupJobRepository.page(
-                query == null ? null : query.getCleanupType(),
-                query == null ? null : query.getCleanupStatus(),
-                query == null ? null : query.getRequesterUserId(),
+                query == null ? null : query.cleanupType(),
+                query == null ? null : query.cleanupStatus(),
+                query == null ? null : query.requesterUserId(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         return PageResult.of(
@@ -199,7 +199,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
 
     @Override
     public OperationsCleanupDetailResult detail(OperationsCleanupDetailQuery query) {
-        return toDetailResult(cleanupJobRepository.getById(query == null ? null : query.getCleanupId()));
+        return toDetailResult(cleanupJobRepository.getById(query == null ? null : query.cleanupId()));
     }
 
     private List<CleanupItem> discoverCleanupItems(
@@ -341,11 +341,11 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations cleanup execute command must not be null.");
         }
-        if (StringUtils.isBlank(command.getCleanupType())) {
+        if (StringUtils.isBlank(command.cleanupType())) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations cleanup type must not be blank.");
         }
-        if (requireRequesterUserId && command.getRequesterUserId() == null) {
+        if (requireRequesterUserId && command.requesterUserId() == null) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations cleanup requesterUserId must not be null.");
         }

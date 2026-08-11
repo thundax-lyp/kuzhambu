@@ -50,12 +50,24 @@ public class RestoreWriteBlockFilterTest {
     }
 
     @Test
-    public void shouldAllowRestoreExecute() throws ServletException, IOException {
+    public void shouldAllowRestoreCreate() throws ServletException, IOException {
         RestoreWriteBlockFilter filter = filter(blockedState(), new RestoreWriteBlockProperties());
         MockHttpServletResponse response = new MockHttpServletResponse();
         CountingFilterChain chain = new CountingFilterChain();
 
-        filter.doFilter(new MockHttpServletRequest("POST", "/api/operations/restore/execute"), response, chain);
+        filter.doFilter(new MockHttpServletRequest("POST", "/api/operations/restore/create"), response, chain);
+
+        assertTrue(chain.invoked);
+        assertEquals(HttpStatus.OK.value(), response.getStatus());
+    }
+
+    @Test
+    public void shouldAllowRestoreDetailRequest() throws ServletException, IOException {
+        RestoreWriteBlockFilter filter = filter(blockedState(), new RestoreWriteBlockProperties());
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        CountingFilterChain chain = new CountingFilterChain();
+
+        filter.doFilter(new MockHttpServletRequest("POST", "/api/operations/restore/get"), response, chain);
 
         assertTrue(chain.invoked);
         assertEquals(HttpStatus.OK.value(), response.getStatus());
@@ -83,7 +95,7 @@ public class RestoreWriteBlockFilterTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         CountingFilterChain chain = new CountingFilterChain();
 
-        filter.doFilter(new MockHttpServletRequest("POST", "/api/operations/restore/execute"), response, chain);
+        filter.doFilter(new MockHttpServletRequest("POST", "/api/operations/restore/create"), response, chain);
 
         assertFalse(chain.invoked);
         assertEquals(HttpStatus.LOCKED.value(), response.getStatus());

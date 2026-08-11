@@ -31,12 +31,12 @@ class ReportApplicationServiceImplTest {
         CapturingReportRepository repository = new CapturingReportRepository();
         RecordingTaskExecutor taskExecutor = new RecordingTaskExecutor();
         ReportApplicationServiceImpl service = new ReportApplicationServiceImpl(repository, taskExecutor);
-        OperationsReportGenerateCommand command = new OperationsReportGenerateCommand();
-        command.setReportType("WEEKLY");
-        command.setFormat("PDF");
-        command.setPeriodStart(Instant.ofEpochMilli(1_718_000_000_000L));
-        command.setPeriodEnd(Instant.ofEpochMilli(1_718_086_400_000L));
-        command.setRequesterUserId(1001L);
+        OperationsReportGenerateCommand command = new OperationsReportGenerateCommand(
+                "WEEKLY",
+                "PDF",
+                Instant.ofEpochMilli(1_718_000_000_000L),
+                Instant.ofEpochMilli(1_718_086_400_000L),
+                1001L);
 
         OperationsReportGenerateResult result = service.generate(command);
 
@@ -78,11 +78,7 @@ class ReportApplicationServiceImplTest {
                         1001L,
                         Instant.ofEpochMilli(1_720_420_000_000L),
                         Instant.ofEpochMilli(1_720_420_300_000L))));
-        OperationsReportQuery query = new OperationsReportQuery();
-        query.setReportType("MONTHLY");
-        query.setFormat("HTML");
-        query.setReportStatus("SUCCEEDED");
-        query.setRequesterUserId(1001L);
+        OperationsReportQuery query = new OperationsReportQuery("MONTHLY", "HTML", "SUCCEEDED", 1001L, null, null);
 
         PageResult<OperationsReportPageResult> result = service.page(query, new PageQuery(0, 0));
 
@@ -101,8 +97,7 @@ class ReportApplicationServiceImplTest {
     void detailShouldReturnNullWhenRepositoryHasNoRecord() {
         ReportApplicationServiceImpl service =
                 new ReportApplicationServiceImpl(new CapturingReportRepository(), new RecordingTaskExecutor());
-        OperationsReportDetailQuery query = new OperationsReportDetailQuery();
-        query.setReportId(ReportIdCodec.toDomain(9001L));
+        OperationsReportDetailQuery query = new OperationsReportDetailQuery(ReportIdCodec.toDomain(9001L));
 
         OperationsReportDetailResult result = service.detail(query);
 

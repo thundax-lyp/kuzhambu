@@ -40,7 +40,7 @@ public class OperationsBackupAdminController {
     @Operation(summary = "执行手动备份", description = "operations:backup:execute")
     @HasPermission("operations:backup:execute")
     @IgnoreSysLogger
-    @PostMapping("execute")
+    @PostMapping("create")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -48,7 +48,7 @@ public class OperationsBackupAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsBackupExecuteResponse execute(@Valid @RequestBody OperationsBackupExecuteRequest request) {
+    public OperationsBackupExecuteResponse create(@Valid @RequestBody OperationsBackupExecuteRequest request) {
         var result = backupApplicationService.execute(OperationsBackupInterfaceAssembler.toCommand(request));
         return result == null
                 ? OperationsBackupExecuteResponse.builder().build()
@@ -77,7 +77,7 @@ public class OperationsBackupAdminController {
     @Operation(summary = "获取备份任务详情", description = "operations:backup:view")
     @HasPermission("operations:backup:view")
     @IgnoreSysLogger
-    @PostMapping("detail")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -85,7 +85,7 @@ public class OperationsBackupAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsBackupDetailResponse detail(@Valid @RequestBody OperationsBackupDetailRequest request) {
+    public OperationsBackupDetailResponse getDetail(@Valid @RequestBody OperationsBackupDetailRequest request) {
         var result = backupApplicationService.detail(OperationsBackupInterfaceAssembler.toQuery(request));
         return result == null ? null : OperationsBackupInterfaceAssembler.toDetailResponse(result);
     }

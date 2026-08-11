@@ -20,7 +20,7 @@ describe("operations reports service contracts", () => {
             periodStart: "2026-07-01T00:00:00.000+08:00",
             periodEnd: "2026-07-07T23:59:59.000+08:00"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/operations/report/generate", {
+        expect(postJson).toHaveBeenLastCalledWith("/operations/report/create", {
             body: {
                 reportType: "WEEKLY",
                 format: "PDF",
@@ -53,7 +53,7 @@ describe("operations reports service contracts", () => {
         });
 
         await service.getReportDetail({ reportId: "9001" });
-        expect(postJson).toHaveBeenLastCalledWith("/operations/report/detail", {
+        expect(postJson).toHaveBeenLastCalledWith("/operations/report/get", {
             body: {
                 reportId: "9001"
             }

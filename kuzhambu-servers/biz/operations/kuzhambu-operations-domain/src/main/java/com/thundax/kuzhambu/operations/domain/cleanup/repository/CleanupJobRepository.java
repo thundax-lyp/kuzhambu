@@ -26,5 +26,5 @@ public interface CleanupJobRepository {
 
     int updateItem(CleanupItem item);
 
-    int deleteItemsByJobId(CleanupJobId jobId);
+    int deleteByJobId(CleanupJobId jobId);
 }

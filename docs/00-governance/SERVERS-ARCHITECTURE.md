@@ -201,7 +201,7 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 - Java servers 全域 ArchUnit 必须覆盖 `*InterfaceAssembler` / `*FacadeAssembler` 返回 `*Command` / `*Query` 的方法：这类方法不得返回 `null`，必须返回具体契约对象；可空输入的判断放在调用方校验或明确的用例分支中。历史 `return null` 只能通过 legacy allowlist 保持不击穿；每项 allowlist 必须写明违规描述和修复方向。修复后必须同步删除对应 allowlist 项。
 - Java servers 全域 ArchUnit 必须覆盖 application 层分页契约：除 `com.thundax.kuzhambu.common.core.page.PageQuery` 外不得定义其他 `*PageQuery` / `Page*Query`；业务 `*Query` 不得声明分页字段或内嵌 `PageQuery`。历史违规只能通过 legacy allowlist 保持不击穿；每项 allowlist 必须写明是类型命名、分页字段还是内嵌 PageQuery 违规，并写明修复方向。修复后必须同步删除对应 allowlist 项。
 - Java servers 全域 ArchUnit 必须覆盖 application 公开边界。`ApplicationService` 用例方法允许以下输入形态：
-  - 无参数：仅用于 `list*`、`summary*`、`health*`、`rebuild*` 等无条件读取或维护动作。
+  - 无参数：允许任意名称的无参用例方法；是否执行读取、维护或写入动作由具体用例语义、权限和测试约束。
   - 单参数：`*Command`、`*Query`、`PageQuery`，或本域 domain `model.valueobject` 下的强类型 `*Id`、`*Key`、`*Code`、`*Token`、`*Ref`。
   - 双参数：业务 `*Query` + `PageQuery`；或流式/订阅方法的 `*Command` / `*Query` + `Consumer` / `*StreamHandler`。
   - 其他多参数、裸 `Long` / `String` / `Integer` 等基础类型作为业务标识、以及不带契约对象的复杂查询条件，均视为历史债务或新增违规。

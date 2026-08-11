@@ -47,12 +47,12 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<HealthCheckRecord> recordPage = healthCheckRepository.page(
-                query == null ? null : query.getComponent(),
-                query == null ? null : query.getHealthStatus(),
-                query == null ? null : query.getProbeSource(),
-                query == null ? null : query.getProbeTarget(),
-                query == null ? null : query.getCheckedAtStart(),
-                query == null ? null : query.getCheckedAtEnd(),
+                query == null ? null : query.component(),
+                query == null ? null : query.healthStatus(),
+                query == null ? null : query.probeSource(),
+                query == null ? null : query.probeTarget(),
+                query == null ? null : query.checkedAtStart(),
+                query == null ? null : query.checkedAtEnd(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<OperationsHealthPageResult> results =
@@ -62,14 +62,15 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
 
     @Override
     public List<OperationsHealthTrendResult> trend(OperationsHealthTrendQuery query) {
-        OperationsHealthTrendQuery effectiveQuery = query == null ? new OperationsHealthTrendQuery() : query;
+        OperationsHealthTrendQuery effectiveQuery =
+                query == null ? new OperationsHealthTrendQuery(null, null, null, null, null) : query;
         return healthCheckRepository
                 .listTrend(
-                        effectiveQuery.getComponent(),
-                        effectiveQuery.getProbeSource(),
-                        effectiveQuery.getPeriodStart(),
-                        effectiveQuery.getPeriodEnd(),
-                        effectiveQuery.getBucketType())
+                        effectiveQuery.component(),
+                        effectiveQuery.probeSource(),
+                        effectiveQuery.periodStart(),
+                        effectiveQuery.periodEnd(),
+                        effectiveQuery.bucketType())
                 .stream()
                 .map(this::toTrendResult)
                 .collect(Collectors.toList());

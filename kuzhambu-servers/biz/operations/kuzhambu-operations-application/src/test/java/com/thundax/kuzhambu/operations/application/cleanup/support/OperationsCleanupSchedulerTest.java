@@ -51,22 +51,22 @@ class OperationsCleanupSchedulerTest {
         assertEquals(6, cleanupApplicationService.commands.size());
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP,
-                cleanupApplicationService.commands.get(0).getCleanupType());
+                cleanupApplicationService.commands.get(0).cleanupType());
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_EXPORT,
-                cleanupApplicationService.commands.get(1).getCleanupType());
+                cleanupApplicationService.commands.get(1).cleanupType());
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_DRAFT,
-                cleanupApplicationService.commands.get(2).getCleanupType());
+                cleanupApplicationService.commands.get(2).cleanupType());
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT,
-                cleanupApplicationService.commands.get(3).getCleanupType());
+                cleanupApplicationService.commands.get(3).cleanupType());
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK,
-                cleanupApplicationService.commands.get(4).getCleanupType());
+                cleanupApplicationService.commands.get(4).cleanupType());
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK,
-                cleanupApplicationService.commands.get(5).getCleanupType());
+                cleanupApplicationService.commands.get(5).cleanupType());
     }
 
     @Test
@@ -102,7 +102,7 @@ class OperationsCleanupSchedulerTest {
         @Override
         public OperationsCleanupDetailResult executeScheduled(OperationsCleanupExecuteCommand command) {
             commands.add(command);
-            if (command.getCleanupType().equals(failedCleanupType)) {
+            if (command.cleanupType().equals(failedCleanupType)) {
                 throw new IllegalStateException("cleanup failed");
             }
             return null;

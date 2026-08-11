@@ -41,9 +41,9 @@ public class TaskApplicationServiceImpl implements TaskApplicationService {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<LongTaskSnapshot> taskPage = longTaskSnapshotRepository.page(
-                query == null ? null : query.getSourceDomain(),
-                query == null ? null : query.getTaskType(),
-                query == null ? null : query.getTaskStatus(),
+                query == null ? null : query.sourceDomain(),
+                query == null ? null : query.taskType(),
+                query == null ? null : query.taskStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<OperationsTaskPageResult> results =
@@ -53,7 +53,7 @@ public class TaskApplicationServiceImpl implements TaskApplicationService {
 
     @Override
     public OperationsTaskDetailResult detail(OperationsTaskDetailQuery query) {
-        LongTaskSnapshot snapshot = longTaskSnapshotRepository.getById(query == null ? null : query.getSnapshotId());
+        LongTaskSnapshot snapshot = longTaskSnapshotRepository.getById(query == null ? null : query.snapshotId());
         recordLongTaskFailure(snapshot);
         return toDetailResult(snapshot);
     }

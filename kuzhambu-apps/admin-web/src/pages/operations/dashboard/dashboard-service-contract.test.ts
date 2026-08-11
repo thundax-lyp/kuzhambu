@@ -19,7 +19,7 @@ describe("operations dashboard service contracts", () => {
             periodEnd: "2026-07-07T23:59:59.000+08:00"
         });
 
-        expect(postJson).toHaveBeenCalledWith("/operations/dashboard/overview", {
+        expect(postJson).toHaveBeenCalledWith("/operations/dashboard/get", {
             body: {
                 periodType: "CUSTOM",
                 periodStart: "2026-07-01T00:00:00.000+08:00",
@@ -37,7 +37,7 @@ describe("operations dashboard service contracts", () => {
             bucketType: "DAY"
         });
 
-        expect(postJson).toHaveBeenCalledWith("/operations/health/trend", {
+        expect(postJson).toHaveBeenCalledWith("/operations/health/get", {
             body: {
                 component: "admin-server",
                 probeSource: "LOCAL",
@@ -74,7 +74,7 @@ describe("operations dashboard service contracts", () => {
 
     it("maps health alert action endpoints and body fields", async () => {
         await service.confirmHealthAlert({ alertId: "9201" });
-        expect(postJson).toHaveBeenCalledWith("/operations/health/alerts/ack", {
+        expect(postJson).toHaveBeenCalledWith("/operations/health/alerts/confirm", {
             body: {
                 alertId: "9201"
             }

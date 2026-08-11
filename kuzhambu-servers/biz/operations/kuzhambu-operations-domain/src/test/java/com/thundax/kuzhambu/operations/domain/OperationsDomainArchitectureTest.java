@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class OperationsDomainArchitectureTest extends AbstractArchitectureTest {
@@ -16,10 +17,6 @@ class OperationsDomainArchitectureTest extends AbstractArchitectureTest {
 
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertDomainServiceSourcesUseRepositoryBoundary(Path.of("src/main/java"));
-        NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(
-                classes,
-                NamingArchitectureRuleSupport.legacyRepositoryInterfaceMethodNameAllowances(
-                        "com.thundax.kuzhambu.operations.domain.cleanup.repository.CleanupJobRepository.deleteItemsByJobId",
-                        "com.thundax.kuzhambu.operations.domain.health.repository.HealthAlertRepository.getOpenBySource"));
+        NamingArchitectureRuleSupport.assertRepositoryInterfaceMethodNames(classes, Collections.emptyList());
     }
 }

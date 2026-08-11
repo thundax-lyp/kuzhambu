@@ -34,7 +34,7 @@ public class OperationsDashboardAdminController {
     @Operation(summary = "查询运营看板概览", description = "operations:dashboard:view")
     @HasPermission("operations:dashboard:view")
     @IgnoreSysLogger
-    @PostMapping("overview")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -42,7 +42,7 @@ public class OperationsDashboardAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsDashboardOverviewResponse overview(
+    public OperationsDashboardOverviewResponse getOverview(
             @Valid @RequestBody OperationsDashboardOverviewRequest request) {
         var result =
                 operationsDashboardApplicationService.overview(OperationsDashboardInterfaceAssembler.toQuery(request));

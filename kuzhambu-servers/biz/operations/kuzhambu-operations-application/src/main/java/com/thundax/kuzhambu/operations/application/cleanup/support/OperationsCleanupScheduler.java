@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.application.cleanup.support;
 
-import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
 import com.thundax.kuzhambu.operations.application.cleanup.configure.OperationsCleanupScheduleProperties;
+import com.thundax.kuzhambu.operations.application.cleanup.facade.assembler.OperationsCleanupSchedulerFacadeAssembler;
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
 import java.time.Instant;
 import org.slf4j.Logger;
@@ -53,8 +53,8 @@ public class OperationsCleanupScheduler implements ApplicationListener<Applicati
 
     private void executePolicy(OperationsCleanupPolicies.CleanupPolicy policy, Instant requestedAt) {
         try {
-            cleanupApplicationService.executeScheduled(new OperationsCleanupExecuteCommand(
-                    policy.cleanupType(), null, requestedAt, policy.retentionDays(), policy.limit()));
+            cleanupApplicationService.executeScheduled(
+                    OperationsCleanupSchedulerFacadeAssembler.toCommand(policy, requestedAt));
         } catch (RuntimeException exception) {
             LOGGER.warn("Operations cleanup policy execution failed, cleanupType={}", policy.cleanupType(), exception);
         }

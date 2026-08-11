@@ -17,7 +17,7 @@ export interface CleanupDetailCommand {
 }
 
 export const requestCleanup = (command: CleanupExecuteCommand) => {
-    return postJson<OperationsCleanupRecord, CleanupExecuteCommand>("/operations/cleanup/execute", {
+    return postJson<OperationsCleanupRecord, CleanupExecuteCommand>("/operations/cleanup/create", {
         body: command
     });
 };
@@ -32,7 +32,7 @@ export const pageCleanups = (query: PageQuery<CleanupPageQuery> = {}) => {
 };
 
 export const getCleanupDetail = (command: CleanupDetailCommand) => {
-    return postJson<OperationsCleanupRecord, CleanupDetailCommand>("/operations/cleanup/detail", {
+    return postJson<OperationsCleanupRecord, CleanupDetailCommand>("/operations/cleanup/get", {
         body: command
     });
 };
