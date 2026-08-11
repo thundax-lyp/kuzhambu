@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations interface / health-report response annotations`：为 health、report Response 补齐模型注解
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
-    - 范围对象：`OperationsHealthAlertPageResponse.java`、`OperationsHealthAlertSummaryResponse.java`、`OperationsHealthPageResponse.java`、`OperationsHealthSummaryResponse.java`、`OperationsHealthTrendResponse.java`、`OperationsReportDetailResponse.java`、`OperationsReportGenerateResponse.java`、`OperationsReportPageResponse.java`、`OperationsInterfaceArchitectureTest.java`，均位于 `kuzhambu-servers/biz/operations/kuzhambu-operations-interface/`。
-    - 处理动作：为列出的 health/report Response 补齐 required model annotations。
-    - 验收点：对应 Response allowance 已删除，且 interface 架构测试通过。
-    - 重要度：7/10
-
 - [ ] `Operations interface / restore-task response annotations`：完成 Response allowlist 清零
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`

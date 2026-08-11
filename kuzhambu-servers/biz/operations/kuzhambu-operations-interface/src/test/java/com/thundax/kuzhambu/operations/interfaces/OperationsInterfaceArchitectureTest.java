@@ -55,14 +55,6 @@ class OperationsInterfaceArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
         return java.util.Arrays.stream(new String[] {
-                    "admin.health.controller.response.OperationsHealthAlertPageResponse",
-                    "admin.health.controller.response.OperationsHealthAlertSummaryResponse",
-                    "admin.health.controller.response.OperationsHealthPageResponse",
-                    "admin.health.controller.response.OperationsHealthSummaryResponse",
-                    "admin.health.controller.response.OperationsHealthTrendResponse",
-                    "admin.report.controller.response.OperationsReportDetailResponse",
-                    "admin.report.controller.response.OperationsReportGenerateResponse",
-                    "admin.report.controller.response.OperationsReportPageResponse",
                     "admin.restore.controller.response.OperationsRestoreDetailResponse",
                     "admin.restore.controller.response.OperationsRestoreExecuteResponse",
                     "admin.restore.controller.response.OperationsRestorePageResponse",
