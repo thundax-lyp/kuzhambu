@@ -37,17 +37,20 @@ public class StorageReadableContentFacadeAssembler {
     }
 
     @NonNull
-    public GetStorageObjectQuery toGetStorageObjectQuery(Long storageObjectId) {
+    public GetStorageObjectQuery toGetStorageObjectQuery(@NonNull Long storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
         return new GetStorageObjectQuery(StoredObjectIdCodec.toDomain(storageObjectId));
     }
 
     @NonNull
-    public ListStorageReferencesQuery toListStorageReferencesQuery(StoredObjectId storageObjectId) {
+    public ListStorageReferencesQuery toListStorageReferencesQuery(@NonNull StoredObjectId storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
         return new ListStorageReferencesQuery(storageObjectId);
     }
 
     @NonNull
-    public ListStorageReferencesQuery toListStorageReferencesQuery(Long storageObjectId) {
+    public ListStorageReferencesQuery toListStorageReferencesQuery(@NonNull Long storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
         return new ListStorageReferencesQuery(toStoredObjectId(storageObjectId));
     }
 

@@ -73,8 +73,8 @@ class StorageFacadeImplTest {
                 ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
         verify(storageReferenceApplicationService).changeReferenceStatus(statusCaptor.capture());
         assertEquals(
-                StoredObjectIdCodec.toDomain(7001L), statusCaptor.getValue().getId());
-        assertEquals("REFERENCED", statusCaptor.getValue().getReferenceStatus().value());
+                StoredObjectIdCodec.toDomain(7001L), statusCaptor.getValue().id());
+        assertEquals("REFERENCED", statusCaptor.getValue().referenceStatus().value());
     }
 
     @Test
@@ -141,10 +141,10 @@ class StorageFacadeImplTest {
         assertEquals(7001L, response.getStoredObjects().get(0).getId());
         ArgumentCaptor<ListStorageObjectsQuery> queryCaptor = ArgumentCaptor.forClass(ListStorageObjectsQuery.class);
         verify(storageObjectApplicationService).list(queryCaptor.capture());
-        assertNull(queryCaptor.getValue().getObjectStatus());
-        assertNull(queryCaptor.getValue().getReferenceStatus());
-        assertNull(queryCaptor.getValue().getReferenceOwnerRef());
-        assertNull(queryCaptor.getValue().getRemarks());
+        assertNull(queryCaptor.getValue().objectStatus());
+        assertNull(queryCaptor.getValue().referenceStatus());
+        assertNull(queryCaptor.getValue().referenceOwnerRef());
+        assertNull(queryCaptor.getValue().remarks());
     }
 
     @Test
