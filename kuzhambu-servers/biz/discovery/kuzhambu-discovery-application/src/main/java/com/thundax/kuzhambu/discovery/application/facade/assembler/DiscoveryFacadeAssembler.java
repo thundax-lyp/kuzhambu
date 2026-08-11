@@ -7,15 +7,14 @@ import com.thundax.kuzhambu.discovery.facade.dto.DiscoveryTopQueryFacadeDto;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySummaryFacadeResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DiscoveryFacadeAssembler {
 
     public DiscoverySummaryFacadeResponse toSummaryFacadeResponse(DiscoveryReportSummaryResult result) {
-        if (result == null) {
-            return null;
-        }
+        Objects.requireNonNull(result, "result");
         return DiscoverySummaryFacadeResponse.builder()
                 .periodStart(result.getPeriodStart())
                 .periodEnd(result.getPeriodEnd())

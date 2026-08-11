@@ -19,12 +19,14 @@ import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublication
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCategoryAggregationFacadeResponse;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationProbeFacadeResponse;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DiscoverySearchPublicationFacadeAssembler {
 
     public SearchPublicationPrepareCommand toPrepareCommand(DiscoverySearchPublicationPrepareFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchPublicationPrepareCommand(
                 request.getSourceId(),
                 request.getContentType(),
@@ -44,6 +46,7 @@ public class DiscoverySearchPublicationFacadeAssembler {
 
     public SearchPublicationReferenceCommand toReferenceCommand(
             DiscoverySearchPublicationReferenceFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchPublicationReferenceCommand(
                 request.getDocumentId(),
                 request.getContentVersionId(),
@@ -53,23 +56,24 @@ public class DiscoverySearchPublicationFacadeAssembler {
 
     public SearchPublicationCandidateQuery toCandidateQuery(
             DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchPublicationCandidateQuery(
-                request == null ? null : request.getContentType(),
-                request == null ? null : request.getCategoryId(),
-                request == null ? null : request.getVolumeId(),
-                request == null ? null : request.getKeyword());
+                request.getContentType(), request.getCategoryId(), request.getVolumeId(), request.getKeyword());
     }
 
     public PageQuery toPageQuery(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new PageQuery(pageNo(request), pageSize(request));
     }
 
     public SearchPublicationCategoryAggregationQuery toCategoryAggregationQuery(
             DiscoverySearchPublicationCategoryAggregationFacadeRequest request) {
-        return new SearchPublicationCategoryAggregationQuery(request == null ? null : request.getContentType());
+        Objects.requireNonNull(request, "request");
+        return new SearchPublicationCategoryAggregationQuery(request.getContentType());
     }
 
     public DiscoverySearchPublicationProbeFacadeResponse toProbeResponse(SearchPublicationProbeResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoverySearchPublicationProbeFacadeResponse.builder()
                 .present(result.isPresent())
                 .publicationStatus(result.getPublicationStatus())
@@ -81,13 +85,14 @@ public class DiscoverySearchPublicationFacadeAssembler {
 
     public DiscoverySearchPublicationCandidatePageFacadeResponse toCandidatePageResponse(
             PageResult<SearchPublicationCandidateResult> result) {
-        List<DiscoverySearchPublicationCandidateFacadeResponse> records = result == null || result.getRecords() == null
+        Objects.requireNonNull(result, "result");
+        List<DiscoverySearchPublicationCandidateFacadeResponse> records = result.getRecords() == null
                 ? List.of()
                 : result.getRecords().stream().map(this::toCandidateResponse).toList();
         return DiscoverySearchPublicationCandidatePageFacadeResponse.builder()
-                .pageNo(result == null ? 1 : result.getPageNo())
-                .pageSize(result == null ? 0 : result.getPageSize())
-                .totalCount(result == null ? 0 : result.getTotalCount())
+                .pageNo(result.getPageNo())
+                .pageSize(result.getPageSize())
+                .totalCount(result.getTotalCount())
                 .records(records)
                 .build();
     }
@@ -103,12 +108,12 @@ public class DiscoverySearchPublicationFacadeAssembler {
     }
 
     private int pageNo(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
-        Integer pageNo = request == null ? null : request.getPageNo();
+        Integer pageNo = request.getPageNo();
         return pageNo == null ? PageRules.firstPageIndex() : pageNo;
     }
 
     private int pageSize(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
-        Integer pageSize = request == null ? null : request.getPageSize();
+        Integer pageSize = request.getPageSize();
         return pageSize == null ? PageRules.defaultPageSize() : pageSize;
     }
 

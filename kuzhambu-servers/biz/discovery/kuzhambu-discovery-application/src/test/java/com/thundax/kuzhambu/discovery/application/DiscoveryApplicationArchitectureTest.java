@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.discovery.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
-import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
@@ -40,10 +39,7 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")),
-                BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoveryFacadeAssembler",
-                        "com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoverySearchPublicationFacadeAssembler"));
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
     }
 
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
