@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations application / scheduler and construction`：移除无参自动备份与 Command/Query 构造位置 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
-    - 范围对象：`BackupApplicationService.java`、`BackupApplicationServiceImpl.java`、`OperationsBackupScheduler.java`、`BackupSchedulerApplicationService.java`、`OperationsCleanupScheduler.java`、`OperationsCleanupSchedulerFacadeAssembler.java`、`OperationsReportAdminController.java`、`OperationsReportInterfaceAssembler.java`、`OperationsApplicationArchitectureTest.java`、`OperationsBackupSchedulerTest.java`、`BackupApplicationServiceImplTest.java`，均位于 `kuzhambu-servers/biz/operations/`。
-    - 处理动作：建立保留 AUTO 语义的调度专用入口，并删除 application 边界与构造位置 allowlist。
-    - 验收点：自动备份仍写入 AUTO/skipped 记录，且 `METHOD_SHAPE` 与 `COMMAND_QUERY_CONSTRUCTION` allowlist 无匹配。
-    - 重要度：10/10
-
 - [ ] `Operations interface / assembler nullness`：移除 task、report、restore Assembler 的 null contract
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`

@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
 import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicationService;
+import com.thundax.kuzhambu.operations.application.backup.service.BackupSchedulerApplicationService;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
@@ -31,7 +32,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
-public class BackupApplicationServiceImpl implements BackupApplicationService {
+public class BackupApplicationServiceImpl implements BackupApplicationService, BackupSchedulerApplicationService {
 
     private static final Duration RETENTION = Duration.ofDays(30);
     private static final DateTimeFormatter TIMESTAMP_FORMATTER =
@@ -70,7 +71,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
     }
 
     @Override
-    public OperationsBackupExecuteResult executeAutoBackup() {
+    public OperationsBackupExecuteResult executeScheduledBackup() {
         return executeBackup(BackupType.AUTO, null, true);
     }
 

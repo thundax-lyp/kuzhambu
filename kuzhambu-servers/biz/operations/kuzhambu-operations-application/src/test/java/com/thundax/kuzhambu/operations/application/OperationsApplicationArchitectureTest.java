@@ -21,8 +21,7 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
     void applicationContractsShouldStayInDedicatedPackages() throws Exception {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
-        LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(
-                classes, legacyApplicationServiceBoundaryAllowances());
+        LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(classes, Collections.emptyList());
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptySet());
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
                 classes, Collections.emptySet());
@@ -33,7 +32,7 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-operations-interface/src/main/java")),
-                legacyCommandQueryConstructionAllowances());
+                Collections.emptyList());
         NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-operations-interface/src/main/java")),
                 legacyAssemblerNullReturnAllowances());
@@ -44,30 +43,6 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
                 Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
         SourceHardRuleArchitectureRuleSupport.assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
                 Path.of("src/main/java"));
-    }
-
-    private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {
-        return List.of(
-                ArchitectureRuleAllowance.of(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.operations.application.backup.service."
-                                + "BackupApplicationService.executeAutoBackup()",
-                        "BackupApplicationService.executeAutoBackup is a legacy no-argument write/maintenance operation.",
-                        "Introduce an explicit OperationsBackupExecuteCommand or scheduler-only support service boundary, then remove this allowance."));
-    }
-
-    private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
-        return List.of(
-                constructionViolation(
-                        "com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupScheduler#OperationsCleanupExecuteCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.operations.interfaces.admin.report.controller.OperationsReportAdminController#OperationsReportDetailQuery:1"));
-    }
-
-    private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {
-        return ArchitectureRuleAllowance.of(
-                "COMMAND_QUERY_CONSTRUCTION:" + ownerAndType,
-                "Operations legacy scheduler or controller constructs an application Command/Query directly.",
-                "Move conversion into the corresponding InterfaceAssembler or application orchestration boundary, then remove this allowance.");
     }
 
     private static List<ArchitectureRuleAllowance> legacyAssemblerNullReturnAllowances() {

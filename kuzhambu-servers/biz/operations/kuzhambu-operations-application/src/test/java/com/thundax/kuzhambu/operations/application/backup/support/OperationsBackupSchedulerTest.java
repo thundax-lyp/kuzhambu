@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
 import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicationService;
+import com.thundax.kuzhambu.operations.application.backup.service.BackupSchedulerApplicationService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -19,46 +20,46 @@ class OperationsBackupSchedulerTest {
 
     @Test
     void onApplicationReadyShouldExecuteAutoBackup() {
-        CountingBackupApplicationService backupApplicationService = new CountingBackupApplicationService();
+        CountingBackupApplicationService backupSchedulerApplicationService = new CountingBackupApplicationService();
         OperationsBackupScheduler scheduler =
-                new OperationsBackupScheduler(backupApplicationService, properties(true, true));
+                new OperationsBackupScheduler(backupSchedulerApplicationService, properties(true, true));
 
         scheduler.onApplicationEvent(null);
 
-        assertEquals(1, backupApplicationService.autoBackupCount);
+        assertEquals(1, backupSchedulerApplicationService.autoBackupCount);
     }
 
     @Test
     void onApplicationReadyShouldSkipWhenScheduleDisabled() {
-        CountingBackupApplicationService backupApplicationService = new CountingBackupApplicationService();
+        CountingBackupApplicationService backupSchedulerApplicationService = new CountingBackupApplicationService();
         OperationsBackupScheduler scheduler =
-                new OperationsBackupScheduler(backupApplicationService, properties(false, true));
+                new OperationsBackupScheduler(backupSchedulerApplicationService, properties(false, true));
 
         scheduler.onApplicationEvent(null);
 
-        assertEquals(0, backupApplicationService.autoBackupCount);
+        assertEquals(0, backupSchedulerApplicationService.autoBackupCount);
     }
 
     @Test
     void onApplicationReadyShouldSkipWhenStartupDisabled() {
-        CountingBackupApplicationService backupApplicationService = new CountingBackupApplicationService();
+        CountingBackupApplicationService backupSchedulerApplicationService = new CountingBackupApplicationService();
         OperationsBackupScheduler scheduler =
-                new OperationsBackupScheduler(backupApplicationService, properties(true, false));
+                new OperationsBackupScheduler(backupSchedulerApplicationService, properties(true, false));
 
         scheduler.onApplicationEvent(null);
 
-        assertEquals(0, backupApplicationService.autoBackupCount);
+        assertEquals(0, backupSchedulerApplicationService.autoBackupCount);
     }
 
     @Test
     void executeDailyBackupShouldExecuteAutoBackup() {
-        CountingBackupApplicationService backupApplicationService = new CountingBackupApplicationService();
+        CountingBackupApplicationService backupSchedulerApplicationService = new CountingBackupApplicationService();
         OperationsBackupScheduler scheduler =
-                new OperationsBackupScheduler(backupApplicationService, properties(true, true));
+                new OperationsBackupScheduler(backupSchedulerApplicationService, properties(true, true));
 
         scheduler.executeDailyBackup();
 
-        assertEquals(1, backupApplicationService.autoBackupCount);
+        assertEquals(1, backupSchedulerApplicationService.autoBackupCount);
     }
 
     private OperationsBackupScheduleProperties properties(boolean enabled, boolean startupEnabled) {
@@ -69,7 +70,8 @@ class OperationsBackupSchedulerTest {
         return properties;
     }
 
-    private static final class CountingBackupApplicationService implements BackupApplicationService {
+    private static final class CountingBackupApplicationService
+            implements BackupApplicationService, BackupSchedulerApplicationService {
         private int autoBackupCount;
 
         @Override
@@ -78,7 +80,7 @@ class OperationsBackupSchedulerTest {
         }
 
         @Override
-        public OperationsBackupExecuteResult executeAutoBackup() {
+        public OperationsBackupExecuteResult executeScheduledBackup() {
             autoBackupCount++;
             return null;
         }

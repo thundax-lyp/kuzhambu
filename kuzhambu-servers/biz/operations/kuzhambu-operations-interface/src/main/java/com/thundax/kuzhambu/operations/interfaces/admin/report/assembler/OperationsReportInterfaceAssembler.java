@@ -52,6 +52,13 @@ public final class OperationsReportInterfaceAssembler {
         return new OperationsReportDetailQuery(ReportIdCodec.toDomain(request.getReportId()));
     }
 
+    public static OperationsReportDetailQuery toQuery(Long reportId) {
+        if (reportId == null) {
+            return null;
+        }
+        return new OperationsReportDetailQuery(ReportIdCodec.toDomain(reportId));
+    }
+
     public static OperationsReportGenerateResponse toResponse(OperationsReportGenerateResult result) {
         if (result == null) {
             return null;
