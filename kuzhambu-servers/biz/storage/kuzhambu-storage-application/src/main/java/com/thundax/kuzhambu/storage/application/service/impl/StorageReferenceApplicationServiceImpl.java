@@ -23,7 +23,7 @@ public class StorageReferenceApplicationServiceImpl implements StorageReferenceA
     @Override
     public List<StoredObjectReference> list(ListStorageReferencesQuery query) {
         StorageQuery storageQuery = new StorageQuery();
-        storageQuery.setId(query == null ? null : query.getId());
+        storageQuery.setId(query == null ? null : query.id());
         return storageApplicationService.listReferences(storageQuery);
     }
 

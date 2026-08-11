@@ -15,8 +15,6 @@ final class StorageApplicationCommandQueryRecordAllowances {
     static List<ArchitectureRuleAllowance> legacyAllowances() {
         return List.of(
                 legacy(
-                        "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.storage.application.query.ListStorageReferencesQuery"),
-                legacy(
                         "COMMAND_QUERY_RECORD:com.thundax.kuzhambu.storage.application.query.OpenReadableStorageContentQuery"),
                 legacy("COMMAND_QUERY_RECORD:com.thundax.kuzhambu.storage.application.query.StorageQuery"));
     }
