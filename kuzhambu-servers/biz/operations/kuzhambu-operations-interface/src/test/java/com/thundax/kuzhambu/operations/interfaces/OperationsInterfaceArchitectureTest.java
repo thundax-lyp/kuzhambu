@@ -55,19 +55,6 @@ class OperationsInterfaceArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
         return java.util.Arrays.stream(new String[] {
-                    "admin.backup.controller.response.OperationsBackupDetailResponse",
-                    "admin.backup.controller.response.OperationsBackupExecuteResponse",
-                    "admin.backup.controller.response.OperationsBackupPageResponse",
-                    "admin.cleanup.controller.response.OperationsCleanupDetailResponse",
-                    "admin.cleanup.controller.response.OperationsCleanupExecuteResponse",
-                    "admin.cleanup.controller.response.OperationsCleanupPageResponse",
-                    "admin.dashboard.controller.response.OperationsDashboardOverviewResponse",
-                    "admin.dashboard.controller.response.OperationsDashboardOverviewResponse$BucketCountResponse",
-                    "admin.dashboard.controller.response.OperationsDashboardOverviewResponse$TaskStatusSummaryResponse",
-                    "admin.dashboard.controller.response.OperationsDashboardOverviewResponse$TopAiCapabilityResponse",
-                    "admin.dashboard.controller.response.OperationsDashboardOverviewResponse$TopContentResponse",
-                    "admin.dashboard.controller.response.OperationsDashboardOverviewResponse$TopQueryResponse",
-                    "admin.dashboard.controller.response.OperationsDashboardOverviewResponse$TopTagResponse",
                     "admin.health.controller.response.OperationsHealthAlertPageResponse",
                     "admin.health.controller.response.OperationsHealthAlertSummaryResponse",
                     "admin.health.controller.response.OperationsHealthPageResponse",

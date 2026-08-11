@@ -1,7 +1,10 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertSummaryResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthSummaryResponse;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -16,6 +19,9 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(name = "OperationsDashboardOverviewResponse", description = "Operations 仪表盘概览响应")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OperationsDashboardOverviewResponse {
     private Instant periodStart;
     private Instant periodEnd;
@@ -56,6 +62,9 @@ public class OperationsDashboardOverviewResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "BucketCountResponse", description = "聚合指标时间桶")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class BucketCountResponse {
         private String bucket;
         private Long count;
@@ -66,6 +75,9 @@ public class OperationsDashboardOverviewResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "TaskStatusSummaryResponse", description = "任务状态统计")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TaskStatusSummaryResponse {
         private String taskStatus;
         private Long count;
@@ -76,6 +88,9 @@ public class OperationsDashboardOverviewResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "TopContentResponse", description = "Top 内容")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TopContentResponse {
         private Long contentId;
         private String contentType;
@@ -88,6 +103,9 @@ public class OperationsDashboardOverviewResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "TopQueryResponse", description = "Top 查询词")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TopQueryResponse {
         private String queryText;
         private Long count;
@@ -98,6 +116,9 @@ public class OperationsDashboardOverviewResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "TopTagResponse", description = "Top 标签")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TopTagResponse {
         private String tagName;
         private Long contentRefCount;
@@ -108,6 +129,9 @@ public class OperationsDashboardOverviewResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(name = "TopAiCapabilityResponse", description = "Top AI 能力")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TopAiCapabilityResponse {
         private String capability;
         private Long invocationCount;
