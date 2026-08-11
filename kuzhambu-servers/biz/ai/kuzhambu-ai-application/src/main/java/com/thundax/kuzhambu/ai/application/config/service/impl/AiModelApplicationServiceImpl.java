@@ -34,7 +34,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     @Override
     public AiModel get(GetAiModelQuery query) {
-        return aiModelRepository.get(query == null ? null : query.modelId());
+        return aiModelRepository.getById(query == null ? null : query.modelId());
     }
 
     @Override

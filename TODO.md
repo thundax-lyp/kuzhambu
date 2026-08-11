@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI config repositories`：清理配置仓储方法命名 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`AiBusinessConfigRepository.java`、`AiModelRepository.java`、`PromptRepository.java`、`AiDomainArchitectureTest.java`、`RepositoryApiHardRulesArchitectureTest.java`
-    - 处理动作：按 RUNBOOK 的固定映射改名配置仓储方法、同步实现与调用方并删除对应 allowance。
-    - 验收点：配置仓储相关 domain 与 shared-test key 均不存在，`mvn -pl biz/ai/kuzhambu-ai-domain -am test` 通过。
-    - 重要度：9/10
-
 - [ ] `AI invocation repositories`：清理调用仓储方法命名 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`

@@ -23,7 +23,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
     }
 
     @Override
-    public AiModel get(AiModelId id) {
+    public AiModel getById(AiModelId id) {
         return AiModelPersistenceAssembler.toDomain(aiModelMapper.selectById(AiModelIdCodec.toValue(id)));
     }
 

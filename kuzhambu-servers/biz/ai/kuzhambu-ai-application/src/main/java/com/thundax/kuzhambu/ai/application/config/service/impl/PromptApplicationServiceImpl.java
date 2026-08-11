@@ -59,7 +59,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public PromptTemplate get(GetPromptQuery query) {
-        return promptRepository.get(query == null ? null : query.templateId());
+        return promptRepository.getTemplateById(query == null ? null : query.templateId());
     }
 
     @Override
@@ -68,7 +68,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (capability == null) {
             return null;
         }
-        return promptRepository.get(capability);
+        return promptRepository.getTemplateByCapability(capability);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         PromptVersion version = toVersion(command, templateId, versionNo, variablesSnapshotJson(variables));
         replaceVariablesOnCreate(template, templateId, variables);
         insertVersion(version);
-        promptRepository.markCurrentVersion(templateId, versionNo);
+        promptRepository.updateCurrentVersion(templateId, versionNo);
         return templateId;
     }
 
@@ -116,7 +116,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (templateId == null) {
             return null;
         }
-        return PromptVersionResult.from(promptRepository.getCurrentVersion(templateId));
+        return PromptVersionResult.from(promptRepository.getCurrentVersionByTemplateId(templateId));
     }
 
     @Override
@@ -149,7 +149,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         PromptTemplateId templateId = command == null ? null : command.templateId();
         int versionNo = command == null ? 0 : command.versionNo();
         findVersion(templateId, versionNo);
-        int affectedRows = promptRepository.markCurrentVersion(templateId, versionNo);
+        int affectedRows = promptRepository.updateCurrentVersion(templateId, versionNo);
         if (affectedRows <= 0) {
             throw new BizException("Prompt rollback failed: " + templateId.value() + "#" + versionNo);
         }
@@ -182,7 +182,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     @Override
     public PromptVersionResult buildOptimizationSuggestion(BuildPromptOptimizationSuggestionCommand command) {
         PromptTemplateId templateId = command == null ? null : command.templateId();
-        PromptVersion current = promptRepository.getCurrentVersion(templateId);
+        PromptVersion current = promptRepository.getCurrentVersionByTemplateId(templateId);
         if (current == null) {
             return null;
         }
@@ -278,7 +278,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (templateId == null) {
             throw new BizException("Prompt templateId is required");
         }
-        PromptTemplate template = promptRepository.get(templateId);
+        PromptTemplate template = promptRepository.getTemplateById(templateId);
         if (template == null) {
             throw new BizException("Prompt template not found: " + PromptTemplateIdCodec.toValue(templateId));
         }
@@ -292,7 +292,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     private void validateImmutableCapability(PromptTemplate template) {
-        PromptTemplate existing = promptRepository.get(template.getId());
+        PromptTemplate existing = promptRepository.getTemplateById(template.getId());
         if (existing == null) {
             throw new BizException("Prompt template not found: " + PromptTemplateIdCodec.toValue(template.getId()));
         }
@@ -305,12 +305,12 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     private void replaceVariablesOnCreate(
             PromptTemplate template, PromptTemplateId templateId, List<PromptVariable> variables) {
         if (template.getId() == null) {
-            promptRepository.replaceVariables(templateId, variables);
+            promptRepository.replaceTemplateVariables(templateId, variables);
         }
     }
 
     private int nextVersionNo(PromptTemplateId templateId) {
-        PromptVersion current = promptRepository.getCurrentVersion(templateId);
+        PromptVersion current = promptRepository.getCurrentVersionByTemplateId(templateId);
         return current == null ? 1 : current.getVersionNo() + 1;
     }
 

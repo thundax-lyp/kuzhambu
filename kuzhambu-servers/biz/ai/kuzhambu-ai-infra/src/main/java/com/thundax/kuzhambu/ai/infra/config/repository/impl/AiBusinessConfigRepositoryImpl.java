@@ -25,13 +25,13 @@ public class AiBusinessConfigRepositoryImpl implements AiBusinessConfigRepositor
     }
 
     @Override
-    public AiBusinessConfig get(AiBusinessConfigId id) {
+    public AiBusinessConfig getById(AiBusinessConfigId id) {
         return AiBusinessConfigPersistenceAssembler.toDomain(
                 aiBusinessConfigMapper.selectById(AiBusinessConfigIdCodec.toValue(id)));
     }
 
     @Override
-    public AiBusinessConfig get(AiBusinessCapability capability) {
+    public AiBusinessConfig getByCapability(AiBusinessCapability capability) {
         return AiBusinessConfigPersistenceAssembler.toDomain(
                 aiBusinessConfigMapper.selectByCapability(capability == null ? null : capability.value()));
     }

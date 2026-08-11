@@ -97,7 +97,7 @@ public class AiWorkerModelConfigResolver {
         } else if (!matchesModel(effectiveModelId, config)) {
             config = null;
         }
-        AiModel model = modelRepository.get(effectiveModelId);
+        AiModel model = modelRepository.getById(effectiveModelId);
         if (model == null) {
             throw new BizException("AI model not found: " + effectiveModelId);
         }

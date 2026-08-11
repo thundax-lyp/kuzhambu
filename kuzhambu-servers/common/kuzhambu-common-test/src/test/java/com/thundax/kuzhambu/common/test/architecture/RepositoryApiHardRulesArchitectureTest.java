@@ -177,7 +177,6 @@ class RepositoryApiHardRulesArchitectureTest {
         addLegacyActionVerbAllowances(
                 allowances,
                 "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/prompt/controller/PromptController.java",
-                "method=getTemplateByCapability path=template/get-by-capability",
                 "method=saveTemplate",
                 "method=saveTemplate path=template/save",
                 "method=getCurrentVersion path=version/current",

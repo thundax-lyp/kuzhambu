@@ -74,7 +74,7 @@ class AiModelRepositoryIT {
         assertEquals(registeredAt, savedModel.getRegisteredAt());
 
         when(mapper.selectById(any())).thenReturn(savedModel);
-        AiModel loadedModel = repository.get(AiModelIdCodec.toDomain(2001L));
+        AiModel loadedModel = repository.getById(AiModelIdCodec.toDomain(2001L));
 
         assertNotNull(loadedModel);
         assertEquals(List.of(AiModelCapability.TEXT2TEXT, AiModelCapability.IMAGE2TEXT), loadedModel.getCapabilities());

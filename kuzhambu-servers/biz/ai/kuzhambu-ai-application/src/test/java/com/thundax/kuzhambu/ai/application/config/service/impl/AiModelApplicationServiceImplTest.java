@@ -37,12 +37,12 @@ class AiModelApplicationServiceImplTest {
         }
 
         @Override
-        public AiBusinessConfig get(AiBusinessConfigId id) {
+        public AiBusinessConfig getById(AiBusinessConfigId id) {
             return config;
         }
 
         @Override
-        public AiBusinessConfig get(AiBusinessCapability capability) {
+        public AiBusinessConfig getByCapability(AiBusinessCapability capability) {
             return config;
         }
 
@@ -75,7 +75,7 @@ class AiModelApplicationServiceImplTest {
     private static class FakeModelRepository implements AiModelRepository {
 
         @Override
-        public AiModel get(AiModelId id) {
+        public AiModel getById(AiModelId id) {
             return null;
         }
 

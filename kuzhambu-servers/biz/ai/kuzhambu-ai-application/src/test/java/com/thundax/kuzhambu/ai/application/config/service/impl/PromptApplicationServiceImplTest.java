@@ -179,12 +179,12 @@ class PromptApplicationServiceImplTest {
     private static class ConflictPromptRepository implements PromptRepository {
 
         @Override
-        public PromptTemplate get(PromptTemplateId templateId) {
+        public PromptTemplate getTemplateById(PromptTemplateId templateId) {
             return existingTemplate(templateId, AiBusinessCapability.CLASSICS_SUMMARY);
         }
 
         @Override
-        public PromptTemplate get(AiBusinessCapability capability) {
+        public PromptTemplate getTemplateByCapability(AiBusinessCapability capability) {
             return null;
         }
 
@@ -204,7 +204,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public PromptVersion getCurrentVersion(PromptTemplateId templateId) {
+        public PromptVersion getCurrentVersionByTemplateId(PromptTemplateId templateId) {
             PromptVersion version = new PromptVersion();
             version.setTemplateId(templateId);
             version.setVersionNo(1);
@@ -212,7 +212,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public PromptVersion getVersion(PromptVersionId versionId) {
+        public PromptVersion getVersionById(PromptVersionId versionId) {
             return null;
         }
 
@@ -227,7 +227,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public int markCurrentVersion(PromptTemplateId templateId, int versionNo) {
+        public int updateCurrentVersion(PromptTemplateId templateId, int versionNo) {
             return 0;
         }
 
@@ -237,7 +237,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public int replaceVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
+        public int replaceTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
             return 0;
         }
     }
@@ -256,7 +256,7 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
-        public int replaceVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
+        public int replaceTemplateVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
             replaceVariablesCount++;
             return variables == null ? 0 : variables.size();
         }
