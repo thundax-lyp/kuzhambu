@@ -510,38 +510,41 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     }
 
     private CreateStorageCommand toCreateStorageCommand(StoredObject storage) {
-        CreateStorageCommand command = new CreateStorageCommand();
-        command.setId(storage.getId());
-        command.setOriginalFilename(storage.getOriginalFilename());
-        command.setContentType(storage.getContentType());
-        command.setName(storage.getName());
-        command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeTypeRef());
-        command.setBucketName(storage.getBucketNameRef());
-        command.setObjectKey(storage.getObjectKeyRef());
-        command.setSize(storage.getSizeRef());
-        command.setAccessEndpoint(storage.getAccessEndpoint());
-        command.setObjectStatus(storage.getObjectStatus());
-        command.setReferenceStatus(storage.getReferenceStatus());
-        command.setRemarks(storage.getRemarks());
-        return command;
+        return new CreateStorageCommand(
+                storage == null ? null : storage.getId(),
+                storage == null ? null : storage.getOriginalFilename(),
+                storage == null ? null : storage.getContentType(),
+                storage == null ? null : storage.getName(),
+                storage == null ? null : storage.getExtendName(),
+                storage == null ? null : storage.getMimeTypeRef(),
+                null,
+                storage == null ? null : storage.getBucketNameRef(),
+                storage == null ? null : storage.getObjectKeyRef(),
+                storage == null ? null : storage.getSizeRef(),
+                storage == null ? null : storage.getAccessEndpoint(),
+                storage == null ? null : storage.getObjectStatus(),
+                storage == null ? null : storage.getReferenceStatus(),
+                storage == null ? null : storage.getRemarks());
     }
 
     private StoredObject toStoredObject(CreateStorageCommand command) {
         StoredObject storage = new StoredObject();
-        storage.setId(command.getId());
-        storage.setOriginalFilename(command.getOriginalFilename());
-        storage.setContentType(command.getContentType());
-        storage.setName(command.getName());
-        storage.setExtendName(command.getExtendName());
-        storage.setMimeTypeRef(command.getMimeType());
-        storage.setBucketNameRef(command.getBucketName());
-        storage.setObjectKeyRef(command.getObjectKey());
-        storage.setSizeRef(command.getSize());
-        storage.setAccessEndpoint(command.getAccessEndpoint());
-        storage.setObjectStatus(command.getObjectStatus());
-        storage.setReferenceStatus(command.getReferenceStatus());
-        storage.setRemarks(command.getRemarks());
+        if (command == null) {
+            return storage;
+        }
+        storage.setId(command.id());
+        storage.setOriginalFilename(command.originalFilename());
+        storage.setContentType(command.contentType());
+        storage.setName(command.name());
+        storage.setExtendName(command.extendName());
+        storage.setMimeTypeRef(command.mimeType());
+        storage.setBucketNameRef(command.bucketName());
+        storage.setObjectKeyRef(command.objectKey());
+        storage.setSizeRef(command.size());
+        storage.setAccessEndpoint(command.accessEndpoint());
+        storage.setObjectStatus(command.objectStatus());
+        storage.setReferenceStatus(command.referenceStatus());
+        storage.setRemarks(command.remarks());
         return storage;
     }
 
