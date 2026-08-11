@@ -27,11 +27,11 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocum
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.WangqiDocumentAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentVersionRequest;
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -229,7 +229,7 @@ class WangqiDocumentAdminControllerTest {
                 new WangqiDocumentAdminController(missingDocumentService(), contentService());
         WangqiDocumentRequest request = request();
 
-        BizException exception = assertThrows(BizException.class, () -> controller.get(request));
+        ApiException exception = assertThrows(ApiException.class, () -> controller.get(request));
 
         assertEquals("王圻文档不存在", exception.getMessage());
     }

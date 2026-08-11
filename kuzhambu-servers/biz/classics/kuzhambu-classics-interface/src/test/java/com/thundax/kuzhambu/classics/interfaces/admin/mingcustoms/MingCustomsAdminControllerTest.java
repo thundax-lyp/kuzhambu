@@ -29,10 +29,10 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.req
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
@@ -117,7 +117,7 @@ class MingCustomsAdminControllerTest {
         MingCustomsRequest request = new MingCustomsRequest();
         request.setId(500000000001L);
 
-        BizException exception = assertThrows(BizException.class, () -> controller.get(request));
+        ApiException exception = assertThrows(ApiException.class, () -> controller.get(request));
 
         assertEquals("明代习俗条目不存在", exception.getMessage());
     }
@@ -282,7 +282,7 @@ class MingCustomsAdminControllerTest {
                         9001L, ClassicsContentType.WANGQI_DOCUMENT, ClassicsContentIdCodec.toDomain(400000000001L)));
         MingCustomsAdminController controller = controller(service, contentService);
 
-        BizException exception = assertThrows(BizException.class, () -> controller.getVersion(versionRequest()));
+        ApiException exception = assertThrows(ApiException.class, () -> controller.getVersion(versionRequest()));
         assertEquals("历史版本不属于当前明代习俗条目", exception.getMessage());
     }
 
@@ -294,7 +294,7 @@ class MingCustomsAdminControllerTest {
                 .thenReturn(null);
         MingCustomsAdminController controller = controller(service, contentService);
 
-        BizException exception = assertThrows(BizException.class, () -> controller.getVersion(versionRequest()));
+        ApiException exception = assertThrows(ApiException.class, () -> controller.getVersion(versionRequest()));
         assertEquals("明代习俗历史版本不存在", exception.getMessage());
     }
 
