@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.discovery.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
-import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
 import com.thundax.kuzhambu.common.test.architecture.ConcurrencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModelAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
@@ -28,19 +27,14 @@ class DiscoveryInterfaceArchitectureTest {
         ModelAnnotationArchitectureRuleSupport.assertRequestClassAnnotationsRequired(
                 classes, BASE_PACKAGE, Collections.emptyList());
         ModelAnnotationArchitectureRuleSupport.assertResponseClassAnnotationsRequired(
-                classes, BASE_PACKAGE, legacyResponseAnnotationAllowances());
+                classes, BASE_PACKAGE, Collections.emptyList());
         ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
                 Path.of("src/main/java"), legacyActionVerbAllowances());
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")),
-                BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.assembler.DiscoveryQaAdminInterfaceAssembler",
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler",
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler",
-                        "com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler.DiscoverySearchPortalInterfaceAssembler"));
+                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
     }
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
@@ -51,28 +45,6 @@ class DiscoveryInterfaceArchitectureTest {
                 actionVerbAllowance("DiscoveryQaAdminController"),
                 actionVerbAllowance("DiscoveryQaConversationController"),
                 actionVerbAllowance("DiscoverySearchStatisticsController"));
-    }
-
-    private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
-        return java.util.Arrays.stream(new String[] {
-                    "portal.qa.controller.response.DiscoveryQaResponses$ChatCompletionsResponse",
-                    "portal.qa.controller.response.DiscoveryQaResponses$OpenSessionResponse",
-                    "portal.qa.controller.response.DiscoveryQaResponses$QaMessageResponse",
-                    "portal.qa.controller.response.DiscoveryQaResponses$QaSessionDetailResponse",
-                    "portal.qa.controller.response.DiscoveryQaResponses$QaSessionExportResponse",
-                    "portal.qa.controller.response.DiscoveryQaResponses$QaSessionResponse",
-                    "portal.qa.controller.response.DiscoveryQaResponses$QaSourceResponse"
-                })
-                .map(
-                        className -> ArchitectureRuleAllowance.of(
-                                ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS
-                                        + ":"
-                                        + BASE_PACKAGE
-                                        + ".interfaces."
-                                        + className,
-                                "Discovery portal QA response is pending assembler migration to builder construction.",
-                                "Migrate the assembler to builder construction, add @Builder, remove @Setter, then remove this allowance."))
-                .toList();
     }
 
     private static ArchitectureRuleAllowance actionVerbAllowance(String controller) {
