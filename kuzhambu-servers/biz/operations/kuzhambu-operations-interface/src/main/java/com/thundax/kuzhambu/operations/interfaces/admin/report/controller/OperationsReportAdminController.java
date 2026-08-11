@@ -9,10 +9,8 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.operations.application.report.query.OperationsReportDetailQuery;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDownloadResult;
 import com.thundax.kuzhambu.operations.application.report.service.ReportApplicationService;
-import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.assembler.OperationsReportInterfaceAssembler;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportGenerateRequest;
@@ -54,7 +52,7 @@ public class OperationsReportAdminController {
     @Operation(summary = "发起报表生成", description = "operations:report:generate")
     @HasPermission("operations:report:generate")
     @IgnoreSysLogger
-    @PostMapping("generate")
+    @PostMapping("create")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -62,9 +60,12 @@ public class OperationsReportAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsReportGenerateResponse generate(@Valid @RequestBody OperationsReportGenerateRequest request) {
-        return OperationsReportInterfaceAssembler.toResponse(
-                reportApplicationService.generate(OperationsReportInterfaceAssembler.toCommand(request)));
+    public OperationsReportGenerateResponse create(@Valid @RequestBody OperationsReportGenerateRequest request) {
+        var result = reportApplicationService.generate(OperationsReportInterfaceAssembler.toCommand(request));
+        if (result == null) {
+            return null;
+        }
+        return OperationsReportInterfaceAssembler.toResponse(result);
     }
 
     @Operation(summary = "分页查询报表任务", description = "operations:report:view")
@@ -89,7 +90,7 @@ public class OperationsReportAdminController {
     @Operation(summary = "获取报表任务详情", description = "operations:report:view")
     @HasPermission("operations:report:view")
     @IgnoreSysLogger
-    @PostMapping("detail")
+    @PostMapping("get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -97,9 +98,12 @@ public class OperationsReportAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public OperationsReportDetailResponse detail(@Valid @RequestBody OperationsReportDetailRequest request) {
-        return OperationsReportInterfaceAssembler.toDetailResponse(
-                reportApplicationService.detail(OperationsReportInterfaceAssembler.toQuery(request)));
+    public OperationsReportDetailResponse getDetail(@Valid @RequestBody OperationsReportDetailRequest request) {
+        var result = reportApplicationService.detail(OperationsReportInterfaceAssembler.toQuery(request));
+        if (result == null) {
+            return null;
+        }
+        return OperationsReportInterfaceAssembler.toDetailResponse(result);
     }
 
     @Operation(summary = "下载报表产物", description = "operations:report:view")
@@ -120,7 +124,7 @@ public class OperationsReportAdminController {
             HttpServletResponse response)
             throws IOException {
         OperationsReportDownloadResult result =
-                reportApplicationService.download(new OperationsReportDetailQuery(ReportIdCodec.toDomain(reportId)));
+                reportApplicationService.download(OperationsReportInterfaceAssembler.toQuery(reportId));
         response.setContentType(
                 StringUtils.defaultIfBlank(result.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
         if (result.getContentLength() != null) {

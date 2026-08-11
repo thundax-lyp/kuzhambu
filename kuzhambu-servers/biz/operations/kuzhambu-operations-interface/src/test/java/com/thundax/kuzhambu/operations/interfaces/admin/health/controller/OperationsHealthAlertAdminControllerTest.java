@@ -41,8 +41,8 @@ class OperationsHealthAlertAdminControllerTest {
                 OperationsHealthAlertPageRequest.class);
         assertPostMapping(
                 OperationsHealthAlertAdminController.class,
-                "ack",
-                "ack",
+                "confirm",
+                "confirm",
                 "operations:health:manage",
                 OperationsHealthAlertAckRequest.class);
         assertPostMapping(
@@ -100,7 +100,7 @@ class OperationsHealthAlertAdminControllerTest {
 
         OperationsHealthAlertAckRequest ackRequest = new OperationsHealthAlertAckRequest();
         ackRequest.setAlertId(9201L);
-        controller.ack(ackRequest);
+        controller.confirm(ackRequest);
 
         OperationsHealthAlertRecoverRequest recoverRequest = new OperationsHealthAlertRecoverRequest();
         recoverRequest.setAlertId(9201L);
@@ -109,20 +109,20 @@ class OperationsHealthAlertAdminControllerTest {
         verify(service)
                 .page(
                         argThat(query -> query != null
-                                && "database".equals(query.getComponent())
-                                && "CRITICAL".equals(query.getAlertLevel())
-                                && "ACTIVE".equals(query.getAlertStatus())
-                                && "HEALTH".equals(query.getSourceRefType())
-                                && Long.valueOf(9001L).equals(query.getSourceRefId())
-                                && Long.valueOf(9101L).equals(query.getLatestCheckId())),
+                                && "database".equals(query.component())
+                                && "CRITICAL".equals(query.alertLevel())
+                                && "ACTIVE".equals(query.alertStatus())
+                                && "HEALTH".equals(query.sourceRefType())
+                                && Long.valueOf(9001L).equals(query.sourceRefId())
+                                && Long.valueOf(9101L).equals(query.latestCheckId())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)
-                .ack(argThat(command ->
-                        command != null && command.getAlertId().value().equals(9201L)));
+                .ack(argThat(
+                        command -> command != null && command.alertId().value().equals(9201L)));
         verify(service)
-                .recover(argThat(command ->
-                        command != null && command.getAlertId().value().equals(9201L)));
+                .recover(argThat(
+                        command -> command != null && command.alertId().value().equals(9201L)));
     }
 
     @Test

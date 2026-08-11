@@ -105,7 +105,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
     @Override
     public OperationsRestoreExecuteResult execute(OperationsRestoreExecuteCommand command) {
         validateExecuteCommand(command);
-        BackupRecord sourceBackup = backupRepository.getById(command.getBackupId());
+        BackupRecord sourceBackup = backupRepository.getById(command.backupId());
         if (sourceBackup == null) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations restore source backup does not exist.");
@@ -136,10 +136,10 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<RestoreRecord> recordPage = restoreRepository.page(
-                query == null ? null : query.getBackupId(),
-                query == null ? null : query.getRestoreMode(),
-                query == null ? null : query.getRestoreStatus(),
-                query == null ? null : query.getRequesterUserId(),
+                query == null ? null : query.backupId(),
+                query == null ? null : query.restoreMode(),
+                query == null ? null : query.restoreStatus(),
+                query == null ? null : query.requesterUserId(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<OperationsRestorePageResult> results =
@@ -149,7 +149,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
 
     @Override
     public OperationsRestoreDetailResult detail(OperationsRestoreDetailQuery query) {
-        RestoreRecord record = restoreRepository.getById(query == null ? null : query.getRestoreId());
+        RestoreRecord record = restoreRepository.getById(query == null ? null : query.restoreId());
         return toDetailResult(record);
     }
 
@@ -158,13 +158,13 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         Instant startedAt = Instant.now();
         String preRestoreTimestamp = formatTimestamp(startedAt);
         BackupRecord preRestoreRecord =
-                buildPreRestoreRecord(command.getRequesterUserId(), startedAt, preRestoreTimestamp);
+                buildPreRestoreRecord(command.requesterUserId(), startedAt, preRestoreTimestamp);
         BackupId preRestoreBackupId = backupRepository.insert(preRestoreRecord);
         preRestoreRecord.setId(preRestoreBackupId);
 
         RestoreRecord restoreRecord = new RestoreRecord(
                 null,
-                command.getBackupId().value(),
+                command.backupId().value(),
                 preRestoreBackupId.value(),
                 restoreMode.value(),
                 RestoreStatus.RUNNING.value(),
@@ -172,7 +172,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 null,
                 null,
                 null,
-                command.getRequesterUserId(),
+                command.requesterUserId(),
                 startedAt,
                 null);
         RestoreId restoreId = restoreRepository.insert(restoreRecord);
@@ -380,20 +380,18 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations restore execute command must not be null.");
         }
-        if (command.getBackupId() == null) {
+        if (command.backupId() == null) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations restore backupId must not be null.");
         }
-        if (command.getRequesterUserId() == null) {
+        if (command.requesterUserId() == null) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations restore requesterUserId must not be null.");
         }
     }
 
     private RestoreMode resolveRestoreMode(OperationsRestoreExecuteCommand command) {
-        return StringUtils.isBlank(command.getRestoreMode())
-                ? RestoreMode.REAL
-                : RestoreMode.from(command.getRestoreMode());
+        return StringUtils.isBlank(command.restoreMode()) ? RestoreMode.REAL : RestoreMode.from(command.restoreMode());
     }
 
     private String stripSqlSuffix(String fileName) {

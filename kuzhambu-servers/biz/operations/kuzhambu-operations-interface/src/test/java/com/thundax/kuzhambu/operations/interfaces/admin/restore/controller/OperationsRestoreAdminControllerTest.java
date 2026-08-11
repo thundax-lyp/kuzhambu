@@ -32,8 +32,8 @@ class OperationsRestoreAdminControllerTest {
         assertRequestMapping(OperationsRestoreAdminController.class, "/api/operations/restore");
         assertPostMapping(
                 OperationsRestoreAdminController.class,
-                "execute",
-                "execute",
+                "create",
+                "create",
                 "operations:restore:execute",
                 OperationsRestoreExecuteRequest.class);
         assertPostMapping(
@@ -44,8 +44,8 @@ class OperationsRestoreAdminControllerTest {
                 OperationsRestorePageRequest.class);
         assertPostMapping(
                 OperationsRestoreAdminController.class,
-                "detail",
-                "detail",
+                "getDetail",
+                "get",
                 "operations:restore:view",
                 OperationsRestoreDetailRequest.class);
     }
@@ -103,7 +103,7 @@ class OperationsRestoreAdminControllerTest {
         OperationsRestoreExecuteRequest executeRequest = new OperationsRestoreExecuteRequest();
         executeRequest.setBackupId(9001L);
         executeRequest.setRestoreMode("DRILL");
-        var executeResponse = controller.execute(executeRequest);
+        var executeResponse = controller.create(executeRequest);
         assertEquals(9101L, executeResponse.getRestoreId());
         assertEquals("DRILL", executeResponse.getRestoreMode());
         assertEquals("SUCCEEDED", executeResponse.getRestoreStatus());
@@ -122,26 +122,26 @@ class OperationsRestoreAdminControllerTest {
 
         OperationsRestoreDetailRequest detailRequest = new OperationsRestoreDetailRequest();
         detailRequest.setRestoreId(9101L);
-        var detailResponse = controller.detail(detailRequest);
+        var detailResponse = controller.getDetail(detailRequest);
         assertEquals(9101L, detailResponse.getRestoreId());
 
         verify(service)
                 .execute(argThat(command -> command != null
-                        && command.getBackupId() != null
-                        && command.getBackupId().value().equals(9001L)
-                        && "DRILL".equals(command.getRestoreMode())));
+                        && command.backupId() != null
+                        && command.backupId().value().equals(9001L)
+                        && "DRILL".equals(command.restoreMode())));
         verify(service)
                 .page(
                         argThat(query -> query != null
-                                && Long.valueOf(9001L).equals(query.getBackupId())
-                                && "DRILL".equals(query.getRestoreMode())
-                                && "SUCCEEDED".equals(query.getRestoreStatus())),
+                                && Long.valueOf(9001L).equals(query.backupId())
+                                && "DRILL".equals(query.restoreMode())
+                                && "SUCCEEDED".equals(query.restoreStatus())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)
                 .detail(argThat(query -> query != null
-                        && query.getRestoreId() != null
-                        && query.getRestoreId().value().equals(9101L)));
+                        && query.restoreId() != null
+                        && query.restoreId().value().equals(9101L)));
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

@@ -32,8 +32,8 @@ class OperationsHealthAdminControllerTest {
         assertRequestMapping(OperationsHealthAdminController.class, "/api/operations/health");
         assertPostMapping(
                 OperationsHealthAdminController.class,
-                "summary",
-                "summary",
+                "listSummary",
+                "list",
                 "operations:health:view",
                 OperationsHealthSummaryRequest.class);
         assertPostMapping(
@@ -44,8 +44,8 @@ class OperationsHealthAdminControllerTest {
                 OperationsHealthPageRequest.class);
         assertPostMapping(
                 OperationsHealthAdminController.class,
-                "trend",
-                "trend",
+                "getTrend",
+                "get",
                 "operations:health:view",
                 OperationsHealthTrendRequest.class);
     }
@@ -81,7 +81,7 @@ class OperationsHealthAdminControllerTest {
                                 Instant.ofEpochMilli(1_719_630_400_000L)))));
         when(service.trend(any())).thenReturn(List.of(new OperationsHealthTrendResult("2026-07-06", 2L, 1L, 0L, 12L)));
 
-        var summaryResponse = controller.summary(new OperationsHealthSummaryRequest());
+        var summaryResponse = controller.listSummary(new OperationsHealthSummaryRequest());
         assertEquals(1, summaryResponse.size());
         assertEquals(9101L, summaryResponse.get(0).getCheckId());
         assertEquals("DATABASE", summaryResponse.get(0).getProbeSource());
@@ -107,7 +107,7 @@ class OperationsHealthAdminControllerTest {
         trendRequest.setPeriodStart(Instant.ofEpochMilli(1_719_630_400_000L));
         trendRequest.setPeriodEnd(Instant.ofEpochMilli(1_719_716_800_000L));
         trendRequest.setBucketType("DAY");
-        var trendResponse = controller.trend(trendRequest);
+        var trendResponse = controller.getTrend(trendRequest);
         assertEquals(1, trendResponse.size());
         assertEquals("2026-07-06", trendResponse.get(0).getBucket());
         assertEquals(2L, trendResponse.get(0).getUpCount());
@@ -117,19 +117,19 @@ class OperationsHealthAdminControllerTest {
         verify(service)
                 .page(
                         argThat(query -> query != null
-                                && "db-master".equals(query.getComponent())
-                                && "UP".equals(query.getHealthStatus())
-                                && "HTTP".equals(query.getProbeSource())
-                                && "http://127.0.0.1:8080/internal/health".equals(query.getProbeTarget())
-                                && Instant.ofEpochMilli(1_719_630_400_000L).equals(query.getCheckedAtStart())
-                                && Instant.ofEpochMilli(1_719_716_800_000L).equals(query.getCheckedAtEnd())),
+                                && "db-master".equals(query.component())
+                                && "UP".equals(query.healthStatus())
+                                && "HTTP".equals(query.probeSource())
+                                && "http://127.0.0.1:8080/internal/health".equals(query.probeTarget())
+                                && Instant.ofEpochMilli(1_719_630_400_000L).equals(query.checkedAtStart())
+                                && Instant.ofEpochMilli(1_719_716_800_000L).equals(query.checkedAtEnd())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)
                 .trend(argThat(query -> query != null
-                        && "db-master".equals(query.getComponent())
-                        && "DATABASE".equals(query.getProbeSource())
-                        && "DAY".equals(query.getBucketType())));
+                        && "db-master".equals(query.component())
+                        && "DATABASE".equals(query.probeSource())
+                        && "DAY".equals(query.bucketType())));
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

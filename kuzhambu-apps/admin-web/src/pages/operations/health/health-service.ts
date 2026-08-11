@@ -53,7 +53,7 @@ export const getOperationsHealthAlerts = (query: OperationsHealthAlertPageQuery 
 };
 
 export const confirmOperationsHealthAlert = (command: OperationsHealthAlertActionCommand) => {
-    return postJson<void, OperationsHealthAlertActionCommand>("/operations/health/alerts/ack", {
+    return postJson<void, OperationsHealthAlertActionCommand>("/operations/health/alerts/confirm", {
         body: command
     });
 };

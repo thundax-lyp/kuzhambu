@@ -30,8 +30,8 @@ class OperationsDashboardAdminControllerTest {
         assertRequestMapping(OperationsDashboardAdminController.class, "/api/operations/dashboard");
         assertPostMapping(
                 OperationsDashboardAdminController.class,
-                "overview",
-                "overview",
+                "getOverview",
+                "get",
                 "operations:dashboard:view",
                 OperationsDashboardOverviewRequest.class);
     }
@@ -42,7 +42,7 @@ class OperationsDashboardAdminControllerTest {
         OperationsDashboardAdminController controller = new OperationsDashboardAdminController(service);
         Instant periodStart = Instant.ofEpochMilli(1_719_630_400_000L);
         Instant periodEnd = Instant.ofEpochMilli(1_719_716_800_000L);
-        when(service.overview(argThat(query -> query != null && "CUSTOM".equals(query.getPeriodType()))))
+        when(service.overview(argThat(query -> query != null && "CUSTOM".equals(query.periodType()))))
                 .thenReturn(new OperationsDashboardOverviewResult(
                         periodStart,
                         periodEnd,
@@ -90,7 +90,7 @@ class OperationsDashboardAdminControllerTest {
         request.setPeriodType("CUSTOM");
         request.setPeriodStart(periodStart);
         request.setPeriodEnd(periodEnd);
-        var response = controller.overview(request);
+        var response = controller.getOverview(request);
 
         assertEquals(periodStart, response.getPeriodStart());
         assertEquals(periodEnd, response.getPeriodEnd());
@@ -102,9 +102,9 @@ class OperationsDashboardAdminControllerTest {
 
         verify(service)
                 .overview(argThat((OperationsDashboardOverviewQuery query) -> query != null
-                        && "CUSTOM".equals(query.getPeriodType())
-                        && periodStart.equals(query.getPeriodStart())
-                        && periodEnd.equals(query.getPeriodEnd())));
+                        && "CUSTOM".equals(query.periodType())
+                        && periodStart.equals(query.periodStart())
+                        && periodEnd.equals(query.periodEnd())));
     }
 
     @Test
@@ -113,7 +113,7 @@ class OperationsDashboardAdminControllerTest {
         OperationsDashboardAdminController controller = new OperationsDashboardAdminController(service);
         Instant periodStart = Instant.ofEpochMilli(1_719_630_400_000L);
         Instant periodEnd = Instant.ofEpochMilli(1_719_716_800_000L);
-        when(service.overview(argThat(query -> query != null && "WEEK".equals(query.getPeriodType()))))
+        when(service.overview(argThat(query -> query != null && "WEEK".equals(query.periodType()))))
                 .thenReturn(new OperationsDashboardOverviewResult(
                         periodStart,
                         periodEnd,
@@ -151,7 +151,7 @@ class OperationsDashboardAdminControllerTest {
 
         OperationsDashboardOverviewRequest request = new OperationsDashboardOverviewRequest();
         request.setPeriodType("WEEK");
-        var response = controller.overview(request);
+        var response = controller.getOverview(request);
 
         assertEquals(periodStart, response.getPeriodStart());
         assertEquals(periodEnd, response.getPeriodEnd());

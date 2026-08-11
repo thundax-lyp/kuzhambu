@@ -33,8 +33,8 @@ class OperationsBackupAdminControllerTest {
         assertRequestMapping(OperationsBackupAdminController.class, "/api/operations/backup");
         assertPostMapping(
                 OperationsBackupAdminController.class,
-                "execute",
-                "execute",
+                "create",
+                "create",
                 "operations:backup:execute",
                 OperationsBackupExecuteRequest.class);
         assertPostMapping(
@@ -45,8 +45,8 @@ class OperationsBackupAdminControllerTest {
                 OperationsBackupPageRequest.class);
         assertPostMapping(
                 OperationsBackupAdminController.class,
-                "detail",
-                "detail",
+                "getDetail",
+                "get",
                 "operations:backup:view",
                 OperationsBackupDetailRequest.class);
     }
@@ -99,7 +99,7 @@ class OperationsBackupAdminControllerTest {
                         Instant.ofEpochMilli(1_719_630_500_000L),
                         Instant.ofEpochMilli(1_722_222_400_000L)));
 
-        var executeResponse = controller.execute(new OperationsBackupExecuteRequest());
+        var executeResponse = controller.create(new OperationsBackupExecuteRequest());
         assertEquals(9001L, executeResponse.getBackupId());
         assertEquals("SUCCEEDED", executeResponse.getBackupStatus());
 
@@ -114,21 +114,21 @@ class OperationsBackupAdminControllerTest {
 
         OperationsBackupDetailRequest detailRequest = new OperationsBackupDetailRequest();
         detailRequest.setBackupId(9001L);
-        var detailResponse = controller.detail(detailRequest);
+        var detailResponse = controller.getDetail(detailRequest);
         assertEquals(9001L, detailResponse.getBackupId());
 
         verify(service).execute(any());
         verify(service)
                 .page(
                         argThat(query -> query != null
-                                && "MANUAL".equals(query.getBackupType())
-                                && "SUCCEEDED".equals(query.getBackupStatus())),
+                                && "MANUAL".equals(query.backupType())
+                                && "SUCCEEDED".equals(query.backupStatus())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)
                 .detail(argThat(query -> query != null
-                        && query.getBackupId() != null
-                        && query.getBackupId().value().equals(9001L)));
+                        && query.backupId() != null
+                        && query.backupId().value().equals(9001L)));
     }
 
     @Test
@@ -138,7 +138,7 @@ class OperationsBackupAdminControllerTest {
         OperationsBackupDetailRequest request = new OperationsBackupDetailRequest();
         request.setBackupId(9001L);
 
-        var response = controller.detail(request);
+        var response = controller.getDetail(request);
 
         assertNull(response);
         verify(service).detail(any());

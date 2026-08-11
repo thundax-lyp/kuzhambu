@@ -57,10 +57,10 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
         Instant now = Instant.now();
         ReportRecord record = new ReportRecord(
                 null,
-                command.getReportType(),
-                command.getFormat(),
-                command.getPeriodStart(),
-                command.getPeriodEnd(),
+                command.reportType(),
+                command.format(),
+                command.periodStart(),
+                command.periodEnd(),
                 requestId(),
                 traceId(),
                 "2026.06.26",
@@ -68,7 +68,7 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
                 null,
                 ReportStatus.PENDING,
                 null,
-                command.getRequesterUserId(),
+                command.requesterUserId(),
                 now,
                 null);
         ReportId reportId = reportRepository.insert(record);
@@ -81,12 +81,12 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<ReportRecord> recordPage = reportRepository.page(
-                query == null ? null : query.getReportType(),
-                query == null ? null : query.getFormat(),
-                query == null ? null : query.getReportStatus(),
-                query == null ? null : query.getRequesterUserId(),
-                query == null ? null : query.getPeriodStart(),
-                query == null ? null : query.getPeriodEnd(),
+                query == null ? null : query.reportType(),
+                query == null ? null : query.format(),
+                query == null ? null : query.reportStatus(),
+                query == null ? null : query.requesterUserId(),
+                query == null ? null : query.periodStart(),
+                query == null ? null : query.periodEnd(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<OperationsReportPageResult> results =
@@ -96,13 +96,13 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
 
     @Override
     public OperationsReportDetailResult detail(OperationsReportDetailQuery query) {
-        ReportRecord record = reportRepository.getById(query == null ? null : query.getReportId());
+        ReportRecord record = reportRepository.getById(query == null ? null : query.reportId());
         return toDetailResult(record);
     }
 
     @Override
     public OperationsReportDownloadResult download(OperationsReportDetailQuery query) {
-        ReportRecord record = reportRepository.getById(query == null ? null : query.getReportId());
+        ReportRecord record = reportRepository.getById(query == null ? null : query.reportId());
         validateDownloadRecord(record);
         OpenStorageFacadeResponse content = storageFacade.open(OpenStorageFacadeRequest.builder()
                 .storageObjectId(record.getStorageObjectId())
@@ -173,19 +173,19 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations report generate command must not be null.");
         }
-        if (StringUtils.isBlank(command.getReportType())) {
+        if (StringUtils.isBlank(command.reportType())) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations report type must not be blank.");
         }
-        if (StringUtils.isBlank(command.getFormat())) {
+        if (StringUtils.isBlank(command.format())) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations report format must not be blank.");
         }
-        if (command.getPeriodStart() == null || command.getPeriodEnd() == null) {
+        if (command.periodStart() == null || command.periodEnd() == null) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations report period must not be null.");
         }
-        if (command.getPeriodStart().isAfter(command.getPeriodEnd())) {
+        if (command.periodStart().isAfter(command.periodEnd())) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations report periodStart must not be after periodEnd.");
         }

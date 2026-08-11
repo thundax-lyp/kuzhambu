@@ -14,11 +14,11 @@ public class RestoreWriteBlockProperties {
     private boolean enabled = true;
 
     private List<String> allowedPaths = new ArrayList<>(List.of(
-            "/api/operations/restore/execute",
+            "/api/operations/restore/create",
             "/api/operations/restore/page",
-            "/api/operations/restore/detail",
+            "/api/operations/restore/get",
             "/api/operations/backup/page",
-            "/api/operations/backup/detail",
+            "/api/operations/backup/get",
             "/api/auth/session/pre-auth-session/request",
             "/api/auth/session/pre-auth-session/refresh",
             "/api/auth/session/login",

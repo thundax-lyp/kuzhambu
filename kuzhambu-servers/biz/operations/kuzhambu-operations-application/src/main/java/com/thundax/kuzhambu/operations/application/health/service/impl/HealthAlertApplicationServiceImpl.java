@@ -58,12 +58,12 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<HealthAlertRecord> recordPage = healthAlertRepository.page(
-                query == null ? null : query.getComponent(),
-                query == null ? null : query.getAlertLevel(),
-                query == null ? null : query.getAlertStatus(),
-                query == null ? null : query.getSourceRefType(),
-                query == null ? null : query.getSourceRefId(),
-                query == null ? null : query.getLatestCheckId(),
+                query == null ? null : query.component(),
+                query == null ? null : query.alertLevel(),
+                query == null ? null : query.alertStatus(),
+                query == null ? null : query.sourceRefType(),
+                query == null ? null : query.sourceRefId(),
+                query == null ? null : query.latestCheckId(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<OperationsHealthAlertPageResult> results =
@@ -73,16 +73,16 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
 
     @Override
     public void ack(OperationsHealthAlertAckCommand command) {
-        HealthAlertRecord record = requireAlert(command == null ? null : command.getAlertId());
+        HealthAlertRecord record = requireAlert(command == null ? null : command.alertId());
         record.setAlertStatus(ALERT_STATUS_ACKED);
         record.setAckedAt(Instant.now());
-        record.setAckedByUserId(command.getAckedByUserId());
+        record.setAckedByUserId(command.ackedByUserId());
         healthAlertRepository.update(record);
     }
 
     @Override
     public void recover(OperationsHealthAlertRecoverCommand command) {
-        HealthAlertRecord record = requireAlert(command == null ? null : command.getAlertId());
+        HealthAlertRecord record = requireAlert(command == null ? null : command.alertId());
         executeRecoveryAction(record, command);
         record.setAlertStatus(ALERT_STATUS_RECOVERED);
         record.setRecoveredAt(Instant.now());
@@ -96,7 +96,7 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
             if (backupApplicationService == null) {
                 throw new IllegalStateException("Operations manual backup recovery action is not available.");
             }
-            backupApplicationService.execute(new OperationsBackupExecuteCommand(command.getRecoveredByUserId()));
+            backupApplicationService.execute(new OperationsBackupExecuteCommand(command.recoveredByUserId()));
             return;
         }
         if (OperationsHealthRecoveryLinkFactory.ACTION_RUN_RESTORE.equals(action)) {
@@ -107,8 +107,8 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
             if (restoreApplicationService == null) {
                 throw new IllegalStateException("Operations restore recovery action is not available.");
             }
-            restoreApplicationService.execute(new OperationsRestoreExecuteCommand(
-                    BackupIdCodec.toDomain(backupId), command.getRecoveredByUserId()));
+            restoreApplicationService.execute(
+                    new OperationsRestoreExecuteCommand(BackupIdCodec.toDomain(backupId), command.recoveredByUserId()));
         }
     }
 

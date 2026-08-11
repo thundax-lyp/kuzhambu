@@ -41,7 +41,7 @@ export interface OperationsHealthAlertActionCommand {
 
 export const getDashboardOverview = (query: OperationsDashboardOverviewQuery = {}) => {
     return postJson<OperationsDashboardOverviewRecord, OperationsDashboardOverviewQuery>(
-        "/operations/dashboard/overview",
+        "/operations/dashboard/get",
         {
             body: query
         }
@@ -58,7 +58,7 @@ export const getHealthAlerts = (query: OperationsHealthAlertPageQuery = {}) => {
 };
 
 export const confirmHealthAlert = (command: OperationsHealthAlertActionCommand) => {
-    return postJson<void, OperationsHealthAlertActionCommand>("/operations/health/alerts/ack", {
+    return postJson<void, OperationsHealthAlertActionCommand>("/operations/health/alerts/confirm", {
         body: command
     });
 };
@@ -71,7 +71,7 @@ export const recoverHealthAlert = (command: OperationsHealthAlertActionCommand) 
 
 export const getHealthTrend = (query: OperationsHealthTrendQuery = {}) => {
     return postJson<OperationsHealthTrendBucketRecord[], OperationsHealthTrendQuery>(
-        "/operations/health/trend",
+        "/operations/health/get",
         {
             body: query
         }

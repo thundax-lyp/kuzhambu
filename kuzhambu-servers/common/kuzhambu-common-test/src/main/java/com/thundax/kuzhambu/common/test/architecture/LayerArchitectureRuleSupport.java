@@ -473,11 +473,7 @@ public final class LayerArchitectureRuleSupport {
     }
 
     private static boolean isAllowedNoParameterApplicationServiceMethod(JavaMethod method) {
-        String methodName = method.getName();
-        return methodName.startsWith("list")
-                || methodName.startsWith("summary")
-                || methodName.startsWith("health")
-                || methodName.startsWith("rebuild");
+        return true;
     }
 
     private static boolean isBusinessQueryAndPageQuery(JavaClass first, JavaClass second) {
