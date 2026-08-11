@@ -1,14 +1,14 @@
-package com.thundax.kuzhambu.knowledge.application.portal.impl;
+package com.thundax.kuzhambu.knowledge.application.portal.service.impl;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQuery;
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult;
 import com.thundax.kuzhambu.knowledge.application.lineage.service.KnowledgeLineageReadApplicationService;
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalHomeResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalQualityResult;
+import com.thundax.kuzhambu.knowledge.application.portal.service.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.LatestQualityReportQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;

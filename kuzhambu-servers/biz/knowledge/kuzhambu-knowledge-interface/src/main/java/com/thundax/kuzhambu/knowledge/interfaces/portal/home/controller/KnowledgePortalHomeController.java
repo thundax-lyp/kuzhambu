@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
+import com.thundax.kuzhambu.knowledge.application.portal.service.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.assembler.KnowledgePortalHomeInterfaceAssembler;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.request.KnowledgePortalHomeRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.response.KnowledgePortalHomeResponse;
