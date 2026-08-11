@@ -21,7 +21,7 @@ const createQaMockHandlers = async (page: Page) => {
     let openSessionPayload: ApiPayload | null = null;
     let chatPayload: ApiPayload | null = null;
 
-    await page.route("**/kuzhambu-api/api/portal/discovery/qa/session/open", async (route) => {
+    await page.route("**/kuzhambu-api/api/portal/discovery/qa/session/init", async (route) => {
         openSessionPayload = readRequestBody(route.request().postData());
         await fulfillSuccess(route, {
             contextContentId: openSessionPayload.contextContentId ?? null,
@@ -37,7 +37,7 @@ const createQaMockHandlers = async (page: Page) => {
     });
 
     await page.route(
-        "**/kuzhambu-api/api/portal/discovery/qa/chat/completions/stream",
+        "**/kuzhambu-api/api/portal/discovery/qa/chat/submit",
         async (route) => {
             chatPayload = readRequestBody(route.request().postData());
             await route.fulfill({

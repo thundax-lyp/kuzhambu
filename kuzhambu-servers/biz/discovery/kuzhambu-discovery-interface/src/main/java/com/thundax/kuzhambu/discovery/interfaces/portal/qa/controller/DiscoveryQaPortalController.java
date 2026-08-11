@@ -34,8 +34,8 @@ public class DiscoveryQaPortalController {
     }
 
     @Operation(summary = "创建问答会话", description = "Portal 问答创建会话")
-    @PostMapping("session/open")
-    public DiscoveryQaResponses.OpenSessionResponse openSession(
+    @PostMapping("session/init")
+    public DiscoveryQaResponses.OpenSessionResponse initSession(
             @Valid @RequestBody DiscoveryQaRequests.OpenSessionRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toOpenSessionResponse(
                 qaApplicationService.openSession(DiscoveryQaPortalInterfaceAssembler.toOpenSessionCommand(request)));
@@ -71,16 +71,16 @@ public class DiscoveryQaPortalController {
     }
 
     @Operation(summary = "导出问答会话", description = "Portal 导出自己的未删除问答会话 CSV")
-    @PostMapping("session/export")
-    public DiscoveryQaResponses.QaSessionExportResponse exportSession(
+    @PostMapping("session/download")
+    public DiscoveryQaResponses.QaSessionExportResponse downloadSession(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionExportRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toSessionExportResponse(qaApplicationService.exportSession(
                 DiscoveryQaPortalInterfaceAssembler.toExportSessionCommand(request)));
     }
 
     @Operation(summary = "OpenAI 风格提问", description = "Portal 问答 OpenAI 风格提问")
-    @PostMapping("chat/completions")
-    public DiscoveryQaResponses.ChatCompletionsResponse chatCompletions(
+    @PostMapping("chat/create")
+    public DiscoveryQaResponses.ChatCompletionsResponse createChatCompletion(
             @Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toChatCompletionsResponse(
                 knowledgeQaApplicationService.chatCompletion(

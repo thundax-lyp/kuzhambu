@@ -10,23 +10,15 @@
 
 ## 当前任务项
 
-## 待审阅任务项
-
-- [ ] `Discovery Portal QA API`：迁移 Portal QA endpoint 与调用方
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 12B
-    - 范围对象：`DiscoveryQaPortalController.java`、`DiscoveryQaPortalStreamController.java`、`qa-service.ts`、`qa.spec.ts`、`qa-page-context.test.tsx`、`DiscoveryQaPortalControllerTest.java`、`DISCOVERY-QA-KNOWLEDGE-SPECIAL-DESIGN.md`
-    - 处理动作：按 RUNBOOK 固定映射替换 Portal QA 的 open/export/chat/stream endpoint。
-    - 验收点：列出文件中不存在旧 Portal QA URL，接口测试与 portal-web 相关测试通过。
-    - 重要度：9/10
-
 - [ ] `Discovery Admin QA API`：迁移 Admin QA 与 search statistics endpoint 及调用方
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 12C
     - 范围对象：`DiscoveryQaConversationController.java`、`DiscoveryQaConversationStreamController.java`、`DiscoveryQaAdminController.java`、`DiscoverySearchStatisticsController.java`、`qa-service.ts`、`qa-service-contract.test.ts`、`qa-console-service.ts`、`qa-console-service-contract.test.ts`、`search-statistic-service.ts`、`search-statistic-service-contract.test.ts`
-    - 处理动作：按 RUNBOOK 固定映射替换 Admin QA、QA-admin 和 statistics endpoint。
+    - 处理动作：按 RUNBOOK 固定映射替换 Admin QA 与 QA-admin/search statistics endpoint 及调用方。
     - 验收点：列出文件中不存在旧 Admin Discovery URL，interface 与 admin-web 相关测试通过。
     - 重要度：9/10
+
+## 待审阅任务项
 
 - [ ] `Discovery interface contract closure`：清除 Controller 动词 allowlist 并同步 API 文档
     - 任务类型：执行任务

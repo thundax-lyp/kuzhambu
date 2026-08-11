@@ -46,8 +46,8 @@ class DiscoveryQaPortalControllerTest {
         assertRequestMapping(DiscoveryQaPortalController.class, "/api/portal/discovery/qa");
         assertPostMapping(
                 DiscoveryQaPortalController.class,
-                "openSession",
-                "session/open",
+                "initSession",
+                "session/init",
                 DiscoveryQaRequests.OpenSessionRequest.class);
         assertPostMapping(
                 DiscoveryQaPortalController.class,
@@ -66,17 +66,18 @@ class DiscoveryQaPortalControllerTest {
                 DiscoveryQaRequests.QaSessionDeleteRequest.class);
         assertPostMapping(
                 DiscoveryQaPortalController.class,
-                "exportSession",
-                "session/export",
+                "downloadSession",
+                "session/download",
                 DiscoveryQaRequests.QaSessionExportRequest.class);
         assertPostMapping(
                 DiscoveryQaPortalController.class,
-                "chatCompletions",
-                "chat/completions",
+                "createChatCompletion",
+                "chat/create",
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
         assertPostMappingProduces(
                 DiscoveryQaPortalStreamController.class,
-                "chatCompletionsStream",
+                "submitChatCompletion",
+                "chat/submit",
                 MediaType.TEXT_EVENT_STREAM_VALUE,
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
     }
@@ -228,7 +229,7 @@ class DiscoveryQaPortalControllerTest {
                         null,
                         null));
 
-        var response = controller.openSession(request);
+        var response = controller.initSession(request);
 
         verify(service)
                 .openSession(argThat(command -> command != null
@@ -267,7 +268,7 @@ class DiscoveryQaPortalControllerTest {
                         null,
                         null));
 
-        var response = controller.openSession(request);
+        var response = controller.initSession(request);
 
         verify(service)
                 .openSession(argThat(command -> command != null
@@ -357,7 +358,7 @@ class DiscoveryQaPortalControllerTest {
                         "discovery-qa-session-5001-7001.csv",
                         "text/csv; charset=UTF-8"));
 
-        var response = controller.exportSession(request);
+        var response = controller.downloadSession(request);
 
         verify(service).exportSession(argThat(command -> matchesExportCommand(command)));
         assertEquals("7001", response.getId());
@@ -372,7 +373,7 @@ class DiscoveryQaPortalControllerTest {
     }
 
     @Test
-    void chatCompletionsShouldDelegateToKnowledgeQaService() {
+    void createChatCompletionShouldDelegateToKnowledgeQaService() {
         QaApplicationService service = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
         DiscoveryQaPortalController controller =
@@ -400,7 +401,7 @@ class DiscoveryQaPortalControllerTest {
                         new ChatUsageResult(100, 80, 180),
                         Map.of("id", "chatcmpl-1")));
 
-        var response = controller.chatCompletions(request);
+        var response = controller.createChatCompletion(request);
 
         verify(knowledgeQaApplicationService)
                 .chatCompletion(argThat(command -> command != null
@@ -419,7 +420,7 @@ class DiscoveryQaPortalControllerTest {
     }
 
     @Test
-    void chatCompletionsStreamShouldDelegateAsStreamingProviderCall() {
+    void submitChatCompletionShouldDelegateAsStreamingProviderCall() {
         QaApplicationService service = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
         DiscoveryQaPortalStreamController controller =
@@ -442,7 +443,7 @@ class DiscoveryQaPortalControllerTest {
                         new ChatUsageResult(100, 80, 180),
                         Map.of("id", "chatcmpl-1")));
 
-        var emitter = controller.chatCompletionsStream(request);
+        var emitter = controller.submitChatCompletion(request);
 
         assertTrue(emitter != null);
         verify(knowledgeQaApplicationService, timeout(1000))
@@ -454,7 +455,7 @@ class DiscoveryQaPortalControllerTest {
     }
 
     @Test
-    void chatCompletionsStreamShouldSanitizeProviderErrors() throws Exception {
+    void submitChatCompletionShouldSanitizeProviderErrors() throws Exception {
         QaApplicationService service = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
         DiscoveryQaPortalStreamController controller =
@@ -466,7 +467,7 @@ class DiscoveryQaPortalControllerTest {
         when(knowledgeQaApplicationService.chatCompletionStream(any(), any()))
                 .thenThrow(new IllegalStateException("500 Internal Server Error: appId is empty"));
 
-        var emitter = controller.chatCompletionsStream(request);
+        var emitter = controller.submitChatCompletion(request);
 
         assertTrue(emitter != null);
         verify(knowledgeQaApplicationService, timeout(1000)).chatCompletionStream(any(), any());
@@ -476,7 +477,7 @@ class DiscoveryQaPortalControllerTest {
     }
 
     @Test
-    void chatCompletionsStreamShouldSubmitWorkToInjectedExecutor() {
+    void submitChatCompletionShouldSubmitWorkToInjectedExecutor() {
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
         RecordingExecutor executor = new RecordingExecutor();
         DiscoveryQaPortalStreamController controller =
@@ -484,7 +485,7 @@ class DiscoveryQaPortalControllerTest {
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId("5001");
 
-        controller.chatCompletionsStream(request);
+        controller.submitChatCompletion(request);
 
         assertTrue(executor.submitted);
         verify(knowledgeQaApplicationService, org.mockito.Mockito.never()).chatCompletionStream(any(), any());

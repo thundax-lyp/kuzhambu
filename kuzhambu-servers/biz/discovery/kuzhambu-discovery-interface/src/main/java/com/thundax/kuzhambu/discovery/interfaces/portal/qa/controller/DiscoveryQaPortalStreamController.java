@@ -43,8 +43,8 @@ public class DiscoveryQaPortalStreamController {
     }
 
     @Operation(summary = "OpenAI 风格流式提问", description = "Portal 问答 OpenAI 风格 SSE 提问")
-    @PostMapping(value = "chat/completions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter chatCompletionsStream(@Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
+    @PostMapping(value = "chat/submit", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter submitChatCompletion(@Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
         SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT_MILLIS);
         try {
             CompletableFuture<Void> future =

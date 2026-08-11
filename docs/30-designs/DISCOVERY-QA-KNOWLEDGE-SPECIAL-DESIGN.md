@@ -271,12 +271,12 @@ Portal 只调用 Discovery，不直接调用 Knowledge Base provider。
 
 | API | Purpose |
 | --- | --- |
-| `POST /api/portal/discovery/qa/session/open` | 创建或恢复会话 |
-| `POST /api/portal/discovery/qa/chat/completions` | OpenAI-compatible 提问，`model` 为知识库名 |
+| `POST /api/portal/discovery/qa/session/init` | 创建或恢复会话 |
+| `POST /api/portal/discovery/qa/chat/create` | OpenAI-compatible 提问，`model` 为知识库名 |
 | `POST /api/portal/discovery/qa/session/page` | 查询会话列表 |
 | `POST /api/portal/discovery/qa/session/get` | 查询会话详情 |
 
-`chat/completions` request 使用 `KnowledgeChatRequest` 结构；Discovery 从登录态绑定 owner，不从请求体接收 owner。
+`chat/create` request 使用 `KnowledgeChatRequest` 结构；Discovery 从登录态绑定 owner，不从请求体接收 owner。
 
 Admin API：
 
@@ -344,7 +344,7 @@ Published content maintenance sync:
 Portal chat:
 
 1. Portal opens or resumes session.
-2. Portal posts OpenAI-compatible `chat/completions`.
+2. Portal posts OpenAI-compatible `chat/submit`.
 3. Discovery validates session owner, question, `knowledgeBases`, and optional `contextItemKey`.
 4. Discovery calls `KnowledgeBaseClient.chat()`.
 5. Discovery stores user message, assistant message, source snapshots and trace.

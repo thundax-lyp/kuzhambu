@@ -6,11 +6,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DiscoveryQaPage } from "./qa-page";
 
 const mocks = vi.hoisted(() => ({
-    createQaChatCompletionStream: vi.fn(),
+    submitChatCompletion: vi.fn(),
     deleteQaSession: vi.fn(),
-    exportQaSession: vi.fn(),
+    downloadQaSession: vi.fn(),
     getQaSession: vi.fn(),
-    openQaSession: vi.fn(),
+    initQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
     postEventStream: vi.fn(),
     postJson: vi.fn()
@@ -80,11 +80,11 @@ const flushAsyncWork = async () => {
 
 describe("DiscoveryQaPage", () => {
     afterEach(() => {
-        mocks.createQaChatCompletionStream.mockReset();
+        mocks.submitChatCompletion.mockReset();
         mocks.deleteQaSession.mockReset();
-        mocks.exportQaSession.mockReset();
+        mocks.downloadQaSession.mockReset();
         mocks.getQaSession.mockReset();
-        mocks.openQaSession.mockReset();
+        mocks.initQaSession.mockReset();
         mocks.pageQaSessions.mockReset();
         mocks.postEventStream.mockReset();
         mocks.postJson.mockReset();
@@ -109,7 +109,7 @@ describe("DiscoveryQaPage", () => {
     });
 
     it("sends Wangqi single document context in open session and chat metadata", async () => {
-        mocks.openQaSession.mockResolvedValueOnce({
+        mocks.initQaSession.mockResolvedValueOnce({
             contextContentId: 3001,
             contextContentType: "WANGQI_DOCUMENT",
             contextMode: "SINGLE_DOCUMENT",
@@ -120,7 +120,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "王圻官制"
         });
-        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+        mocks.submitChatCompletion.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             choices: [
                 {
@@ -147,13 +147,13 @@ describe("DiscoveryQaPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.openQaSession.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.initQaSession.mock.calls[0]?.[0]).toMatchObject({
             contextContentId: 3001,
             contextContentType: "WANGQI_DOCUMENT",
             contextMode: "SINGLE_DOCUMENT",
             title: "王圻官制"
         });
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 sessionId: "3002",
                 metadata: {
@@ -173,7 +173,7 @@ describe("DiscoveryQaPage", () => {
     it("locks portal qa service to Discovery APIs without provider direct urls", async () => {
         const qaService = await vi.importActual<typeof import("./qa-service")>("./qa-service");
 
-        await qaService.openQaSession({ scope: "PORTAL", title: "知识中心问答" });
+        await qaService.initQaSession({ scope: "PORTAL", title: "知识中心问答" });
         await qaService.pageQaSessions({
             ownerUserId: 1001,
             pageNo: 1,
@@ -182,13 +182,13 @@ describe("DiscoveryQaPage", () => {
         });
         await qaService.getQaSession({ ownerUserId: 1001, sessionId: "2001" });
         await qaService.deleteQaSession({ ownerUserId: 1001, sessionId: "2001" });
-        await qaService.exportQaSession({ format: "CSV", ownerUserId: 1001, sessionId: "2001" });
+        await qaService.downloadQaSession({ format: "CSV", ownerUserId: 1001, sessionId: "2001" });
         mocks.postEventStream.mockImplementationOnce(async (_url, options) => {
             options.onChunk(
                 'event:completed\ndata:{"sessionId":"2001","choices":[{"message":{"content":"礼器答案"}}]}\n\n'
             );
         });
-        await qaService.createQaChatCompletionStream({
+        await qaService.submitChatCompletion({
             request: {
                 messages: [{ content: "礼器是什么？", role: "user" }],
                 metadata: { sessionId: "2001" },
@@ -200,9 +200,9 @@ describe("DiscoveryQaPage", () => {
 
         const calledUrls = mocks.postJson.mock.calls.map(([url]) => String(url));
         const calledStreamUrls = mocks.postEventStream.mock.calls.map(([url]) => String(url));
-        expect(calledStreamUrls).toContain("/portal/discovery/qa/chat/completions/stream");
+        expect(calledStreamUrls).toContain("/portal/discovery/qa/chat/submit");
         expect(calledUrls).toContain("/portal/discovery/qa/session/delete");
-        expect(calledUrls).toContain("/portal/discovery/qa/session/export");
+        expect(calledUrls).toContain("/portal/discovery/qa/session/download");
         expect([...calledUrls, ...calledStreamUrls].join("\n")).not.toContain(
             "/portal/discovery/qa/question/ask"
         );

@@ -42,9 +42,9 @@ export const DiscoveryQaPage = () => {
     const isSubmittingRef = useRef(false);
     const [isSubmittingLocked, setIsSubmittingLocked] = useState(false);
 
-    const openSessionMutation = useMutation({ mutationFn: qaService.openQaSession });
+    const openSessionMutation = useMutation({ mutationFn: qaService.initQaSession });
     const chatCompletionMutation = useMutation({
-        mutationFn: qaService.createQaChatCompletionStream
+        mutationFn: qaService.submitChatCompletion
     });
     const isSubmitting =
         isSubmittingLocked || openSessionMutation.isPending || chatCompletionMutation.isPending;
