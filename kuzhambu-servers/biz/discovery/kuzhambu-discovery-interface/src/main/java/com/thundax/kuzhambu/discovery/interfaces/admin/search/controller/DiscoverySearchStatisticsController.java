@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchStatisticsInterfaceAssembler;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchEventPageRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchIndexRebuildRequest;
@@ -76,8 +77,8 @@ public class DiscoverySearchStatisticsController {
                 dataTypeClass = String.class),
     })
     public DiscoverySearchEventDetailResponse getEvent(@Valid @RequestBody DiscoverySearchEventGetRequest request) {
-        return DiscoverySearchStatisticsInterfaceAssembler.toDetailResponse(
-                searchApplicationService.getEvent(DiscoveryInterfaceIdCodec.toLongValue(request.getId())));
+        return DiscoverySearchStatisticsInterfaceAssembler.toDetailResponse(searchApplicationService.getEvent(
+                new SearchEventQuery(DiscoveryInterfaceIdCodec.toLongValue(request.getId()), null, null, null, null, null, null)));
     }
 
     @Operation(summary = "获取检索统计摘要", description = "Discovery 检索统计摘要")

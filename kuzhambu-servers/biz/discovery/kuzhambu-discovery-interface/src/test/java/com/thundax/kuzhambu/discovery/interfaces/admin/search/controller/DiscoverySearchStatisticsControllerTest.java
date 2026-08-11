@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
@@ -318,7 +319,8 @@ class DiscoverySearchStatisticsControllerTest {
                 new DiscoverySearchStatisticsController(service, searchIndexApplicationService);
         DiscoverySearchEventGetRequest request = new DiscoverySearchEventGetRequest();
         request.setId("1");
-        when(service.getEvent(1L))
+        SearchEventQuery eventQuery = new SearchEventQuery(1L, null, null, null, null, null, null);
+        when(service.getEvent(eventQuery))
                 .thenReturn(new SearchEventResult(
                         SearchEventIdCodec.toDomain(1L),
                         "黄帝",
@@ -339,7 +341,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         var response = controller.getEvent(request);
 
-        verify(service).getEvent(1L);
+        verify(service).getEvent(eventQuery);
         assertEquals("1", response.getId());
         assertEquals("ENTITY", response.getIntentType());
         assertTrue(response.getSearchScopesJson().contains("SANCAI_ENTRY"));
@@ -355,7 +357,8 @@ class DiscoverySearchStatisticsControllerTest {
                 new DiscoverySearchStatisticsController(service, searchIndexApplicationService);
         DiscoverySearchEventGetRequest request = new DiscoverySearchEventGetRequest();
         request.setId("2");
-        when(service.getEvent(2L))
+        SearchEventQuery eventQuery2 = new SearchEventQuery(2L, null, null, null, null, null, null);
+        when(service.getEvent(eventQuery2))
                 .thenReturn(new SearchEventResult(
                         SearchEventIdCodec.toDomain(2L),
                         "黄帝",
@@ -376,7 +379,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         var response = controller.getEvent(request);
 
-        verify(service).getEvent(2L);
+        verify(service).getEvent(eventQuery2);
         assertEquals("FAILED", response.getSearchStatus());
         assertEquals("DISCOVERY-20001", response.getFailureCode());
         assertEquals("Search backend is not implemented", response.getFailureMessage());

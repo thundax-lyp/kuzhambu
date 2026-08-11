@@ -10,14 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery application Search service`：以专用 Contract 替换 Search 和索引服务裸参数
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 3
-    - 范围对象：`SearchApplicationService.java`、`SearchApplicationServiceImpl.java`、`SearchIndexSyncApplicationService.java`、`SearchIndexSyncApplicationServiceImpl.java`、`SearchIndexCleanupApplicationService.java`、`SearchIndexCleanupApplicationServiceImpl.java`、`SearchEventQuery.java`、`SearchIndexSyncUpsertCommand.java`、`SearchIndexSyncDeleteCommand.java`、`SearchIndexCleanupCommand.java`、`DiscoveryApplicationArchitectureTest.java`
-    - 处理动作：将四个 Search/索引服务入口改为单一专用 Command 或 Query 参数。
-    - 验收点：四个 `METHOD_SHAPE` key 已删除且 application 模块测试通过。
-    - 重要度：8/10
-
 ## 待审阅任务项
 
 - [ ] `Discovery application QA service`：以专用 Query 替换 QA 查询裸参数

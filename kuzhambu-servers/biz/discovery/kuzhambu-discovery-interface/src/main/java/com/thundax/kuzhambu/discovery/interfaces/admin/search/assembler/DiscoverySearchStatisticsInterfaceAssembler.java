@@ -60,6 +60,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
             return null;
         }
         return new SearchEventQuery(
+                null,
                 request.getQueryText(),
                 request.getIntentTypes(),
                 request.getSearchStatuses(),

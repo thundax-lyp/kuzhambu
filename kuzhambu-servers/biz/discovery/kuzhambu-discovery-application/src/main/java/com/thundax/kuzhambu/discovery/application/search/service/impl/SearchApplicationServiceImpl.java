@@ -180,11 +180,11 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     @Override
-    public SearchEventResult getEvent(Long id) {
-        if (id == null) {
+    public SearchEventResult getEvent(SearchEventQuery query) {
+        if (query == null || query.eventId() == null) {
             throw new BizException("Search event id is required");
         }
-        return toSearchEventResult(searchEventRepository.getById(SearchEventIdCodec.toDomain(id)));
+        return toSearchEventResult(searchEventRepository.getById(SearchEventIdCodec.toDomain(query.eventId())));
     }
 
     @Override
