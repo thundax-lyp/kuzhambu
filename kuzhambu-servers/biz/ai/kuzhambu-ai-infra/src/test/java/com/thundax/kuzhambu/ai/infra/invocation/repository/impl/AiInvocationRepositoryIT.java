@@ -214,7 +214,7 @@ class AiInvocationRepositoryIT {
                         20))
                 .thenReturn(List.of(dataObject));
 
-        PageResult<AiInvocationLog> page = repository.pageByFilter(
+        PageResult<AiInvocationLog> page = repository.page(
                 "classics",
                 AiBusinessCapability.CLASSICS_SUMMARY,
                 AiContentRef.of("SANCAI_ENTRY", 9002L),

@@ -49,7 +49,7 @@ public interface AiInvocationRepository {
         return records;
     }
 
-    PageResult<AiInvocationLog> pageByFilter(
+    PageResult<AiInvocationLog> page(
             String scope,
             AiBusinessCapability capability,
             AiContentRef contentRef,

@@ -680,7 +680,7 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
-        public PageResult<AiInvocationLog> pageByFilter(
+        public PageResult<AiInvocationLog> page(
                 String scope,
                 AiBusinessCapability capability,
                 AiContentRef contentRef,

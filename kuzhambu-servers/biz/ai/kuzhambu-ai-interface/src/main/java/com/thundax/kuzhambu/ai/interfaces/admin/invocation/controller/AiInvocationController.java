@@ -89,7 +89,7 @@ public class AiInvocationController {
             @Valid @RequestBody AiInvocationRequests.InvocationLogPageRequest request) {
         PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
         return PageResponseHelper.fromPageResult(
-                invocationRepository.pageByFilter(
+                invocationRepository.page(
                         request.getScope(),
                         toCapability(request.getCapability()),
                         AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()),
