@@ -32,9 +32,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
     private DiscoveryQaPortalInterfaceAssembler() {}
 
     public static OpenQaSessionCommand toOpenSessionCommand(DiscoveryQaRequests.OpenSessionRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new OpenQaSessionCommand(
                 request.getOwnerUserId(),
                 request.getTitle(),
@@ -47,14 +45,12 @@ public final class DiscoveryQaPortalInterfaceAssembler {
     }
 
     public static ChatCompletionCommand toChatCompletionCommand(DiscoveryQaRequests.ChatCompletionsRequest request) {
-        return toChatCompletionCommand(request, request != null && Boolean.TRUE.equals(request.getStream()));
+        return toChatCompletionCommand(request, Boolean.TRUE.equals(request.getStream()));
     }
 
     public static ChatCompletionCommand toChatCompletionCommand(
             DiscoveryQaRequests.ChatCompletionsRequest request, boolean stream) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new ChatCompletionCommand(
                 DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
                 request.getModel(),
@@ -73,9 +69,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
     }
 
     public static DeleteQaSessionCommand toDeleteSessionCommand(DiscoveryQaRequests.QaSessionDeleteRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new DeleteQaSessionCommand(
                 DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
                 ownerType(),
@@ -84,9 +78,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
     }
 
     public static ExportQaSessionCommand toExportSessionCommand(DiscoveryQaRequests.QaSessionExportRequest request) {
-        if (request == null) {
-            return null;
-        }
+        Objects.requireNonNull(request, "request");
         return new ExportQaSessionCommand(
                 DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
                 request.getOwnerUserId(),
