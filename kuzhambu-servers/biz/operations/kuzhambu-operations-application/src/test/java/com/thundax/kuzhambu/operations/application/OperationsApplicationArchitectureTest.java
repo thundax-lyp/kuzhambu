@@ -30,7 +30,7 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
         PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
-                Path.of("src/main/java"), OperationsApplicationCommandQueryRecordAllowances.legacyAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-operations-interface/src/main/java")),
                 legacyCommandQueryConstructionAllowances());

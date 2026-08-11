@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations application / record allowlist`：删除已完成 record 迁移的 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/OperationsApplicationCommandQueryRecordAllowances.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/OperationsApplicationArchitectureTest.java`
-    - 处理动作：删除 record allowance 文件并将 record 规则改为空 allowlist。
-    - 验收点：`COMMAND_QUERY_RECORD:` 在 `biz/operations` 无匹配，且 application 架构测试通过。
-    - 重要度：9/10
-
 - [ ] `Operations application / scheduler and construction`：移除无参自动备份与 Command/Query 构造位置 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
