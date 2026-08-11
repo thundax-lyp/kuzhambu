@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations interface / restore-task response annotations`：完成 Response allowlist 清零
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
-    - 范围对象：`OperationsRestoreDetailResponse.java`、`OperationsRestoreExecuteResponse.java`、`OperationsRestorePageResponse.java`、`OperationsTaskDetailResponse.java`、`OperationsTaskPageResponse.java`、`OperationsInterfaceArchitectureTest.java`，均位于 `kuzhambu-servers/biz/operations/kuzhambu-operations-interface/`。
-    - 处理动作：补齐 restore/task Response 模型注解并删除剩余 Response allowlist。
-    - 验收点：`legacyResponseAnnotationAllowances` 无匹配，且 interface 架构测试通过。
-    - 重要度：7/10
-
 - [ ] `Operations interface / controller verbs`：迁移 Controller action method 与 path，并更新 report E2E mock
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`

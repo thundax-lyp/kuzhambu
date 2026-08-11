@@ -54,13 +54,7 @@ class OperationsInterfaceArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyResponseAnnotationAllowances() {
-        return java.util.Arrays.stream(new String[] {
-                    "admin.restore.controller.response.OperationsRestoreDetailResponse",
-                    "admin.restore.controller.response.OperationsRestoreExecuteResponse",
-                    "admin.restore.controller.response.OperationsRestorePageResponse",
-                    "admin.task.controller.response.OperationsTaskDetailResponse",
-                    "admin.task.controller.response.OperationsTaskPageResponse"
-                })
+        return java.util.Arrays.stream(new String[] {})
                 .map(
                         className -> ArchitectureRuleAllowance.of(
                                 ModelAnnotationArchitectureRuleSupport.NAME_RESPONSE_REQUIRED_ANNOTATIONS
