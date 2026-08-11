@@ -28,14 +28,6 @@
     - 验收点：7 个 contract 均为无 Lombok record，逐项 Maven 架构测试通过。
     - 重要度：9/10
 
-- [ ] `StorageFacadeImpl`：迁移 Facade 内 Command/Query 构造
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`StorageFacadeImpl.java`、`StorageReadableContentFacadeAssembler.java`、`StorageOwnerBindingFacadeAssembler.java`、`StorageApplicationArchitectureTest.java`
-    - 处理动作：把 3 个 Facade 直接构造移至对应 FacadeAssembler，并删除 3 个 allowance key。
-    - 验收点：Facade 不再直接构造 application contract，Maven application 测试通过。
-    - 重要度：8/10
-
 - [ ] `StorageObjectController`：迁移 Interface 内 Command/Query 构造
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`

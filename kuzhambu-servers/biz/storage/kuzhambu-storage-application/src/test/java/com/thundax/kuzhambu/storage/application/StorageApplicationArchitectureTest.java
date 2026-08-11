@@ -63,12 +63,6 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
         return List.of(
                 constructionViolation(
-                        "com.thundax.kuzhambu.storage.application.facade.impl.StorageFacadeImpl#RemoveStorageObjectCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.storage.application.facade.impl.StorageFacadeImpl#GetStorageObjectQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.storage.application.facade.impl.StorageFacadeImpl#ListStorageReferencesQuery:1"),
-                constructionViolation(
                         "com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController#StorageSortCommand:1"),
                 constructionViolation(
                         "com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController#GetStorageObjectQuery:1"),

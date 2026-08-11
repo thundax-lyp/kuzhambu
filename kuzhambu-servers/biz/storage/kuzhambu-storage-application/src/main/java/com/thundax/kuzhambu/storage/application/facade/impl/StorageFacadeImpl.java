@@ -1,12 +1,9 @@
 package com.thundax.kuzhambu.storage.application.facade.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.storage.application.command.RemoveStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageOwnerBindingFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageReadableContentFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler;
-import com.thundax.kuzhambu.storage.application.query.GetStorageObjectQuery;
-import com.thundax.kuzhambu.storage.application.query.ListStorageReferencesQuery;
 import com.thundax.kuzhambu.storage.application.result.StoredObjectContentResult;
 import com.thundax.kuzhambu.storage.application.service.StorageContentApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageMultipartUploadApplicationService;
@@ -174,8 +171,7 @@ public class StorageFacadeImpl implements StorageFacade {
         if (request == null || request.getStorageObjectId() == null) {
             return;
         }
-        storageObjectApplicationService.remove(
-                new RemoveStorageObjectCommand(StoredObjectIdCodec.toDomain(request.getStorageObjectId())));
+        storageObjectApplicationService.remove(readableContentFacadeAssembler.toRemoveStorageObjectCommand(request));
     }
 
     @Override
@@ -242,7 +238,7 @@ public class StorageFacadeImpl implements StorageFacade {
 
     private StoredObject requireStoredObject(Long storageObjectId) {
         StoredObject storedObject = storageObjectApplicationService.get(
-                new GetStorageObjectQuery(StoredObjectIdCodec.toDomain(storageObjectId)));
+                readableContentFacadeAssembler.toGetStorageObjectQuery(storageObjectId));
         if (storedObject == null) {
             throw new BizException("Storage 对象不存在");
         }
@@ -275,8 +271,8 @@ public class StorageFacadeImpl implements StorageFacade {
         if (storedObjectId == null) {
             return Collections.emptyList();
         }
-        List<StoredObjectReference> references =
-                storageReferenceApplicationService.list(new ListStorageReferencesQuery(storedObjectId));
+        List<StoredObjectReference> references = storageReferenceApplicationService.list(
+                readableContentFacadeAssembler.toListStorageReferencesQuery(storedObjectId));
         return references == null ? Collections.emptyList() : references;
     }
 }
