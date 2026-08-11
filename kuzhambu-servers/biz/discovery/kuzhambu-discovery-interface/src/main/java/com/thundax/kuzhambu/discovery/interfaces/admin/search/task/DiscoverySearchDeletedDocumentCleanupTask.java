@@ -23,6 +23,7 @@ public class DiscoverySearchDeletedDocumentCleanupTask {
 
     @Scheduled(cron = "${kuzhambu.discovery.search.deleted-cleanup.cron:0 0 3 * * ?}")
     public Integer cleanupDeletedDocuments() {
-        return searchIndexCleanupApplicationService.cleanupDeletedDocuments(new SearchIndexCleanupCommand(retentionDays));
+        return searchIndexCleanupApplicationService.cleanupDeletedDocuments(
+                new SearchIndexCleanupCommand(retentionDays));
     }
 }

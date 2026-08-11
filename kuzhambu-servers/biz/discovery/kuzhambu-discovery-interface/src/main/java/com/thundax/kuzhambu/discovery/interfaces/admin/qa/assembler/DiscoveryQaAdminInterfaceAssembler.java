@@ -1,11 +1,17 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.qa.assembler;
 
+import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
+import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
+import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.DiscoveryQaAdminRequests;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.response.DiscoveryQaAdminResponses;
 import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import java.util.List;
@@ -110,6 +116,51 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .createdAt(result.getCreatedAt())
                 .updatedAt(result.getUpdatedAt())
                 .build();
+    }
+
+    public static SyncKnowledgeContentCommand toSyncKnowledgeContentCommand(
+            DiscoveryQaAdminRequests.KnowledgeSyncRequest request) {
+        return new SyncKnowledgeContentCommand(
+                request == null ? null : request.getContentType(),
+                request == null ? null : request.getContentId(),
+                request == null ? null : request.getCurrentVersionNo(),
+                request == null ? null : request.getRequestId(),
+                request == null ? null : request.getTraceId());
+    }
+
+    public static KnowledgeSyncItemQuery toKnowledgeSyncItemQuery(
+            DiscoveryQaAdminRequests.KnowledgeSyncPageRequest request) {
+        if (request == null) {
+            return new KnowledgeSyncItemQuery(null, null);
+        }
+        return new KnowledgeSyncItemQuery(request.getContentType(), request.getSyncStatus());
+    }
+
+    public static DeleteQaSessionCommand toDeleteQaSessionCommand(
+            DiscoveryQaAdminRequests.QaSessionDeleteRequest request) {
+        return new DeleteQaSessionCommand(
+                request == null ? null : DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
+                null,
+                null,
+                true);
+    }
+
+    public static QaSessionQuery toQaSessionQuery(DiscoveryQaAdminRequests.QaSessionPageRequest request) {
+        if (request == null) {
+            return new QaSessionQuery(null, null, null);
+        }
+        return new QaSessionQuery(request.getTitle(), request.getOpenedAtStart(), request.getOpenedAtEnd());
+    }
+
+    public static ExportQaSessionCommand toExportQaSessionCommand(
+            DiscoveryQaAdminRequests.QaSessionExportRequest request) {
+        return new ExportQaSessionCommand(
+                request == null ? null : DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
+                request == null ? null : request.getRequesterUserId(),
+                null,
+                null,
+                true,
+                request == null ? null : request.getFormat());
     }
 
     private static List<DiscoveryQaAdminResponses.QaMessageResponse> toMessageResponses(List<QaMessageResult> results) {

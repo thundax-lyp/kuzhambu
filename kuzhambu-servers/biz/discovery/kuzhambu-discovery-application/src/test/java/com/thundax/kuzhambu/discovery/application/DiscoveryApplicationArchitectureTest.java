@@ -47,21 +47,7 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyCommandQueryConstructionAllowances() {
-        return List.of(
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#SyncKnowledgeContentCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#KnowledgeSyncItemQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#KnowledgeSyncItemQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#DeleteQaSessionCommand:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#QaSessionQuery:1"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#QaSessionQuery:2"),
-                constructionViolation(
-                        "com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.DiscoveryQaAdminController#ExportQaSessionCommand:1"));
+        return List.of();
     }
 
     private static ArchitectureRuleAllowance constructionViolation(String ownerAndType) {

@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
@@ -67,10 +69,10 @@ public class DiscoveryQaConversationController {
     public PageResponse<DiscoveryQaResponses.QaSessionResponse> pageSessions(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionPageRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toSessionPageResponse(
-                qaApplicationService.listPortalSessions(
+                qaApplicationService.listPortalSessions(new PortalQaSessionPageQuery(
                         DiscoveryQaPortalInterfaceAssembler.ownerType(),
                         DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId()),
-                        DiscoveryQaPortalInterfaceAssembler.limit(request)),
+                        DiscoveryQaPortalInterfaceAssembler.limit(request))),
                 request);
     }
 
@@ -87,10 +89,11 @@ public class DiscoveryQaConversationController {
     })
     public DiscoveryQaResponses.QaSessionDetailResponse getSession(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionGetRequest request) {
-        return DiscoveryQaPortalInterfaceAssembler.toSessionDetailResponse(qaApplicationService.getPortalSessionDetail(
-                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
-                DiscoveryQaPortalInterfaceAssembler.ownerType(),
-                DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId())));
+        return DiscoveryQaPortalInterfaceAssembler.toSessionDetailResponse(
+                qaApplicationService.getPortalSessionDetail(new PortalQaSessionDetailQuery(
+                        DiscoveryQaPortalInterfaceAssembler.ownerType(),
+                        DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId()),
+                        DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()))));
     }
 
     @Operation(summary = "删除问答会话", description = "Admin 知识助手删除会话")

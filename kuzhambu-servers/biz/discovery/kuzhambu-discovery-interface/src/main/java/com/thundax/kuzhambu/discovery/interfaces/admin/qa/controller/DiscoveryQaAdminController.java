@@ -8,11 +8,7 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
-import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
-import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
-import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemQuery;
-import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
@@ -88,7 +84,8 @@ public class DiscoveryQaAdminController {
     })
     public DiscoveryQaAdminResponses.QaSyncItemResponse syncKnowledge(
             @Valid @RequestBody DiscoveryQaAdminRequests.KnowledgeSyncRequest request) {
-        KnowledgeSyncItemResult result = knowledgeSyncApplicationService.syncContent(toSyncContentCommand(request));
+        KnowledgeSyncItemResult result = knowledgeSyncApplicationService.syncContent(
+                DiscoveryQaAdminInterfaceAssembler.toSyncKnowledgeContentCommand(request));
         return DiscoveryQaAdminInterfaceAssembler.toSyncItemResponse(result);
     }
 
@@ -107,7 +104,8 @@ public class DiscoveryQaAdminController {
             @Valid @RequestBody DiscoveryQaAdminRequests.KnowledgeSyncPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 knowledgeSyncApplicationService.pageSyncItems(
-                        toSyncQuery(request), PageInterfaceAssembler.toPageQuery(request)),
+                        DiscoveryQaAdminInterfaceAssembler.toKnowledgeSyncItemQuery(request),
+                        PageInterfaceAssembler.toPageQuery(request)),
                 DiscoveryQaAdminInterfaceAssembler::toSyncItemResponse);
     }
 
@@ -124,8 +122,8 @@ public class DiscoveryQaAdminController {
     })
     public DiscoveryQaAdminResponses.QaSessionDetailResponse getSession(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionGetRequest request) {
-        return DiscoveryQaAdminInterfaceAssembler.toSessionDetailResponse(
-                qaApplicationService.getSessionDetail(DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId())));
+        return DiscoveryQaAdminInterfaceAssembler.toSessionDetailResponse(qaApplicationService.getSessionDetail(
+                new QaSessionDetailQuery(DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()))));
     }
 
     @Operation(summary = "分页查询会话", description = "Discovery QA 会话分页")
@@ -142,7 +140,9 @@ public class DiscoveryQaAdminController {
     public PageResponse<DiscoveryQaAdminResponses.QaSessionResponse> pageSessions(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionPageRequest request) {
         return PageResponseHelper.fromPageResult(
-                qaApplicationService.pageSessions(toSessionQuery(request), PageInterfaceAssembler.toPageQuery(request)),
+                qaApplicationService.pageSessions(
+                        DiscoveryQaAdminInterfaceAssembler.toQaSessionQuery(request),
+                        PageInterfaceAssembler.toPageQuery(request)),
                 DiscoveryQaAdminInterfaceAssembler::toSessionResponse);
     }
 
@@ -158,7 +158,7 @@ public class DiscoveryQaAdminController {
                 dataTypeClass = String.class),
     })
     public void deleteSession(@Valid @RequestBody DiscoveryQaAdminRequests.QaSessionDeleteRequest request) {
-        qaApplicationService.deleteSession(toDeleteSessionCommand(request));
+        qaApplicationService.deleteSession(DiscoveryQaAdminInterfaceAssembler.toDeleteQaSessionCommand(request));
     }
 
     @Operation(summary = "导出会话", description = "Discovery QA Admin 导出会话 CSV")
@@ -174,51 +174,7 @@ public class DiscoveryQaAdminController {
     })
     public DiscoveryQaAdminResponses.QaSessionExportResponse exportSession(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionExportRequest request) {
-        return DiscoveryQaAdminInterfaceAssembler.toSessionExportResponse(
-                qaApplicationService.exportSession(toExportSessionCommand(request)));
-    }
-
-    private static SyncKnowledgeContentCommand toSyncContentCommand(
-            DiscoveryQaAdminRequests.KnowledgeSyncRequest request) {
-        return new SyncKnowledgeContentCommand(
-                request == null ? null : request.getContentType(),
-                request == null ? null : request.getContentId(),
-                request == null ? null : request.getCurrentVersionNo(),
-                request == null ? null : request.getRequestId(),
-                request == null ? null : request.getTraceId());
-    }
-
-    private static KnowledgeSyncItemQuery toSyncQuery(DiscoveryQaAdminRequests.KnowledgeSyncPageRequest request) {
-        if (request == null) {
-            return new KnowledgeSyncItemQuery(null, null);
-        }
-        return new KnowledgeSyncItemQuery(request.getContentType(), request.getSyncStatus());
-    }
-
-    private static DeleteQaSessionCommand toDeleteSessionCommand(
-            DiscoveryQaAdminRequests.QaSessionDeleteRequest request) {
-        return new DeleteQaSessionCommand(
-                request == null ? null : DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
-                null,
-                null,
-                true);
-    }
-
-    private static QaSessionQuery toSessionQuery(DiscoveryQaAdminRequests.QaSessionPageRequest request) {
-        if (request == null) {
-            return new QaSessionQuery(null, null, null);
-        }
-        return new QaSessionQuery(request.getTitle(), request.getOpenedAtStart(), request.getOpenedAtEnd());
-    }
-
-    private static ExportQaSessionCommand toExportSessionCommand(
-            DiscoveryQaAdminRequests.QaSessionExportRequest request) {
-        return new ExportQaSessionCommand(
-                request == null ? null : DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
-                request == null ? null : request.getRequesterUserId(),
-                null,
-                null,
-                true,
-                request == null ? null : request.getFormat());
+        return DiscoveryQaAdminInterfaceAssembler.toSessionExportResponse(qaApplicationService.exportSession(
+                DiscoveryQaAdminInterfaceAssembler.toExportQaSessionCommand(request)));
     }
 }

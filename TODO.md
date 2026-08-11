@@ -10,16 +10,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA interface assembler`：移除 controller 构造和 null Command/Query 返回 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 6 至 8
-    - 范围对象：`DiscoveryQaAdminController.java`、`DiscoveryQaAdminInterfaceAssembler.java`、`DiscoveryQaPortalInterfaceAssembler.java`、`DiscoveryQaPortalController.java`、`DiscoverySearchPortalInterfaceAssembler.java`、`DiscoverySearchStatisticsInterfaceAssembler.java`、`DiscoveryApplicationArchitectureTest.java`
-    - 处理动作：将 application Contract 构造移入 assembler，并消除 assembler 的 null Command/Query 返回。
-    - 验收点：`legacyCommandQueryConstructionAllowances` 和 `legacyAssemblerNullReturnAllowances` 不存在且 application/interface 模块测试通过。
-    - 重要度：8/10
-
-## 待审阅任务项
-
 - [ ] `Discovery facade assembler`：移除 application facade assembler nullness allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-02-DISCOVERY.md` 任务 9
@@ -27,6 +17,8 @@
     - 处理动作：为两个 facade assembler 补齐非空边界契约并删除例外。
     - 验收点：application architecture test 不再引用这两个 facade assembler 的 nullness allowlist。
     - 重要度：7/10
+
+## 待审阅任务项
 
 - [ ] `Discovery QA repository`：修正软删除仓储命名并删除 domain allowlist
     - 任务类型：执行任务
