@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/format_after_edit.mjs",
+            "command": "repository_root=$(git rev-parse --show-toplevel) && node \"$repository_root/.codex/hooks/format_after_edit.mjs\"",
             "timeout": 60,
             "statusMessage": "Formatting modified source files"
           }
