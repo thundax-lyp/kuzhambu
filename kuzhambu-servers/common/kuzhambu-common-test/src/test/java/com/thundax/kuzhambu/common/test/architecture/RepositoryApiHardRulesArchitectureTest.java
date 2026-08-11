@@ -163,19 +163,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=listManuscriptTree path=manuscript-tree");
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java",
-                "method=summarizeInvocationLogs",
-                "method=summarizeInvocationLogs path=invocation-log/summary",
-                "method=markCandidateApplied",
-                "method=markCandidateApplied path=candidate/mark-applied",
-                "method=recordBatchSuccess",
-                "method=recordBatchSuccess path=batch/record-success",
-                "method=recordBatchFailure",
-                "method=recordBatchFailure path=batch/record-failure",
-                "method=canDispatchBatch",
-                "method=canDispatchBatch path=batch/can-dispatch");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/prompt/controller/PromptController.java",
                 "method=saveTemplate",
                 "method=saveTemplate path=template/save",

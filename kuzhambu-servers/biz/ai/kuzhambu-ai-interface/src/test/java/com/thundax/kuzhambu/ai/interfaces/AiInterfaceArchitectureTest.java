@@ -58,16 +58,6 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
         return List.of(
-                aiInvocationActionVerbAllowance("method=summarizeInvocationLogs"),
-                aiInvocationActionVerbAllowance("method=summarizeInvocationLogs path=invocation-log/summary"),
-                aiInvocationActionVerbAllowance("method=markCandidateApplied"),
-                aiInvocationActionVerbAllowance("method=markCandidateApplied path=candidate/mark-applied"),
-                aiInvocationActionVerbAllowance("method=recordBatchSuccess"),
-                aiInvocationActionVerbAllowance("method=recordBatchSuccess path=batch/record-success"),
-                aiInvocationActionVerbAllowance("method=recordBatchFailure"),
-                aiInvocationActionVerbAllowance("method=recordBatchFailure path=batch/record-failure"),
-                aiInvocationActionVerbAllowance("method=canDispatchBatch"),
-                aiInvocationActionVerbAllowance("method=canDispatchBatch path=batch/can-dispatch"),
                 promptActionVerbAllowance("method=getTemplateByCapability path=template/get-by-capability"),
                 promptActionVerbAllowance("method=saveTemplate"),
                 promptActionVerbAllowance("method=saveTemplate path=template/save"),
