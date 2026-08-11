@@ -107,7 +107,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public StoredObject complete(CompleteMultipartUploadCommand command) {
-        MultipartUploadId uploadId = command == null ? null : command.getUploadId();
+        MultipartUploadId uploadId = command == null ? null : command.uploadId();
         MultipartUploadSession session = requireActiveMultipartSession(uploadId);
         claimCompleting(session);
         List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(uploadId);
@@ -326,14 +326,11 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         storage.setExtendName(extension(session.getOriginalFilename()));
         storage.setMimeTypeRef(session.getMimeTypeRef());
         storage.setBucketNameRef(
-                command == null || command.getBucketName() == null
-                        ? session.getBucketNameRef()
-                        : command.getBucketName());
+                command == null || command.bucketName() == null ? session.getBucketNameRef() : command.bucketName());
         storage.setObjectKeyRef(
-                command == null || command.getObjectKey() == null ? session.getObjectKeyRef() : command.getObjectKey());
-        storage.setSizeRef(
-                command == null || command.getSize() == null ? session.getTotalSizeRef() : command.getSize());
-        storage.setAccessEndpoint(command == null ? null : command.getAccessEndpoint());
+                command == null || command.objectKey() == null ? session.getObjectKeyRef() : command.objectKey());
+        storage.setSizeRef(command == null || command.size() == null ? session.getTotalSizeRef() : command.size());
+        storage.setAccessEndpoint(command == null ? null : command.accessEndpoint());
         storage.setObjectStatus(StoredObjectStatus.ACTIVE);
         storage.setReferenceStatus(StoredObjectReferenceStatus.UNREFERENCED);
         return storage;

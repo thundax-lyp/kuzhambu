@@ -222,8 +222,8 @@ class StorageFacadeImplTest {
         ArgumentCaptor<InitMultipartUploadCommand> commandCaptor =
                 ArgumentCaptor.forClass(InitMultipartUploadCommand.class);
         verify(multipartUploadApplicationService).init(commandCaptor.capture());
-        assertNull(commandCaptor.getValue().getBucketName());
-        assertNull(commandCaptor.getValue().getObjectKey());
+        assertNull(commandCaptor.getValue().bucketName());
+        assertNull(commandCaptor.getValue().objectKey());
         assertNull(commandCaptor.getValue().getProviderUploadId());
     }
 
@@ -327,10 +327,10 @@ class StorageFacadeImplTest {
         ArgumentCaptor<CompleteMultipartUploadCommand> commandCaptor =
                 ArgumentCaptor.forClass(CompleteMultipartUploadCommand.class);
         verify(multipartUploadApplicationService).complete(commandCaptor.capture());
-        assertNull(commandCaptor.getValue().getBucketName());
-        assertNull(commandCaptor.getValue().getObjectKey());
-        assertNull(commandCaptor.getValue().getSize());
-        assertNull(commandCaptor.getValue().getAccessEndpoint());
+        assertNull(commandCaptor.getValue().bucketName());
+        assertNull(commandCaptor.getValue().objectKey());
+        assertNull(commandCaptor.getValue().size());
+        assertNull(commandCaptor.getValue().accessEndpoint());
     }
 
     @Test
