@@ -208,7 +208,7 @@ class StorageObjectMultipartUploadContractTest {
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         AbortMultipartUploadCommand command = commandRef.get();
-        assertEquals("upload-3", command.getUploadId().value());
+        assertEquals("upload-3", command.uploadId().value());
 
         assertEquals("upload-3", json.get("uploadId").asText());
         assertEquals(

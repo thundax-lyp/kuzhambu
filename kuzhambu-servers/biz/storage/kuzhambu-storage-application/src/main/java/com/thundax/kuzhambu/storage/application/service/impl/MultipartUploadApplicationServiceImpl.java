@@ -211,7 +211,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int abort(AbortMultipartUploadCommand command) {
-        MultipartUploadSession session = requireActiveMultipartSession(command == null ? null : command.getUploadId());
+        MultipartUploadSession session = requireActiveMultipartSession(command == null ? null : command.uploadId());
         List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(session.getUploadIdRef());
         for (MultipartUploadPart part : parts) {
             StoredObject partStorage = new StoredObject();
