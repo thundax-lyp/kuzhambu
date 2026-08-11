@@ -72,8 +72,8 @@ public class PromptControllerTest {
         return proxy(PromptApplicationService.class, (proxy, method, args) -> {
             if ("get".equals(method.getName())
                     || "getByCapability".equals(method.getName())
-                    || "getLatestVersion".equals(method.getName())
-                    || "createOptimizationSuggestion".equals(method.getName())) {
+                    || "getCurrentVersion".equals(method.getName())
+                    || "buildOptimizationSuggestion".equals(method.getName())) {
                 return null;
             }
             throw new UnsupportedOperationException(
