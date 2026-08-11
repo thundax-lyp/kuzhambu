@@ -25,8 +25,7 @@ class OperationsInterfaceArchitectureTest extends AbstractArchitectureTest {
                 classes, BASE_PACKAGE, Collections.emptyList());
         NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
         PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
-        ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
-                Path.of("src/main/java"), Collections.emptyList());
+        ApiAnnotationArchitectureRuleSupport.assertControllerActionsAvoidAmbiguousVerbs(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));

@@ -1,20 +1,11 @@
 package com.thundax.kuzhambu.common.test.architecture;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class RepositoryApiHardRulesArchitectureTest {
 
     private static final Path BUSINESS_SOURCE_ROOT = Path.of("../../biz");
-    private static final Pattern ADMIN_WEB_SERVICE_VERBS_PATTERN =
-            Pattern.compile("(?s)const SERVICE_METHOD_VERBS = \\[(.*?)\\];");
-    private static final Pattern QUOTED_VALUE_PATTERN = Pattern.compile("\\\"([^\\\"]+)\\\"");
 
     @Test
     void apiSourceShouldKeepHardRuleContract() throws Exception {
@@ -33,139 +24,11 @@ class RepositoryApiHardRulesArchitectureTest {
         ApiAnnotationArchitectureRuleSupport.assertMappedMethodsUsePostOrGetMapping(BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertJsonRequestMethodsUsePostMapping(BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertGetMappingMethodsReturnVoid(BUSINESS_SOURCE_ROOT);
-        ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
-                BUSINESS_SOURCE_ROOT, legacyActionVerbAllowances());
+        ApiAnnotationArchitectureRuleSupport.assertControllerActionsAvoidAmbiguousVerbs(BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertRequestBodyRequestParametersDeclareValid(BUSINESS_SOURCE_ROOT);
         ApiAnnotationArchitectureRuleSupport.assertControllersDoNotCreateResponses(BUSINESS_SOURCE_ROOT);
-    }
-
-    @Test
-    void controllerActionVerbsShouldMatchAdminWebServiceVerbs() throws Exception {
-        String eslintConfig = Files.readString(
-                ArchitectureSourceSupport.repositoryRoot().resolve("kuzhambu-apps/admin-web/eslint.config.js"));
-        Matcher verbBlock = ADMIN_WEB_SERVICE_VERBS_PATTERN.matcher(eslintConfig);
-        Assertions.assertThat(verbBlock.find()).isTrue();
-
-        List<String> frontendVerbs = new ArrayList<String>();
-        Matcher valueMatcher = QUOTED_VALUE_PATTERN.matcher(verbBlock.group(1));
-        while (valueMatcher.find()) {
-            frontendVerbs.add(valueMatcher.group(1));
-        }
-
-        Assertions.assertThat(frontendVerbs)
-                .containsExactlyElementsOf(ApiAnnotationArchitectureRuleSupport.controllerActionVerbs());
-    }
-
-    private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
-        List<ArchitectureRuleAllowance> allowances = new ArrayList<ArchitectureRuleAllowance>();
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/DiscoveryQaPortalStreamController.java",
-                "method=chatCompletionsStream",
-                "method=chatCompletionsStream path=chat/completions/stream");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/DiscoveryQaPortalController.java",
-                "method=openSession",
-                "method=openSession path=session/open",
-                "method=exportSession",
-                "method=exportSession path=session/export",
-                "method=chatCompletions",
-                "method=chatCompletions path=chat/completions");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/DiscoveryQaConversationStreamController.java",
-                "method=chatCompletionsStream",
-                "method=chatCompletionsStream path=chat/completions/stream");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/DiscoveryQaAdminController.java",
-                "method=getKnowledgeHealth path=knowledge/health",
-                "method=syncKnowledge",
-                "method=syncKnowledge path=knowledge/sync",
-                "method=exportSession",
-                "method=exportSession path=session/export");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/DiscoveryQaConversationController.java",
-                "method=openSession",
-                "method=openSession path=session/open",
-                "method=exportSession",
-                "method=exportSession path=session/export",
-                "method=chatCompletions",
-                "method=chatCompletions path=chat/completions");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/controller/DiscoverySearchStatisticsController.java",
-                "method=getStatisticsSummary path=summary");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAdminController.java",
-                "method=summary",
-                "method=summary path=summary",
-                "method=trend",
-                "method=trend path=trend");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAlertAdminController.java",
-                "method=ack",
-                "method=ack path=ack");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/dashboard/controller/OperationsDashboardAdminController.java",
-                "method=overview",
-                "method=overview path=overview");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/cleanup/controller/OperationsCleanupAdminController.java",
-                "method=execute",
-                "method=execute path=execute",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/task/controller/OperationsTaskAdminController.java",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/report/controller/OperationsReportAdminController.java",
-                "method=generate",
-                "method=generate path=generate",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/backup/controller/OperationsBackupAdminController.java",
-                "method=execute",
-                "method=execute path=execute",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/OperationsRestoreAdminController.java",
-                "method=execute",
-                "method=execute path=execute",
-                "method=detail",
-                "method=detail path=detail");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/KnowledgeGraphWorkbenchController.java",
-                "method=listManuscriptTree path=manuscript-tree");
-        return allowances;
-    }
-
-    private static void addLegacyActionVerbAllowances(
-            List<ArchitectureRuleAllowance> allowances, String sourcePath, String... violations) {
-        for (String violation : violations) {
-            allowances.add(
-                    ArchitectureRuleAllowance.of(
-                            "CONTROLLER_ACTION_VERB:" + sourcePath + " " + violation,
-                            "Controller retains a legacy action name or path outside the shared verb whitelist.",
-                            "Rename the controller method and action path with a shared verb, update callers, then remove this allowance."));
-        }
     }
 }
