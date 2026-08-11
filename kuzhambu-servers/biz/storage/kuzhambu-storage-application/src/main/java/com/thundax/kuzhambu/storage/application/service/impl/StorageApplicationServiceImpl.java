@@ -220,7 +220,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int remove(RemoveStorageObjectCommand command) {
-        StoredObjectId id = command == null ? null : command.getId();
+        StoredObjectId id = command == null ? null : command.id();
         if (id == null) {
             return 0;
         }
