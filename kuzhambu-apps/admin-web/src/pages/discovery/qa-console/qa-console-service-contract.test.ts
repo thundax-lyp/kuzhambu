@@ -15,8 +15,8 @@ describe("qa console service contracts", () => {
     });
 
     it("maps qa console endpoints and request bodies", async () => {
-        await service.getKnowledgeHealth();
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/health");
+        await service.getKnowledge();
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/get");
 
         await service.rebuildKnowledge({ requestId: "REQ-1", traceId: "TRACE-1" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/rebuild", {
@@ -26,14 +26,14 @@ describe("qa console service contracts", () => {
             }
         });
 
-        await service.createKnowledgeSync({
+        await service.updateKnowledge({
             contentId: "1001",
             contentType: "SANCAI_ENTRY",
             currentVersionNo: 2,
             requestId: "REQ-2",
             traceId: "TRACE-2"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/sync", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/update", {
             body: {
                 contentId: "1001",
                 contentType: "SANCAI_ENTRY",
@@ -90,12 +90,12 @@ describe("qa console service contracts", () => {
             }
         });
 
-        await service.createQaSessionExport({
+        await service.downloadQaSession({
             format: "CSV",
             requesterUserId: "1001",
             sessionId: "2001"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/export", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/download", {
             body: {
                 format: "CSV",
                 requesterUserId: "1001",
@@ -114,12 +114,12 @@ describe("qa console service contracts", () => {
             "utf-8"
         );
 
-        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/health");
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/get");
         expect(serviceSource).toContain("/discovery/qa-admin/knowledge/rebuild");
-        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/sync");
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/update");
         expect(serviceSource).toContain("/discovery/qa-admin/knowledge/sync/page");
         expect(serviceSource).toContain("/discovery/qa-admin/session/delete");
-        expect(serviceSource).toContain("/discovery/qa-admin/session/export");
+        expect(serviceSource).toContain("/discovery/qa-admin/session/download");
         expect(serviceSource).not.toMatch(/https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu);
     });
 });

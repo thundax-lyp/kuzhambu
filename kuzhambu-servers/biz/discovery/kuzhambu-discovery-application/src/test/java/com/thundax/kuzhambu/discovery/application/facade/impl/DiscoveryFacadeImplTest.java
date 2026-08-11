@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.discovery.application.facade.assembler.DiscoveryFacadeAssembler;
+import com.thundax.kuzhambu.discovery.application.report.query.DiscoveryReportSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportSummaryResult;
 import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
 import com.thundax.kuzhambu.discovery.facade.request.DiscoverySummaryFacadeRequest;
@@ -22,7 +23,7 @@ class DiscoveryFacadeImplTest {
                 mock(DiscoveryReportApplicationService.class);
         Instant periodStart = Instant.ofEpochMilli(1_735_689_600_000L);
         Instant periodEnd = Instant.ofEpochMilli(1_735_776_000_000L);
-        when(discoveryReportApplicationService.summary(periodStart, periodEnd, "WEEK"))
+        when(discoveryReportApplicationService.summary(new DiscoveryReportSummaryQuery(periodStart, periodEnd, "WEEK")))
                 .thenReturn(new DiscoveryReportSummaryResult(
                         periodStart,
                         periodEnd,

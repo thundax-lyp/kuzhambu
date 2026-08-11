@@ -7,6 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaMessageSourcesQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaRetrievalTraceQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
@@ -99,18 +102,18 @@ class QaApplicationServiceImplAdminReadTest {
                         Instant.ofEpochMilli(1_718_000_060_000L))));
         when(traceRepository.getByTraceId(8001L)).thenReturn(trace());
 
-        QaSessionDetailResult sessionDetail = service.getSessionDetail(5001L);
+        QaSessionDetailResult sessionDetail = service.getSessionDetail(new QaSessionDetailQuery(5001L));
         assertEquals(5001L, sessionDetail.getId());
         assertEquals(1, sessionDetail.getMessages().size());
         QaMessageResult message = sessionDetail.getMessages().get(0);
         assertEquals(7001L, message.getId());
         assertEquals("USER", message.getRole());
 
-        var sources = service.listSourcesByMessageId(7002L);
+        var sources = service.listSourcesByMessageId(new QaMessageSourcesQuery(7002L));
         assertEquals(1, sources.size());
         assertEquals(9001L, sources.get(0).getSourceId());
 
-        QaTraceResult trace = service.getTraceByTraceId(8001L);
+        QaTraceResult trace = service.getTraceByTraceId(new QaRetrievalTraceQuery(8001L));
         assertNotNull(trace);
         assertEquals("黄帝是谁", trace.getRawQuestion());
 

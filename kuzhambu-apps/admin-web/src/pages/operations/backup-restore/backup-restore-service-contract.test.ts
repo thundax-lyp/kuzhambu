@@ -14,7 +14,7 @@ describe("operations backup restore service contracts", () => {
 
     it("maps backup endpoints and request bodies", async () => {
         await service.createManualBackup();
-        expect(postJson).toHaveBeenLastCalledWith("/operations/backup/execute", {
+        expect(postJson).toHaveBeenLastCalledWith("/operations/backup/create", {
             body: {}
         });
 
@@ -36,7 +36,7 @@ describe("operations backup restore service contracts", () => {
         });
 
         await service.getBackupDetail({ backupId: "9001" });
-        expect(postJson).toHaveBeenLastCalledWith("/operations/backup/detail", {
+        expect(postJson).toHaveBeenLastCalledWith("/operations/backup/get", {
             body: {
                 backupId: "9001"
             }
@@ -45,7 +45,7 @@ describe("operations backup restore service contracts", () => {
 
     it("maps restore endpoints and request bodies", async () => {
         await service.recoverBackup({ backupId: "9001", restoreMode: "DRILL" });
-        expect(postJson).toHaveBeenLastCalledWith("/operations/restore/execute", {
+        expect(postJson).toHaveBeenLastCalledWith("/operations/restore/create", {
             body: {
                 backupId: "9001",
                 restoreMode: "DRILL"
@@ -72,7 +72,7 @@ describe("operations backup restore service contracts", () => {
         });
 
         await service.getRestoreDetail({ restoreId: "9101" });
-        expect(postJson).toHaveBeenLastCalledWith("/operations/restore/detail", {
+        expect(postJson).toHaveBeenLastCalledWith("/operations/restore/get", {
             body: {
                 restoreId: "9101"
             }

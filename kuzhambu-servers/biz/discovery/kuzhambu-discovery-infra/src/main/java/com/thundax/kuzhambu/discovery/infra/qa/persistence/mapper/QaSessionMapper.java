@@ -30,5 +30,5 @@ public interface QaSessionMapper extends BaseMapper<QaSessionDO> {
             where id = #{id}
               and removed_at is null
             """)
-    int markRemoved(@Param("id") Long id, @Param("removedAt") Instant removedAt);
+    int delete(@Param("id") Long id, @Param("removedAt") Instant removedAt);
 }

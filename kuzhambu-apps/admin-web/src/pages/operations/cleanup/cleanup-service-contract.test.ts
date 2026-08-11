@@ -14,7 +14,7 @@ describe("operations cleanup service contracts", () => {
 
     it("maps cleanup execute endpoint", async () => {
         await service.requestCleanup({ cleanupType: "EXPIRED_BACKUP" });
-        expect(postJson).toHaveBeenLastCalledWith("/operations/cleanup/execute", {
+        expect(postJson).toHaveBeenLastCalledWith("/operations/cleanup/create", {
             body: {
                 cleanupType: "EXPIRED_BACKUP"
             }
@@ -53,7 +53,7 @@ describe("operations cleanup service contracts", () => {
             ]
         });
         const detail = await service.getCleanupDetail({ cleanupId: "901" });
-        expect(postJson).toHaveBeenLastCalledWith("/operations/cleanup/detail", {
+        expect(postJson).toHaveBeenLastCalledWith("/operations/cleanup/get", {
             body: {
                 cleanupId: "901"
             }

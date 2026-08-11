@@ -94,7 +94,7 @@ const mockReportApis = async (page: Page) => {
             ]
         })
     );
-    await page.route("**/kuzhambu-admin-api/api/operations/report/detail", (route) =>
+    await page.route("**/kuzhambu-admin-api/api/operations/report/get", (route) =>
         fulfillSuccess(route, {
             reportId: 9002,
             reportType: "MONTHLY",
@@ -131,7 +131,7 @@ test.describe("operations reports", () => {
         page
     }) => {
         let generatedBody: unknown = null;
-        await page.route("**/kuzhambu-admin-api/api/operations/report/generate", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/operations/report/create", async (route) => {
             generatedBody = route.request().postDataJSON();
             await fulfillSuccess(route, {
                 reportId: 9003,

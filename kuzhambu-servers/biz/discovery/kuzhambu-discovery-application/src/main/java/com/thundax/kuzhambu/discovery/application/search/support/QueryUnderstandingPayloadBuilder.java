@@ -26,7 +26,7 @@ public class QueryUnderstandingPayloadBuilder {
 
         Map<String, Object> userMessage = new LinkedHashMap<>();
         userMessage.put("role", "user");
-        userMessage.put("content", query.getQueryText());
+        userMessage.put("content", query.queryText());
 
         return writeJson(List.of(systemMessage, userMessage));
     }
@@ -36,15 +36,15 @@ public class QueryUnderstandingPayloadBuilder {
             String normalizedQueryText,
             com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement) {
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("queryText", query.getQueryText());
+        payload.put("queryText", query.queryText());
         payload.put("normalizedQueryText", normalizedQueryText);
-        payload.put("knowledgeBases", query.getKnowledgeBases());
-        payload.put("categoryCodes", query.getCategoryCodes());
-        payload.put("tagNames", query.getTagNames());
+        payload.put("knowledgeBases", query.knowledgeBases());
+        payload.put("categoryCodes", query.categoryCodes());
+        payload.put("tagNames", query.tagNames());
         payload.put("tagHint", enhancement.tagHint());
         payload.put("recognizedEntities", enhancement.recognizedEntities());
-        payload.put("requestId", RequestIdCodec.toValue(query.getRequestId()));
-        payload.put("traceId", TraceIdCodec.toValue(query.getTraceId()));
+        payload.put("requestId", RequestIdCodec.toValue(query.requestId()));
+        payload.put("traceId", TraceIdCodec.toValue(query.traceId()));
         return writeJson(payload);
     }
 

@@ -5,7 +5,6 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
-import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
@@ -32,8 +31,8 @@ public class DiscoveryQaPortalController {
     }
 
     @Operation(summary = "创建问答会话", description = "Portal 问答创建会话")
-    @PostMapping("session/open")
-    public DiscoveryQaResponses.OpenSessionResponse openSession(
+    @PostMapping("session/init")
+    public DiscoveryQaResponses.OpenSessionResponse initSession(
             @Valid @RequestBody DiscoveryQaRequests.OpenSessionRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toOpenSessionResponse(
                 qaApplicationService.openSession(DiscoveryQaPortalInterfaceAssembler.toOpenSessionCommand(request)));
@@ -45,9 +44,8 @@ public class DiscoveryQaPortalController {
             @Valid @RequestBody DiscoveryQaRequests.QaSessionPageRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toSessionPageResponse(
                 qaApplicationService.listPortalSessions(
-                        DiscoveryQaPortalInterfaceAssembler.ownerType(),
-                        DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId()),
-                        DiscoveryQaPortalInterfaceAssembler.limit(request)),
+                        DiscoveryQaPortalInterfaceAssembler.toSessionQuery(request),
+                        DiscoveryQaPortalInterfaceAssembler.toPageQuery(request)),
                 request);
     }
 
@@ -56,9 +54,7 @@ public class DiscoveryQaPortalController {
     public DiscoveryQaResponses.QaSessionDetailResponse getSession(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionGetRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toSessionDetailResponse(qaApplicationService.getPortalSessionDetail(
-                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
-                DiscoveryQaPortalInterfaceAssembler.ownerType(),
-                DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId())));
+                DiscoveryQaPortalInterfaceAssembler.toSessionDetailQuery(request)));
     }
 
     @Operation(summary = "删除问答会话", description = "Portal 软删除自己的问答会话")
@@ -68,16 +64,16 @@ public class DiscoveryQaPortalController {
     }
 
     @Operation(summary = "导出问答会话", description = "Portal 导出自己的未删除问答会话 CSV")
-    @PostMapping("session/export")
-    public DiscoveryQaResponses.QaSessionExportResponse exportSession(
+    @PostMapping("session/download")
+    public DiscoveryQaResponses.QaSessionExportResponse downloadSession(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionExportRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toSessionExportResponse(qaApplicationService.exportSession(
                 DiscoveryQaPortalInterfaceAssembler.toExportSessionCommand(request)));
     }
 
     @Operation(summary = "OpenAI 风格提问", description = "Portal 问答 OpenAI 风格提问")
-    @PostMapping("chat/completions")
-    public DiscoveryQaResponses.ChatCompletionsResponse chatCompletions(
+    @PostMapping("chat/create")
+    public DiscoveryQaResponses.ChatCompletionsResponse createChatCompletion(
             @Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toChatCompletionsResponse(
                 knowledgeQaApplicationService.chatCompletion(

@@ -6,11 +6,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DiscoveryQaPage } from "./qa-page";
 
 const mocks = vi.hoisted(() => ({
-    createQaChatCompletionStream: vi.fn(),
+    submitChatCompletion: vi.fn(),
     deleteQaSession: vi.fn(),
-    exportQaSession: vi.fn(),
+    downloadQaSession: vi.fn(),
     getQaSession: vi.fn(),
-    openQaSession: vi.fn(),
+    initQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
     postEventStream: vi.fn(),
     postJson: vi.fn()
@@ -100,11 +100,11 @@ const findButtonByText = (container: HTMLElement, text: string) => {
 
 describe("DiscoveryQaPage", () => {
     afterEach(() => {
-        mocks.createQaChatCompletionStream.mockReset();
+        mocks.submitChatCompletion.mockReset();
         mocks.deleteQaSession.mockReset();
-        mocks.exportQaSession.mockReset();
+        mocks.downloadQaSession.mockReset();
         mocks.getQaSession.mockReset();
-        mocks.openQaSession.mockReset();
+        mocks.initQaSession.mockReset();
         mocks.pageQaSessions.mockReset();
         mocks.postEventStream.mockReset();
         mocks.postJson.mockReset();
@@ -130,7 +130,7 @@ describe("DiscoveryQaPage", () => {
             })
         );
         mocks.getQaSession.mockRejectedValueOnce(new Error("Portal API request failed: 404"));
-        mocks.openQaSession.mockResolvedValueOnce({
+        mocks.initQaSession.mockResolvedValueOnce({
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
@@ -139,7 +139,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+        mocks.submitChatCompletion.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             choices: [
                 {
@@ -164,8 +164,8 @@ describe("DiscoveryQaPage", () => {
             sessionId: "2401"
         });
         expect(localStorage.getItem("kuzhambu.portal.discovery.qa.session")).not.toContain("2401");
-        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.initQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "旧会话还能用吗？", role: "user" }],
                 sessionId: "2402"
@@ -193,7 +193,7 @@ describe("DiscoveryQaPage", () => {
                 }
             })
         );
-        mocks.openQaSession.mockResolvedValueOnce({
+        mocks.initQaSession.mockResolvedValueOnce({
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
@@ -202,7 +202,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+        mocks.submitChatCompletion.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             choices: [
                 {
@@ -222,8 +222,8 @@ describe("DiscoveryQaPage", () => {
         setTextareaValue(container, "question", "重新开始");
         await pressTextareaKey(container, "question", "Enter");
 
-        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.initQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "重新开始", role: "user" }],
                 sessionId: "2502"
@@ -237,7 +237,7 @@ describe("DiscoveryQaPage", () => {
     });
 
     it("renders unavailable source without link and supports retryable answer failure", async () => {
-        mocks.openQaSession.mockResolvedValue({
+        mocks.initQaSession.mockResolvedValue({
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
@@ -248,7 +248,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletionStream
+        mocks.submitChatCompletion
             .mockRejectedValueOnce(new Error("provider down"))
             .mockResolvedValueOnce({
                 answerStatus: "SUCCEEDED",
@@ -291,7 +291,7 @@ describe("DiscoveryQaPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.createQaChatCompletionStream).toHaveBeenCalledTimes(2);
+        expect(mocks.submitChatCompletion).toHaveBeenCalledTimes(2);
         const sourceText = container.textContent ?? "";
         expect(sourceText).toContain("礼器条目");
         expect(container.querySelector(".portal-qa-source-list a")).toBeNull();

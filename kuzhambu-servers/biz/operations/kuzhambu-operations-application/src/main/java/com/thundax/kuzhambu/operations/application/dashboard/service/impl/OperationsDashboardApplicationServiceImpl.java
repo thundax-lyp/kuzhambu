@@ -178,10 +178,10 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
     }
 
     private PeriodRange resolvePeriodRange(OperationsDashboardOverviewQuery query) {
-        String periodType = normalizePeriodType(query == null ? null : query.getPeriodType());
+        String periodType = normalizePeriodType(query == null ? null : query.periodType());
         if (PERIOD_TYPE_CUSTOM.equals(periodType)) {
-            Instant periodStart = query == null ? null : query.getPeriodStart();
-            Instant periodEnd = query == null ? null : query.getPeriodEnd();
+            Instant periodStart = query == null ? null : query.periodStart();
+            Instant periodEnd = query == null ? null : query.periodEnd();
             if (periodStart == null || periodEnd == null) {
                 throw new BizException("Operations dashboard CUSTOM period requires periodStart and periodEnd.");
             }
@@ -201,7 +201,7 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
     }
 
     private String resolveBucketType(OperationsDashboardOverviewQuery query, PeriodRange periodRange) {
-        String periodType = normalizePeriodType(query == null ? null : query.getPeriodType());
+        String periodType = normalizePeriodType(query == null ? null : query.periodType());
         if (PERIOD_TYPE_MONTH.equals(periodType)) {
             return "WEEK";
         }

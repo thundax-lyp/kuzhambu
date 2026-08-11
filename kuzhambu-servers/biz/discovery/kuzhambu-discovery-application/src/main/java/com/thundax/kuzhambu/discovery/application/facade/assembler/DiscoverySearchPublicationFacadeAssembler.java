@@ -19,12 +19,17 @@ import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublication
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationCategoryAggregationFacadeResponse;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySearchPublicationProbeFacadeResponse;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DiscoverySearchPublicationFacadeAssembler {
 
-    public SearchPublicationPrepareCommand toPrepareCommand(DiscoverySearchPublicationPrepareFacadeRequest request) {
+    @NonNull
+    public SearchPublicationPrepareCommand toPrepareCommand(
+            @NonNull DiscoverySearchPublicationPrepareFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchPublicationPrepareCommand(
                 request.getSourceId(),
                 request.getContentType(),
@@ -42,8 +47,10 @@ public class DiscoverySearchPublicationFacadeAssembler {
                 request.getContentUpdatedAt());
     }
 
+    @NonNull
     public SearchPublicationReferenceCommand toReferenceCommand(
-            DiscoverySearchPublicationReferenceFacadeRequest request) {
+            @NonNull DiscoverySearchPublicationReferenceFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchPublicationReferenceCommand(
                 request.getDocumentId(),
                 request.getContentVersionId(),
@@ -51,25 +58,30 @@ public class DiscoverySearchPublicationFacadeAssembler {
                 request.getOccurredAt());
     }
 
+    @NonNull
     public SearchPublicationCandidateQuery toCandidateQuery(
-            DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+            @NonNull DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new SearchPublicationCandidateQuery(
-                request == null ? null : request.getContentType(),
-                request == null ? null : request.getCategoryId(),
-                request == null ? null : request.getVolumeId(),
-                request == null ? null : request.getKeyword());
+                request.getContentType(), request.getCategoryId(), request.getVolumeId(), request.getKeyword());
     }
 
-    public PageQuery toPageQuery(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+    @NonNull
+    public PageQuery toPageQuery(@NonNull DiscoverySearchPublicationCandidatePageFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
         return new PageQuery(pageNo(request), pageSize(request));
     }
 
+    @NonNull
     public SearchPublicationCategoryAggregationQuery toCategoryAggregationQuery(
-            DiscoverySearchPublicationCategoryAggregationFacadeRequest request) {
-        return new SearchPublicationCategoryAggregationQuery(request == null ? null : request.getContentType());
+            @NonNull DiscoverySearchPublicationCategoryAggregationFacadeRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new SearchPublicationCategoryAggregationQuery(request.getContentType());
     }
 
-    public DiscoverySearchPublicationProbeFacadeResponse toProbeResponse(SearchPublicationProbeResult result) {
+    @NonNull
+    public DiscoverySearchPublicationProbeFacadeResponse toProbeResponse(@NonNull SearchPublicationProbeResult result) {
+        Objects.requireNonNull(result, "result");
         return DiscoverySearchPublicationProbeFacadeResponse.builder()
                 .present(result.isPresent())
                 .publicationStatus(result.getPublicationStatus())
@@ -79,15 +91,17 @@ public class DiscoverySearchPublicationFacadeAssembler {
                 .build();
     }
 
+    @NonNull
     public DiscoverySearchPublicationCandidatePageFacadeResponse toCandidatePageResponse(
-            PageResult<SearchPublicationCandidateResult> result) {
-        List<DiscoverySearchPublicationCandidateFacadeResponse> records = result == null || result.getRecords() == null
+            @NonNull PageResult<SearchPublicationCandidateResult> result) {
+        Objects.requireNonNull(result, "result");
+        List<DiscoverySearchPublicationCandidateFacadeResponse> records = result.getRecords() == null
                 ? List.of()
                 : result.getRecords().stream().map(this::toCandidateResponse).toList();
         return DiscoverySearchPublicationCandidatePageFacadeResponse.builder()
-                .pageNo(result == null ? 1 : result.getPageNo())
-                .pageSize(result == null ? 0 : result.getPageSize())
-                .totalCount(result == null ? 0 : result.getTotalCount())
+                .pageNo(result.getPageNo())
+                .pageSize(result.getPageSize())
+                .totalCount(result.getTotalCount())
                 .records(records)
                 .build();
     }
@@ -103,18 +117,20 @@ public class DiscoverySearchPublicationFacadeAssembler {
     }
 
     private int pageNo(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
-        Integer pageNo = request == null ? null : request.getPageNo();
+        Integer pageNo = request.getPageNo();
         return pageNo == null ? PageRules.firstPageIndex() : pageNo;
     }
 
     private int pageSize(DiscoverySearchPublicationCandidatePageFacadeRequest request) {
-        Integer pageSize = request == null ? null : request.getPageSize();
+        Integer pageSize = request.getPageSize();
         return pageSize == null ? PageRules.defaultPageSize() : pageSize;
     }
 
+    @NonNull
     public List<DiscoverySearchPublicationCategoryAggregationFacadeResponse> toCategoryAggregationResponses(
-            List<SearchPublicationCategoryAggregationResult> results) {
-        if (results == null || results.isEmpty()) {
+            @NonNull List<SearchPublicationCategoryAggregationResult> results) {
+        Objects.requireNonNull(results, "results");
+        if (results.isEmpty()) {
             return List.of();
         }
         return results.stream().map(this::toCategoryAggregationResponse).toList();

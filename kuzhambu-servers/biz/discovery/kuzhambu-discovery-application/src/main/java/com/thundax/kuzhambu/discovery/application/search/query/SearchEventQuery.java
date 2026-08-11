@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record SearchEventQuery(
+        Long eventId,
         String queryText,
         List<String> intentTypes,
         List<String> searchStatuses,

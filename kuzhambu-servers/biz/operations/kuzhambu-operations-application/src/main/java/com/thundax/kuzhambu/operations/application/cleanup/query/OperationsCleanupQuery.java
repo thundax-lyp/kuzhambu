@@ -1,16 +1,3 @@
 package com.thundax.kuzhambu.operations.application.cleanup.query;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class OperationsCleanupQuery {
-    private String cleanupType;
-    private String cleanupStatus;
-    private Long requesterUserId;
-}
+public record OperationsCleanupQuery(String cleanupType, String cleanupStatus, Long requesterUserId) {}

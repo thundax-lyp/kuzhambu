@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.discovery.application.search.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexSyncDeleteCommand;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexSyncUpsertCommand;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchContentProvider;
@@ -23,7 +25,11 @@ public class SearchIndexSyncApplicationServiceImpl implements SearchIndexSyncApp
     }
 
     @Override
-    public Boolean syncUpsert(String contentType, String contentId, Integer currentVersionNo) {
+    public Boolean syncUpsert(SearchIndexSyncUpsertCommand command) {
+        String contentType = command == null ? null : command.contentType();
+        String contentId = command == null ? null : command.contentId();
+        Integer currentVersionNo = command == null ? null : command.currentVersionNo();
+
         SearchSourceContent currentContent = searchContentProvider.getPublicContent(contentType, contentId);
         if (currentContent == null) {
             if (currentVersionNo == null) {
@@ -47,7 +53,12 @@ public class SearchIndexSyncApplicationServiceImpl implements SearchIndexSyncApp
     }
 
     @Override
-    public Boolean syncDelete(String contentType, String contentId, Integer currentVersionNo, Instant occurredAt) {
+    public Boolean syncDelete(SearchIndexSyncDeleteCommand command) {
+        String contentType = command == null ? null : command.contentType();
+        String contentId = command == null ? null : command.contentId();
+        Integer currentVersionNo = command == null ? null : command.currentVersionNo();
+        Instant occurredAt = command == null ? null : command.occurredAt();
+
         searchIndexGateway.markDocumentDeleted(contentType, contentId, currentVersionNo, occurredAt);
         return Boolean.TRUE;
     }

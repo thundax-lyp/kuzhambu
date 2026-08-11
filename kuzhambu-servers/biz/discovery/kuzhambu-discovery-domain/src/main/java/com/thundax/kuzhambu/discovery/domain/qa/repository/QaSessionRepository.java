@@ -25,5 +25,5 @@ public interface QaSessionRepository {
 
     int update(QaSession entity);
 
-    int markRemoved(QaSessionId id, Instant removedAt);
+    int delete(QaSessionId id, Instant removedAt);
 }

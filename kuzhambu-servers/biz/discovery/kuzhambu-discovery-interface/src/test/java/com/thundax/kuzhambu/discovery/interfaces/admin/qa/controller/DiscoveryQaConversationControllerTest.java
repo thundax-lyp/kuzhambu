@@ -35,8 +35,8 @@ class DiscoveryQaConversationControllerTest {
         assertRequestMapping(DiscoveryQaConversationController.class, "/api/discovery/qa");
         assertPostMapping(
                 DiscoveryQaConversationController.class,
-                "openSession",
-                "session/open",
+                "initSession",
+                "session/init",
                 DiscoveryQaRequests.OpenSessionRequest.class);
         assertPostMapping(
                 DiscoveryQaConversationController.class,
@@ -55,23 +55,23 @@ class DiscoveryQaConversationControllerTest {
                 DiscoveryQaRequests.QaSessionDeleteRequest.class);
         assertPostMapping(
                 DiscoveryQaConversationController.class,
-                "exportSession",
-                "session/export",
+                "downloadSession",
+                "session/download",
                 DiscoveryQaRequests.QaSessionExportRequest.class);
         assertPostMapping(
                 DiscoveryQaConversationController.class,
-                "chatCompletions",
-                "chat/completions",
+                "createChatCompletion",
+                "chat/create",
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
         assertPostMappingProduces(
                 DiscoveryQaConversationStreamController.class,
-                "chatCompletionsStream",
-                "chat/completions/stream",
+                "submitChatCompletion",
+                "chat/submit",
                 MediaType.TEXT_EVENT_STREAM_VALUE,
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
         assertHasPermission(
                 DiscoveryQaConversationController.class,
-                "openSession",
+                "initSession",
                 "discovery:qa:view",
                 DiscoveryQaRequests.OpenSessionRequest.class);
         assertHasPermission(
@@ -96,13 +96,13 @@ class DiscoveryQaConversationControllerTest {
                 .thenReturn(new QaSessionResult(
                         9001L, 1001L, "知识助手", "GLOBAL", null, null, null, "OPEN", 1_718_000_000_000L, null, null));
 
-        var response = controller.openSession(request);
+        var response = controller.initSession(request);
 
         verify(qaApplicationService)
                 .openSession(argThat(command -> command != null
-                        && Long.valueOf(1001L).equals(command.getOwnerUserId())
-                        && "知识助手".equals(command.getTitle())
-                        && "GLOBAL".equals(command.getScope())));
+                        && Long.valueOf(1001L).equals(command.ownerUserId())
+                        && "知识助手".equals(command.title())
+                        && "GLOBAL".equals(command.scope())));
         assertEquals("9001", response.getId());
         assertEquals("知识助手", response.getTitle());
     }
@@ -132,14 +132,13 @@ class DiscoveryQaConversationControllerTest {
                         new ChatUsageResult(100, 80, 180),
                         Map.of("id", "chatcmpl-1")));
 
-        var emitter = controller.chatCompletionsStream(request);
+        var emitter = controller.submitChatCompletion(request);
 
         assertTrue(emitter != null);
         verify(knowledgeQaApplicationService, timeout(1000))
                 .chatCompletionStream(
-                        argThat(command -> command != null
-                                && Long.valueOf(5001L).equals(command.getSessionId())
-                                && command.isStream()),
+                        argThat(command ->
+                                command != null && Long.valueOf(5001L).equals(command.sessionId()) && command.stream()),
                         any());
     }
 
@@ -157,7 +156,7 @@ class DiscoveryQaConversationControllerTest {
                 .thenThrow(new IllegalStateException(
                         "500 Internal Server Error on POST request: {\"message\":\"appId is empty\"}"));
 
-        controller.chatCompletionsStream(request);
+        controller.submitChatCompletion(request);
 
         verify(knowledgeQaApplicationService, timeout(1000)).chatCompletionStream(any(), any());
         Method method = DiscoveryQaConversationStreamController.class.getDeclaredMethod(
@@ -176,7 +175,7 @@ class DiscoveryQaConversationControllerTest {
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId("5001");
 
-        controller.chatCompletionsStream(request);
+        controller.submitChatCompletion(request);
 
         assertTrue(executor.submitted);
         verify(knowledgeQaApplicationService, org.mockito.Mockito.never()).chatCompletionStream(any(), any());

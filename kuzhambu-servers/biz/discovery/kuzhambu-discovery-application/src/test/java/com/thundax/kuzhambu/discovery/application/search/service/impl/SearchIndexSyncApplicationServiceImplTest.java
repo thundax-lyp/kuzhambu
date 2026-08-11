@@ -7,6 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexSyncDeleteCommand;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexSyncUpsertCommand;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchContentProvider;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
@@ -24,7 +26,7 @@ class SearchIndexSyncApplicationServiceImplTest {
                 new SearchIndexSyncApplicationServiceImpl(searchContentProvider, searchIndexGateway);
         when(searchContentProvider.getPublicContent("SANCAI_ENTRY", "1001")).thenReturn(sourceContent(3));
 
-        Boolean synced = service.syncUpsert("SANCAI_ENTRY", "1001", 2);
+        Boolean synced = service.syncUpsert(new SearchIndexSyncUpsertCommand("SANCAI_ENTRY", "1001", 2));
 
         assertFalse(synced);
         verify(searchIndexGateway, never()).upsertDocuments(List.of(sourceContent(3)));
@@ -40,7 +42,7 @@ class SearchIndexSyncApplicationServiceImplTest {
         when(searchContentProvider.getPublicContent("SANCAI_ENTRY", "1001")).thenReturn(currentContent);
         when(searchIndexGateway.getSourceVersionNo("SANCAI_ENTRY:1001")).thenReturn(3);
 
-        Boolean synced = service.syncUpsert("SANCAI_ENTRY", "1001", 3);
+        Boolean synced = service.syncUpsert(new SearchIndexSyncUpsertCommand("SANCAI_ENTRY", "1001", 3));
 
         assertTrue(synced);
         verify(searchIndexGateway).upsertDocuments(List.of(currentContent));
@@ -56,7 +58,7 @@ class SearchIndexSyncApplicationServiceImplTest {
         when(searchContentProvider.getPublicContent("SANCAI_ENTRY", "1001")).thenReturn(currentContent);
         when(searchIndexGateway.getSourceVersionNo("SANCAI_ENTRY:1001")).thenReturn(3);
 
-        Boolean synced = service.syncUpsert("SANCAI_ENTRY", "1001", 4);
+        Boolean synced = service.syncUpsert(new SearchIndexSyncUpsertCommand("SANCAI_ENTRY", "1001", 4));
 
         assertTrue(synced);
         verify(searchIndexGateway).upsertDocuments(List.of(currentContent));
@@ -70,7 +72,7 @@ class SearchIndexSyncApplicationServiceImplTest {
                 new SearchIndexSyncApplicationServiceImpl(searchContentProvider, searchIndexGateway);
         when(searchContentProvider.getPublicContent("SANCAI_ENTRY", "1001")).thenReturn(null);
 
-        Boolean synced = service.syncUpsert("SANCAI_ENTRY", "1001", 4);
+        Boolean synced = service.syncUpsert(new SearchIndexSyncUpsertCommand("SANCAI_ENTRY", "1001", 4));
 
         assertTrue(synced);
         verify(searchIndexGateway).markDocumentDeleted("SANCAI_ENTRY", "1001", 4, null);
@@ -85,7 +87,7 @@ class SearchIndexSyncApplicationServiceImplTest {
                 new SearchIndexSyncApplicationServiceImpl(searchContentProvider, searchIndexGateway);
         Instant occurredAt = Instant.now();
 
-        Boolean synced = service.syncDelete("SANCAI_ENTRY", "1001", 5, occurredAt);
+        Boolean synced = service.syncDelete(new SearchIndexSyncDeleteCommand("SANCAI_ENTRY", "1001", 5, occurredAt));
 
         assertTrue(synced);
         verify(searchIndexGateway).markDocumentDeleted("SANCAI_ENTRY", "1001", 5, occurredAt);

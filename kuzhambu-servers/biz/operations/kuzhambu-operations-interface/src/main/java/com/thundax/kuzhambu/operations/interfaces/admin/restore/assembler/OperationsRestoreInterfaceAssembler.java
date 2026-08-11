@@ -16,23 +16,23 @@ import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.reque
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestoreDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestoreExecuteResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestorePageResponse;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class OperationsRestoreInterfaceAssembler {
 
     private OperationsRestoreInterfaceAssembler() {}
 
-    public static OperationsRestoreExecuteCommand toCommand(OperationsRestoreExecuteRequest request) {
-        if (request == null || request.getBackupId() == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsRestoreExecuteCommand toCommand(@NonNull OperationsRestoreExecuteRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsRestoreExecuteCommand(
                 BackupIdCodec.toDomain(request.getBackupId()), request.getRestoreMode(), currentAdminUserId());
     }
 
-    public static OperationsRestoreQuery toQuery(OperationsRestorePageRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsRestoreQuery toQuery(@NonNull OperationsRestorePageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsRestoreQuery(
                 request.getBackupId(),
                 request.getRestoreMode(),
@@ -40,17 +40,15 @@ public final class OperationsRestoreInterfaceAssembler {
                 request.getRequesterUserId());
     }
 
-    public static OperationsRestoreDetailQuery toQuery(OperationsRestoreDetailRequest request) {
-        if (request == null || request.getRestoreId() == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsRestoreDetailQuery toQuery(@NonNull OperationsRestoreDetailRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsRestoreDetailQuery(RestoreIdCodec.toDomain(request.getRestoreId()));
     }
 
-    public static OperationsRestoreExecuteResponse toResponse(OperationsRestoreExecuteResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsRestoreExecuteResponse toResponse(@NonNull OperationsRestoreExecuteResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsRestoreExecuteResponse.builder()
                 .restoreId(
                         result.getRestoreId() == null
@@ -69,10 +67,9 @@ public final class OperationsRestoreInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsRestorePageResponse toResponse(OperationsRestorePageResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsRestorePageResponse toResponse(@NonNull OperationsRestorePageResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsRestorePageResponse.builder()
                 .restoreId(
                         result.getRestoreId() == null
@@ -92,10 +89,9 @@ public final class OperationsRestoreInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsRestoreDetailResponse toDetailResponse(OperationsRestoreDetailResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsRestoreDetailResponse toDetailResponse(@NonNull OperationsRestoreDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsRestoreDetailResponse.builder()
                 .restoreId(
                         result.getRestoreId() == null

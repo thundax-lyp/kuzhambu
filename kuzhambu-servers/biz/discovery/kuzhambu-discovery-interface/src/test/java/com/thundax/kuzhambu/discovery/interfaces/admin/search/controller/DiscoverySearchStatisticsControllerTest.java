@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResult;
@@ -70,8 +71,8 @@ class DiscoverySearchStatisticsControllerTest {
                 DiscoverySearchEventGetRequest.class);
         assertPostMapping(
                 DiscoverySearchStatisticsController.class,
-                "getStatisticsSummary",
-                "summary",
+                "getSummary",
+                "summary/get",
                 DiscoverySearchStatisticsSummaryRequest.class);
         assertPostMapping(
                 DiscoverySearchStatisticsController.class,
@@ -218,10 +219,10 @@ class DiscoverySearchStatisticsControllerTest {
         ArgumentCaptor<SearchQuery> queryCaptor = ArgumentCaptor.forClass(SearchQuery.class);
 
         verify(service).search(queryCaptor.capture(), any());
-        assertEquals("辞官", queryCaptor.getValue().getQueryText());
-        assertEquals("ADMIN", queryCaptor.getValue().getOperatorType());
-        assertTrue(queryCaptor.getValue().getRequestId() != null);
-        assertTrue(queryCaptor.getValue().getTraceId() != null);
+        assertEquals("辞官", queryCaptor.getValue().queryText());
+        assertEquals("ADMIN", queryCaptor.getValue().operatorType());
+        assertTrue(queryCaptor.getValue().requestId() != null);
+        assertTrue(queryCaptor.getValue().traceId() != null);
         assertEquals("1", response.getId());
         assertEquals(1, response.getTotalCount());
         assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());
@@ -304,7 +305,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         verify(service)
                 .getPreview(argThat(
-                        query -> "SANCAI_ENTRY".equals(query.getContentType()) && "1001".equals(query.getContentId())));
+                        query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId())));
         assertEquals("黄帝", response.getTitle());
         assertEquals("正文", response.getBodyText());
         assertEquals("/classics/sancai/1001", response.getTargetPath());
@@ -318,7 +319,8 @@ class DiscoverySearchStatisticsControllerTest {
                 new DiscoverySearchStatisticsController(service, searchIndexApplicationService);
         DiscoverySearchEventGetRequest request = new DiscoverySearchEventGetRequest();
         request.setId("1");
-        when(service.getEvent(1L))
+        SearchEventQuery eventQuery = new SearchEventQuery(1L, null, null, null, null, null, null);
+        when(service.getEvent(eventQuery))
                 .thenReturn(new SearchEventResult(
                         SearchEventIdCodec.toDomain(1L),
                         "黄帝",
@@ -339,7 +341,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         var response = controller.getEvent(request);
 
-        verify(service).getEvent(1L);
+        verify(service).getEvent(eventQuery);
         assertEquals("1", response.getId());
         assertEquals("ENTITY", response.getIntentType());
         assertTrue(response.getSearchScopesJson().contains("SANCAI_ENTRY"));
@@ -355,7 +357,8 @@ class DiscoverySearchStatisticsControllerTest {
                 new DiscoverySearchStatisticsController(service, searchIndexApplicationService);
         DiscoverySearchEventGetRequest request = new DiscoverySearchEventGetRequest();
         request.setId("2");
-        when(service.getEvent(2L))
+        SearchEventQuery eventQuery2 = new SearchEventQuery(2L, null, null, null, null, null, null);
+        when(service.getEvent(eventQuery2))
                 .thenReturn(new SearchEventResult(
                         SearchEventIdCodec.toDomain(2L),
                         "黄帝",
@@ -376,7 +379,7 @@ class DiscoverySearchStatisticsControllerTest {
 
         var response = controller.getEvent(request);
 
-        verify(service).getEvent(2L);
+        verify(service).getEvent(eventQuery2);
         assertEquals("FAILED", response.getSearchStatus());
         assertEquals("DISCOVERY-20001", response.getFailureCode());
         assertEquals("Search backend is not implemented", response.getFailureMessage());
@@ -398,15 +401,15 @@ class DiscoverySearchStatisticsControllerTest {
                 .thenReturn(new SearchStatisticsSummaryResult(
                         12L, 2L, 3L, 9L, List.of(new SearchStatisticsSummaryResult.TopQueryItem("黄帝", 5L))));
 
-        var response = controller.getStatisticsSummary(request);
+        var response = controller.getSummary(request);
 
         ArgumentCaptor<SearchStatisticsSummaryQuery> queryCaptor =
                 ArgumentCaptor.forClass(SearchStatisticsSummaryQuery.class);
         verify(service).getStatisticsSummary(queryCaptor.capture());
         assertEquals(
-                Instant.ofEpochMilli(1_767_225_600_000L), queryCaptor.getValue().getDateFrom());
+                Instant.ofEpochMilli(1_767_225_600_000L), queryCaptor.getValue().dateFrom());
         assertEquals(
-                Instant.ofEpochMilli(1_767_312_000_000L), queryCaptor.getValue().getDateTo());
+                Instant.ofEpochMilli(1_767_312_000_000L), queryCaptor.getValue().dateTo());
         assertEquals(12L, response.getSearchCount());
         assertEquals(2L, response.getFailedSearchCount());
         assertEquals(3L, response.getZeroResultSearchCount());

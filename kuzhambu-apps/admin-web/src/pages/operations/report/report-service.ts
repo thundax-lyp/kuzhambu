@@ -38,7 +38,7 @@ export interface OperationsReportDetailCommand {
 
 export const generateReport = (command: OperationsReportGenerateCommand) => {
     return postJson<OperationsReportGenerateResult, OperationsReportGenerateCommand>(
-        `${API_PREFIX}/generate`,
+        `${API_PREFIX}/create`,
         { body: command }
     );
 };
@@ -52,7 +52,7 @@ export const pageReports = (query: PageQuery<OperationsReportPageQuery> = {}) =>
 
 export const getReportDetail = (command: OperationsReportDetailCommand) => {
     return postJson<OperationsReportDetailRecord, OperationsReportDetailCommand>(
-        `${API_PREFIX}/detail`,
+        `${API_PREFIX}/get`,
         { body: command }
     );
 };

@@ -33,8 +33,8 @@ class OperationsCleanupAdminControllerTest {
         assertRequestMapping(OperationsCleanupAdminController.class, "/api/operations/cleanup");
         assertPostMapping(
                 OperationsCleanupAdminController.class,
-                "execute",
-                "execute",
+                "create",
+                "create",
                 "operations:cleanup:execute",
                 OperationsCleanupExecuteRequest.class);
         assertPostMapping(
@@ -45,8 +45,8 @@ class OperationsCleanupAdminControllerTest {
                 OperationsCleanupPageRequest.class);
         assertPostMapping(
                 OperationsCleanupAdminController.class,
-                "detail",
-                "detail",
+                "getDetail",
+                "get",
                 "operations:cleanup:view",
                 OperationsCleanupDetailRequest.class);
     }
@@ -106,7 +106,7 @@ class OperationsCleanupAdminControllerTest {
 
         OperationsCleanupExecuteRequest executeRequest = new OperationsCleanupExecuteRequest();
         executeRequest.setCleanupType("LONG_TASK");
-        var executeResponse = controller.execute(executeRequest);
+        var executeResponse = controller.create(executeRequest);
         assertEquals(9101L, executeResponse.getCleanupId());
         assertEquals("SUCCEEDED", executeResponse.getCleanupStatus());
 
@@ -121,25 +121,25 @@ class OperationsCleanupAdminControllerTest {
 
         OperationsCleanupDetailRequest detailRequest = new OperationsCleanupDetailRequest();
         detailRequest.setCleanupId(9101L);
-        var detailResponse = controller.detail(detailRequest);
+        var detailResponse = controller.getDetail(detailRequest);
         assertEquals(9101L, detailResponse.getCleanupId());
         assertEquals(1, detailResponse.getItems().size());
         assertEquals(9201L, detailResponse.getItems().get(0).getCleanupItemId());
         assertEquals("share", detailResponse.getItems().get(0).getTargetType());
         assertEquals("TARGET_NOT_FOUND", detailResponse.getItems().get(0).getFailureReason());
 
-        verify(service).execute(argThat(command -> command != null && "LONG_TASK".equals(command.getCleanupType())));
+        verify(service).execute(argThat(command -> command != null && "LONG_TASK".equals(command.cleanupType())));
         verify(service)
                 .page(
                         argThat(query -> query != null
-                                && "LONG_TASK".equals(query.getCleanupType())
-                                && "SUCCEEDED".equals(query.getCleanupStatus())),
+                                && "LONG_TASK".equals(query.cleanupType())
+                                && "SUCCEEDED".equals(query.cleanupStatus())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)
                 .detail(argThat(query -> query != null
-                        && query.getCleanupId() != null
-                        && query.getCleanupId().value().equals(9101L)));
+                        && query.cleanupId() != null
+                        && query.cleanupId().value().equals(9101L)));
     }
 
     @Test
@@ -149,7 +149,7 @@ class OperationsCleanupAdminControllerTest {
         OperationsCleanupDetailRequest request = new OperationsCleanupDetailRequest();
         request.setCleanupId(9101L);
 
-        var response = controller.detail(request);
+        var response = controller.getDetail(request);
 
         assertNull(response);
         verify(service).detail(any());

@@ -9,29 +9,28 @@ import com.thundax.kuzhambu.operations.interfaces.admin.task.controller.request.
 import com.thundax.kuzhambu.operations.interfaces.admin.task.controller.request.OperationsTaskPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.task.controller.response.OperationsTaskDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.task.controller.response.OperationsTaskPageResponse;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 public final class OperationsTaskInterfaceAssembler {
 
     private OperationsTaskInterfaceAssembler() {}
 
-    public static OperationsTaskQuery toQuery(OperationsTaskPageRequest request) {
-        if (request == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsTaskQuery toQuery(@NonNull OperationsTaskPageRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsTaskQuery(request.getSourceDomain(), request.getTaskType(), request.getTaskStatus());
     }
 
-    public static OperationsTaskDetailQuery toQuery(OperationsTaskDetailRequest request) {
-        if (request == null || request.getSnapshotId() == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsTaskDetailQuery toQuery(@NonNull OperationsTaskDetailRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new OperationsTaskDetailQuery(LongTaskSnapshotIdCodec.toDomain(request.getSnapshotId()));
     }
 
-    public static OperationsTaskPageResponse toResponse(OperationsTaskPageResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsTaskPageResponse toResponse(@NonNull OperationsTaskPageResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsTaskPageResponse.builder()
                 .snapshotId(
                         result.getSnapshotId() == null
@@ -52,10 +51,9 @@ public final class OperationsTaskInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsTaskDetailResponse toDetailResponse(OperationsTaskDetailResult result) {
-        if (result == null) {
-            return null;
-        }
+    @NonNull
+    public static OperationsTaskDetailResponse toDetailResponse(@NonNull OperationsTaskDetailResult result) {
+        Objects.requireNonNull(result, "result must not be null");
         return OperationsTaskDetailResponse.builder()
                 .snapshotId(
                         result.getSnapshotId() == null

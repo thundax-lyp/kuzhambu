@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.search.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchIndexCleanupCommand;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexCleanupApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import java.time.Clock;
@@ -20,7 +21,8 @@ public class SearchIndexCleanupApplicationServiceImpl implements SearchIndexClea
     }
 
     @Override
-    public Integer cleanupDeletedDocuments(int retentionDays) {
+    public Integer cleanupDeletedDocuments(SearchIndexCleanupCommand command) {
+        int retentionDays = command == null ? 0 : command.retentionDays();
         Instant threshold = Instant.now(clock).minus(Duration.ofDays(Math.max(retentionDays, 0)));
         return searchIndexGateway.cleanupDeletedDocumentsOlderThan(threshold);
     }

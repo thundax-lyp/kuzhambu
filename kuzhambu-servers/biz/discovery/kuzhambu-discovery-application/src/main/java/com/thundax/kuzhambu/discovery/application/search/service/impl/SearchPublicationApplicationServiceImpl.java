@@ -32,49 +32,47 @@ public class SearchPublicationApplicationServiceImpl implements SearchPublicatio
 
     @Override
     public void prepare(SearchPublicationPrepareCommand command) {
-        if (command == null
-                || command.getSourceId() == null
-                || command.getSourceId().isBlank()) {
+        if (command == null || command.sourceId() == null || command.sourceId().isBlank()) {
             throw new BizException("DISCOVERY_PUBLICATION_DOCUMENT_INVALID");
         }
         searchIndexGateway.preparePublication(new SearchPublicationDocument(
-                command.getSourceId(),
-                command.getContentType(),
-                command.getContentId(),
-                command.getContentVersionId(),
-                command.getContentVersionNo(),
-                command.getTitle(),
-                command.getSummary(),
-                command.getCategoryId(),
-                command.getCategoryName(),
-                command.getVolumeId(),
-                command.getVolumeTitle(),
-                command.getTextSegments() == null ? Collections.emptyList() : command.getTextSegments(),
-                command.getTagNames() == null ? Collections.emptyList() : command.getTagNames(),
-                command.getContentUpdatedAt()));
+                command.sourceId(),
+                command.contentType(),
+                command.contentId(),
+                command.contentVersionId(),
+                command.contentVersionNo(),
+                command.title(),
+                command.summary(),
+                command.categoryId(),
+                command.categoryName(),
+                command.volumeId(),
+                command.volumeTitle(),
+                command.textSegments() == null ? Collections.emptyList() : command.textSegments(),
+                command.tagNames() == null ? Collections.emptyList() : command.tagNames(),
+                command.contentUpdatedAt()));
     }
 
     @Override
     public void markReady(SearchPublicationReferenceCommand command) {
         if (!searchIndexGateway.markPublicationReady(
-                command.getDocumentId(), command.getContentVersionId(), command.getContentVersionNo())) {
+                command.documentId(), command.contentVersionId(), command.contentVersionNo())) {
             throw new BizException("DISCOVERY_PUBLICATION_VERSION_MISMATCH");
         }
     }
 
     @Override
     public void markOffline(SearchPublicationReferenceCommand command) {
-        searchIndexGateway.markPublicationOffline(command.getDocumentId(), command.getOccurredAt());
+        searchIndexGateway.markPublicationOffline(command.documentId(), command.occurredAt());
     }
 
     @Override
     public void delete(SearchPublicationReferenceCommand command) {
-        searchIndexGateway.deletePublication(command.getDocumentId());
+        searchIndexGateway.deletePublication(command.documentId());
     }
 
     @Override
     public SearchPublicationProbeResult probe(SearchPublicationReferenceCommand command) {
-        return searchIndexGateway.probePublication(command.getDocumentId());
+        return searchIndexGateway.probePublication(command.documentId());
     }
 
     @Override
@@ -93,7 +91,6 @@ public class SearchPublicationApplicationServiceImpl implements SearchPublicatio
     @Override
     public List<SearchPublicationCategoryAggregationResult> listReadyCandidateCategoryAggregations(
             SearchPublicationCategoryAggregationQuery query) {
-        return searchIndexGateway.listReadyPublicationCategoryAggregations(
-                query == null ? null : query.getContentType());
+        return searchIndexGateway.listReadyPublicationCategoryAggregations(query == null ? null : query.contentType());
     }
 }

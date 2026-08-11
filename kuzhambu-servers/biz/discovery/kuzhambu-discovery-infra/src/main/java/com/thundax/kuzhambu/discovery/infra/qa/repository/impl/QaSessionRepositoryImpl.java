@@ -98,10 +98,10 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public int markRemoved(QaSessionId id, Instant removedAt) {
+    public int delete(QaSessionId id, Instant removedAt) {
         if (id == null || removedAt == null) {
             return 0;
         }
-        return mapper.markRemoved(QaSessionIdCodec.toValue(id), removedAt);
+        return mapper.delete(QaSessionIdCodec.toValue(id), removedAt);
     }
 }

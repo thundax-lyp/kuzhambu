@@ -6,11 +6,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DiscoveryQaPage } from "./qa-page";
 
 const mocks = vi.hoisted(() => ({
-    createQaChatCompletionStream: vi.fn(),
+    submitChatCompletion: vi.fn(),
     deleteQaSession: vi.fn(),
-    exportQaSession: vi.fn(),
+    downloadQaSession: vi.fn(),
     getQaSession: vi.fn(),
-    openQaSession: vi.fn(),
+    initQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
     postEventStream: vi.fn(),
     postJson: vi.fn()
@@ -111,11 +111,11 @@ const createDeferred = <T,>() => {
 
 describe("DiscoveryQaPage", () => {
     afterEach(() => {
-        mocks.createQaChatCompletionStream.mockReset();
+        mocks.submitChatCompletion.mockReset();
         mocks.deleteQaSession.mockReset();
-        mocks.exportQaSession.mockReset();
+        mocks.downloadQaSession.mockReset();
         mocks.getQaSession.mockReset();
-        mocks.openQaSession.mockReset();
+        mocks.initQaSession.mockReset();
         mocks.pageQaSessions.mockReset();
         mocks.postEventStream.mockReset();
         mocks.postJson.mockReset();
@@ -136,8 +136,8 @@ describe("DiscoveryQaPage", () => {
             title: "知识中心问答"
         };
         const pendingOpen = createDeferred<typeof openResponse>();
-        mocks.openQaSession.mockReturnValueOnce(pendingOpen.promise);
-        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+        mocks.initQaSession.mockReturnValueOnce(pendingOpen.promise);
+        mocks.submitChatCompletion.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             choices: [
                 {
@@ -158,16 +158,16 @@ describe("DiscoveryQaPage", () => {
         await pressTextareaKey(container, "question", "Enter");
         await pressTextareaKey(container, "question", "Enter");
 
-        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+        expect(mocks.initQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.submitChatCompletion).not.toHaveBeenCalled();
 
         await act(async () => {
             pendingOpen.resolve(openResponse);
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.createQaChatCompletionStream).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.submitChatCompletion).toHaveBeenCalledTimes(1);
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "不要重复创建", role: "user" }],
                 sessionId: "2101"
@@ -206,7 +206,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+        mocks.submitChatCompletion.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             choices: [
                 {
@@ -230,8 +230,8 @@ describe("DiscoveryQaPage", () => {
             ownerUserId: 1001,
             sessionId: "2001"
         });
-        expect(mocks.openQaSession).not.toHaveBeenCalled();
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.initQaSession).not.toHaveBeenCalled();
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "继续问", role: "user" }],
                 sessionId: "2001"
@@ -271,7 +271,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletionStream
+        mocks.submitChatCompletion
             .mockRejectedValueOnce(new Error("问答生成失败，请稍后重试。"))
             .mockResolvedValueOnce({
                 answerStatus: "SUCCEEDED",
@@ -293,8 +293,8 @@ describe("DiscoveryQaPage", () => {
         setTextareaValue(container, "question", "旧会话还能用吗？");
         await pressTextareaKey(container, "question", "Enter");
 
-        expect(mocks.openQaSession).not.toHaveBeenCalled();
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.initQaSession).not.toHaveBeenCalled();
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "旧会话还能用吗？", role: "user" }],
                 sessionId: "2201"
@@ -309,8 +309,8 @@ describe("DiscoveryQaPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.openQaSession).not.toHaveBeenCalled();
-        expect(mocks.createQaChatCompletionStream.mock.calls[1]?.[0]).toMatchObject({
+        expect(mocks.initQaSession).not.toHaveBeenCalled();
+        expect(mocks.submitChatCompletion.mock.calls[1]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "旧会话还能用吗？", role: "user" }],
                 sessionId: "2201"
@@ -340,7 +340,7 @@ describe("DiscoveryQaPage", () => {
                 }
             })
         );
-        mocks.openQaSession.mockResolvedValueOnce({
+        mocks.initQaSession.mockResolvedValueOnce({
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
@@ -349,7 +349,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+        mocks.submitChatCompletion.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             choices: [
                 {
@@ -370,8 +370,8 @@ describe("DiscoveryQaPage", () => {
         await pressTextareaKey(container, "question", "Enter");
 
         expect(mocks.getQaSession).not.toHaveBeenCalled();
-        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+        expect(mocks.initQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.submitChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             request: {
                 messages: [{ content: "旧缓存还能用吗？", role: "user" }],
                 sessionId: "2301"

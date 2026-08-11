@@ -50,9 +50,9 @@ class DiscoverySearchPublicationFacadeImplTest {
         facade.prepare(request);
 
         verify(service).prepare(captor.capture());
-        assertEquals("SANCAI_ENTRY:101", captor.getValue().getSourceId());
-        assertEquals("9001", captor.getValue().getContentVersionId());
-        assertEquals(List.of("标题", "正文"), captor.getValue().getTextSegments());
+        assertEquals("SANCAI_ENTRY:101", captor.getValue().sourceId());
+        assertEquals("9001", captor.getValue().contentVersionId());
+        assertEquals(List.of("标题", "正文"), captor.getValue().textSegments());
     }
 
     @Test
@@ -109,7 +109,7 @@ class DiscoverySearchPublicationFacadeImplTest {
                         .build());
 
         verify(service).listReadyCandidateCategoryAggregations(captor.capture());
-        assertEquals("SANCAI_ENTRY", captor.getValue().getContentType());
+        assertEquals("SANCAI_ENTRY", captor.getValue().contentType());
         assertEquals("11", result.get(0).getCategoryId());
         assertEquals(13, result.get(0).getReadyEntryCount());
         assertEquals("1001", result.get(0).getRepresentativeContentId());

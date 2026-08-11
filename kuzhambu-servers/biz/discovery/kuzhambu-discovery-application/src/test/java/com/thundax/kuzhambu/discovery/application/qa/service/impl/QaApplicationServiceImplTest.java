@@ -22,6 +22,9 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionDetailQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.PortalQaSessionQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
@@ -228,7 +231,7 @@ class QaApplicationServiceImplTest {
         when(sourceRepository.listByMessageId(any())).thenReturn(List.of());
         when(traceRepository.getByTraceId(any())).thenReturn(new QaRetrievalTrace());
 
-        QaSessionDetailResult result = service.getSessionDetail(5001L);
+        QaSessionDetailResult result = service.getSessionDetail(new QaSessionDetailQuery(5001L));
 
         assertEquals(5001L, result.getId());
         assertEquals("黄帝问答", result.getTitle());
@@ -241,12 +244,11 @@ class QaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
-        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Instant.class)))
-                .thenReturn(1);
+        when(sessionRepository.delete(eq(sessionId(5001L)), any(Instant.class))).thenReturn(1);
 
         service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false));
 
-        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Instant.class));
+        verify(sessionRepository).delete(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -254,12 +256,11 @@ class QaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
-        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Instant.class)))
-                .thenReturn(1);
+        when(sessionRepository.delete(eq(sessionId(5001L)), any(Instant.class))).thenReturn(1);
 
         service.deleteSession(new DeleteQaSessionCommand(5001L, null, null, true));
 
-        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Instant.class));
+        verify(sessionRepository).delete(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -275,7 +276,7 @@ class QaApplicationServiceImplTest {
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false)));
 
         assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
-        verify(sessionRepository, never()).markRemoved(eq(sessionId(5001L)), any(Instant.class));
+        verify(sessionRepository, never()).delete(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -285,15 +286,14 @@ class QaApplicationServiceImplTest {
         QaSession latest = openSession();
         latest.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession(), latest);
-        when(sessionRepository.markRemoved(eq(sessionId(5001L)), any(Instant.class)))
-                .thenReturn(0);
+        when(sessionRepository.delete(eq(sessionId(5001L)), any(Instant.class))).thenReturn(0);
 
         BizException exception = assertThrows(
                 BizException.class,
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false)));
 
         assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
-        verify(sessionRepository).markRemoved(eq(sessionId(5001L)), any(Instant.class));
+        verify(sessionRepository).delete(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -307,7 +307,7 @@ class QaApplicationServiceImplTest {
                 () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "2002", false)));
 
         assertEquals("DISCOVERY-30009", exception.getCode());
-        verify(sessionRepository, never()).markRemoved(eq(sessionId(5001L)), any(Instant.class));
+        verify(sessionRepository, never()).delete(eq(sessionId(5001L)), any(Instant.class));
     }
 
     @Test
@@ -318,8 +318,9 @@ class QaApplicationServiceImplTest {
         session.markRemoved(Instant.now());
         when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(session);
 
-        BizException exception =
-                assertThrows(BizException.class, () -> service.getPortalSessionDetail(5001L, "USER", "1001"));
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.getPortalSessionDetail(new PortalQaSessionDetailQuery("USER", "1001", 5001L)));
 
         assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
     }
@@ -330,7 +331,8 @@ class QaApplicationServiceImplTest {
         QaApplicationServiceImpl service = service(sessionRepository);
         when(sessionRepository.listByOwnerUserId(ownerRef("USER", "1001"), 10)).thenReturn(List.of(openSession()));
 
-        List<QaSessionResult> results = service.listPortalSessions("USER", "1001", 10);
+        List<QaSessionResult> results =
+                service.listPortalSessions(new PortalQaSessionQuery("USER", "1001"), new PageQuery(1, 10));
 
         assertEquals(1, results.size());
         assertEquals(5001L, results.get(0).getId());

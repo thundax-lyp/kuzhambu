@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,7 @@ import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionComm
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionDetailQuery;
 import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
@@ -63,15 +65,15 @@ class DiscoveryQaAdminControllerTest {
                 DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
         assertPostMapping(
                 DiscoveryQaAdminController.class,
-                "exportSession",
-                "session/export",
+                "downloadSession",
+                "session/download",
                 DiscoveryQaAdminRequests.QaSessionExportRequest.class);
-        assertPostMapping(DiscoveryQaAdminController.class, "getKnowledgeHealth", "knowledge/health");
+        assertPostMapping(DiscoveryQaAdminController.class, "getKnowledge", "knowledge/get");
         assertPostMapping(DiscoveryQaAdminController.class, "rebuildKnowledge", "knowledge/rebuild");
         assertPostMapping(
                 DiscoveryQaAdminController.class,
-                "syncKnowledge",
-                "knowledge/sync",
+                "updateKnowledge",
+                "knowledge/update",
                 DiscoveryQaAdminRequests.KnowledgeSyncRequest.class);
         assertPostMapping(
                 DiscoveryQaAdminController.class,
@@ -85,7 +87,7 @@ class DiscoveryQaAdminControllerTest {
                 DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
         assertHasPermission(
                 DiscoveryQaAdminController.class,
-                "exportSession",
+                "downloadSession",
                 "discovery:qa:view",
                 DiscoveryQaAdminRequests.QaSessionExportRequest.class);
     }
@@ -173,7 +175,7 @@ class DiscoveryQaAdminControllerTest {
         KnowledgeSyncApplicationService syncService = mock(KnowledgeSyncApplicationService.class);
         DiscoveryQaAdminController controller = new DiscoveryQaAdminController(qaService, syncService);
 
-        when(qaService.getSessionDetail(5001L)).thenReturn(sampleSessionDetail());
+        when(qaService.getSessionDetail(any(QaSessionDetailQuery.class))).thenReturn(sampleSessionDetail());
         when(qaService.pageSessions(any(QaSessionQuery.class), any(PageQuery.class)))
                 .thenReturn(PageResult.of(1, 10, 1, List.of(sampleSession())));
         when(qaService.exportSession(any(ExportQaSessionCommand.class))).thenReturn(sampleExportResult());
@@ -214,7 +216,7 @@ class DiscoveryQaAdminControllerTest {
         exportRequest.setSessionId("5001");
         exportRequest.setRequesterUserId(1001L);
         exportRequest.setFormat("CSV");
-        var exportResponse = controller.exportSession(exportRequest);
+        var exportResponse = controller.downloadSession(exportRequest);
         assertEquals("7001", exportResponse.getId());
         assertEquals("8001", exportResponse.getStorageObjectId());
         assertEquals("SUCCEEDED", exportResponse.getExportStatus());
@@ -223,7 +225,7 @@ class DiscoveryQaAdminControllerTest {
         assertEquals("discovery-qa-session-5001-7001.csv", exportResponse.getFilename());
         assertEquals("text/csv; charset=UTF-8", exportResponse.getContentType());
 
-        var healthResponse = controller.getKnowledgeHealth();
+        var healthResponse = controller.getKnowledge();
         assertEquals("AVAILABLE", healthResponse.getStatus());
         assertEquals("fastgpt", healthResponse.getProvider());
 
@@ -234,7 +236,7 @@ class DiscoveryQaAdminControllerTest {
         syncRequest.setContentType("SANCAI_ENTRY");
         syncRequest.setContentId(10001L);
         syncRequest.setCurrentVersionNo(3);
-        var syncResponse = controller.syncKnowledge(syncRequest);
+        var syncResponse = controller.updateKnowledge(syncRequest);
         assertNotNull(syncResponse);
         assertEquals("SANCAI_ENTRY", syncResponse.getContentType());
         assertEquals("黄帝", syncResponse.getTitle());
@@ -252,7 +254,7 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(10, syncPageResponse.getPageSize());
         assertEquals(1, syncPageResponse.getCount());
 
-        verify(qaService).getSessionDetail(5001L);
+        verify(qaService).getSessionDetail(argThat(query -> query != null && query.sessionId() == 5001L));
         ArgumentCaptor<QaSessionQuery> sessionQuery = ArgumentCaptor.forClass(QaSessionQuery.class);
         ArgumentCaptor<PageQuery> sessionPageQuery = ArgumentCaptor.forClass(PageQuery.class);
         verify(qaService).pageSessions(sessionQuery.capture(), sessionPageQuery.capture());
@@ -261,23 +263,23 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(10, sessionPageQuery.getValue().getPageSize());
         ArgumentCaptor<DeleteQaSessionCommand> deleteCommand = ArgumentCaptor.forClass(DeleteQaSessionCommand.class);
         verify(qaService).deleteSession(deleteCommand.capture());
-        assertEquals(5001L, deleteCommand.getValue().getSessionId());
-        assertEquals(Boolean.TRUE, deleteCommand.getValue().getAdminOperation());
+        assertEquals(5001L, deleteCommand.getValue().sessionId());
+        assertEquals(Boolean.TRUE, deleteCommand.getValue().adminOperation());
         ArgumentCaptor<ExportQaSessionCommand> exportCommand = ArgumentCaptor.forClass(ExportQaSessionCommand.class);
         verify(qaService).exportSession(exportCommand.capture());
-        assertEquals(5001L, exportCommand.getValue().getSessionId());
-        assertEquals(1001L, exportCommand.getValue().getRequesterUserId());
-        assertEquals(Boolean.TRUE, exportCommand.getValue().getAdminOperation());
-        assertEquals("CSV", exportCommand.getValue().getFormat());
+        assertEquals(5001L, exportCommand.getValue().sessionId());
+        assertEquals(1001L, exportCommand.getValue().requesterUserId());
+        assertEquals(Boolean.TRUE, exportCommand.getValue().adminOperation());
+        assertEquals("CSV", exportCommand.getValue().format());
         verify(syncService).health();
         verify(syncService).rebuild();
 
         ArgumentCaptor<SyncKnowledgeContentCommand> syncContentCommand =
                 ArgumentCaptor.forClass(SyncKnowledgeContentCommand.class);
         verify(syncService).syncContent(syncContentCommand.capture());
-        assertEquals("SANCAI_ENTRY", syncContentCommand.getValue().getContentType());
-        assertEquals(10001L, syncContentCommand.getValue().getContentId());
-        assertEquals(3, syncContentCommand.getValue().getCurrentVersionNo());
+        assertEquals("SANCAI_ENTRY", syncContentCommand.getValue().contentType());
+        assertEquals(10001L, syncContentCommand.getValue().contentId());
+        assertEquals(3, syncContentCommand.getValue().currentVersionNo());
 
         ArgumentCaptor<KnowledgeSyncItemQuery> syncQuery = ArgumentCaptor.forClass(KnowledgeSyncItemQuery.class);
         ArgumentCaptor<PageQuery> syncPageQuery = ArgumentCaptor.forClass(PageQuery.class);

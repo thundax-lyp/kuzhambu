@@ -271,25 +271,25 @@ Portal 只调用 Discovery，不直接调用 Knowledge Base provider。
 
 | API | Purpose |
 | --- | --- |
-| `POST /api/portal/discovery/qa/session/open` | 创建或恢复会话 |
-| `POST /api/portal/discovery/qa/chat/completions` | OpenAI-compatible 提问，`model` 为知识库名 |
+| `POST /api/portal/discovery/qa/session/init` | 创建或恢复会话 |
+| `POST /api/portal/discovery/qa/chat/create` | OpenAI-compatible 提问，`model` 为知识库名 |
 | `POST /api/portal/discovery/qa/session/page` | 查询会话列表 |
 | `POST /api/portal/discovery/qa/session/get` | 查询会话详情 |
 
-`chat/completions` request 使用 `KnowledgeChatRequest` 结构；Discovery 从登录态绑定 owner，不从请求体接收 owner。
+`chat/create` request 使用 `KnowledgeChatRequest` 结构；Discovery 从登录态绑定 owner，不从请求体接收 owner。
 
 Admin API：
 
 | API | Purpose |
 | --- | --- |
-| `POST /api/discovery/qa-admin/knowledge/health` | Knowledge Base 健康检查 |
+| `POST /api/discovery/qa-admin/knowledge/get` | Knowledge Base 健康检查 |
 | `POST /api/discovery/qa-admin/knowledge/rebuild` | 全量重建 QA 知识库 |
-| `POST /api/discovery/qa-admin/knowledge/sync` | 手动同步单个内容 |
+| `POST /api/discovery/qa-admin/knowledge/update` | 手动同步单个内容 |
 | `POST /api/discovery/qa-admin/knowledge/sync/page` | 查询同步状态 |
 | `POST /api/discovery/qa-admin/session/page` | 查询会话列表 |
 | `POST /api/discovery/qa-admin/session/get` | 查询会话详情 |
 | `POST /api/discovery/qa-admin/session/delete` | 删除会话 |
-| `POST /api/discovery/qa-admin/session/export` | 导出会话 |
+| `POST /api/discovery/qa-admin/session/download` | 导出会话 |
 
 Admin 不提供本地来源列表或 provider trace 查询 API；来源、分段召回、provider 请求和 trace 诊断在 FastGPT 产品中查看。
 
@@ -344,7 +344,7 @@ Published content maintenance sync:
 Portal chat:
 
 1. Portal opens or resumes session.
-2. Portal posts OpenAI-compatible `chat/completions`.
+2. Portal posts OpenAI-compatible `chat/submit`.
 3. Discovery validates session owner, question, `knowledgeBases`, and optional `contextItemKey`.
 4. Discovery calls `KnowledgeBaseClient.chat()`.
 5. Discovery stores user message, assistant message, source snapshots and trace.

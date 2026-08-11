@@ -21,7 +21,7 @@ public interface SearchApplicationService {
 
     PageResult<SearchEventResult> pageEvents(SearchEventQuery query, PageQuery pageQuery);
 
-    SearchEventResult getEvent(Long id);
+    SearchEventResult getEvent(SearchEventQuery query);
 
     SearchStatisticsSummaryResult getStatisticsSummary(SearchStatisticsSummaryQuery query);
 }

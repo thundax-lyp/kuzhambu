@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import {execFileSync} from "node:child_process";
-import {extname, join, relative, resolve} from "node:path";
+import {fileURLToPath} from "node:url";
+import {dirname, extname, join, relative, resolve} from "node:path";
 
 let input = "";
 
@@ -10,38 +11,77 @@ for await (const chunk of process.stdin) {
 }
 
 const data = JSON.parse(input);
-const cwd = data.cwd ?? process.cwd();
+const sourceCwd = data.cwd ?? process.cwd();
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
-const patch = data?.tool_input?.command ?? "";
+const toolInput = data?.tool_input;
+const patch = typeof toolInput === "string" ? toolInput : toolInput?.command ?? "";
 
 // 提取 apply_patch 中涉及的文件
-const files = [
-    ...patch.matchAll(/^\*\*\* (?:Add|Update) File: (.+)$/gm),
-].map((match) => match[1].trim());
+const files = [];
+let activeFile;
 
-if (files.length === 0) {
+for (const line of patch.split("\n")) {
+    const fileMatch = line.match(/^\*\*\* (?:Add|Update) File: (.+)$/);
+
+    if (fileMatch) {
+        if (activeFile) {
+            files.push(activeFile);
+        }
+        activeFile = fileMatch[1].trim();
+        continue;
+    }
+
+    const moveMatch = line.match(/^\*\*\* Move to: (.+)$/);
+    if (moveMatch && activeFile) {
+        activeFile = moveMatch[1].trim();
+        continue;
+    }
+
+    if (line.startsWith("*** ") && activeFile) {
+        files.push(activeFile);
+        activeFile = undefined;
+    }
+}
+
+if (activeFile) {
+    files.push(activeFile);
+}
+
+const repositoryFiles = files
+    .map((file) => {
+        const absolutePath = file.startsWith("/")
+            ? resolve(file)
+            : file.startsWith("kuzhambu-") || file.startsWith(".codex/")
+              ? resolve(repositoryRoot, file)
+              : resolve(sourceCwd, file);
+        const repositoryPath = relative(repositoryRoot, absolutePath);
+        return repositoryPath.startsWith("..") ? null : repositoryPath;
+    })
+    .filter((file) => file !== null);
+
+if (repositoryFiles.length === 0) {
     process.exit(0);
 }
 
-const javaFiles = files
+const javaFiles = repositoryFiles
     .filter(
         (file) =>
             extname(file) === ".java" &&
             (file === "kuzhambu-servers" ||
                 file.startsWith("kuzhambu-servers/")),
     )
-    .map((file) => file.replace(/^kuzhambu-servers\//, ""));
+    .map((file) => resolve(repositoryRoot, file));
 
 const javaFilePattern = javaFiles
-    .map((file) => resolve(cwd, "kuzhambu-servers", file))
     .map((file) => file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
     .join("|");
 
-const appFiles = files
+const appFiles = repositoryFiles
     .filter((file) => file.startsWith("kuzhambu-apps/"))
-    .map((file) => resolve(cwd, file));
+    .map((file) => resolve(repositoryRoot, file));
 
-const workerFiles = files
+const workerFiles = repositoryFiles
     .filter(
         (file) =>
             extname(file) === ".py" && file.startsWith("kuzhambu-workers/"),
@@ -54,7 +94,7 @@ try {
             "mvn",
             ["spotless:apply", `-DspotlessFiles=${javaFilePattern}`],
             {
-                cwd: join(cwd, "kuzhambu-servers"),
+                cwd: join(repositoryRoot, "kuzhambu-servers"),
                 stdio: "inherit",
             },
         );
@@ -63,30 +103,30 @@ try {
     const appFilesByPackage = new Map();
 
     for (const file of appFiles) {
-        const packageRoot = file.split(`${join(cwd, "kuzhambu-apps")}/`)[1]?.split("/")[0];
+        const packageRoot = file.split(`${join(repositoryRoot, "kuzhambu-apps")}/`)[1]?.split("/")[0];
 
         if (!packageRoot) {
             continue;
         }
 
         const packageFiles = appFilesByPackage.get(packageRoot) ?? [];
-        packageFiles.push(relative(join(cwd, "kuzhambu-apps", packageRoot), file));
+        packageFiles.push(relative(join(repositoryRoot, "kuzhambu-apps", packageRoot), file));
         appFilesByPackage.set(packageRoot, packageFiles);
     }
 
     for (const [packageRoot, packageFiles] of appFilesByPackage) {
         execFileSync("pnpm", ["exec", "prettier", "--write", ...packageFiles], {
-            cwd: join(cwd, "kuzhambu-apps", packageRoot),
+            cwd: join(repositoryRoot, "kuzhambu-apps", packageRoot),
             stdio: "inherit",
         });
     }
 
     if (workerFiles.length > 0) {
         execFileSync(
-            join(cwd, "kuzhambu-workers", ".venv", "bin", "python"),
+            join(repositoryRoot, "kuzhambu-workers", ".venv", "bin", "python"),
             ["-m", "ruff", "format", ...workerFiles],
             {
-                cwd: join(cwd, "kuzhambu-workers"),
+                cwd: join(repositoryRoot, "kuzhambu-workers"),
                 stdio: "inherit",
             },
         );
