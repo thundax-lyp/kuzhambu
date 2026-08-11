@@ -231,7 +231,7 @@ class AiBusinessInvokeConfigResolverTest {
 
             @Override
             public PromptVersion getByVersionId(PromptVersionId versionId) {
-                PromptVersion version = getCurrentVersion(new PromptTemplateId(6L));
+                PromptVersion version = getByCurrentTemplateId(new PromptTemplateId(6L));
                 version.setId(versionId);
                 return version;
             }
@@ -333,7 +333,7 @@ class AiBusinessInvokeConfigResolverTest {
 
         @Override
         public List<AiModel> list(String apiSource, Boolean enabled) {
-            return List.of(get(new AiModelId(2001L)));
+            return List.of(getById(new AiModelId(2001L)));
         }
 
         @Override
