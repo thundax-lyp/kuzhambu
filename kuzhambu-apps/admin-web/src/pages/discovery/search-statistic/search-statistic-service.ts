@@ -56,9 +56,9 @@ export const rebuildSearchIndex = (command: DiscoverySearchIndexRebuildCommand) 
     );
 };
 
-export const getSearchStatisticsSummary = (query: DiscoverySearchStatisticsSummaryQuery = {}) => {
+export const getSummary = (query: DiscoverySearchStatisticsSummaryQuery = {}) => {
     return postJson<DiscoverySearchStatisticsSummaryRecord, DiscoverySearchStatisticsSummaryQuery>(
-        "/discovery/search-statistics/summary",
+        "/discovery/search-statistics/summary/get",
         {
             body: query
         }

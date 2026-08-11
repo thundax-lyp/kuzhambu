@@ -85,7 +85,7 @@ public class DiscoverySearchStatisticsController {
     @Operation(summary = "获取检索统计摘要", description = "Discovery 检索统计摘要")
     @HasPermission("discovery:search:view")
     @IgnoreSysLogger
-    @PostMapping("summary")
+    @PostMapping("summary/get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -93,7 +93,7 @@ public class DiscoverySearchStatisticsController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public DiscoverySearchStatisticsSummaryResponse getStatisticsSummary(
+    public DiscoverySearchStatisticsSummaryResponse getSummary(
             @Valid @RequestBody DiscoverySearchStatisticsSummaryRequest request) {
         return DiscoverySearchStatisticsInterfaceAssembler.toResponse(searchApplicationService.getStatisticsSummary(
                 DiscoverySearchStatisticsInterfaceAssembler.toQuery(request)));

@@ -21,7 +21,7 @@ describe("qa service contracts", () => {
             scope: "PORTAL",
             title: "知识中心问答"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/open", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/init", {
             body: {
                 ownerUserId: "1001",
                 scope: "PORTAL",
@@ -60,12 +60,12 @@ describe("qa service contracts", () => {
             }
         });
 
-        await service.createQaSessionExport({
+        await service.downloadQaSession({
             format: "CSV",
             ownerUserId: "1001",
             sessionId: "7001"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/export", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/download", {
             body: {
                 format: "CSV",
                 ownerUserId: "1001",
@@ -73,7 +73,7 @@ describe("qa service contracts", () => {
             }
         });
 
-        await service.createQaChatCompletion({
+        await service.createChatCompletion({
             messages: [{ content: "礼学是什么？", role: "user" }],
             metadata: {
                 contextMode: "GENERAL",
@@ -83,7 +83,7 @@ describe("qa service contracts", () => {
             sessionId: "7001",
             stream: false
         });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/chat/completions", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/chat/create", {
             body: {
                 messages: [{ content: "礼学是什么？", role: "user" }],
                 metadata: {
@@ -104,7 +104,7 @@ describe("qa service contracts", () => {
         });
 
         await expect(
-            service.createQaChatCompletionStream({
+            service.submitChatCompletion({
                 command: {
                     messages: [{ content: "礼器是什么？", role: "user" }],
                     metadata: { sessionId: "7001" },

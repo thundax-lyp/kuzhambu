@@ -44,7 +44,7 @@ public class DiscoveryQaAdminController {
     @Operation(summary = "知识库健康", description = "Discovery QA 知识库健康检查")
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
-    @PostMapping("knowledge/health")
+    @PostMapping("knowledge/get")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -52,7 +52,7 @@ public class DiscoveryQaAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public DiscoveryQaAdminResponses.QaKnowledgeHealthResponse getKnowledgeHealth() {
+    public DiscoveryQaAdminResponses.QaKnowledgeHealthResponse getKnowledge() {
         return DiscoveryQaAdminInterfaceAssembler.toHealthResponse(knowledgeSyncApplicationService.health());
     }
 
@@ -74,7 +74,7 @@ public class DiscoveryQaAdminController {
     @Operation(summary = "同步知识内容", description = "Discovery QA 知识内容同步")
     @HasPermission("discovery:qa:edit")
     @IgnoreSysLogger
-    @PostMapping("knowledge/sync")
+    @PostMapping("knowledge/update")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -82,7 +82,7 @@ public class DiscoveryQaAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public DiscoveryQaAdminResponses.QaSyncItemResponse syncKnowledge(
+    public DiscoveryQaAdminResponses.QaSyncItemResponse updateKnowledge(
             @Valid @RequestBody DiscoveryQaAdminRequests.KnowledgeSyncRequest request) {
         KnowledgeSyncItemResult result = knowledgeSyncApplicationService.syncContent(
                 DiscoveryQaAdminInterfaceAssembler.toSyncKnowledgeContentCommand(request));
@@ -164,7 +164,7 @@ public class DiscoveryQaAdminController {
     @Operation(summary = "导出会话", description = "Discovery QA Admin 导出会话 CSV")
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
-    @PostMapping("session/export")
+    @PostMapping("session/download")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -172,7 +172,7 @@ public class DiscoveryQaAdminController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public DiscoveryQaAdminResponses.QaSessionExportResponse exportSession(
+    public DiscoveryQaAdminResponses.QaSessionExportResponse downloadSession(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionExportRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toSessionExportResponse(qaApplicationService.exportSession(
                 DiscoveryQaAdminInterfaceAssembler.toExportQaSessionCommand(request)));

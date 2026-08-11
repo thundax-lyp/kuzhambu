@@ -41,7 +41,7 @@ public class DiscoveryQaConversationController {
     @Operation(summary = "创建问答会话", description = "Admin 知识助手创建会话")
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
-    @PostMapping("session/open")
+    @PostMapping("session/init")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -49,7 +49,7 @@ public class DiscoveryQaConversationController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public DiscoveryQaResponses.OpenSessionResponse openSession(
+    public DiscoveryQaResponses.OpenSessionResponse initSession(
             @Valid @RequestBody DiscoveryQaRequests.OpenSessionRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toOpenSessionResponse(
                 qaApplicationService.openSession(DiscoveryQaPortalInterfaceAssembler.toOpenSessionCommand(request)));
@@ -114,7 +114,7 @@ public class DiscoveryQaConversationController {
     @Operation(summary = "导出问答会话", description = "Admin 知识助手导出会话 CSV")
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
-    @PostMapping("session/export")
+    @PostMapping("session/download")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -122,7 +122,7 @@ public class DiscoveryQaConversationController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public DiscoveryQaResponses.QaSessionExportResponse exportSession(
+    public DiscoveryQaResponses.QaSessionExportResponse downloadSession(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionExportRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toSessionExportResponse(qaApplicationService.exportSession(
                 DiscoveryQaPortalInterfaceAssembler.toExportSessionCommand(request)));
@@ -131,7 +131,7 @@ public class DiscoveryQaConversationController {
     @Operation(summary = "OpenAI 风格提问", description = "Admin 知识助手 OpenAI 风格提问")
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
-    @PostMapping("chat/completions")
+    @PostMapping("chat/create")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -139,7 +139,7 @@ public class DiscoveryQaConversationController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public DiscoveryQaResponses.ChatCompletionsResponse chatCompletions(
+    public DiscoveryQaResponses.ChatCompletionsResponse createChatCompletion(
             @Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toChatCompletionsResponse(
                 knowledgeQaApplicationService.chatCompletion(
