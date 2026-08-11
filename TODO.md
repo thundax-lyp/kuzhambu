@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiRefinementController`：清理即时 AI 能力 Controller 动词 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`AiRefinementController.java`
-    - 处理动作：按 RUNBOOK 的 9 组固定映射改名即时能力方法和 POST 路径。
-    - 验收点：`mvn -pl biz/ai/kuzhambu-ai-interface -Dtest=AiInterfaceArchitectureTest test` 通过。
-    - 重要度：8/10
-
 - [ ] `AI refinement architecture allowances`：删除 Refinement Controller 通配 allowance
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
