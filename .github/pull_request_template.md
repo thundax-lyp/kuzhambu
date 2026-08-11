@@ -12,7 +12,6 @@
 - [ ] PR workflow: servers changed -> `mvn -q spotless:check`
 - [ ] PR workflow: servers changed -> `mvn -q checkstyle:check`
 - [ ] PR workflow: servers changed -> `mvn -q test`
-- [x] AI & Storage allowlist clean-up 验证：`cd kuzhambu-servers && mvn -pl biz/ai/kuzhambu-ai-domain,biz/ai/kuzhambu-ai-interface,biz/storage/kuzhambu-storage-application,biz/storage/kuzhambu-storage-interface -am spotless:apply spotless:check checkstyle:check compile`（BUILD SUCCESS）
 - [ ] PR workflow: workers changed -> `ruff format --check .`
 - [ ] PR workflow: workers changed -> `ruff check .`
 - [ ] PR workflow: workers changed -> `pytest`

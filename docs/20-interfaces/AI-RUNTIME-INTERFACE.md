@@ -129,8 +129,8 @@ Admin Web 默认使用异步任务协议：
 
 平台 AI 能力仍使用固定 endpoint 表达动作：
 
-- `POST /api/ai/platform/prompt-suggestion`
-- `POST /api/ai/platform/version-summary`
+- `POST /api/ai/platform/prompt-suggestion/create`
+- `POST /api/ai/platform/version-summary/get`
 
 请求使用同一轻量协议：
 
