@@ -65,7 +65,7 @@ public class PromptController {
     })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "模板读取")
-    @PostMapping(value = "template/get-by-capability")
+    @PostMapping(value = "template/capability/get")
     public TemplateResponse getTemplateByCapability(@Valid @RequestBody PromptRequests.TemplateQueryRequest request) {
         return toTemplateResponse(
                 promptService.getByCapability(PromptInterfaceAssembler.toGetPromptByCapabilityQuery(request)));
@@ -98,8 +98,8 @@ public class PromptController {
     })
     @HasPermission(value = "ai:prompt:edit")
     @SysLogger(value = "模板保存")
-    @PostMapping(value = "template/save")
-    public TemplateResponse saveTemplate(@Valid @RequestBody PromptRequests.TemplateSaveRequest request) {
+    @PostMapping(value = "template/update")
+    public TemplateResponse updateTemplate(@Valid @RequestBody PromptRequests.TemplateSaveRequest request) {
         var templateId = promptService.save(PromptInterfaceAssembler.toSaveCommand(request));
         return toTemplateResponse(promptService.get(PromptInterfaceAssembler.toGetPromptQuery(templateId)));
     }
@@ -146,8 +146,8 @@ public class PromptController {
     })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "当前版本读取")
-    @PostMapping(value = "version/current")
-    public VersionResponse getCurrentVersion(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
+    @PostMapping(value = "version/latest")
+    public VersionResponse getLatestVersion(@Valid @RequestBody PromptRequests.TemplateIdRequest request) {
         return toVersionResponse(
                 promptService.getCurrentVersion(PromptInterfaceAssembler.toGetCurrentPromptVersionQuery(request)));
     }
@@ -179,8 +179,8 @@ public class PromptController {
     })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "版本对比")
-    @PostMapping(value = "version/compare")
-    public List<VersionResponse> compareVersions(@Valid @RequestBody PromptRequests.VersionCompareRequest request) {
+    @PostMapping(value = "version/compare/get")
+    public List<VersionResponse> getVersionCompare(@Valid @RequestBody PromptRequests.VersionCompareRequest request) {
         return promptService.compareVersions(PromptInterfaceAssembler.toCompareQuery(request)).stream()
                 .map(PromptInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
@@ -196,8 +196,8 @@ public class PromptController {
     })
     @HasPermission(value = "ai:prompt:edit")
     @SysLogger(value = "版本回滚")
-    @PostMapping(value = "version/rollback")
-    public VersionResponse rollbackVersion(@Valid @RequestBody PromptRequests.VersionRollbackRequest request) {
+    @PostMapping(value = "version/rollback/update")
+    public VersionResponse updateVersionRollback(@Valid @RequestBody PromptRequests.VersionRollbackRequest request) {
         return toVersionResponse(
                 promptService.rollback(PromptInterfaceAssembler.toRollbackPromptVersionCommand(request)));
     }
@@ -249,8 +249,8 @@ public class PromptController {
     })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "变量校验")
-    @PostMapping(value = "variable/validate")
-    public Boolean validateVariables(@Valid @RequestBody PromptRequests.VariableValidateRequest request) {
+    @PostMapping(value = "variable/validation/get")
+    public Boolean getVariableValidation(@Valid @RequestBody PromptRequests.VariableValidateRequest request) {
         promptService.validateRequiredVariables(PromptInterfaceAssembler.toValidatePromptVariablesCommand(request));
         return true;
     }
@@ -265,8 +265,9 @@ public class PromptController {
     })
     @HasPermission(value = "ai:prompt:edit")
     @SysLogger(value = "优化建议")
-    @PostMapping(value = "optimization/suggest")
-    public VersionResponse buildOptimizationSuggestion(@Valid @RequestBody PromptRequests.OptimizationRequest request) {
+    @PostMapping(value = "optimization/suggestion/create")
+    public VersionResponse createOptimizationSuggestion(
+            @Valid @RequestBody PromptRequests.OptimizationRequest request) {
         return toVersionResponse(promptService.buildOptimizationSuggestion(
                 PromptInterfaceAssembler.toBuildOptimizationSuggestionCommand(request)));
     }

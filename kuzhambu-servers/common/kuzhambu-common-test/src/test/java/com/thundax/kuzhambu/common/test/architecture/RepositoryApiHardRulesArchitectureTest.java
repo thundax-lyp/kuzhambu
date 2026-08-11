@@ -163,27 +163,6 @@ class RepositoryApiHardRulesArchitectureTest {
                 "method=listManuscriptTree path=manuscript-tree");
         addLegacyActionVerbAllowances(
                 allowances,
-                "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/prompt/controller/PromptController.java",
-                "method=saveTemplate",
-                "method=saveTemplate path=template/save",
-                "method=getCurrentVersion path=version/current",
-                "method=compareVersions",
-                "method=compareVersions path=version/compare",
-                "method=rollbackVersion",
-                "method=rollbackVersion path=version/rollback",
-                "method=validateVariables",
-                "method=validateVariables path=variable/validate",
-                "method=buildOptimizationSuggestion",
-                "method=buildOptimizationSuggestion path=optimization/suggest");
-        addLegacyActionVerbAllowances(
-                allowances,
-                "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/platform/controller/PlatformAiController.java",
-                "method=buildPromptSuggestion",
-                "method=buildPromptSuggestion path=prompt-suggestion",
-                "method=summarizeVersion",
-                "method=summarizeVersion path=version-summary");
-        addLegacyActionVerbAllowances(
-                allowances,
                 "kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskController.java",
                 "method=streamTask");
         addLegacyActionVerbAllowances(

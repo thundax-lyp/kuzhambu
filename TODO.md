@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `PromptController and PlatformAiController`：清理提示词 Controller 动词 allowlist
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`PromptController.java`、`PlatformAiController.java`、`PlatformAiControllerTest.java`、`AiInterfaceArchitectureTest.java`、`prompt-service.ts`、`prompt-service-contract.test.ts`、`RepositoryApiHardRulesArchitectureTest.java`
-    - 处理动作：按 RUNBOOK 改名 9 个提示词与平台动作路径，并同步调用方与 allowlist。
-    - 验收点：16 个精确 key 不存在，`mvn -pl biz/ai/kuzhambu-ai-interface -am test` 通过。
-    - 重要度：9/10
-
 - [ ] `AiRefinementController`：清理即时 AI 能力 Controller 动词 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`

@@ -51,7 +51,7 @@ public class PromptControllerTest {
         PromptRequests.TemplateIdRequest request = new PromptRequests.TemplateIdRequest();
         request.setId(99L);
 
-        var response = controller.getCurrentVersion(request);
+        var response = controller.getLatestVersion(request);
 
         assertNull(response.getId());
     }
@@ -63,7 +63,7 @@ public class PromptControllerTest {
         request.setId(99L);
         request.setChangeSummary("优化");
 
-        var response = controller.buildOptimizationSuggestion(request);
+        var response = controller.createOptimizationSuggestion(request);
 
         assertNull(response.getId());
     }
@@ -72,8 +72,8 @@ public class PromptControllerTest {
         return proxy(PromptApplicationService.class, (proxy, method, args) -> {
             if ("get".equals(method.getName())
                     || "getByCapability".equals(method.getName())
-                    || "getCurrentVersion".equals(method.getName())
-                    || "buildOptimizationSuggestion".equals(method.getName())) {
+                    || "getLatestVersion".equals(method.getName())
+                    || "createOptimizationSuggestion".equals(method.getName())) {
                 return null;
             }
             throw new UnsupportedOperationException(

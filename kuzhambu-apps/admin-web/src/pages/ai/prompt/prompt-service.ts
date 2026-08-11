@@ -67,7 +67,7 @@ export const listPromptCapabilities = () => {
 
 export const getPromptTemplateByCapability = (query: AiPromptTemplateQuery) => {
     return postJson<AiPromptTemplateRecord, AiPromptTemplateQuery>(
-        "/ai/config/prompt/template/get-by-capability",
+        "/ai/config/prompt/template/capability/get",
         {
             body: query
         }
@@ -85,7 +85,7 @@ export const listPromptTemplates = (query: AiPromptTemplateQuery = {}) => {
 
 export const changePromptTemplate = (command: AiPromptTemplateChangeCommand) => {
     return postJson<AiPromptTemplateRecord, AiPromptTemplateChangeCommand>(
-        "/ai/config/prompt/template/save",
+        "/ai/config/prompt/template/update",
         {
             body: command
         }
@@ -114,7 +114,7 @@ export const listPromptCapabilityVariables = (capability: string) => {
 
 export const getCurrentPromptVersion = (templateId: string) => {
     return postJson<AiPromptVersionRecord, AiPromptTemplateIdCommand>(
-        "/ai/config/prompt/version/current",
+        "/ai/config/prompt/version/latest",
         {
             body: { id: templateId }
         }
@@ -132,7 +132,7 @@ export const listPromptVersions = (templateId: string) => {
 
 export const previewPromptVersionCompare = (command: AiPromptVersionCompareCommand) => {
     return postJson<AiPromptVersionRecord[], AiPromptVersionCompareCommand>(
-        "/ai/config/prompt/version/compare",
+        "/ai/config/prompt/version/compare/get",
         {
             body: command
         }
@@ -141,7 +141,7 @@ export const previewPromptVersionCompare = (command: AiPromptVersionCompareComma
 
 export const changePromptVersionRollback = (command: AiPromptVersionRollbackCommand) => {
     return postJson<AiPromptVersionRecord, AiPromptVersionRollbackCommand>(
-        "/ai/config/prompt/version/rollback",
+        "/ai/config/prompt/version/rollback/update",
         {
             body: command
         }
@@ -159,7 +159,7 @@ export const listPromptVariables = (templateId: string) => {
 
 export const confirmPromptVariables = (command: AiPromptVariableValidateCommand) => {
     return postJson<boolean, AiPromptVariableValidateCommand>(
-        "/ai/config/prompt/variable/validate",
+        "/ai/config/prompt/variable/validation/get",
         {
             body: command
         }
@@ -168,7 +168,7 @@ export const confirmPromptVariables = (command: AiPromptVariableValidateCommand)
 
 export const regeneratePromptSuggestion = (command: AiPromptSuggestionCommand) => {
     return postJson<AiPromptVersionRecord, AiPromptSuggestionCommand>(
-        "/ai/config/prompt/optimization/suggest",
+        "/ai/config/prompt/optimization/suggestion/create",
         {
             body: command
         }

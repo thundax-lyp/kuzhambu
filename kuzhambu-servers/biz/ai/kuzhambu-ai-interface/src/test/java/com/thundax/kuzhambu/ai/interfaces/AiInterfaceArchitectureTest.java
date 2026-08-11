@@ -58,22 +58,6 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
 
     private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
         return List.of(
-                promptActionVerbAllowance("method=getTemplateByCapability path=template/get-by-capability"),
-                promptActionVerbAllowance("method=saveTemplate"),
-                promptActionVerbAllowance("method=saveTemplate path=template/save"),
-                promptActionVerbAllowance("method=getCurrentVersion path=version/current"),
-                promptActionVerbAllowance("method=compareVersions"),
-                promptActionVerbAllowance("method=compareVersions path=version/compare"),
-                promptActionVerbAllowance("method=rollbackVersion"),
-                promptActionVerbAllowance("method=rollbackVersion path=version/rollback"),
-                promptActionVerbAllowance("method=validateVariables"),
-                promptActionVerbAllowance("method=validateVariables path=variable/validate"),
-                promptActionVerbAllowance("method=buildOptimizationSuggestion"),
-                promptActionVerbAllowance("method=buildOptimizationSuggestion path=optimization/suggest"),
-                platformAiActionVerbAllowance("method=buildPromptSuggestion"),
-                platformAiActionVerbAllowance("method=buildPromptSuggestion path=prompt-suggestion"),
-                platformAiActionVerbAllowance("method=summarizeVersion"),
-                platformAiActionVerbAllowance("method=summarizeVersion path=version-summary"),
                 legacyControllerActionVerbAllowance("AiRefinementTaskController"),
                 legacyControllerActionVerbAllowance("AiRefinementController"));
     }

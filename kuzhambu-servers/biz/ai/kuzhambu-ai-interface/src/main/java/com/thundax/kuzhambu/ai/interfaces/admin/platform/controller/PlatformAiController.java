@@ -39,8 +39,8 @@ public class PlatformAiController {
     })
     @HasPermission(value = "ai:prompt:edit")
     @SysLogger(value = "提示词建议")
-    @PostMapping(value = "prompt-suggestion")
-    public InvokeResponse buildPromptSuggestion(@Valid @RequestBody PlatformAiRequests.InvokeRequest request) {
+    @PostMapping(value = "prompt-suggestion/create")
+    public InvokeResponse createPromptSuggestion(@Valid @RequestBody PlatformAiRequests.InvokeRequest request) {
         return PlatformAiInterfaceAssembler.toResponse(
                 platformAiApplicationService.buildPromptSuggestion(PlatformAiInterfaceAssembler.toCommand(request)));
     }
@@ -55,8 +55,8 @@ public class PlatformAiController {
     })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "版本摘要")
-    @PostMapping(value = "version-summary")
-    public InvokeResponse summarizeVersion(@Valid @RequestBody PlatformAiRequests.InvokeRequest request) {
+    @PostMapping(value = "version-summary/get")
+    public InvokeResponse getVersionSummary(@Valid @RequestBody PlatformAiRequests.InvokeRequest request) {
         return PlatformAiInterfaceAssembler.toResponse(
                 platformAiApplicationService.summarizeVersion(PlatformAiInterfaceAssembler.toCommand(request)));
     }
