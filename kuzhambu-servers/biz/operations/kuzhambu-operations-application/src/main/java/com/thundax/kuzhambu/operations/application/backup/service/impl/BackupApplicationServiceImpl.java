@@ -66,7 +66,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
     @Override
     public OperationsBackupExecuteResult execute(OperationsBackupExecuteCommand command) {
         validateExecuteCommand(command);
-        return executeBackup(BackupType.MANUAL, command.getRequesterUserId(), false);
+        return executeBackup(BackupType.MANUAL, command.requesterUserId(), false);
     }
 
     @Override
@@ -159,9 +159,9 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<BackupRecord> recordPage = backupRepository.page(
-                query == null ? null : query.getBackupType(),
-                query == null ? null : query.getBackupStatus(),
-                query == null ? null : query.getRequesterUserId(),
+                query == null ? null : query.backupType(),
+                query == null ? null : query.backupStatus(),
+                query == null ? null : query.requesterUserId(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<OperationsBackupPageResult> results =
@@ -171,7 +171,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
 
     @Override
     public OperationsBackupDetailResult detail(OperationsBackupDetailQuery query) {
-        BackupRecord record = backupRepository.getById(query == null ? null : query.getBackupId());
+        BackupRecord record = backupRepository.getById(query == null ? null : query.backupId());
         return toDetailResult(record);
     }
 
@@ -234,7 +234,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations backup execute command must not be null.");
         }
-        if (command.getRequesterUserId() == null) {
+        if (command.requesterUserId() == null) {
             throw new com.thundax.kuzhambu.common.core.exception.BizException(
                     "Operations backup requesterUserId must not be null.");
         }
