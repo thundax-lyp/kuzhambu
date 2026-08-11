@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.ai.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
-import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.ConcurrencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
@@ -12,7 +11,6 @@ import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleS
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
@@ -46,7 +44,7 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
         ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(
                 Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertControllerActionsUseVerbWhitelist(
-                Path.of("src/main/java"), legacyActionVerbAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 Path.of("src/main/java"));
@@ -54,36 +52,5 @@ class AiInterfaceArchitectureTest extends AbstractArchitectureTest {
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
-    }
-
-    private static List<ArchitectureRuleAllowance> legacyActionVerbAllowances() {
-        return Collections.emptyList();
-    }
-
-    private static ArchitectureRuleAllowance aiInvocationActionVerbAllowance(String violation) {
-        return ArchitectureRuleAllowance.of(
-                "CONTROLLER_ACTION_VERB:kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/"
-                        + "kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java "
-                        + violation,
-                "AI invocation endpoints retain legacy action names outside the shared verb whitelist.",
-                "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
-    }
-
-    private static ArchitectureRuleAllowance promptActionVerbAllowance(String violation) {
-        return ArchitectureRuleAllowance.of(
-                "CONTROLLER_ACTION_VERB:kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/"
-                        + "kuzhambu/ai/interfaces/admin/config/prompt/controller/PromptController.java "
-                        + violation,
-                "Prompt endpoints retain legacy action names outside the shared verb whitelist.",
-                "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
-    }
-
-    private static ArchitectureRuleAllowance platformAiActionVerbAllowance(String violation) {
-        return ArchitectureRuleAllowance.of(
-                "CONTROLLER_ACTION_VERB:kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/"
-                        + "kuzhambu/ai/interfaces/admin/platform/controller/PlatformAiController.java "
-                        + violation,
-                "AI platform endpoints retain legacy action names outside the shared verb whitelist.",
-                "Rename the method and action path with shared verbs, update callers, then remove this allowance.");
     }
 }

@@ -12,36 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Storage record contracts 7.1–7.7`：转换第一组 Storage Command 为 record
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`AbortMultipartUploadCommand.java`、`AddStorageReferencesCommand.java`、`ChangeStorageCommand.java`、`ChangeStorageObjectStatusCommand.java`、`ChangeStorageReferenceStatusCommand.java`、`CompleteMultipartUploadCommand.java`、`CreateStorageCommand.java`、`StorageApplicationCommandQueryRecordAllowances.java`、`StorageApplicationArchitectureTest.java`
-    - 处理动作：按 RUNBOOK 7.1–7.7 逐 contract 转为 record、更新 accessor 调用并删除各自 key。
-    - 验收点：7 个 contract 均为无 Lombok record，逐项 Maven 架构测试通过。
-    - 重要度：9/10
-
-- [ ] `Storage record contracts 7.8–7.14`：转换第二组 Storage Command/Query 为 record
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`InitMultipartUploadCommand.java`、`RemoveStorageObjectCommand.java`、`RemoveStorageReferencesCommand.java`、`StorageSortCommand.java`、`UploadMultipartPartCommand.java`、`UploadStorageObjectCommand.java`、`GetReadableStorageContentQuery.java`、`StorageApplicationCommandQueryRecordAllowances.java`、`StorageApplicationArchitectureTest.java`
-    - 处理动作：按 RUNBOOK 7.8–7.14 逐 contract 转为 record、更新 accessor 调用并删除各自 key。
-    - 验收点：7 个 contract 均为无 Lombok record，逐项 Maven 架构测试通过。
-    - 重要度：9/10
-
-- [ ] `AI and Storage allowlist verification`：执行格式化、静态门禁与全量受影响模块测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/`、`kuzhambu-servers/biz/storage/`、`kuzhambu-servers/common/kuzhambu-common-test/`
-    - 处理动作：按 RUNBOOK Final Verification 顺序运行 Spotless、Maven 测试、Checkstyle 与 allowance 搜索。
-    - 验收点：所有命令通过，RUNBOOK 范围内 allowance 定义和调用搜索结果为空。
-    - 重要度：10/10
-
-- [ ] `ArchUnit allowlist cleanup closure`：清理 RUNBOOK、TODO 与交付现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`、`.github/pull_request_template.md`
-    - 处理动作：全量验证通过后删除已完成 TODO、删除 RUNBOOK，并在 PR 模板实例中记录验证证据和风险。
-    - 验收点：`TODO.md` 不保留已完成项，RUNBOOK 与其引用均不存在，PR 描述包含验证结果。
-    - 重要度：10/10
+已完成并清理。
 
 ## 待讨论项
