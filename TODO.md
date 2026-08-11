@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations application / dashboard-health`：将 dashboard、health Command/Query 迁移为 record
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/query/OperationsDashboardOverviewQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/command/OperationsHealthAlertAckCommand.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/command/OperationsHealthAlertRecoverCommand.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/query/OperationsHealthAlertQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/query/OperationsHealthQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/query/OperationsHealthTrendQuery.java`
-    - 处理动作：将六个 dashboard/health contract 改为 record。
-    - 验收点：六个 contract 为 record，且不存在 Lombok 数据类注解。
-    - 重要度：8/10
-
 - [ ] `Operations application / record allowlist`：删除已完成 record 迁移的 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-03-OPERATIONS.md`
