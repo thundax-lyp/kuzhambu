@@ -77,32 +77,37 @@ public final class StorageInterfaceAssembler {
 
     @NonNull
     public static GetStorageObjectQuery toGetStorageObjectQuery(@NonNull String storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
         return new GetStorageObjectQuery(StoredObjectIdCodec.toDomain(storageObjectId));
     }
 
     @NonNull
     public static GetStorageObjectQuery toGetStorageObjectQuery(@NonNull Long storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
         return new GetStorageObjectQuery(StoredObjectIdCodec.toDomain(storageObjectId));
     }
 
     @NonNull
     public static RemoveStorageObjectCommand toRemoveStorageObjectCommand(@NonNull StoredObjectId id) {
+        Objects.requireNonNull(id, "id must not be null");
         return new RemoveStorageObjectCommand(id);
     }
 
     @NonNull
     public static OpenReadableStorageContentQuery toOpenReadableContentQuery(@NonNull String storageObjectId) {
+        Objects.requireNonNull(storageObjectId, "storageObjectId must not be null");
         return new OpenReadableStorageContentQuery(StoredObjectIdCodec.toDomain(storageObjectId));
     }
 
     @NonNull
     public static UploadStorageObjectCommand toUploadStorageObjectCommand(
-            MultipartFile file, String ownerType, String ownerId) throws IOException {
+            @NonNull MultipartFile file, String ownerType, String ownerId) throws IOException {
+        Objects.requireNonNull(file, "file must not be null");
         return new UploadStorageObjectCommand(
-                file == null ? null : file.getInputStream(),
-                file == null ? null : file.getOriginalFilename(),
-                file == null ? null : file.getContentType(),
-                file == null ? null : new StorageByteSize(file.getSize()),
+                file.getInputStream(),
+                file.getOriginalFilename(),
+                file.getContentType(),
+                new StorageByteSize(file.getSize()),
                 List.of(
                         "jpg", "jpeg", "png", "gif", "webp", "pdf", "txt", "md", "csv", "json", "html", "zip", "docx",
                         "xlsx", "pptx"),
@@ -114,6 +119,7 @@ public final class StorageInterfaceAssembler {
 
     @NonNull
     public static InitMultipartUploadCommand toInitMultipartUploadCommand(@NonNull InitMultipartUploadRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new InitMultipartUploadCommand(
                 toMultipartUploadId(request.getUploadId()),
                 StorageOwnerRef.ofNullable(
@@ -130,24 +136,28 @@ public final class StorageInterfaceAssembler {
 
     @NonNull
     public static UploadMultipartPartCommand toUploadMultipartPartCommand(
-            @NonNull UploadMultipartPartRequest request, MultipartFile file) throws IOException {
+            @NonNull UploadMultipartPartRequest request, @NonNull MultipartFile file) throws IOException {
+        Objects.requireNonNull(request, "request must not be null");
+        Objects.requireNonNull(file, "file must not be null");
         return new UploadMultipartPartCommand(
                 toMultipartUploadId(request.getUploadId()),
                 toMultipartPartNumber(request.getPartNumber()),
                 request.getEtag(),
                 toStorageByteSize(request.getSize()),
-                file == null ? null : file.getInputStream());
+                file.getInputStream());
     }
 
     @NonNull
     public static CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(
             @NonNull CompleteMultipartUploadRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new CompleteMultipartUploadCommand(toMultipartUploadId(request.getUploadId()), null, null, null, null);
     }
 
     @NonNull
     public static AbortMultipartUploadCommand toAbortMultipartUploadCommand(
             @NonNull AbortMultipartUploadRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
         return new AbortMultipartUploadCommand(toMultipartUploadId(request.getUploadId()));
     }
 

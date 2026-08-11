@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.storage.interfaces;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
@@ -10,6 +11,7 @@ import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleS
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class StorageInterfaceArchitectureTest extends AbstractArchitectureTest {
@@ -47,6 +49,18 @@ class StorageInterfaceArchitectureTest extends AbstractArchitectureTest {
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
-                Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
+                Collections.singletonList(Path.of("src/main/java")), nullableUploadOwnerAllowances());
+    }
+
+    private static List<ArchitectureRuleAllowance> nullableUploadOwnerAllowances() {
+        return List.of(
+                new ArchitectureRuleAllowance(
+                        "BOUNDARY_ASSEMBLER_NULL_PARAMETER:com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler#toUploadStorageObjectCommand:ownerType:String:1",
+                        "Storage uploads may be unowned.",
+                        "Keep the optional owner contract explicit at the controller boundary."),
+                new ArchitectureRuleAllowance(
+                        "BOUNDARY_ASSEMBLER_NULL_PARAMETER:com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler#toUploadStorageObjectCommand:ownerId:String:1",
+                        "Storage uploads may be unowned.",
+                        "Keep the optional owner contract explicit at the controller boundary."));
     }
 }
