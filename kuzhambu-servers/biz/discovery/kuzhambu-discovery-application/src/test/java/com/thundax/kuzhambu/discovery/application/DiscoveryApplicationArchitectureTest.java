@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRul
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -20,6 +21,7 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     void applicationCommandAndQuerySourcesShouldDeclareFieldsOnly() {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
+        TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(classes, Collections.emptyList());
         NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
         PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);

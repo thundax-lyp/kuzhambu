@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.portal;
+package com.thundax.kuzhambu.knowledge.application.portal.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

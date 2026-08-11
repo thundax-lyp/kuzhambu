@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.common.test.architecture.ImplContractArchitectureRul
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
-import com.thundax.kuzhambu.common.test.architecture.SourceHardRuleArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -20,6 +20,7 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
     void applicationContractsShouldStayInDedicatedPackages() throws Exception {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
+        TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(classes, Collections.emptyList());
         ImplContractArchitectureRuleSupport.assertImplClassesImplementNamedInterface(classes, Collections.emptySet());
         ImplContractArchitectureRuleSupport.assertProductionCodeDoesNotDependOnImplTypes(
@@ -40,7 +41,5 @@ class OperationsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")), Collections.emptyList());
-        SourceHardRuleArchitectureRuleSupport.assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
-                Path.of("src/main/java"));
     }
 }

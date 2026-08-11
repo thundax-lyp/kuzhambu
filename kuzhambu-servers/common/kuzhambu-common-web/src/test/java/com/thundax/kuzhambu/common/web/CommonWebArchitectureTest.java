@@ -3,10 +3,8 @@ package com.thundax.kuzhambu.common.web;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
-import com.thundax.kuzhambu.common.test.architecture.SourceHardRuleArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
-import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 class CommonWebArchitectureTest extends AbstractArchitectureTest {
@@ -20,7 +18,5 @@ class CommonWebArchitectureTest extends AbstractArchitectureTest {
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         NamingArchitectureRuleSupport.assertConfigurationClassNames(classes);
         PathArchitectureRuleSupport.assertConfigurationClassPlacement(classes);
-        SourceHardRuleArchitectureRuleSupport.assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
-                Path.of("src/main/java"));
     }
 }

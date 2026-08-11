@@ -1,9 +1,10 @@
-package com.thundax.kuzhambu.knowledge.application.portal;
+package com.thundax.kuzhambu.knowledge.application.portal.impl;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQuery;
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult;
 import com.thundax.kuzhambu.knowledge.application.lineage.service.KnowledgeLineageReadApplicationService;
+import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.application.portal.query.KnowledgePortalAtlasQuery;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalHomeResult;

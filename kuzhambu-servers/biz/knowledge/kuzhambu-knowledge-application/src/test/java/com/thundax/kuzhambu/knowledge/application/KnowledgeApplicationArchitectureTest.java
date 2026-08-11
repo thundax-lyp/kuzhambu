@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSuppor
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.PathArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -22,6 +23,7 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
     void applicationSpringBeansShouldDeclareSingleConstructor() {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
+        TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         LayerArchitectureRuleSupport.assertApplicationServiceBoundaryClean(
                 classes, legacyApplicationServiceBoundaryAllowances());
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
