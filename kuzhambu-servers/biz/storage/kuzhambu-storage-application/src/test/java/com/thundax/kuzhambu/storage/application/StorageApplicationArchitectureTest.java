@@ -44,7 +44,7 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
-                Path.of("src/main/java"), StorageApplicationCommandQueryRecordAllowances.legacyAllowances());
+                Path.of("src/main/java"), Collections.emptyList());
         NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-storage-interface/src/main/java")),
                 legacyCommandQueryConstructionAllowances());

@@ -82,24 +82,35 @@ public class StorageObjectApplicationServiceImpl implements StorageObjectApplica
         if (query == null) {
             return null;
         }
-        StorageQuery storageQuery = new StorageQuery();
-        storageQuery.setIds(query.ids());
-        storageQuery.setContentType(
-                query.mimeType() == null ? null : query.mimeType().value());
-        storageQuery.setObjectStatus(query.objectStatus());
-        storageQuery.setReferenceStatus(query.referenceStatus());
-        applyReferenceOwner(storageQuery, query.referenceOwnerRef());
-        storageQuery.setOriginalFilename(query.originalFilename());
-        storageQuery.setRemarks(query.remarks());
-        storageQuery.setSortDirection(query.sortDirection());
-        return storageQuery;
+        return applyReferenceOwner(
+                new StorageQuery(
+                        null,
+                        query.ids(),
+                        query.mimeType() == null ? null : query.mimeType().value(),
+                        null,
+                        null,
+                        query.objectStatus(),
+                        query.referenceStatus(),
+                        query.originalFilename(),
+                        query.remarks(),
+                        query.sortDirection()),
+                query.referenceOwnerRef());
     }
 
-    private void applyReferenceOwner(StorageQuery query, StorageOwnerRef ownerRef) {
+    private StorageQuery applyReferenceOwner(StorageQuery query, StorageOwnerRef ownerRef) {
         if (query == null || ownerRef == null) {
-            return;
+            return query;
         }
-        query.setReferenceOwnerId(ownerRef.ownerId());
-        query.setReferenceOwnerType(ownerRef.ownerTypeValue());
+        return new StorageQuery(
+                query.id(),
+                query.ids(),
+                query.contentType(),
+                ownerRef.ownerId(),
+                ownerRef.ownerTypeValue(),
+                query.objectStatus(),
+                query.referenceStatus(),
+                query.originalFilename(),
+                query.remarks(),
+                query.sortDirection());
     }
 }

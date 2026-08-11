@@ -28,14 +28,6 @@
     - 验收点：7 个 contract 均为无 Lombok record，逐项 Maven 架构测试通过。
     - 重要度：9/10
 
-- [ ] `Storage record contracts 7.15–7.21`：转换第三组 Storage Query 为 record并删除 allowance 文件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`
-    - 范围对象：`GetStorageObjectQuery.java`、`ListStorageMimeTypesQuery.java`、`ListStorageObjectsQuery.java`、`ListStorageReferenceOwnerTypesQuery.java`、`ListStorageReferencesQuery.java`、`OpenReadableStorageContentQuery.java`、`StorageQuery.java`、`StorageApplicationCommandQueryRecordAllowances.java`、`StorageApplicationArchitectureTest.java`
-    - 处理动作：按 RUNBOOK 7.15–7.21 逐 contract 转为 record、更新 accessor 调用，最后删除 allowance 文件与 architecture test 引用。
-    - 验收点：21 个 record key 全部不存在，allowance 文件已删除，Maven 架构测试通过。
-    - 重要度：9/10
-
 - [ ] `StorageFacadeImpl`：迁移 Facade 内 Command/Query 构造
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ARCHUNIT-ALLOWLIST-REMOVAL-01-AI-STORAGE.md`

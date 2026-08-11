@@ -32,18 +32,25 @@ public class StorageContentApplicationServiceImpl implements StorageContentAppli
         if (query == null) {
             return null;
         }
-        StorageQuery storageQuery = new StorageQuery();
-        storageQuery.setId(query.id());
-        storageQuery.setReferenceStatus(query.referenceStatus());
-        applyReferenceOwner(storageQuery, query.referenceOwnerRef());
-        return storageQuery;
+        return applyReferenceOwner(
+                new StorageQuery(query.id(), null, null, null, null, null, query.referenceStatus(), null, null, null),
+                query.referenceOwnerRef());
     }
 
-    private void applyReferenceOwner(StorageQuery query, StorageOwnerRef ownerRef) {
+    private StorageQuery applyReferenceOwner(StorageQuery query, StorageOwnerRef ownerRef) {
         if (query == null || ownerRef == null) {
-            return;
+            return query;
         }
-        query.setReferenceOwnerId(ownerRef.ownerId());
-        query.setReferenceOwnerType(ownerRef.ownerTypeValue());
+        return new StorageQuery(
+                query.id(),
+                query.ids(),
+                query.contentType(),
+                ownerRef.ownerId(),
+                ownerRef.ownerTypeValue(),
+                query.objectStatus(),
+                query.referenceStatus(),
+                query.originalFilename(),
+                query.remarks(),
+                query.sortDirection());
     }
 }
