@@ -8,49 +8,14 @@ import fs from "node:fs";
 import path from "node:path";
 import tseslint from "typescript-eslint";
 
-const SERVICE_METHOD_VERBS = [
-    "page",
-    "list",
-    "get",
-    "init",
-    "add",
-    "create",
-    "complete",
-    "remove",
-    "delete",
-    "abort",
-    "update",
-    "change",
-    "sort",
-    "move",
-    "upload",
-    "download",
-    "reset",
-    "login",
-    "logout",
-    "refresh",
-    "load",
-    "request",
-    "latest",
-    "search",
-    "click",
-    "rebuild",
-    "preview",
-    "apply",
-    "deprecate",
-    "reject",
-    "review",
-    "approve",
-    "recover",
-    "submit",
-    "confirm",
-    "cancel",
-    "publish",
-    "revoke",
-    "offline",
-    "content",
-    "extract",
-    "regenerate"
+const AMBIGUOUS_SERVICE_METHOD_VERBS = [
+    "save",
+    "do",
+    "handle",
+    "process",
+    "operate",
+    "action",
+    "manage"
 ];
 
 const localRules = {
@@ -1511,10 +1476,10 @@ const localRules = {
                 };
             }
         },
-        "service-method-verb-prefix": {
+        "service-method-ambiguous-verb": {
             create(context) {
-                const startsWithServiceVerb = (name) => {
-                    return SERVICE_METHOD_VERBS.some((verb) => {
+                const startsWithAmbiguousVerb = (name) => {
+                    return AMBIGUOUS_SERVICE_METHOD_VERBS.some((verb) => {
                         return (
                             name === verb ||
                             name.startsWith(`${verb}${name.charAt(verb.length).toUpperCase()}`)
@@ -1522,14 +1487,14 @@ const localRules = {
                     });
                 };
 
-                const reportInvalidServiceMethod = (node, name) => {
-                    if (startsWithServiceVerb(name)) {
+                const reportAmbiguousServiceMethod = (node, name) => {
+                    if (!startsWithAmbiguousVerb(name)) {
                         return;
                     }
 
                     context.report({
                         node,
-                        message: `ADMIN_WEB_NAME_SERVICE_METHOD: service method "${name}" must start with one of ${SERVICE_METHOD_VERBS.join(", ")}.`
+                        message: `ADMIN_WEB_NAME_SERVICE_METHOD: service method "${name}" must not start with an ambiguous verb: ${AMBIGUOUS_SERVICE_METHOD_VERBS.join(", ")}.`
                     });
                 };
 
@@ -1543,14 +1508,17 @@ const localRules = {
                         if (node.declaration?.type === "VariableDeclaration") {
                             node.declaration.declarations.forEach((declaration) => {
                                 if (declaration.id.type === "Identifier") {
-                                    reportInvalidServiceMethod(declaration.id, declaration.id.name);
+                                    reportAmbiguousServiceMethod(
+                                        declaration.id,
+                                        declaration.id.name
+                                    );
                                 }
                             });
                         }
 
                         node.specifiers.forEach((specifier) => {
                             if (specifier.exported?.type === "Identifier") {
-                                reportInvalidServiceMethod(
+                                reportAmbiguousServiceMethod(
                                     specifier.exported,
                                     specifier.exported.name
                                 );
@@ -2223,7 +2191,7 @@ export default tseslint.config(
             "local/business-data-type-location": "error",
             "local/kuzhambu-component-name": "error",
             "local/no-nested-ternary": "error",
-            "local/service-method-verb-prefix": "error",
+            "local/service-method-ambiguous-verb": "error",
             "local/service-method-input-shape": "error",
             "local/service-helper-contract-types": "error",
             "local/service-type-exposure": "error",
