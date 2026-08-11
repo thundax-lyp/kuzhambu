@@ -20,7 +20,6 @@ import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper.Qualit
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class QualityReportRepositoryImpl implements QualityReportRepository {
@@ -39,7 +38,6 @@ public class QualityReportRepositoryImpl implements QualityReportRepository {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void save(
             QualityReport report, List<QualityReportIssue> issues, List<QualityReportSourceDetail> sourceDetails) {
         QualityReportDO reportDataObject = QualityReportPersistenceAssembler.toObject(report);

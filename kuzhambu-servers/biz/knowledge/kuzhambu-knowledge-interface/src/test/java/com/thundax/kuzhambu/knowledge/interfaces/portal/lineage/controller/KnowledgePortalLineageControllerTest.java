@@ -15,7 +15,7 @@ import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasRe
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult.EmptyView;
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult.NodeView;
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult.SummaryView;
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
+import com.thundax.kuzhambu.knowledge.application.portal.service.KnowledgePortalReadApplicationService;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;

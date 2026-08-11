@@ -37,11 +37,11 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAsset
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.SancaiPortalController;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.request.SancaiPortalEntrySearchRequest;
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.ByteArrayInputStream;
@@ -127,7 +127,7 @@ class SancaiPortalControllerTest {
         SancaiPortalEntrySearchRequest request = new SancaiPortalEntrySearchRequest();
         request.setId(3002L);
 
-        assertThrows(BizException.class, () -> controller.getEntry(request));
+        assertThrows(ApiException.class, () -> controller.getEntry(request));
     }
 
     @Test

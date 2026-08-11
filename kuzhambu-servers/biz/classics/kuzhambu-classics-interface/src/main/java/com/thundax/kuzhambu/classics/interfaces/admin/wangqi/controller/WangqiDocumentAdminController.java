@@ -26,6 +26,7 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import io.swagger.annotations.ApiImplicitParam;
@@ -97,7 +98,7 @@ public class WangqiDocumentAdminController {
         Long id = requireParameter(request == null ? null : request.getId(), "id");
         WangqiDocument document = service.get(WangqiDocumentIdCodec.toDomain(id));
         if (document == null) {
-            throw new BizException("王圻文档不存在");
+            throw new ApiException("王圻文档不存在");
         }
         return WangqiDocumentInterfaceAssembler.toResponse(document);
     }
@@ -192,7 +193,7 @@ public class WangqiDocumentAdminController {
                     service.changeSourceFile(WangqiDocumentInterfaceAssembler.toSourceFileCommand(id, file));
             return WangqiDocumentInterfaceAssembler.toSourceFileResponse(result);
         } catch (IOException exception) {
-            throw new BizException("王圻原始文件上传失败：" + exception.getMessage());
+            throw new ApiException("CLASSICS_UPLOAD_FAILED", "classics.upload.failed", "王圻原始文件上传失败", exception);
         }
     }
 
@@ -308,7 +309,7 @@ public class WangqiDocumentAdminController {
         if (version == null
                 || version.getContentType() != ClassicsContentType.WANGQI_DOCUMENT
                 || !ClassicsContentIdCodec.toDomain(documentId).equals(version.getContentId())) {
-            throw new BizException("王圻版本不属于当前文档");
+            throw new ApiException("王圻版本不属于当前文档");
         }
         return version;
     }

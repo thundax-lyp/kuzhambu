@@ -1,13 +1,12 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller;
 
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.workbench.service.KnowledgeGraphWorkbenchApplicationService;
-import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.assembler.KnowledgeGraphWorkbenchInterfaceAssembler;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller.request.KnowledgeGraphWorkbenchRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller.response.KnowledgeGraphWorkbenchResponses;
@@ -82,7 +81,7 @@ public class KnowledgeGraphWorkbenchController {
     @HasPermission("knowledge:graph:edit")
     @SysLogger(value = "按稿件抽取图谱")
     @PostMapping("manuscript/extract")
-    public GraphExtractionResponses.TaskResponse extractManuscript(
+    public KnowledgeGraphWorkbenchResponses.TaskResponse extractManuscript(
             @Valid @RequestBody KnowledgeGraphWorkbenchRequests.ManuscriptExtractRequest request) {
         return KnowledgeGraphWorkbenchInterfaceAssembler.toTaskResponse(workbenchApplicationService.extractManuscript(
                 request == null ? null : request.getSourceContentType(),
@@ -130,12 +129,12 @@ public class KnowledgeGraphWorkbenchController {
     private Long currentActorId() {
         String subjectId = KuzhambuContextHolder.currentSubjectId();
         if (subjectId == null || subjectId.trim().isEmpty()) {
-            throw new BizException("Current subject is required");
+            throw new ApiException("Current subject is required");
         }
         try {
             return Long.valueOf(subjectId);
         } catch (NumberFormatException ex) {
-            throw new BizException("Current subject is not a numeric user id");
+            throw new ApiException("Current subject is not a numeric user id");
         }
     }
 }

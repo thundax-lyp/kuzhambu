@@ -41,14 +41,13 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_INFRA_NO_INTERFACE_DEPENDENCY`：`infra` 不得依赖任何业务域 `interfaces` 或 `starter`。
 - `SERVERS_NO_STARTER_DEPENDENCY_OUTSIDE_STARTER`：除 `starter` 模块外，任何模块不得依赖 `kuzhambu-admin-starter` 或 `kuzhambu-portal-starter`。
 - `SERVERS_CROSS_DOMAIN_NO_INFRA_DEPENDENCY`：跨业务域依赖不得指向对端 `infra`、`infra.mapper`、`infra.dataobject` 或 `infra.repository.impl`。
-- `SERVERS_STARTER_NO_BUSINESS_CODE`：`starter` 不承载业务规则、业务查询聚合、持久化实现或 HTTP 业务入口。
 
 ### Naming And File Ownership
 
 - `SERVERS_NAMING_CONTROLLER`：HTTP 入口类必须以 `Controller` 结尾，并位于 `interfaces/<entry>/<subdomain>/controller/` 包。
 - `SERVERS_NAMING_INTERFACE_ASSEMBLER`：接口层协议转换类必须以 `InterfaceAssembler` 结尾，并位于 `interfaces/<entry>/<subdomain>/assembler/` 包。
 - `SERVERS_NAMING_REQUEST_RESPONSE`：接口层请求模型必须以 `Request` 结尾并位于 `request/` 包；响应模型必须以 `Response` 结尾并位于 `response/` 包。
-- `SERVERS_NAMING_APPLICATION_SERVICE`：用例编排入口必须以 `ApplicationService` 结尾；接口位于 `application/{domain}/service/`，实现位于 `application/{domain}/service/impl/`；接口和实现均不得命名为通用 `Manager`、`Processor` 或 `Handler`。
+- `SERVERS_NAMING_APPLICATION_SERVICE`：用例编排入口必须以 `ApplicationService` 结尾；接口位于 `application/{subdomain}/service/`，实现位于对应的 `application/{subdomain}/service/impl/`。该路径是 application service 边界检查的唯一识别范围；接口和实现均不得命名为通用 `Manager`、`Processor` 或 `Handler`。
 - `SERVERS_APPLICATION_SERVICE_SUFFIX_ONLY`：业务域 `application` 层内以 `Service` 或 `ServiceImpl` 结尾的类型必须分别以 `ApplicationService` 或 `ApplicationServiceImpl` 结尾，内部辅助组件不得使用泛化 `*Service` 命名。
 - `SERVERS_IMPL_CONTRACT`：生产代码中命名为 `XxxImpl` 的类必须实现对应的 `Xxx` 接口；生产代码不得在字段、构造器参数、方法参数或泛型依赖参数中直接使用 `XxxImpl` 类型。仅内部协作组件不得使用 `Impl` 后缀；存量违规只能通过架构测试 allowlist 暂存，并且 allowlist 只能收缩。
 - `SERVERS_NAMING_APPLICATION_INPUT`：应用层写入输入模型必须以 `Command` 结尾；读取输入模型必须以 `Query` 结尾；分页输入统一使用 common-core 的全局 `PageQuery`，业务域不得定义 `XxxPageQuery` / `PageXxxQuery`。
@@ -57,7 +56,6 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_APPLICATION_COMMAND_PACKAGE`：`*-application` 模块中的 `*Command` 必须位于 `application/**/command/`。
 - `SERVERS_APPLICATION_QUERY_PACKAGE`：`*-application` 模块中的 `*Query` 必须位于 `application/**/query/`。
 - `SERVERS_APPLICATION_RESULT_PACKAGE`：`*-application` 模块中的 `*Result` 必须位于 `application/**/result/`。
-- `SERVERS_NAMING_APPLICATION_OUTPUT`：应用层非 domain entity 输出模型必须以 `Result`、`DTO` 或 `PageResult` 结尾；默认用例输出优先使用本域 domain entity 或强类型值对象，`*Result` 只用于不存在自然 domain entity 的复合结果、跨资源聚合结果或明确的非领域输出，`*DTO` 只用于稳定通用传输对象。
 - `SERVERS_NAMING_DOMAIN_ID`：强类型业务 ID 必须以 `Id` 结尾，必须是 `final class`，必须继承 common 基础 ID 类型，并位于对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`。
 - `SERVERS_VALUE_OBJECT_ID_NO_STATIC_METHODS`：`valueobject` 包下以 `Id` 结尾的值对象不得声明 `static` 方法；基础类型创建、nullable 处理和字符串转换必须放入对应 `*Codec`；每个包含 `valueobject/*Id.java` 的 domain 模块必须在架构测试中挂载该 source scan。
 - `SERVERS_VALUE_OBJECT_DOMAIN_ONLY`：`valueobject` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`；`infra`、`application`、`interfaces` 不得定义 `valueobject` 包。
@@ -116,14 +114,12 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_ANNOTATION_REST_CLASS_TAG_REQUIRED`：接口服务 REST API 入口类必须声明 OpenAPI 3 `@Tag`，且必须填写 `description` 说明业务子域。
 - `SERVERS_ANNOTATION_REST_CLASS_SYS_LOGGER_REQUIRED`：后台 REST API 入口类必须声明 `@SysLogger` 或显式 `@IgnoreSysLogger`。
 - `SERVERS_ANNOTATION_REST_CLASS_TAG_BUSINESS_NAME`：`@Tag` 必须使用稳定业务分组名，不得使用数字排序前缀。
-- `SERVERS_ANNOTATION_REST_METHOD_MAPPING_REQUIRED`：REST API 入口类中的公开 HTTP 方法必须且只能声明一个方法级 HTTP 映射；JSON 请求必须使用 `@PostMapping`，非 JSON 读取必须使用 `@GetMapping`；不得使用方法级 `@RequestMapping`、`@PutMapping`、`@DeleteMapping` 或 `@PatchMapping`。
+- `SERVERS_ANNOTATION_REST_METHOD_MAPPING_REQUIRED`：REST API 入口类中的公开 HTTP 方法必须且只能声明一个方法级 HTTP 映射；不得使用方法级 `@RequestMapping`、`@PutMapping`、`@DeleteMapping` 或 `@PatchMapping`。
 - `SERVERS_ANNOTATION_REST_ACTION_AMBIGUOUS_VERB_FORBIDDEN`：REST API 入口类中的公开 HTTP 方法名，以及 `@PostMapping` 方法级路径最后一个非路径变量片段，不得使用模糊动作 `save`、`do`、`handle`、`process`、`operate`、`action`、`manage`。该规则由 ArchUnit 稳定门禁；新增和更新应使用能表达业务规则的动作，不得以泛化动词掩盖实际语义。
 - `SERVERS_ANNOTATION_REST_METHOD_OPERATION_REQUIRED`：REST API 入口类中的公开 HTTP 方法必须声明 OpenAPI 3 `@Operation`；认证公开入口和文件流入口也必须声明。
 - `SERVERS_ANNOTATION_REST_METHOD_ACCESS_MARK_REQUIRED`：声明 `@Operation` 的 REST API 方法必须由方法级或类级 `@HasPermission` / `@PublicApi` 表达访问口径；公开认证入口必须使用 `@PublicApi`。
 - `SERVERS_ANNOTATION_REST_METHOD_DOC_AND_LOG_REQUIRED`：后台 REST API 方法必须声明 `@ApiImplicitParams`，并声明 `@SysLogger` 或显式 `@IgnoreSysLogger`。
-- `SERVERS_ANNOTATION_REST_METHOD_JSON_POST_REQUIRED`：REST API 方法中使用 `@RequestBody` 或返回 JSON 包装的接口必须使用 `@PostMapping`。
-- `SERVERS_ANNOTATION_REST_METHOD_POST_SHAPE_ALLOWED`：`@PostMapping` 方法入参允许为空、单个 `@Valid @RequestBody *Request`、单个 `@Valid @RequestBody List<*Request>` 或 `multipart/form-data` 上传参数；出参允许 `void`、`Boolean`、`String`、`Long`、`Integer`、`SseEmitter`、`*Response`、`List<*Response>` 或 `PageResponse<*Response>`。
-- `SERVERS_ANNOTATION_REST_METHOD_POST_JSON_REQUIRED`：全局 API 接口默认必须使用 `HTTP POST + JSON body`；未声明 `@PostJsonApiExempt(reason = "...")` 的方法必须使用 `@PostMapping`，不得使用 `@PathVariable`、`@RequestParam` 或 `multipart/form-data` 参数。验证码、文件直链、SSE 等非 JSON 传输接口允许豁免，但必须在 `reason` 中写明原因。
+- `SERVERS_ANNOTATION_REST_METHOD_POST_JSON_DEFAULT`：全局 API 接口默认必须使用 `HTTP POST + JSON body`：方法必须使用 `@PostMapping`，入参允许为空、单个 `@Valid @RequestBody *Request` 或单个 `@Valid @RequestBody List<*Request>`，且不得使用 `@PathVariable` 或 `@RequestParam`。验证码、头像与文件内容直链、`multipart/form-data` 上传、SSE 等非 JSON 传输允许使用 `@PostJsonApiExempt(reason = "...")` 豁免；豁免必须填写具体传输原因。出参允许 `void`、`Boolean`、`String`、`Long`、`Integer`、`SseEmitter`、`*Response`、`List<*Response>` 或 `PageResponse<*Response>`。
 - `SERVERS_ANNOTATION_REST_METHOD_GET_NON_JSON_REQUIRED`：`@GetMapping` 只能用于验证码、头像、文件内容等非 JSON 响应，方法返回类型必须为 `void`；声明 `@PostJsonApiExempt(reason = "...")` 的 SSE 事件流可返回 `SseEmitter`。
 - `SERVERS_ANNOTATION_REQUEST_BODY_VALID_REQUIRED`：REST API 方法中使用 `@RequestBody` 的 `*Request` 参数必须同时声明 `@Valid`。
 - `SERVERS_ANNOTATION_REQUEST_MODEL_CLASS_REQUIRED`：接口层 `request/` 包内 `*Request` 类级注解必须固定为 `@Getter`、`@Setter`、`@Schema`、`@JsonInclude(JsonInclude.Include.NON_NULL)`、`@JsonIgnoreProperties(ignoreUnknown = true)`。
@@ -132,7 +128,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 
 ### Transaction Boundary
 
-- `SERVERS_TRANSACTION_APPLICATION_SERVICE_ONLY`：`@Transactional` 只能标注在 `*ApplicationService` 类或其公开用例方法上。
+- `SERVERS_TRANSACTION_APPLICATION_SERVICE_ONLY`：全 servers 生产源码中的 `@Transactional` 只能标注在 application 层 `*ApplicationServiceImpl` 或 `*FacadeImpl` 类，或其公开用例方法上；interface、domain、infra、starter 和 common 模块不得声明该注解。
 
 ### Exception Boundary
 
@@ -150,7 +146,6 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 
 - `SERVERS_STARTER_APPLICATION_CLASS_ONLY`：`starter` 模块中 `*Application` 启动类只能负责启动、扫描范围和运行时装配，不得声明业务用例方法。
 - `SERVERS_STARTER_CONFIGURATION_PACKAGE`：`starter` 运行时专属配置必须位于 `com.thundax.kuzhambu.starter.admin` 或 `com.thundax.kuzhambu.starter.portal` 包下。
-- `SERVERS_CONFIGURATION_NO_BUSINESS_RULE`：`*Configuration`、`*Properties` 类不得承载业务判断、业务查询或业务状态变更。
 - `SERVERS_SPRING_BEAN_SINGLE_CONSTRUCTOR`：直接标注 `@Component`、`@Service`、`@Repository`、`@Controller`、`@RestController` 或 `@Configuration` 的 Spring 管理类必须有且仅有一个构造器；不得在生产 Bean 中保留简化构造器或测试专用构造器。
 
 ## Review Rules
@@ -164,3 +159,6 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_REVIEW_SPRING_META_BEAN_SINGLE_CONSTRUCTOR`：通过派生注解、组合注解或其他 Spring 语义间接注册的类级 Bean 也应有且仅有一个构造器；如框架绑定类或特殊装配方式存在约束，按框架约定单独评审。
 - `SERVERS_REVIEW_TEST_CONSTRUCTION_EXPLICIT`：当生产类收敛为单构造器后，测试应通过 mock、stub 或测试工厂显式补齐依赖，不得为了测试便利重新引入第二构造器。
 - `SERVERS_REVIEW_ACTION_BUSINESS_SEMANTICS`：Service、Controller 方法与 action URL 应使用准确表达业务规则和操作语义的动作；不要求跨层使用同一个动词，也不使用封闭允许词表。评审应结合调用语义、权限和状态变化判断名称是否准确。
+- `SERVERS_REVIEW_APPLICATION_OUTPUT_SEMANTICS`：ApplicationService 默认应返回本域 domain entity 或强类型值对象；`*Result` 仅用于不存在自然 domain entity 的复合结果、跨资源聚合结果或明确的非领域输出，`*DTO` 仅用于稳定通用传输对象。该选择依赖业务模型语义，由评审确认。
+- `SERVERS_REVIEW_CONFIGURATION_BUSINESS_BOUNDARY`：`*Configuration`、`*Properties` 不应承载业务判断、业务查询或业务状态变更。配置绑定、默认值与框架装配边界需结合运行时语义评审，不以控制流关键字作硬门禁。
+- `SERVERS_REVIEW_STARTER_BUSINESS_BOUNDARY`：`starter` 应只承载启动、扫描范围和运行时装配，不应承载业务规则、业务查询聚合、持久化实现或 HTTP 业务入口。是否构成业务聚合需结合调用链和职责语义评审。

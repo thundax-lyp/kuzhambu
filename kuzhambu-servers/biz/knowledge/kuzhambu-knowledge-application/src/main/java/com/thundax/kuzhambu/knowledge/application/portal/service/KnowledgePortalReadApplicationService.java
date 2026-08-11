@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.portal;
+package com.thundax.kuzhambu.knowledge.application.portal.service;
 
 import com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQuery;
 import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult;

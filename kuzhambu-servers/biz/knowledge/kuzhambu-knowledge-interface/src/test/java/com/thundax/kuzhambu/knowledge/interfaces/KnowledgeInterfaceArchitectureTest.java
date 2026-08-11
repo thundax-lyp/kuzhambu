@@ -5,7 +5,9 @@ import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRu
 import com.thundax.kuzhambu.common.test.architecture.ApiSurfaceArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ArchitectureRuleAllowance;
 import com.thundax.kuzhambu.common.test.architecture.BoundaryAssemblerNullnessAllowances;
+import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModelAnnotationArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
@@ -19,27 +21,42 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
     private static final String BASE_PACKAGE = "com.thundax.kuzhambu.knowledge";
 
     @Test
-    void interfaceSpringBeansShouldDeclareSingleConstructor() {
+    void interfaceSpringBeansShouldDeclareSingleConstructor() throws Exception {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".interfaces");
 
         ModelAnnotationArchitectureRuleSupport.assertRequestClassAnnotationsRequired(
                 classes, BASE_PACKAGE, legacyRequestAnnotationAllowances());
         ModelAnnotationArchitectureRuleSupport.assertResponseClassAnnotationsRequired(
                 classes, BASE_PACKAGE, legacyResponseAnnotationAllowances());
+        ModuleAndDependencyArchitectureRuleSupport.assertInterfaceLayerBoundary(classes, BASE_PACKAGE);
+        ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "knowledge");
+        InterfaceBoundaryArchitectureRuleSupport.assertInterfaceNoPersistenceDependency(classes, BASE_PACKAGE);
+        InterfaceBoundaryArchitectureRuleSupport.assertInterfaceOnlyCallsApplicationServices(classes, BASE_PACKAGE);
+        InterfaceBoundaryArchitectureRuleSupport.assertInterfaceProtocolModelsStayInSameSubdomain(
+                Path.of("src/main/java"));
+        InterfaceBoundaryArchitectureRuleSupport.assertInterfaceProtocolsDoNotExposeDomainModels(
+                Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
     }
 
     @Test
     void interfaceApiAnnotationsShouldKeepContractShape() throws Exception {
         ApiAnnotationArchitectureRuleSupport.assertControllerActionsAvoidAmbiguousVerbs(Path.of("src/main/java"));
+        ApiAnnotationArchitectureRuleSupport.assertAdminControllersDeclareRequiredClassAnnotations(
+                Path.of("src/main/java"));
+        ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(
+                Path.of("src/main/java"));
+        ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
                 Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertApiModelsDoNotExposePriority(Path.of("src/main/java"));
         ApiSurfaceArchitectureRuleSupport.assertSortRequestsUseOrderedIdsOnly(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertBoundaryAssemblerPublicMethodsUseNonNullContracts(
                 Collections.singletonList(Path.of("src/main/java")),
-                BoundaryAssemblerNullnessAllowances.legacyClasses(
-                        "com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.assembler.KnowledgeGraphWorkbenchInterfaceAssembler"));
+                BoundaryAssemblerNullnessAllowances.legacyClasses());
     }
 
     private static List<ArchitectureRuleAllowance> legacyRequestAnnotationAllowances() {

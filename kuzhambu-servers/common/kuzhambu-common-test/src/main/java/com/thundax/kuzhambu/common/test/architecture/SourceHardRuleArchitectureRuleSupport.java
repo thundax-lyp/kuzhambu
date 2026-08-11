@@ -6,11 +6,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,10 +28,9 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private static final Pattern ILLEGAL_ARGUMENT_EXCEPTION_VARIABLE_PATTERN =
             Pattern.compile("(?:java\\.lang\\.)?IllegalArgumentException\\s+(\\w+)\\b");
     private static final Pattern THROW_VARIABLE_PATTERN = Pattern.compile("\\bthrow\\s+(\\w+)\\s*;");
-    private static final Pattern CONFIGURATION_PROPERTIES_ANNOTATION_PATTERN =
-            Pattern.compile("@ConfigurationProperties\\s*\\([^)]*\\)");
-    private static final Pattern TYPE_BODY_PATTERN = Pattern.compile("\\b(?:class|record)\\s+\\w+[^\\{]*\\{");
-    private static final Pattern BUSINESS_CONTROL_FLOW_PATTERN = Pattern.compile("\\b(?:if|switch|for|while|throw)\\b");
+    private static final Pattern DOMAIN_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("DomainException");
+    private static final Pattern BIZ_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("BizException");
+    private static final Pattern API_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("ApiException");
     private static final Pattern COMMENTS_AND_LITERALS_PATTERN =
             Pattern.compile("(?s)/\\*.*?\\*/|//[^\\r\\n]*|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'");
 
@@ -62,42 +58,11 @@ public final class SourceHardRuleArchitectureRuleSupport {
                 "Application and repository implementation sources must not throw IllegalArgumentException");
     }
 
-    public static void assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(Path sourceRoot)
-            throws IOException {
-        assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(sourceRoot, List.of());
-    }
-
-    public static void assertConfigurationPropertiesDoNotDeclareBusinessControlFlow(
-            Path sourceRoot, Collection<ArchitectureRuleAllowance> legacyAllowances) throws IOException {
-        Path repositoryRoot = ArchitectureSourceSupport.repositoryRoot();
-        Map<String, ArchitectureRuleAllowance> allowances = exactAllowances(legacyAllowances);
-        Set<String> matchedAllowances = new HashSet<String>();
-        List<String> violations = new ArrayList<String>();
-
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
-            paths.filter(Files::isRegularFile)
-                    .filter(path -> path.getFileName().toString().endsWith(".java"))
-                    .filter(SourceHardRuleArchitectureRuleSupport::isProductionJavaSource)
-                    .filter(SourceHardRuleArchitectureRuleSupport::hasConfigurationPropertiesBusinessControlFlow)
-                    .map(path -> ArchitectureSourceSupport.repositoryPath(repositoryRoot, path))
-                    .forEach(path -> {
-                        String key = configurationPropertiesBusinessControlFlowAllowanceKey(path);
-                        if (allowances.containsKey(key)) {
-                            matchedAllowances.add(key);
-                            return;
-                        }
-                        violations.add(path);
-                    });
-        }
-
-        Set<String> staleAllowances = new HashSet<String>(allowances.keySet());
-        staleAllowances.removeAll(matchedAllowances);
-        assertTrue(
-                "ConfigurationProperties sources must not declare business control flow. Violations: "
-                        + violations
-                        + ". Stale allowances: "
-                        + staleAllowances,
-                violations.isEmpty() && staleAllowances.isEmpty());
+    public static void assertBusinessLayersUseBoundedExceptionTypes(Path sourceRoot) throws IOException {
+        assertNoSourceMatches(
+                sourceRoot,
+                SourceHardRuleArchitectureRuleSupport::hasExceptionBoundaryViolation,
+                "Business production sources must throw DomainException only from domain, BizException only from application, and ApiException only from interfaces");
     }
 
     private static void assertNoSourceMatches(Path sourceRoot, Pattern pattern, String message) throws IOException {
@@ -130,67 +95,8 @@ public final class SourceHardRuleArchitectureRuleSupport {
         }
     }
 
-    private static boolean hasConfigurationPropertiesBusinessControlFlow(Path path) {
-        try {
-            String source = withoutCommentsAndLiterals(Files.readString(path));
-            Matcher annotationMatcher = CONFIGURATION_PROPERTIES_ANNOTATION_PATTERN.matcher(source);
-            while (annotationMatcher.find()) {
-                Matcher typeMatcher = TYPE_BODY_PATTERN.matcher(source);
-                typeMatcher.region(annotationMatcher.end(), source.length());
-                if (!typeMatcher.find()) {
-                    continue;
-                }
-                int bodyStart = typeMatcher.end() - 1;
-                int bodyEnd = matchingClosingBrace(source, bodyStart);
-                if (bodyEnd >= 0
-                        && BUSINESS_CONTROL_FLOW_PATTERN
-                                .matcher(source.substring(bodyStart, bodyEnd + 1))
-                                .find()) {
-                    return true;
-                }
-            }
-            return false;
-        } catch (IOException exception) {
-            throw new IllegalStateException("Failed to read source file " + path, exception);
-        }
-    }
-
-    private static int matchingClosingBrace(String source, int bodyStart) {
-        int depth = 0;
-        for (int index = bodyStart; index < source.length(); index++) {
-            char character = source.charAt(index);
-            if (character == '{') {
-                depth++;
-            } else if (character == '}' && --depth == 0) {
-                return index;
-            }
-        }
-        return -1;
-    }
-
     private static boolean isProductionJavaSource(Path path) {
         return ArchitectureSourceSupport.normalizePath(path.toAbsolutePath()).contains("/src/main/java/");
-    }
-
-    public static String configurationPropertiesBusinessControlFlowAllowanceKey(String repositoryPath) {
-        return "CONFIGURATION_PROPERTIES_BUSINESS_CONTROL_FLOW:" + repositoryPath;
-    }
-
-    private static Map<String, ArchitectureRuleAllowance> exactAllowances(
-            Collection<ArchitectureRuleAllowance> legacyAllowances) {
-        Map<String, ArchitectureRuleAllowance> allowances = new HashMap<String, ArchitectureRuleAllowance>();
-        for (ArchitectureRuleAllowance allowance : legacyAllowances) {
-            if (allowance.key().contains("*")) {
-                throw new IllegalArgumentException(
-                        "ConfigurationProperties business-control-flow allowances must use exact source paths: "
-                                + allowance.key());
-            }
-            if (allowances.put(allowance.key(), allowance) != null) {
-                throw new IllegalArgumentException(
-                        "Duplicate ConfigurationProperties business-control-flow allowance: " + allowance.key());
-            }
-        }
-        return allowances;
     }
 
     private static boolean hasIllegalArgumentExceptionBusinessExit(Path path) {
@@ -219,10 +125,59 @@ public final class SourceHardRuleArchitectureRuleSupport {
         }
     }
 
+    private static boolean hasExceptionBoundaryViolation(Path path) {
+        try {
+            String source = withoutCommentsAndLiterals(Files.readString(path));
+            return (isBusinessLayerSource(source, "domain")
+                            && (hasExceptionExit(source, "BizException", BIZ_EXCEPTION_EXIT_PATTERN)
+                                    || hasExceptionExit(source, "ApiException", API_EXCEPTION_EXIT_PATTERN)))
+                    || (isBusinessLayerSource(source, "application")
+                            && (hasExceptionExit(source, "DomainException", DOMAIN_EXCEPTION_EXIT_PATTERN)
+                                    || hasExceptionExit(source, "ApiException", API_EXCEPTION_EXIT_PATTERN)))
+                    || (isBusinessLayerSource(source, "interfaces")
+                            && (hasExceptionExit(source, "DomainException", DOMAIN_EXCEPTION_EXIT_PATTERN)
+                                    || hasExceptionExit(source, "BizException", BIZ_EXCEPTION_EXIT_PATTERN)));
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to read source file " + path, exception);
+        }
+    }
+
     private static boolean isApplicationOrRepositoryImplementationSource(String source) {
         return source.matches(
                 "(?s)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
                         + "storage|system)\\.(?:application(?:\\.|;)|infra\\.[\\w.]+\\.repository\\.impl(?:\\.|;)).*");
+    }
+
+    private static boolean isBusinessLayerSource(String source, String layer) {
+        return source.matches(
+                "(?s)^\\s*package\\s+com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|"
+                        + "storage|system)\\."
+                        + layer
+                        + "(?:\\.|;).*");
+    }
+
+    private static Pattern exceptionExitPattern(String exceptionType) {
+        return Pattern.compile("\\bthrow\\s+new\\s+(?:(?:[A-Za-z_$][\\w$]*\\.)*)?" + exceptionType + "\\s*\\(");
+    }
+
+    private static boolean hasExceptionExit(String source, String exceptionType, Pattern directExitPattern) {
+        if (directExitPattern.matcher(source).find()) {
+            return true;
+        }
+        Pattern variablePattern =
+                Pattern.compile("\\bcatch\\s*\\(\\s*(?:(?:[A-Za-z_$][\\w$]*\\.)*)?" + exceptionType + "\\s+(\\w+)\\b");
+        Set<String> exceptionVariables = new HashSet<String>();
+        Matcher declarationMatcher = variablePattern.matcher(source);
+        while (declarationMatcher.find()) {
+            exceptionVariables.add(declarationMatcher.group(1));
+        }
+        Matcher throwMatcher = THROW_VARIABLE_PATTERN.matcher(source);
+        while (throwMatcher.find()) {
+            if (exceptionVariables.contains(throwMatcher.group(1))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String withoutCommentsAndLiterals(String source) {

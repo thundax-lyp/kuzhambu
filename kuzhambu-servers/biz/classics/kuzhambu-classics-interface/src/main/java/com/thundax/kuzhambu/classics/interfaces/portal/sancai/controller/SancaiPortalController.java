@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -160,11 +161,11 @@ public class SancaiPortalController {
 
     private SancaiEntry requirePublicEntry(SancaiEntryId entryId) {
         if (!service.isPortalReadyEntry(entryId)) {
-            throw new BizException("三才图会条目不存在或不可公开访问");
+            throw new ApiException("三才图会条目不存在或不可公开访问");
         }
         SancaiEntry entry = service.getEntry(entryId);
         if (entry == null) {
-            throw new BizException("三才图会条目不存在或不可公开访问");
+            throw new ApiException("三才图会条目不存在或不可公开访问");
         }
         return entry;
     }
