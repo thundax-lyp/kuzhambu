@@ -1,24 +1,11 @@
 package com.thundax.kuzhambu.operations.application.cleanup.command;
 
 import java.time.Instant;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class OperationsCleanupExecuteCommand {
-    private String cleanupType;
-    private Long requesterUserId;
-    private Instant requestedAt;
-    private Integer retentionDays;
-    private Integer limit;
+public record OperationsCleanupExecuteCommand(
+        String cleanupType, Long requesterUserId, Instant requestedAt, Integer retentionDays, Integer limit) {
 
     public OperationsCleanupExecuteCommand(String cleanupType, Long requesterUserId) {
-        this.cleanupType = cleanupType;
-        this.requesterUserId = requesterUserId;
+        this(cleanupType, requesterUserId, null, null, null);
     }
 }
