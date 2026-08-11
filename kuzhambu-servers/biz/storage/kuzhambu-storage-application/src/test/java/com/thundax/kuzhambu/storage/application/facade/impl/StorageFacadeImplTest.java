@@ -224,7 +224,7 @@ class StorageFacadeImplTest {
         verify(multipartUploadApplicationService).init(commandCaptor.capture());
         assertNull(commandCaptor.getValue().bucketName());
         assertNull(commandCaptor.getValue().objectKey());
-        assertNull(commandCaptor.getValue().getProviderUploadId());
+        assertNull(commandCaptor.getValue().providerUploadId());
     }
 
     @Test

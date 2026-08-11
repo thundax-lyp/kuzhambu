@@ -341,19 +341,19 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             return null;
         }
         MultipartUploadSession session = new MultipartUploadSession();
-        session.setUploadIdRef(command.getUploadId());
-        session.setOwnerRef(command.getOwnerRef());
-        session.setBusinessType(command.getBusinessType());
-        session.setOriginalFilename(command.getOriginalFilename());
-        session.setMimeTypeRef(command.getMimeType());
-        session.setBucketNameRef(command.getBucketName());
-        session.setObjectKeyRef(command.getObjectKey());
+        session.setUploadIdRef(command.uploadId());
+        session.setOwnerRef(command.ownerRef());
+        session.setBusinessType(command.businessType());
+        session.setOriginalFilename(command.originalFilename());
+        session.setMimeTypeRef(command.mimeType());
+        session.setBucketNameRef(command.bucketName());
+        session.setObjectKeyRef(command.objectKey());
         session.setProviderUploadId(
-                command.getProviderUploadId() == null
+                command.providerUploadId() == null
                         ? null
-                        : command.getProviderUploadId().value());
-        session.setTotalSizeRef(command.getTotalSize());
-        session.setPartSizeRef(command.getPartSize());
+                        : command.providerUploadId().value());
+        session.setTotalSizeRef(command.totalSize());
+        session.setPartSizeRef(command.partSize());
         return session;
     }
 
