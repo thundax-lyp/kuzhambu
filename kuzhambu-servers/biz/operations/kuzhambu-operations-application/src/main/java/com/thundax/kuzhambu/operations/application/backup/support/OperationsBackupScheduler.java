@@ -25,7 +25,7 @@ public class OperationsBackupScheduler implements ApplicationListener<Applicatio
         if (!properties.isEnabled() || !properties.isStartupEnabled()) {
             return;
         }
-        backupSchedulerApplicationService.executeScheduledBackup();
+        backupSchedulerApplicationService.runScheduledBackup();
     }
 
     @Scheduled(cron = "${kuzhambu.operations.backup.schedule.daily-cron:0 0 2 * * ?}")
@@ -33,6 +33,6 @@ public class OperationsBackupScheduler implements ApplicationListener<Applicatio
         if (!properties.isEnabled()) {
             return;
         }
-        backupSchedulerApplicationService.executeScheduledBackup();
+        backupSchedulerApplicationService.runScheduledBackup();
     }
 }

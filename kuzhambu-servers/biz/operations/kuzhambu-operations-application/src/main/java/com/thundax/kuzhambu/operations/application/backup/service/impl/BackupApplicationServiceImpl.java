@@ -71,7 +71,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService, B
     }
 
     @Override
-    public OperationsBackupExecuteResult executeScheduledBackup() {
+    public OperationsBackupExecuteResult runScheduledBackup() {
         return executeBackup(BackupType.AUTO, null, true);
     }
 

@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.task.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -44,7 +44,7 @@ class OperationsTaskContractTest {
         var json = OBJECT_MAPPER.valueToTree(response);
 
         assertEquals("2026-06-18T01:02:03.456Z", json.get("startedAt").asText());
-        assertTrue(json.get("completedAt").isNull());
+        assertFalse(json.has("completedAt"));
         assertEquals("2026-06-18T02:03:05.678Z", json.get("snapshotAt").asText());
     }
 }

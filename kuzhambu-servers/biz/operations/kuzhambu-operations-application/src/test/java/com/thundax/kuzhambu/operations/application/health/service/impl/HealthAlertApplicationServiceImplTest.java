@@ -34,7 +34,7 @@ class HealthAlertApplicationServiceImplTest {
 
         verify(backupApplicationService)
                 .execute(argThat((OperationsBackupExecuteCommand command) ->
-                        command != null && Long.valueOf(1001L).equals(command.getRequesterUserId())));
+                        command != null && Long.valueOf(1001L).equals(command.requesterUserId())));
         verify(repository).update(alert);
         assertEquals("RECOVERED", alert.getAlertStatus());
         assertNull(alert.getFailureReason());
@@ -55,8 +55,8 @@ class HealthAlertApplicationServiceImplTest {
 
         verify(restoreApplicationService)
                 .execute(argThat((OperationsRestoreExecuteCommand command) -> command != null
-                        && command.getBackupId().value().equals(9001L)
-                        && Long.valueOf(1001L).equals(command.getRequesterUserId())));
+                        && command.backupId().value().equals(9001L)
+                        && Long.valueOf(1001L).equals(command.requesterUserId())));
         verify(repository).update(alert);
         assertEquals("RECOVERED", alert.getAlertStatus());
     }

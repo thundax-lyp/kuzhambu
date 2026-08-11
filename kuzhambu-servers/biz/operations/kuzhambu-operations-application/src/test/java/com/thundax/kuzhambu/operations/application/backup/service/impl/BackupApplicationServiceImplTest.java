@@ -56,7 +56,7 @@ class BackupApplicationServiceImplTest {
         BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(
                 repository, new SuccessfulBackupScriptExecutor(), new OperationsBackupExecutionGuard());
 
-        OperationsBackupExecuteResult result = service.executeScheduledBackup();
+        OperationsBackupExecuteResult result = service.runScheduledBackup();
         BackupRecord record = repository.getById(result.getBackupId());
 
         assertNotNull(result.getBackupId());
@@ -72,7 +72,7 @@ class BackupApplicationServiceImplTest {
         BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(
                 repository, new FailingBackupScriptExecutor(), new OperationsBackupExecutionGuard(), alertStrategy);
 
-        OperationsBackupExecuteResult result = service.executeScheduledBackup();
+        OperationsBackupExecuteResult result = service.runScheduledBackup();
 
         assertEquals("AUTO", result.getBackupType());
         assertEquals("FAILED", result.getBackupStatus());
@@ -88,7 +88,7 @@ class BackupApplicationServiceImplTest {
         guard.tryEnterRestore();
         BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(repository, scriptExecutor, guard);
 
-        OperationsBackupExecuteResult result = service.executeScheduledBackup();
+        OperationsBackupExecuteResult result = service.runScheduledBackup();
 
         assertEquals("AUTO", result.getBackupType());
         assertEquals("FAILED", result.getBackupStatus());

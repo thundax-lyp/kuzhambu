@@ -80,7 +80,7 @@ class OperationsBackupSchedulerTest {
         }
 
         @Override
-        public OperationsBackupExecuteResult executeScheduledBackup() {
+        public OperationsBackupExecuteResult runScheduledBackup() {
             autoBackupCount++;
             return null;
         }

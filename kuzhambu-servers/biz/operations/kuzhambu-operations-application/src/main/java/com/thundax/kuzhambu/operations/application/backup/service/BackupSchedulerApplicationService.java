@@ -4,5 +4,5 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 
 public interface BackupSchedulerApplicationService {
 
-    OperationsBackupExecuteResult executeScheduledBackup();
+    OperationsBackupExecuteResult runScheduledBackup();
 }
