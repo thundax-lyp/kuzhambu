@@ -22,7 +22,10 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeReq
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatChoice;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionMessage;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
@@ -209,6 +212,54 @@ class KnowledgeQaApplicationServiceImplTest {
         verify(aiFacade)
                 .streamDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class), any(DiscoveryAiStreamHandler.class));
         verify(knowledgeBaseClient, never()).chatStream(any(KnowledgeChatRequest.class), any());
+    }
+
+    @Test
+    void chatCompletionStreamShouldFallbackToNonStreamProviderCall() {
+        KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
+        QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
+        QaMessageRepository messageRepository = mock(QaMessageRepository.class);
+        QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
+        DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
+        KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
+                knowledgeBaseClient,
+                mock(ClassicsFacade.class),
+                mock(AiFacade.class),
+                mock(QaKnowledgeSyncItemRepository.class),
+                sessionRepository,
+                messageRepository,
+                mock(QaSourceRepository.class),
+                traceRepository,
+                new QaSourceAssembler(),
+                new QaTraceAssembler(),
+                enhancementProvider);
+        when(sessionRepository.getBySessionId(sessionId(5001L))).thenReturn(openSession());
+        when(messageRepository.save(any(QaMessage.class))).thenReturn(messageId(6001L), messageId(6002L));
+        when(enhancementProvider.enhance("什么是三才？"))
+                .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
+                        null, List.of()));
+        when(knowledgeBaseClient.chatStream(any(KnowledgeChatRequest.class), any()))
+                .thenThrow(new IllegalStateException("stream transport failed"));
+        when(knowledgeBaseClient.chat(any(KnowledgeChatRequest.class)))
+                .thenReturn(new KnowledgeChatResult(
+                        "chat-1",
+                        "chat.completion",
+                        1L,
+                        "kuzhambu-qa",
+                        List.of(new KnowledgeChatChoice(0, new KnowledgeChatMessage("assistant", "三才是天地人。"), "stop")),
+                        null,
+                        List.of(),
+                        Map.of()));
+        when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6201L);
+        List<String> deltas = new java.util.ArrayList<>();
+
+        ChatCompletionResult result = service.chatCompletionStream(command(), deltas::add);
+
+        assertEquals("SUCCEEDED", result.getAnswerStatus());
+        assertEquals(List.of("三才是天地人。"), deltas);
+        ArgumentCaptor<KnowledgeChatRequest> requestCaptor = ArgumentCaptor.forClass(KnowledgeChatRequest.class);
+        verify(knowledgeBaseClient).chat(requestCaptor.capture());
+        assertFalse(requestCaptor.getValue().stream());
     }
 
     @Test

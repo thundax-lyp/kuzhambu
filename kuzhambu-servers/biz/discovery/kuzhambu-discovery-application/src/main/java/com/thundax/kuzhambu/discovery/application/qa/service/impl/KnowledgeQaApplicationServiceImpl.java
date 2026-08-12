@@ -336,8 +336,18 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         try {
             chatResult = knowledgeBaseClient.chatStream(providerRequest, streamHandler::onDelta);
         } catch (Exception ex) {
-            failureReason = DEFAULT_FAILURE_REASON;
             providerFailureReason = StringUtils.defaultIfBlank(ex.getMessage(), TRACE_FAILURE_REASON);
+            try {
+                chatResult = knowledgeBaseClient.chat(toNonStreamRequest(providerRequest));
+                String fallbackAnswer = resolveAnswer(chatResult.choices());
+                if (StringUtils.isNotBlank(fallbackAnswer)) {
+                    streamHandler.onDelta(fallbackAnswer);
+                }
+            } catch (Exception fallbackEx) {
+                failureReason = DEFAULT_FAILURE_REASON;
+                providerFailureReason = providerFailureReason + "; non-stream fallback failed: "
+                        + StringUtils.defaultIfBlank(fallbackEx.getMessage(), TRACE_FAILURE_REASON);
+            }
         } finally {
             session.setLastMessageAt(Instant.now());
             qaSessionRepository.update(session);
@@ -431,6 +441,11 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 sourcesToResult(sourceEntities),
                 toUsageResult(chatResult),
                 chatResult.raw());
+    }
+
+    private KnowledgeChatRequest toNonStreamRequest(KnowledgeChatRequest request) {
+        return new KnowledgeChatRequest(
+                request.model(), request.messages(), false, request.metadata(), request.options());
     }
 
     DiscoveryAiFacadeRequest buildSingleDocumentAiRequest(
