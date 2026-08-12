@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Repository;
 public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepository {
 
     private final LongTaskSnapshotMapper mapper;
+    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public LongTaskSnapshotRepositoryImpl(LongTaskSnapshotMapper mapper) {
         this.mapper = mapper;
@@ -50,6 +52,9 @@ public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepositor
     @Override
     public LongTaskSnapshotId insert(LongTaskSnapshot snapshot) {
         LongTaskSnapshotDO dataObject = LongTaskSnapshotPersistenceAssembler.toObject(snapshot);
+        if (dataObject.getSnapshotId() == null) {
+            dataObject.setSnapshotId(idGenerator.nextId().value());
+        }
         mapper.insert(dataObject);
         return LongTaskSnapshotIdCodec.toDomain(dataObject.getSnapshotId());
     }

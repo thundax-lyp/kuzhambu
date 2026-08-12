@@ -54,13 +54,27 @@ class RestoreRepositoryImplTest {
     void insertShouldPersistRestoreModeAndWriteBlockTimes() {
         RestoreMapper mapper = mock(RestoreMapper.class);
         RestoreRepositoryImpl repository = new RestoreRepositoryImpl(mapper);
-        RestoreRecord record = domainRecord(RestoreMode.DRILL.value());
+        RestoreRecord source = domainRecord(RestoreMode.DRILL.value());
+        RestoreRecord record = new RestoreRecord(
+                null,
+                source.getBackupId(),
+                source.getPreRestoreBackupId(),
+                source.getRestoreMode(),
+                source.getRestoreStatus(),
+                source.getWriteBlockEnabled(),
+                source.getWriteBlockStartedAt(),
+                source.getWriteBlockReleasedAt(),
+                source.getFailureReason(),
+                source.getRequesterUserId(),
+                source.getStartedAt(),
+                source.getCompletedAt());
 
         repository.insert(record);
 
         ArgumentCaptor<RestoreDO> captor = ArgumentCaptor.forClass(RestoreDO.class);
         verify(mapper).insert(captor.capture());
         RestoreDO dataObject = captor.getValue();
+        assertNotNull(dataObject.getRestoreId());
         assertEquals(RestoreMode.DRILL.value(), dataObject.getRestoreMode());
         assertEquals(record.getWriteBlockStartedAt(), dataObject.getWriteBlockStartedAt());
         assertEquals(record.getWriteBlockReleasedAt(), dataObject.getWriteBlockReleasedAt());
