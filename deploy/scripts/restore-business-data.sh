@@ -42,17 +42,6 @@ validate_storage_archive "${STORAGE_ARCHIVE}"
 
 load_table_whitelist "${WHITELIST_FILE}"
 
-if [[ "${RESTORE_MODE}" == "DRILL" ]]; then
-  backup_log "restore drill validated ${#BACKUP_TABLES[@]} business tables"
-  backup_log "restore drill completed successfully"
-  printf 'RESTORE_MODE=%s\n' "${RESTORE_MODE}"
-  printf 'RESTORE_BACKUP_NAME=%s\n' "${BACKUP_NAME}"
-  printf 'DRILL_VALIDATED_TABLE_COUNT=%s\n' "${#BACKUP_TABLES[@]}"
-  exit 0
-fi
-
-require_command mysql
-
 if [[ "${RUN_PRE_RESTORE}" == "true" ]]; then
   backup_log "creating pre-restore snapshot"
   PRE_RESTORE_OUTPUT="$(
@@ -63,6 +52,20 @@ if [[ "${RUN_PRE_RESTORE}" == "true" ]]; then
   )"
   printf '%s\n' "${PRE_RESTORE_OUTPUT}"
 fi
+
+if [[ "${RESTORE_MODE}" == "DRILL" ]]; then
+  backup_log "restore drill validated ${#BACKUP_TABLES[@]} business tables"
+  backup_log "restore drill completed successfully"
+  printf 'RESTORE_MODE=%s\n' "${RESTORE_MODE}"
+  printf 'RESTORE_BACKUP_NAME=%s\n' "${BACKUP_NAME}"
+  printf 'DRILL_VALIDATED_TABLE_COUNT=%s\n' "${#BACKUP_TABLES[@]}"
+  if [[ "${RUN_PRE_RESTORE}" == "true" ]]; then
+    printf 'PRE_RESTORE_BASE_NAME=%s\n' "prerestore_${PRE_RESTORE_TIMESTAMP}"
+  fi
+  exit 0
+fi
+
+require_command mysql
 
 MYSQL_ARGS="$(mysql_args)"
 

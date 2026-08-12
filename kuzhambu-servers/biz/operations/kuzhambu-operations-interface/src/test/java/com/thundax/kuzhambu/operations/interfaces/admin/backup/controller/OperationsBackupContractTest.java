@@ -48,7 +48,7 @@ class OperationsBackupContractTest {
     @Test
     void responseJsonFieldsShouldRemainStable() {
         OperationsBackupExecuteResponse executeResponse = OperationsBackupExecuteResponse.builder()
-                .backupId(9001L)
+                .backupId(9_007_199_254_740_993L)
                 .backupType("MANUAL")
                 .backupStatus("SUCCEEDED")
                 .fileName("backup_20260629-120000.sql")
@@ -71,6 +71,9 @@ class OperationsBackupContractTest {
                 "startedAt",
                 "completedAt",
                 "expiresAt");
+        var serializedBackupId = OBJECT_MAPPER.valueToTree(executeResponse).get("backupId");
+        assertTrue(serializedBackupId.isTextual());
+        assertEquals("9007199254740993", serializedBackupId.asText());
 
         OperationsBackupPageResponse pageResponse = OperationsBackupPageResponse.builder()
                 .backupId(9001L)

@@ -265,7 +265,7 @@ public final class RoleInterfaceAssembler {
             node = departmentLoader.apply(node.getId());
             if (node != null) {
                 names.add(0, node.getName());
-                node = departmentLoader.apply(node.getParentId());
+                node = node.getParentId() == null ? null : departmentLoader.apply(node.getParentId());
             }
         }
         return StringUtils.join(names, "/");

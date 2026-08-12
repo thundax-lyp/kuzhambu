@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupItemIdCodec;
 import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupJobIdCodec;
@@ -27,6 +28,7 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
 
     private final CleanupJobMapper jobMapper;
     private final CleanupItemMapper itemMapper;
+    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public CleanupJobRepositoryImpl(CleanupJobMapper jobMapper, CleanupItemMapper itemMapper) {
         this.jobMapper = jobMapper;
@@ -46,6 +48,9 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
     @Override
     public CleanupJobId insert(CleanupJob job) {
         CleanupJobDO dataObject = CleanupPersistenceAssembler.toObject(job);
+        if (dataObject.getCleanupId() == null) {
+            dataObject.setCleanupId(idGenerator.nextId().value());
+        }
         jobMapper.insert(dataObject);
         return CleanupJobIdCodec.toDomain(dataObject.getCleanupId());
     }
@@ -84,6 +89,9 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
     @Override
     public CleanupItemId insertItem(CleanupItem item) {
         CleanupItemDO dataObject = CleanupPersistenceAssembler.toObject(item);
+        if (dataObject.getCleanupItemId() == null) {
+            dataObject.setCleanupItemId(idGenerator.nextId().value());
+        }
         itemMapper.insert(dataObject);
         return CleanupItemIdCodec.toDomain(dataObject.getCleanupItemId());
     }

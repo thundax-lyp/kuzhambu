@@ -165,6 +165,46 @@ class KnowledgeSyncApplicationServiceImplTest {
                         "kuzhambu-qa", "item-1", "SANCAI_ENTRY:1001", Map.of("operation", "deleteContent"))));
     }
 
+    @Test
+    void deleteContentShouldBeIdempotentWhenExternalItemWasNeverCreated() {
+        KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        QaKnowledgeSyncItemRepository itemRepository = mock(QaKnowledgeSyncItemRepository.class);
+        QaKnowledgeSyncBatchRepository batchRepository = mock(QaKnowledgeSyncBatchRepository.class);
+        when(itemRepository.getBySourceId(sourceId("WANGQI_DOCUMENT:1001")))
+                .thenReturn(new QaKnowledgeSyncItem(
+                        1001L,
+                        "WANGQI_DOCUMENT:1001",
+                        "WANGQI_DOCUMENT",
+                        1001L,
+                        "kuzhambu-qa",
+                        2,
+                        null,
+                        "fastgpt",
+                        null,
+                        null,
+                        "FAILED",
+                        "Sync item does not have external knowledge item id",
+                        null,
+                        null,
+                        null));
+        KnowledgeSyncApplicationServiceImpl service = new KnowledgeSyncApplicationServiceImpl(
+                knowledgeBaseClient,
+                classicsFacade,
+                itemRepository,
+                batchRepository,
+                new KnowledgeDocumentAssembler(),
+                new KnowledgeItemTextRenderer(),
+                new KnowledgeRevisionCalculator());
+
+        KnowledgeSyncItemResult result =
+                service.deleteContent(new SyncKnowledgeContentCommand("WANGQI_DOCUMENT", 1001L, 2, "req-1", "trace-1"));
+
+        assertEquals("DELETED", result.getSyncStatus());
+        assertEquals(null, result.getFailureReason());
+        verify(itemRepository).update(any(QaKnowledgeSyncItem.class));
+    }
+
     private ClassicsQaKnowledgeFacadeDto buildKnowledge() {
         return ClassicsQaKnowledgeFacadeDto.builder()
                 .sourceId("SANCAI_ENTRY:1001")

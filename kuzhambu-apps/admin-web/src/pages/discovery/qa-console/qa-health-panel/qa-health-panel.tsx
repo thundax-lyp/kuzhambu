@@ -19,7 +19,7 @@ const formatTime = (value?: number | string | null) => {
 
 export const QaHealthPanel = () => {
     const healthQuery = useQuery({
-        queryFn: service.getKnowledgeHealth,
+        queryFn: service.getKnowledge,
         queryKey: ["discovery-qa-console", "knowledge-health"]
     });
     const data = healthQuery.data;

@@ -411,7 +411,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 textSegments,
                 tagNames(contentType, contentId),
                 entry.getLifecycleStatus().value(),
-                null,
+                "PUBLIC",
                 entry.getCurrentVersionNo(),
                 entry.getContentUpdatedAt(),
                 entry.getContentUpdatedAt());
@@ -440,7 +440,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 textSegments,
                 tagNames(contentType, contentId),
                 "PUBLISHED",
-                null,
+                "PUBLIC",
                 document.getCurrentVersionNo(),
                 document.getDocumentTime() == null ? document.getContentUpdatedAt() : document.getDocumentTime(),
                 document.getContentUpdatedAt());
@@ -471,7 +471,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 textSegments,
                 tagNames(contentType, contentId),
                 "PUBLISHED",
-                null,
+                "PUBLIC",
                 entry.getCurrentVersionNo(),
                 entry.getContentUpdatedAt(),
                 entry.getContentUpdatedAt());

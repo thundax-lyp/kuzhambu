@@ -193,7 +193,7 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_knowledge_sync_item` (
     `current_version_no` int NOT NULL DEFAULT 0,
     `knowledge_revision` varchar(128) DEFAULT NULL,
     `provider` varchar(64) NOT NULL,
-    `external_knowledge_base_id` varchar(128) NOT NULL,
+    `external_knowledge_base_id` varchar(128) DEFAULT NULL,
     `external_knowledge_item_id` varchar(128) DEFAULT NULL,
     `sync_status` varchar(32) NOT NULL DEFAULT 'PENDING',
     `failure_reason` varchar(1024) DEFAULT NULL,

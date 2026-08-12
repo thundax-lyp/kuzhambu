@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -245,7 +246,11 @@ public class AiRefinementTaskController {
                     .name(event.getEventType())
                     .data(event));
         } catch (IOException exception) {
-            throw new IllegalStateException("AI refinement task stream send failed", exception);
+            throw new ApiException(
+                    "AI-STREAM-00001",
+                    "ai.refinement.stream.send-failed",
+                    "AI refinement task stream send failed",
+                    exception);
         }
     }
 }

@@ -12,14 +12,14 @@ const mocks = vi.hoisted(() => ({
         openedAt: 1700000000000,
         title: "知识中心问答"
     })),
-    createQaSessionExport: vi.fn(async () => ({
+    downloadQaSession: vi.fn(async () => ({
         exportStatus: "SUCCEEDED",
         id: "7001",
         filename: "discovery-qa-session-7001.csv",
         sessionId: "7001"
     })),
     createQaChatCompletion: vi.fn(),
-    createQaChatCompletionStream: vi.fn(async ({ onDelta }) => {
+    submitChatCompletion: vi.fn(async ({ onDelta }) => {
         onDelta?.("礼学可作为礼制相关内容的检索扩展。");
         return {
             answerStatus: "SUCCEEDED",
@@ -148,7 +148,7 @@ describe("QaPage", () => {
             );
         });
         await waitFor(() => {
-            expect(mocks.createQaChatCompletionStream).toHaveBeenCalledWith(
+            expect(mocks.submitChatCompletion).toHaveBeenCalledWith(
                 expect.objectContaining({
                     command: {
                         messages: [{ content: "礼学和礼制有什么关系？", role: "user" }],
@@ -175,7 +175,7 @@ describe("QaPage", () => {
 
         await user.click(screen.getByRole("button", { name: "导出对话" }));
         await waitFor(() => {
-            expect(mocks.createQaSessionExport).toHaveBeenCalledWith(
+            expect(mocks.downloadQaSession).toHaveBeenCalledWith(
                 {
                     format: "CSV",
                     ownerUserId: "9001",
@@ -196,7 +196,7 @@ describe("QaPage", () => {
         await user.click(screen.getByRole("button", { name: "新建对话" }));
 
         expect(mocks.createQaSession).not.toHaveBeenCalled();
-        expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+        expect(mocks.submitChatCompletion).not.toHaveBeenCalled();
     });
 
     it("renders messages from an existing session detail", async () => {
@@ -318,12 +318,12 @@ describe("QaPage", () => {
 
         expect(await screen.findByText("创建会话失败")).toBeInTheDocument();
         expect(screen.getByLabelText("问题")).toHaveValue("礼学和礼制有什么关系？");
-        expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+        expect(mocks.submitChatCompletion).not.toHaveBeenCalled();
     });
 
     it("aborts the active stream when starting a new conversation", async () => {
         let streamSignal: AbortSignal | undefined;
-        mocks.createQaChatCompletionStream.mockImplementationOnce(({ signal }) => {
+        mocks.submitChatCompletion.mockImplementationOnce(({ signal }) => {
             streamSignal = signal;
             return new Promise((_resolve, reject) => {
                 signal?.addEventListener("abort", () =>
@@ -367,7 +367,7 @@ describe("QaPage", () => {
             openedAt: 1700000000000,
             title: sessionId === "7001" ? "第一会话" : "第二会话"
         }));
-        mocks.createQaChatCompletionStream.mockImplementationOnce(({ signal }) => {
+        mocks.submitChatCompletion.mockImplementationOnce(({ signal }) => {
             return new Promise((_resolve, reject) => {
                 signal?.addEventListener("abort", () =>
                     reject(new DOMException("Aborted", "AbortError"))

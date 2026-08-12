@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.common.web.exception;
 
-public class BadRequestException extends KuzhambuException {
+public class BadRequestException extends ApiException {
 
     public BadRequestException() {
         super(WebErrorCode.BAD_REQUEST);

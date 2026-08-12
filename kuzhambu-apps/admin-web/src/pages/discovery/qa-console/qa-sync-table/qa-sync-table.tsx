@@ -90,7 +90,7 @@ export const QaSyncTable = () => {
         queryKey: ["discovery-qa-console", "sync-page", query]
     });
     const syncKnowledgeMutation = useMutation({
-        mutationFn: service.createKnowledgeSync,
+        mutationFn: service.updateKnowledge,
         onSuccess: async () => {
             await syncPageQuery.refetch();
             messageApi.success("知识文档同步完成");

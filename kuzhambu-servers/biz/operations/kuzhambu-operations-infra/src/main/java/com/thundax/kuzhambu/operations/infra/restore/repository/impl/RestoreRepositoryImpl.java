@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.restore.codec.RestoreIdCodec;
 import com.thundax.kuzhambu.operations.domain.restore.model.entity.RestoreRecord;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Repository;
 public class RestoreRepositoryImpl implements RestoreRepository {
 
     private final RestoreMapper mapper;
+    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
     public RestoreRepositoryImpl(RestoreMapper mapper) {
         this.mapper = mapper;
@@ -47,6 +49,9 @@ public class RestoreRepositoryImpl implements RestoreRepository {
     @Override
     public RestoreId insert(RestoreRecord record) {
         RestoreDO dataObject = RestorePersistenceAssembler.toObject(record);
+        if (dataObject.getRestoreId() == null) {
+            dataObject.setRestoreId(idGenerator.nextId().value());
+        }
         mapper.insert(dataObject);
         return RestoreIdCodec.toDomain(dataObject.getRestoreId());
     }

@@ -7,10 +7,10 @@ import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
 import com.thundax.kuzhambu.common.web.util.RequestIpUtils;
 import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
-import com.thundax.kuzhambu.system.application.auth.exception.InvalidCaptchaException;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PreAuthCodeHelper;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
@@ -131,7 +131,7 @@ public class AuthController {
                     PrincipalIdentityType.USER_ACCOUNT,
                     currentRequest,
                     PrincipalLoginEvent.REASON_CAPTCHA_INVALID));
-            throw new InvalidCaptchaException();
+            throw AdminResponseExceptions.invalidCaptcha();
         }
         createCaptcha(request.getLoginToken());
 
@@ -152,7 +152,8 @@ public class AuthController {
             } else {
                 writeLog(currentRequest, "用户失败", request);
             }
-            throw e;
+            throw new ApiException(
+                    e.getErrorCode(), e.getCode(), e.getMessageKey(), e.getDefaultMessage(), e.getMessageArgs());
         }
 
         releasePreAuthSession(request.getLoginToken());
@@ -179,7 +180,7 @@ public class AuthController {
                     PrincipalIdentityType.USER_MOBILE,
                     currentRequest,
                     PrincipalLoginEvent.REASON_CAPTCHA_INVALID));
-            throw new InvalidCaptchaException();
+            throw AdminResponseExceptions.invalidCaptcha();
         }
         User user = authService.authenticateSms(AdminAuthHelper.mobileOperation(request.getMobile(), currentRequest));
         return loginSuccess(

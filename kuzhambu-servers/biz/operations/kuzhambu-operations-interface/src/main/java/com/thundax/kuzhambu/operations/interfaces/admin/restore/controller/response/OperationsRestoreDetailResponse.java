@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.resp
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import lombok.Builder;
@@ -13,9 +15,15 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OperationsRestoreDetailResponse {
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long restoreId;
+
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long backupId;
+
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long preRestoreBackupId;
+
     private String restoreMode;
     private String restoreStatus;
     private Boolean writeBlockEnabled;

@@ -127,6 +127,9 @@ class ClassicsSearchContentApplicationServiceImplTest {
         assertEquals(3, results.size());
         assertEquals("天文", results.get(0).getCategoryName());
         assertEquals("PUBLISHED", results.get(1).getStatus());
+        assertEquals("PUBLIC", results.get(0).getVisibility());
+        assertEquals("PUBLIC", results.get(1).getVisibility());
+        assertEquals("PUBLIC", results.get(2).getVisibility());
         assertEquals("节令", results.get(2).getCategoryCode());
         assertTrue(results.get(0).getTextSegments().contains("原文"));
         assertTrue(results.get(0).getTextSegments().contains("黄帝是谁？"));

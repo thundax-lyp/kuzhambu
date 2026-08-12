@@ -118,7 +118,7 @@ export const QaPage = () => {
 
     const openSessionMutation = useMutation({ mutationFn: service.createQaSession });
     const chatCompletionMutation = useMutation({
-        mutationFn: service.createQaChatCompletionStream
+        mutationFn: service.submitChatCompletion
     });
     const messages = useMemo(() => {
         if (selectedSessionId === null) {

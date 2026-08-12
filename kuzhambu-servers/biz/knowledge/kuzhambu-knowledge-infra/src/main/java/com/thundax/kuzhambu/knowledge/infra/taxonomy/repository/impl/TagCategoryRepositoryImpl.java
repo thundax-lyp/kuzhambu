@@ -13,7 +13,9 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCateg
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepository;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.assembler.TaxonomyPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagCategoryDO;
+import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagCategoryMapper;
+import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagMapper;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -22,10 +24,12 @@ import org.springframework.stereotype.Repository;
 public class TagCategoryRepositoryImpl implements TagCategoryRepository {
 
     private final TagCategoryMapper mapper;
+    private final TagMapper tagMapper;
     private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
-    public TagCategoryRepositoryImpl(TagCategoryMapper mapper) {
+    public TagCategoryRepositoryImpl(TagCategoryMapper mapper, TagMapper tagMapper) {
         this.mapper = mapper;
+        this.tagMapper = tagMapper;
     }
 
     @Override
@@ -98,10 +102,10 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
 
     @Override
     public int countEnabledByCategoryId(TagCategoryId categoryId) {
-        QueryWrapper<TagCategoryDO> wrapper = new QueryWrapper<>();
+        QueryWrapper<TagDO> wrapper = new QueryWrapper<>();
         wrapper.eq("category_id", TagCategoryIdCodec.toValue(categoryId))
                 .eq("status", TagCategoryStatus.ENABLED.value());
-        Long count = mapper.selectCount(wrapper);
+        Long count = tagMapper.selectCount(wrapper);
         return count == null ? 0 : count.intValue();
     }
 

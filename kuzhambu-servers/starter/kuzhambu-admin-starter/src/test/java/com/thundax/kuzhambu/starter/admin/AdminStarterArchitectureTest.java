@@ -51,7 +51,10 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.ai.interfaces.admin",
                         "com.thundax.kuzhambu.discovery.application",
                         "com.thundax.kuzhambu.discovery.infra",
-                        "com.thundax.kuzhambu.discovery.interfaces.admin");
+                        "com.thundax.kuzhambu.discovery.interfaces.admin",
+                        "com.thundax.kuzhambu.operations.application",
+                        "com.thundax.kuzhambu.operations.infra",
+                        "com.thundax.kuzhambu.operations.interfaces.admin");
         Assertions.assertThat(Arrays.asList(mapperScan.value()))
                 .contains(
                         "com.thundax.kuzhambu.system.infra.core.persistence.mapper",
@@ -70,7 +73,13 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.ai.infra.prompt.persistence.mapper",
                         "com.thundax.kuzhambu.ai.infra.refinement.persistence.mapper",
                         "com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper",
-                        "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper");
+                        "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper",
+                        "com.thundax.kuzhambu.operations.infra.backup.persistence.mapper",
+                        "com.thundax.kuzhambu.operations.infra.cleanup.persistence.mapper",
+                        "com.thundax.kuzhambu.operations.infra.health.persistence.mapper",
+                        "com.thundax.kuzhambu.operations.infra.report.persistence.mapper",
+                        "com.thundax.kuzhambu.operations.infra.restore.persistence.mapper",
+                        "com.thundax.kuzhambu.operations.infra.task.persistence.mapper");
     }
 
     @Test
