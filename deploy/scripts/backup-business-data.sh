@@ -26,7 +26,7 @@ backup_log "starting ${BACKUP_TYPE} backup: ${BASE_NAME}"
 backup_log "loaded ${#BACKUP_TABLES[@]} tables from ${WHITELIST_FILE}"
 
 MYSQL_ARGS="$(mysql_args)"
-mysqldump ${MYSQL_ARGS} "${BACKUP_TABLES[@]}" > "${SQL_FILE}"
+mysqldump --no-tablespaces ${MYSQL_ARGS} "${BACKUP_TABLES[@]}" > "${SQL_FILE}"
 write_sha256 "${SQL_FILE}"
 backup_storage "${BASE_NAME}" "${OUTPUT_DIR}"
 
