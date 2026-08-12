@@ -41,7 +41,7 @@ export const SearchSummaryPanel = () => {
     const [dateRange, setDateRange] = useState<DateRangeValue>(null);
     const [query, setQuery] = useState(() => rangeToQuery(null));
     const summaryQuery = useQuery({
-        queryFn: () => service.getSearchStatisticsSummary(query),
+        queryFn: () => service.getSummary(query),
         queryKey: ["discovery-search-statistics", "summary", query],
         retry: false
     });

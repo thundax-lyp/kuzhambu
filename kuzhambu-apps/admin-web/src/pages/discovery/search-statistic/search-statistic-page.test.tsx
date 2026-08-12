@@ -5,7 +5,7 @@ import { App as AntdApp } from "antd";
 import { SearchStatisticPage } from "./search-statistic-page";
 
 const mocks = vi.hoisted(() => ({
-    getSearchStatisticsSummary: vi.fn(async () => ({
+    getSummary: vi.fn(async () => ({
         clickCount: 7,
         failedSearchCount: 2,
         searchCount: 12,
@@ -64,7 +64,7 @@ vi.mock("./search-statistic-service", () => mocks);
 
 describe("SearchStatisticPage", () => {
     beforeEach(() => {
-        mocks.getSearchStatisticsSummary.mockClear();
+        mocks.getSummary.mockClear();
         mocks.getSearchEventDetail.mockClear();
         mocks.pageSearchEvents.mockClear();
         mocks.rebuildSearchIndex.mockClear();
@@ -97,7 +97,7 @@ describe("SearchStatisticPage", () => {
         expect(screen.queryByRole("button", { name: "查询记录" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "触发重建" })).not.toBeInTheDocument();
         await waitFor(() =>
-            expect(mocks.getSearchStatisticsSummary).toHaveBeenCalledWith({
+            expect(mocks.getSummary).toHaveBeenCalledWith({
                 dateFrom: null,
                 dateTo: null
             })
@@ -169,7 +169,7 @@ describe("SearchStatisticPage", () => {
         expect(screen.getAllByLabelText("统计时间范围")).toHaveLength(2);
         await user.click(screen.getByRole("button", { name: "统计" }));
 
-        expect(mocks.getSearchStatisticsSummary).toHaveBeenCalledWith({
+        expect(mocks.getSummary).toHaveBeenCalledWith({
             dateFrom: null,
             dateTo: null
         });

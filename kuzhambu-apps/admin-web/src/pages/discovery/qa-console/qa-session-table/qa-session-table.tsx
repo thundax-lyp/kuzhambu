@@ -84,7 +84,7 @@ export const QaSessionTable = () => {
         }
     });
     const exportSessionMutation = useMutation({
-        mutationFn: service.createQaSessionExport,
+        mutationFn: service.downloadQaSession,
         onSuccess: (record, command) => {
             const exportName = record.filename ?? record.exportStatus ?? "-";
             setOperationText(`会话 ${command.sessionId} 导出已创建：${exportName}`);

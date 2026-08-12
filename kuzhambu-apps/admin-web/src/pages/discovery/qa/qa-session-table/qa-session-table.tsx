@@ -62,7 +62,7 @@ export const QaSessionTable = ({
         }
     });
     const exportSessionMutation = useMutation({
-        mutationFn: service.createQaSessionExport,
+        mutationFn: service.downloadQaSession,
         onSuccess: (result) => {
             if (result.exportStatus === "FAILED") {
                 onOperationMessage(result.failureReason ?? "导出失败");

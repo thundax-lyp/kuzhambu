@@ -8,15 +8,15 @@ const stableDisplayDateTimestamp = Date.UTC(2023, 10, 15, 12, 0, 0);
 
 const mocks = vi.hoisted(() => ({
     confirmDanger: vi.fn(),
-    createQaSessionExport: vi.fn(),
+    downloadQaSession: vi.fn(),
     deleteQaSession: vi.fn(),
     getCurrentUserInfo: vi.fn(),
-    getKnowledgeHealth: vi.fn(),
+    getKnowledge: vi.fn(),
     getQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
     pageKnowledgeSyncItems: vi.fn(),
     rebuildKnowledge: vi.fn(),
-    createKnowledgeSync: vi.fn()
+    updateKnowledge: vi.fn()
 }));
 
 vi.mock("@/service/current-user-service", () => ({
@@ -30,15 +30,15 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
 }));
 
 vi.mock("./qa-console-service", () => ({
-    createQaSessionExport: mocks.createQaSessionExport,
+    downloadQaSession: mocks.downloadQaSession,
     deleteQaSession: mocks.deleteQaSession,
-    getKnowledgeHealth: mocks.getKnowledgeHealth,
+    getKnowledge: mocks.getKnowledge,
     getQaSession: mocks.getQaSession,
     getQaSessionDetail: mocks.getQaSession,
     pageQaSessions: mocks.pageQaSessions,
     pageKnowledgeSyncItems: mocks.pageKnowledgeSyncItems,
     rebuildKnowledge: mocks.rebuildKnowledge,
-    createKnowledgeSync: mocks.createKnowledgeSync
+    updateKnowledge: mocks.updateKnowledge
 }));
 
 const createTestQueryClient = () =>
@@ -80,7 +80,7 @@ describe("QaConsolePage", () => {
             onConfirm()
         );
         vi.stubEnv("VITE_FASTGPT_CONSOLE_URL", "https://fastgpt.example.com");
-        mocks.getKnowledgeHealth.mockResolvedValue({
+        mocks.getKnowledge.mockResolvedValue({
             checkedAt: 1700000000000,
             knowledgeBaseName: "kuzhambu-qa",
             provider: "FASTGPT",
@@ -149,7 +149,7 @@ describe("QaConsolePage", () => {
             ]
         });
         mocks.rebuildKnowledge.mockResolvedValue(3);
-        mocks.createKnowledgeSync.mockResolvedValue({
+        mocks.updateKnowledge.mockResolvedValue({
             sourceId: "SANCAI_ENTRY:1001",
             contentType: "SANCAI_ENTRY",
             contentId: "1001",
@@ -157,7 +157,7 @@ describe("QaConsolePage", () => {
             syncStatus: "SUCCEEDED"
         });
         mocks.deleteQaSession.mockResolvedValue(undefined);
-        mocks.createQaSessionExport.mockResolvedValue({
+        mocks.downloadQaSession.mockResolvedValue({
             id: "7001",
             exportStatus: "SUCCEEDED",
             filename: "discovery-qa-session-2001-7001.csv",
@@ -274,7 +274,7 @@ describe("QaConsolePage", () => {
         fireEvent.click(findButtonByNormalizedText("同步"));
 
         await waitFor(() => {
-            expect(mocks.createKnowledgeSync.mock.calls[0]?.[0]).toEqual({
+            expect(mocks.updateKnowledge.mock.calls[0]?.[0]).toEqual({
                 contentId: "1001",
                 contentType: "SANCAI_ENTRY",
                 currentVersionNo: 2
@@ -363,7 +363,7 @@ describe("QaConsolePage", () => {
         );
 
         await waitFor(() => {
-            expect(mocks.createQaSessionExport.mock.calls[0]?.[0]).toEqual({
+            expect(mocks.downloadQaSession.mock.calls[0]?.[0]).toEqual({
                 format: "CSV",
                 requesterUserId: "9001",
                 sessionId: "2001"
