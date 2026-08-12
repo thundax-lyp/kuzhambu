@@ -44,6 +44,142 @@ function numberEnv(name, fallback) {
   return parsed;
 }
 
+function kuzhambuQaWorkflow(llmModel) {
+  return {
+    modules: [
+      {
+        nodeId: "userGuide",
+        name: "系统配置",
+        intro: "",
+        avatar: "core/workflow/template/systemConfig",
+        flowNodeType: "userGuide",
+        position: {x: 0, y: 0},
+        version: "481",
+        inputs: [],
+        outputs: []
+      },
+      {
+        nodeId: "workflowStartNodeId",
+        name: "流程开始",
+        intro: "",
+        avatar: "core/workflow/template/workflowStart",
+        flowNodeType: "workflowStart",
+        position: {x: 280, y: 0},
+        version: "481",
+        inputs: [
+          {
+            key: "userChatInput",
+            renderTypeList: ["reference", "textarea"],
+            valueType: "string",
+            label: "用户问题",
+            required: true,
+            toolDescription: "用户问题"
+          }
+        ],
+        outputs: [
+          {
+            id: "userChatInput",
+            key: "userChatInput",
+            label: "用户问题",
+            valueType: "string",
+            type: "static"
+          }
+        ]
+      },
+      {
+        nodeId: "kuzhambuQaChat",
+        name: "Kuzhambu 问答",
+        intro: "使用配置的大模型回答古籍知识问题",
+        avatar: "core/workflow/template/aiChat",
+        flowNodeType: "chatNode",
+        showStatus: true,
+        position: {x: 580, y: 0},
+        version: "481",
+        inputs: [
+          {
+            key: "model",
+            renderTypeList: ["settingLLMModel", "reference"],
+            label: "AI 模型",
+            valueType: "string",
+            value: llmModel
+          },
+          {
+            key: "temperature",
+            renderTypeList: ["hidden"],
+            label: "",
+            value: 2,
+            valueType: "number"
+          },
+          {
+            key: "maxToken",
+            renderTypeList: ["hidden"],
+            label: "",
+            value: 1024,
+            valueType: "number"
+          },
+          {
+            key: "isResponseAnswerText",
+            renderTypeList: ["hidden"],
+            label: "",
+            value: true,
+            valueType: "boolean"
+          },
+          {
+            key: "systemPrompt",
+            renderTypeList: ["textarea", "reference"],
+            valueType: "string",
+            label: "提示词",
+            value: "你是 Kuzhambu 古籍知识助手。请基于已有知识谨慎、简洁地回答；未知内容请明确说明。"
+          },
+          {
+            key: "history",
+            renderTypeList: ["numberInput", "reference"],
+            valueType: "chatHistory",
+            label: "聊天记录",
+            required: true,
+            min: 0,
+            max: 30,
+            value: 6
+          },
+          {
+            key: "userChatInput",
+            renderTypeList: ["reference", "textarea"],
+            valueType: "string",
+            label: "用户问题",
+            required: true,
+            toolDescription: "用户问题",
+            value: ["workflowStartNodeId", "userChatInput"]
+          }
+        ],
+        outputs: [
+          {
+            id: "history",
+            key: "history",
+            label: "新上下文",
+            valueType: "chatHistory",
+            type: "static"
+          },
+          {
+            id: "answerText",
+            key: "answerText",
+            label: "AI 回复内容",
+            valueType: "string",
+            type: "static"
+          }
+        ]
+      }
+    ],
+    edges: [
+      {
+        source: "workflowStartNodeId",
+        target: "kuzhambuQaChat",
+        sourceHandle: "workflowStartNodeId-source-right",
+        targetHandle: "kuzhambuQaChat-target-left"
+      }
+    ]
+  };
+}
+
 function waitForRootUser() {
   var deadline = Date.now() + numberEnv("FASTGPT_BOOTSTRAP_WAIT_MS", 120000);
   while (Date.now() < deadline) {
@@ -85,6 +221,7 @@ var appName = env("FASTGPT_KUZHAMBU_APP_NAME", "kuzhambu-qa");
 var kuzhambuBaseUrl = env("FASTGPT_KUZHAMBU_BASE_URL", "http://fastgpt-app:3000");
 var datasetId = configuredOrExistingObjectId("FASTGPT_KUZHAMBU_DATASET_ID", db.datasets, {name: datasetName});
 var appId = configuredOrExistingObjectId("FASTGPT_KUZHAMBU_APP_ID", db.apps, {name: appName});
+var qaWorkflow = kuzhambuQaWorkflow(llmModel);
 
 db.system_models.updateOne(
   {model: llmModel, "metadata.type": "llm"},
@@ -212,8 +349,8 @@ db.apps.updateOne(
       name: appName,
       type: "advanced",
       avatar: "/icon/logo.svg",
-      modules: [],
-      edges: [],
+      modules: qaWorkflow.modules,
+      edges: qaWorkflow.edges,
       updateTime: new Date()
     },
     $setOnInsert: {
