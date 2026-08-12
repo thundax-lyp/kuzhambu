@@ -5,7 +5,8 @@ import java.util.Locale;
 public enum AiApiSource {
     OPENAI_COMPATIBLE,
     OPENAI,
-    BYTEDANCE;
+    BYTEDANCE,
+    CTYUN;
 
     public String value() {
         return name();
