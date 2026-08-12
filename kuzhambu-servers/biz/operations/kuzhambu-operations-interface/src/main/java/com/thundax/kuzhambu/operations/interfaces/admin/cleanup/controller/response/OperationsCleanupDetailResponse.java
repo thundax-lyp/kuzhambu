@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.resp
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.List;
@@ -14,7 +16,9 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OperationsCleanupDetailResponse {
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long cleanupId;
+
     private String cleanupType;
     private String cleanupStatus;
     private Integer totalCount;
@@ -32,7 +36,9 @@ public class OperationsCleanupDetailResponse {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Item {
+        @JsonSerialize(using = ToStringSerializer.class)
         private Long cleanupItemId;
+
         private String targetType;
         private Long targetId;
         private String itemStatus;
