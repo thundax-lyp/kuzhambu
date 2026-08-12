@@ -176,33 +176,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
         }
 
         Instant now = Instant.now();
-        syncItem.setUpdatedAt(now);
-        if (StringUtils.isBlank(syncItem.getExternalKnowledgeItemId())) {
-            syncItem.setSyncStatus(SYNC_STATUS_FAILED);
-            syncItem.setFailureReason("Sync item does not have external knowledge item id");
-            qaKnowledgeSyncItemRepository.update(syncItem);
-            return toResult(syncItem);
-        }
-
-        try {
-            KnowledgeSyncResult deleteResult = knowledgeBaseClient.deleteKnowledgeItem(new KnowledgeItemDeleteRequest(
-                    knowledgeItemBase(syncItem),
-                    syncItem.getExternalKnowledgeItemId(),
-                    sourceIdValue(syncItem.getSourceId()),
-                    Map.of("operation", "deleteContent")));
-            syncItem.setSyncStatus(isSuccessStatus(deleteResult) ? SYNC_STATUS_DELETED : SYNC_STATUS_FAILED);
-            syncItem.setFailureReason(syncResultFailureReason(deleteResult, "deleteKnowledgeItem failed"));
-            if (SYNC_STATUS_DELETED.equals(syncStatusValue(syncItem))) {
-                syncItem.setSyncedAt(now);
-            }
-            qaKnowledgeSyncItemRepository.update(syncItem);
-            return toResult(syncItem);
-        } catch (Exception ex) {
-            syncItem.setSyncStatus(SYNC_STATUS_FAILED);
-            syncItem.setFailureReason(errorMessage(ex));
-            qaKnowledgeSyncItemRepository.update(syncItem);
-            return toResult(syncItem);
-        }
+        return deleteSyncItem(syncItem, sourceId(command), now);
     }
 
     @Override
@@ -337,7 +311,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             return syncDeletedContent(command, sourceId, now, "Sync item does not exist", null);
         }
 
-        return deleteSyncItem(existingItem, sourceId, now, command.requestId(), command.traceId());
+        return deleteSyncItem(existingItem, sourceId, now);
     }
 
     private List<QaKnowledgeSyncItem> listItemsForPageQuery(KnowledgeSyncItemQuery query) {
@@ -532,23 +506,14 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private KnowledgeSyncItemResult deleteSyncItem(
-            QaKnowledgeSyncItem existingItem,
-            KnowledgeSourceId sourceId,
-            Instant now,
-            String requestId,
-            String traceId) {
+            QaKnowledgeSyncItem existingItem, KnowledgeSourceId sourceId, Instant now) {
         if (StringUtils.isBlank(existingItem.getExternalKnowledgeItemId())) {
-            return syncDeletedContent(
-                    new SyncKnowledgeContentCommand(
-                            existingItem.getContentType(),
-                            existingItem.getContentId(),
-                            existingItem.getCurrentVersionNo(),
-                            requestId,
-                            traceId),
-                    sourceId,
-                    now,
-                    "Sync item does not have external knowledge item id",
-                    existingItem);
+            existingItem.setSyncStatus(SYNC_STATUS_DELETED);
+            existingItem.setFailureReason(null);
+            existingItem.setSyncedAt(now);
+            existingItem.setUpdatedAt(now);
+            qaKnowledgeSyncItemRepository.update(existingItem);
+            return toResult(existingItem);
         }
 
         try {
