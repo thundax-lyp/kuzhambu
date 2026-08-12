@@ -7,7 +7,6 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiResponse;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
-import com.thundax.kuzhambu.system.application.auth.exception.InvalidCaptchaException;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PreAuthCodeHelper;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
@@ -123,7 +122,7 @@ public class CaptchaController {
         String captcha = preAuthSessionService.getValue(CaptchaInterfaceAssembler.toPreAuthSessionValueQuery(
                 requireSessionIdByToken(loginToken), CAPTCHA_ITEM));
         if (StringUtils.isEmpty(captcha)) {
-            throw new InvalidCaptchaException();
+            throw AdminResponseExceptions.invalidCaptcha();
         }
         return captcha;
     }

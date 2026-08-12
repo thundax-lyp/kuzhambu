@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +33,17 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private static final Pattern DOMAIN_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("DomainException");
     private static final Pattern BIZ_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("BizException");
     private static final Pattern API_EXCEPTION_EXIT_PATTERN = exceptionExitPattern("ApiException");
+    private static final Pattern CLASS_EXTENDS_PATTERN = Pattern.compile(
+            "\\bclass\\s+([A-Za-z_$][\\w$]*)\\s+extends\\s+(?:(?:[A-Za-z_$][\\w$]*\\.)*)([A-Za-z_$][\\w$]*)");
+    private static final Pattern CLASS_PATTERN = Pattern.compile("\\bclass\\s+([A-Za-z_$][\\w$]*)\\b");
+    private static final Pattern STATIC_METHOD_PATTERN = Pattern.compile(
+            "(?m)^\\s*(?:public|protected|private)?\\s*static\\s+(?:(?:[A-Za-z_$][\\w$]*\\.)*)([A-Za-z_$][\\w$]*)\\s+([A-Za-z_$][\\w$]*)\\s*\\(");
+    private static final Pattern THROW_NEW_EXCEPTION_PATTERN =
+            Pattern.compile("\\bthrow\\s+new\\s+(?:(?:[A-Za-z_$][\\w$]*\\.)*)([A-Za-z_$][\\w$]*)\\s*\\(");
+    private static final Pattern THROW_FACTORY_PATTERN = Pattern.compile(
+            "\\bthrow\\s+(?:(?:[A-Za-z_$][\\w$]*\\.)*)([A-Za-z_$][\\w$]*)\\.([A-Za-z_$][\\w$]*)\\s*\\(");
+    private static final Pattern EXCEPTION_VARIABLE_PATTERN = Pattern.compile(
+            "\\b(?:(?:[A-Za-z_$][\\w$]*\\.)*)([A-Za-z_$][\\w$]*(?:Exception|Error))\\s+([A-Za-z_$][\\w$]*)\\b");
     private static final Pattern COMMENTS_AND_LITERALS_PATTERN =
             Pattern.compile("(?s)/\\*.*?\\*/|//[^\\r\\n]*|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'");
 
@@ -59,9 +72,10 @@ public final class SourceHardRuleArchitectureRuleSupport {
     }
 
     public static void assertBusinessLayersUseBoundedExceptionTypes(Path sourceRoot) throws IOException {
+        ExceptionTypeIndex exceptionTypes = ExceptionTypeIndex.from(sourceRoot);
         assertNoSourceMatches(
                 sourceRoot,
-                SourceHardRuleArchitectureRuleSupport::hasExceptionBoundaryViolation,
+                path -> hasExceptionBoundaryViolation(path, exceptionTypes),
                 "Business production sources must throw DomainException only from domain, BizException only from application, and ApiException only from interfaces");
     }
 
@@ -125,7 +139,7 @@ public final class SourceHardRuleArchitectureRuleSupport {
         }
     }
 
-    private static boolean hasExceptionBoundaryViolation(Path path) {
+    private static boolean hasExceptionBoundaryViolation(Path path, ExceptionTypeIndex exceptionTypes) {
         try {
             String source = withoutCommentsAndLiterals(Files.readString(path));
             return (isBusinessLayerSource(source, "domain")
@@ -135,11 +149,42 @@ public final class SourceHardRuleArchitectureRuleSupport {
                             && (hasExceptionExit(source, "DomainException", DOMAIN_EXCEPTION_EXIT_PATTERN)
                                     || hasExceptionExit(source, "ApiException", API_EXCEPTION_EXIT_PATTERN)))
                     || (isBusinessLayerSource(source, "interfaces")
-                            && (hasExceptionExit(source, "DomainException", DOMAIN_EXCEPTION_EXIT_PATTERN)
-                                    || hasExceptionExit(source, "BizException", BIZ_EXCEPTION_EXIT_PATTERN)));
+                            && hasExceptionExitNotAssignableTo(source, "ApiException", exceptionTypes));
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to read source file " + path, exception);
         }
+    }
+
+    private static boolean hasExceptionExitNotAssignableTo(
+            String source, String allowedExceptionType, ExceptionTypeIndex exceptionTypes) {
+        Matcher directMatcher = THROW_NEW_EXCEPTION_PATTERN.matcher(source);
+        while (directMatcher.find()) {
+            if (!exceptionTypes.isAssignableTo(directMatcher.group(1), allowedExceptionType)) {
+                return true;
+            }
+        }
+
+        Matcher factoryMatcher = THROW_FACTORY_PATTERN.matcher(source);
+        while (factoryMatcher.find()) {
+            String returnType = exceptionTypes.factoryReturnType(factoryMatcher.group(1), factoryMatcher.group(2));
+            if (returnType == null || !exceptionTypes.isAssignableTo(returnType, allowedExceptionType)) {
+                return true;
+            }
+        }
+
+        Map<String, String> variableTypes = new HashMap<String, String>();
+        Matcher variableMatcher = EXCEPTION_VARIABLE_PATTERN.matcher(source);
+        while (variableMatcher.find()) {
+            variableTypes.put(variableMatcher.group(2), variableMatcher.group(1));
+        }
+        Matcher throwMatcher = THROW_VARIABLE_PATTERN.matcher(source);
+        while (throwMatcher.find()) {
+            String variableType = variableTypes.get(throwMatcher.group(1));
+            if (variableType == null || !exceptionTypes.isAssignableTo(variableType, allowedExceptionType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isApplicationOrRepositoryImplementationSource(String source) {
@@ -188,5 +233,61 @@ public final class SourceHardRuleArchitectureRuleSupport {
     private interface SourceMatcher {
 
         boolean matches(Path path);
+    }
+
+    private record ExceptionTypeIndex(Map<String, String> parentTypes, Map<String, String> factoryReturnTypes) {
+
+        private static ExceptionTypeIndex from(Path sourceRoot) throws IOException {
+            Map<String, String> parentTypes = new HashMap<String, String>();
+            Map<String, String> factoryReturnTypes = new HashMap<String, String>();
+            try (Stream<Path> paths = Files.walk(sourceRoot)) {
+                paths.filter(Files::isRegularFile)
+                        .filter(path -> path.getFileName().toString().endsWith(".java"))
+                        .filter(SourceHardRuleArchitectureRuleSupport::isProductionJavaSource)
+                        .forEach(path -> indexSource(path, parentTypes, factoryReturnTypes));
+            }
+            parentTypes.put("ApiException", "KuzhambuException");
+            parentTypes.put("BizException", "RuntimeException");
+            parentTypes.put("DomainException", "RuntimeException");
+            return new ExceptionTypeIndex(parentTypes, factoryReturnTypes);
+        }
+
+        private static void indexSource(
+                Path path, Map<String, String> parentTypes, Map<String, String> factoryReturnTypes) {
+            try {
+                String source = withoutCommentsAndLiterals(Files.readString(path));
+                Matcher extendsMatcher = CLASS_EXTENDS_PATTERN.matcher(source);
+                while (extendsMatcher.find()) {
+                    parentTypes.put(extendsMatcher.group(1), extendsMatcher.group(2));
+                }
+                Matcher classMatcher = CLASS_PATTERN.matcher(source);
+                if (!classMatcher.find()) {
+                    return;
+                }
+                String className = classMatcher.group(1);
+                Matcher methodMatcher = STATIC_METHOD_PATTERN.matcher(source);
+                while (methodMatcher.find()) {
+                    factoryReturnTypes.put(className + "." + methodMatcher.group(2), methodMatcher.group(1));
+                }
+            } catch (IOException exception) {
+                throw new IllegalStateException("Failed to index source file " + path, exception);
+            }
+        }
+
+        private boolean isAssignableTo(String exceptionType, String allowedExceptionType) {
+            String currentType = exceptionType;
+            Set<String> visited = new HashSet<String>();
+            while (currentType != null && visited.add(currentType)) {
+                if (allowedExceptionType.equals(currentType)) {
+                    return true;
+                }
+                currentType = parentTypes.get(currentType);
+            }
+            return false;
+        }
+
+        private String factoryReturnType(String className, String methodName) {
+            return factoryReturnTypes.get(className + "." + methodName);
+        }
     }
 }

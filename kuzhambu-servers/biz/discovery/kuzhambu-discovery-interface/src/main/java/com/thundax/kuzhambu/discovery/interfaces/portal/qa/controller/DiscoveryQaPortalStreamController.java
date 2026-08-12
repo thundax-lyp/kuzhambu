@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.configure.DiscoveryQaStreamExecutorConfiguration;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler;
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -86,7 +86,7 @@ public class DiscoveryQaPortalStreamController {
         try {
             sendEvent(emitter, "delta", Map.of("content", content));
         } catch (IOException ex) {
-            throw new UncheckedIOException(ex);
+            throw new ApiException("DISCOVERY-STREAM-00001", "discovery.qa.stream.send-failed", "问答流事件发送失败", ex);
         }
     }
 

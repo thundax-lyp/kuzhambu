@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.common.web.exception;
 
-public class SystemException extends KuzhambuException {
+public class SystemException extends ApiException {
 
     public SystemException() {
         super(WebErrorCode.SYSTEM_ERROR);
