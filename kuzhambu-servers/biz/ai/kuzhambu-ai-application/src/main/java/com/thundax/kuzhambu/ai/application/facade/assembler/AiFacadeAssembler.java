@@ -44,6 +44,7 @@ import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
@@ -215,6 +216,33 @@ public class AiFacadeAssembler {
                 request.getOutputSchemaJson(),
                 request.isForceJson(),
                 request.getLocale());
+    }
+
+    @NonNull
+    public KnowledgeAiExtractionCommand toKnowledgeGraphExtractionCommand(
+            @NonNull KnowledgeGraphExtractionJobFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeAiExtractionCommand(
+                "GRAPH",
+                request.getScope(),
+                request.getContentTitle(),
+                request.getContentType(),
+                request.getContentId(),
+                request.getRequestedBy(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                request.getContentSnapshotJson(),
+                null,
+                true,
+                null);
     }
 
     @NonNull

@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI Facade 图谱抽取契约`：补齐 Knowledge 图谱抽取提交入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/AiFacade.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/KnowledgeGraphExtractionJobFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/assembler/AiFacadeAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/impl/AiFacadeImpl.java`、对应测试（预计 5 个文件）
-    - 处理动作：新增 `submitKnowledgeGraphExtraction` Facade 契约并委托 AI application 提交用例。
-    - 验收点：Facade 能接收完整素材快照并返回真实 `AiBatchJobId`。
-    - 重要度：10/10
-
 - [ ] `AI Application 图谱任务提交`：实现图谱抽取 Batch Job 提交和 afterCommit 执行
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

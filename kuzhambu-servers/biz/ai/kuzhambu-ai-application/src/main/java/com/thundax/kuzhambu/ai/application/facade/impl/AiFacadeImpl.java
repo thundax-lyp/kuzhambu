@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplica
 import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeGraphExtractionTaskApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
@@ -25,6 +26,7 @@ import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
@@ -46,6 +48,7 @@ public class AiFacadeImpl implements AiFacade {
     private final AiBatchJobApplicationService aiBatchJobApplicationService;
     private final DiscoveryAiApplicationService discoveryAiApplicationService;
     private final KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService;
+    private final KnowledgeGraphExtractionTaskApplicationService knowledgeGraphExtractionTaskApplicationService;
     private final AiCandidateApplicationService aiCandidateApplicationService;
     private final AiInvocationRepository aiInvocationRepository;
     private final AiFacadeAssembler aiFacadeAssembler;
@@ -55,6 +58,7 @@ public class AiFacadeImpl implements AiFacade {
             AiBatchJobApplicationService aiBatchJobApplicationService,
             DiscoveryAiApplicationService discoveryAiApplicationService,
             KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
+            KnowledgeGraphExtractionTaskApplicationService knowledgeGraphExtractionTaskApplicationService,
             AiCandidateApplicationService aiCandidateApplicationService,
             AiInvocationRepository aiInvocationRepository,
             AiFacadeAssembler aiFacadeAssembler) {
@@ -62,6 +66,7 @@ public class AiFacadeImpl implements AiFacade {
         this.aiBatchJobApplicationService = aiBatchJobApplicationService;
         this.discoveryAiApplicationService = discoveryAiApplicationService;
         this.knowledgeAiExtractionApplicationService = knowledgeAiExtractionApplicationService;
+        this.knowledgeGraphExtractionTaskApplicationService = knowledgeGraphExtractionTaskApplicationService;
         this.aiCandidateApplicationService = aiCandidateApplicationService;
         this.aiInvocationRepository = aiInvocationRepository;
         this.aiFacadeAssembler = aiFacadeAssembler;
@@ -162,6 +167,18 @@ public class AiFacadeImpl implements AiFacade {
         }
         Long batchId = AiBatchJobIdCodec.toValue(
                 aiBatchJobApplicationService.create(aiFacadeAssembler.toCreateBatchJobCommand(request)));
+        return aiFacadeAssembler.toActionResponse(batchId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AiBatchJobActionFacadeResponse submitKnowledgeGraphExtraction(
+            KnowledgeGraphExtractionJobFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        Long batchId = AiBatchJobIdCodec.toValue(knowledgeGraphExtractionTaskApplicationService.submitGraph(
+                aiFacadeAssembler.toKnowledgeGraphExtractionCommand(request)));
         return aiFacadeAssembler.toActionResponse(batchId);
     }
 

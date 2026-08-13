@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
@@ -46,6 +47,8 @@ public interface AiFacade {
     AiBatchJobPageFacadeResponse pageBatchJobs(AiBatchJobQueryFacadeRequest request);
 
     AiBatchJobActionFacadeResponse createBatchJob(CreateAiBatchJobFacadeRequest request);
+
+    AiBatchJobActionFacadeResponse submitKnowledgeGraphExtraction(KnowledgeGraphExtractionJobFacadeRequest request);
 
     boolean canDispatchNextBatchUnit(Long batchId);
 
