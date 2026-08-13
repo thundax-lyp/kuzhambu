@@ -65,25 +65,8 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
     }
 
     private static List<ArchitectureRuleAllowance> legacyApplicationServiceBoundaryAllowances() {
-        return List.of(
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.workbench.service."
-                        + "KnowledgeGraphWorkbenchApplicationService.getManuscript(java.lang.String, java.lang.Long)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.workbench.service."
-                        + "KnowledgeGraphWorkbenchApplicationService.applyCandidate(java.lang.Long, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.workbench.service."
-                                + "KnowledgeGraphWorkbenchApplicationService.listManuscriptTree(java.lang.String, java.lang.String, java.lang.String, java.lang.String)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.workbench.service."
-                                + "KnowledgeGraphWorkbenchApplicationService.extractManuscript(java.lang.String, java.lang.Long, java.lang.String, java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.workbench.service."
-                                + "KnowledgeGraphWorkbenchApplicationService.getLatestCandidate(java.lang.String, java.lang.Long, java.lang.String)"),
-                rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.workbench.service."
-                        + "KnowledgeGraphWorkbenchApplicationService.applyCandidate(java.lang.Long)"),
-                rawParameters(
-                        "METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.report.service."
-                                + "KnowledgeReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"));
+        return List.of(rawParameters("METHOD_SHAPE:com.thundax.kuzhambu.knowledge.application.report.service."
+                + "KnowledgeReportApplicationService.summary(java.time.Instant, java.time.Instant, java.lang.String)"));
     }
 
     private static ArchitectureRuleAllowance rawParameters(String key) {
