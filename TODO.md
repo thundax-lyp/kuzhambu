@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `发布规划操作模型`：建立 GraphPublication 预览和发布变更模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPublication.java`、`GraphPublicationContext.java`、`GraphPublicationChangeSet.java`、`GraphPublicationTest.java`（预计 4 个文件）
-    - 处理动作：实现草稿图到发布节点/边/属性/素材映射的只读规划。
-    - 验收点：命中 `DELETED` 发布对象时产出 blocking issue 且不会自动恢复。
-    - 重要度：10/10
-
 - [ ] `发布空间子图聚合`：建立发布空间删除、合并和拆分模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
