@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `素材删除事件应用服务`：实现 GraphMaterialEventApplicationServiceImpl
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphMaterialEventApplicationServiceImpl.java`、`GraphMaterialEventApplicationServiceImplTest.java`（预计 2 个文件）
-    - 处理动作：实现事件记录、分页、重试和处理编排。
-    - 验收点：只接受 `DELETED` 事件，重复投递返回原事件 ID。
-    - 重要度：9/10
-
 - [ ] `素材删除事件执行器和调度器`：实现事件领取、清理、失败记录和后台消费
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
