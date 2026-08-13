@@ -12,7 +12,15 @@ public interface GraphPublishedEdgeMaterialRepository {
 
     int insert(GraphPublishedEdgeMaterial relation);
 
+    void batchInsert(List<GraphPublishedEdgeMaterial> relations);
+
+    int deleteByPublishedEdgeId(GraphPublishedEdgeId publishedEdgeId);
+
+    int deleteByPublishedEdgeIds(List<GraphPublishedEdgeId> publishedEdgeIds);
+
     int deleteByPublishedEdgeIdAndMaterialRef(GraphPublishedEdgeId publishedEdgeId, ContentRef materialRef);
 
     int deleteByMaterial(ContentRef materialRef);
+
+    long countDistinctMaterials();
 }

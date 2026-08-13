@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphPer
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphPublishedEdgeMaterialDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphPublishedEdgeMaterialMapper;
 import java.util.List;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -38,7 +39,39 @@ public class GraphPublishedEdgeMaterialRepositoryImpl implements GraphPublishedE
 
     @Override
     public int insert(GraphPublishedEdgeMaterial relation) {
-        return mapper.insert(GraphPersistenceAssembler.toObject(relation));
+        try {
+            return mapper.insert(GraphPersistenceAssembler.toObject(relation));
+        } catch (DuplicateKeyException ex) {
+            if (exists(relation)) {
+                return 0;
+            }
+            throw ex;
+        }
+    }
+
+    @Override
+    public void batchInsert(List<GraphPublishedEdgeMaterial> relations) {
+        if (relations == null || relations.isEmpty()) {
+            return;
+        }
+        relations.forEach(this::insert);
+    }
+
+    @Override
+    public int deleteByPublishedEdgeId(GraphPublishedEdgeId id) {
+        QueryWrapper<GraphPublishedEdgeMaterialDO> w = new QueryWrapper<>();
+        return mapper.delete(w.eq("published_edge_id", GraphPublishedEdgeIdCodec.toValue(id)));
+    }
+
+    @Override
+    public int deleteByPublishedEdgeIds(List<GraphPublishedEdgeId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        QueryWrapper<GraphPublishedEdgeMaterialDO> w = new QueryWrapper<>();
+        return mapper.delete(w.in(
+                "published_edge_id",
+                ids.stream().map(GraphPublishedEdgeIdCodec::toValue).toList()));
     }
 
     @Override
@@ -49,6 +82,17 @@ public class GraphPublishedEdgeMaterialRepositoryImpl implements GraphPublishedE
     @Override
     public int deleteByMaterial(ContentRef ref) {
         return mapper.delete(byMaterial(ref));
+    }
+
+    @Override
+    public long countDistinctMaterials() {
+        return mapper.countDistinctMaterials();
+    }
+
+    private boolean exists(GraphPublishedEdgeMaterial relation) {
+        return mapper.selectCount(byMaterial(relation.getMaterialRef())
+                        .eq("published_edge_id", GraphPublishedEdgeIdCodec.toValue(relation.getPublishedEdgeId())))
+                > 0;
     }
 
     private QueryWrapper<GraphPublishedEdgeMaterialDO> byMaterial(ContentRef ref) {

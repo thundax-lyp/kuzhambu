@@ -12,7 +12,15 @@ public interface GraphPublishedNodeMaterialRepository {
 
     int insert(GraphPublishedNodeMaterial relation);
 
+    void batchInsert(List<GraphPublishedNodeMaterial> relations);
+
+    int deleteByPublishedNodeId(GraphPublishedNodeId publishedNodeId);
+
+    int deleteByPublishedNodeIds(List<GraphPublishedNodeId> publishedNodeIds);
+
     int deleteByPublishedNodeIdAndMaterialRef(GraphPublishedNodeId publishedNodeId, ContentRef materialRef);
 
     int deleteByMaterial(ContentRef materialRef);
+
+    long countDistinctMaterials();
 }

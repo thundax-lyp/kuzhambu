@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `发布素材映射仓储`：补齐发布节点/边素材映射批量持久化和删除
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：节点素材映射和边素材映射 Repository、RepositoryImpl、Mapper、测试（预计 6-8 个文件）
-    - 处理动作：新增批量插入、按发布对象删除、按素材删除和 distinct 素材计数。
-    - 验收点：撤回或素材删除能只清理当前素材映射，不删除发布对象。
-    - 重要度：9/10
-
 - [ ] `Workbench 读仓储`：新增图谱工作台统计、搜索和质量快照查询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
