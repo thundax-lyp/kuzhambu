@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `素材草稿图聚合`：建立 GraphMaterialGraph 和变更集
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphMaterialGraph.java`、`GraphMaterialChangeSet.java`、`GraphMaterialGraphTest.java`（预计 3 个文件）
-    - 处理动作：实现节点/边 CRUD、合并、拆分、级联删除和素材状态刷新。
-    - 验收点：聚合能拒绝跨素材对象、孤立边、重复 nodeKey 和重复 edgeKey。
-    - 重要度：10/10
-
 - [ ] `发布规划操作模型`：建立 GraphPublication 预览和发布变更模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
