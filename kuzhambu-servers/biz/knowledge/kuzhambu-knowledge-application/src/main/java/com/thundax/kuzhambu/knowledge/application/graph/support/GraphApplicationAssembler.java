@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.graph.assembler;
+package com.thundax.kuzhambu.knowledge.application.graph.support;
 
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;

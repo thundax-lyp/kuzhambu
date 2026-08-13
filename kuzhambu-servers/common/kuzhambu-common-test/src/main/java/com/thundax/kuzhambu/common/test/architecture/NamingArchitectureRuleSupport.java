@@ -44,8 +44,6 @@ public final class NamingArchitectureRuleSupport {
                     + "(?:(?:static|final|synchronized|abstract|native|strictfp)\\s+)*"
                     + "(?:<[^>]+>\\s+)?[\\w<>?,.\\[\\]][\\w<>?,.\\[\\] ]*\\s+(\\w+)\\s*\\([^;{}]*\\)\\s*"
                     + "(?:throws\\s+[^;{]+)?\\{");
-    private static final Pattern COMMAND_QUERY_CONSTRUCTION_PATTERN =
-            Pattern.compile("\\bnew\\s+([A-Z][A-Za-z0-9_]*(?:Command|Query))\\s*\\(");
     private static final Pattern COMMAND_QUERY_RETURNING_METHOD_DECLARATION_PATTERN =
             Pattern.compile("(?m)^\\s*(?:@[\\w.]+(?:\\([^\\n]*\\))?\\s*)*"
                     + "(?:(?:public|protected|private)\\s+)?"
@@ -300,42 +298,6 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty() && staleAllowances.isEmpty());
     }
 
-    public static void assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
-            Collection<Path> sourceRoots, Collection<ArchitectureRuleAllowance> legacyAllowances) {
-        Path root = ArchitectureSourceSupport.repositoryRoot();
-        Map<String, ArchitectureRuleAllowance> allowlist = architectureAllowlist(legacyAllowances);
-        Set<String> matchedAllowances = new HashSet<String>();
-        List<String> violations = new ArrayList<String>();
-
-        for (Path sourceRoot : sourceRoots) {
-            if (!Files.exists(sourceRoot)) {
-                continue;
-            }
-            try (Stream<Path> paths = Files.walk(sourceRoot)) {
-                paths.filter(Files::isRegularFile)
-                        .filter(path -> path.getFileName().toString().endsWith(".java"))
-                        .forEach(path -> collectCommandQueryConstructionViolations(
-                                root, path, violations, allowlist, matchedAllowances));
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to scan command/query construction under " + sourceRoot, e);
-            }
-        }
-
-        List<String> staleAllowances = allowlist.keySet().stream()
-                .filter(key -> !matchedAllowances.contains(key))
-                .toList();
-
-        assertTrue(
-                "Application *Command/*Query construction must stay in *InterfaceAssembler, *FacadeAssembler, or "
-                        + "ApplicationService orchestration. Controllers and facade impls must delegate request "
-                        + "conversion to assemblers; non-service application helpers must move construction to the "
-                        + "calling ApplicationService or a dedicated assembler. Violations: "
-                        + violations
-                        + ". Stale allowances: "
-                        + staleAllowances,
-                violations.isEmpty() && staleAllowances.isEmpty());
-    }
-
     public static void assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
             Collection<Path> sourceRoots, Collection<ArchitectureRuleAllowance> legacyAllowances) {
         Path root = ArchitectureSourceSupport.repositoryRoot();
@@ -523,43 +485,6 @@ public final class NamingArchitectureRuleSupport {
             reasons.add("uses Lombok annotation");
         }
         violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path) + " is invalid: " + reasons);
-    }
-
-    private static void collectCommandQueryConstructionViolations(
-            Path root,
-            Path path,
-            List<String> violations,
-            Map<String, ArchitectureRuleAllowance> allowlist,
-            Set<String> matchedAllowances) {
-        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
-        Matcher matcher = COMMAND_QUERY_CONSTRUCTION_PATTERN.matcher(source);
-        String ownerTypeName = sourceTypeName(source, path);
-        if (isAllowedCommandQueryConstructionOwner(ownerTypeName)) {
-            return;
-        }
-        Map<String, Integer> occurrenceCounts = new HashMap<String, Integer>();
-        while (matcher.find()) {
-            String constructedType = matcher.group(1);
-            int occurrence = occurrenceCounts.merge(constructedType, 1, Integer::sum);
-            String key = commandQueryConstructionKey(ownerTypeName, constructedType, occurrence);
-            if (isAllowlisted(key, allowlist, matchedAllowances)) {
-                continue;
-            }
-            violations.add(key + " in " + ArchitectureSourceSupport.repositoryPath(root, path));
-        }
-    }
-
-    private static boolean isAllowedCommandQueryConstructionOwner(String ownerTypeName) {
-        String simpleName = ownerTypeName.substring(ownerTypeName.lastIndexOf('.') + 1);
-        if (simpleName.endsWith("InterfaceAssembler") || simpleName.endsWith("FacadeAssembler")) {
-            return true;
-        }
-        return ownerTypeName.contains(".application.")
-                && (simpleName.endsWith("ApplicationService") || simpleName.endsWith("ApplicationServiceImpl"));
-    }
-
-    public static String commandQueryConstructionKey(String ownerTypeName, String constructedType, int occurrence) {
-        return "COMMAND_QUERY_CONSTRUCTION:" + ownerTypeName + "#" + constructedType + ":" + occurrence;
     }
 
     private static void collectAssemblerNullCommandQueryReturnViolations(

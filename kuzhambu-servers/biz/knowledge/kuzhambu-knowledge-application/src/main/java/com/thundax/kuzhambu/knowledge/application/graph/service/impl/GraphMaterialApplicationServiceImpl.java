@@ -4,7 +4,6 @@ import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.knowledge.application.graph.assembler.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEdgeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEdgeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialImportCommand;
@@ -13,6 +12,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNod
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeSplitCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialVersionRestoreCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentDto;
+import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphMaterialContentSnapshotDto;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphSaver;
@@ -28,8 +29,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImpo
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphDocumentDto;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialContentSnapshotDto;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialChangeSet;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;

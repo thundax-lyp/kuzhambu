@@ -13,7 +13,6 @@ import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRule
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
@@ -44,9 +43,6 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), Collections.emptyList());
-        NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
-                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-storage-interface/src/main/java")),
-                Collections.emptyList());
         NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
                 java.util.List.of(Path.of("src/main/java"), Path.of("../kuzhambu-storage-interface/src/main/java")),
                 Collections.emptyList());

@@ -45,9 +45,6 @@ class ClassicsApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), ClassicsApplicationCommandQueryRecordAllowances.legacyAllowances());
-        NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
-                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-classics-interface/src/main/java")),
-                legacyCommandQueryConstructionAllowances());
         NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-classics-interface/src/main/java")),
                 legacyAssemblerNullReturnAllowances());

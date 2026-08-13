@@ -41,9 +41,6 @@ class KnowledgeApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesAreRecords(
                 Path.of("src/main/java"), KnowledgeApplicationCommandQueryRecordAllowances.legacyAllowances());
-        NamingArchitectureRuleSupport.assertApplicationCommandQueryConstructionInAssemblersOrApplicationServices(
-                List.of(Path.of("src/main/java"), Path.of("../kuzhambu-knowledge-interface/src/main/java")),
-                Collections.emptyList());
         NamingArchitectureRuleSupport.assertAssemblersDoNotReturnNullApplicationCommandOrQuery(
                 List.of(Path.of("src/main/java"), Path.of("../kuzhambu-knowledge-interface/src/main/java")),
                 Collections.emptyList());

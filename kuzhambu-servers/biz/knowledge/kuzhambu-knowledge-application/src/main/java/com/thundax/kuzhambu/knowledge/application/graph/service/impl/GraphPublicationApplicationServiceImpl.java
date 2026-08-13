@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.knowledge.application.graph.assembler.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
@@ -16,6 +15,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationR
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
