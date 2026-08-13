@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱抽取应用编排`：实现 GraphExtractionApplicationServiceImpl 和 ApplyExecutor
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphExtractionApplicationServiceImpl.java`、`GraphExtractionApplyExecutor.java`、`GraphExtractionApplicationServiceImplTest.java`、`GraphExtractionApplyExecutorTest.java`（预计 4 个文件）
-    - 处理动作：实现抽取提交、重试、当前任务、历史分页和 Candidate 应用。
-    - 验收点：Candidate 重复应用通过 Key 幂等，不重复创建草稿节点和边。
-    - 重要度：10/10
-
 - [ ] `图谱发布执行器`：实现单素材发布和撤回事务入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
