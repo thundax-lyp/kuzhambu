@@ -148,14 +148,16 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     }
 
     private GraphMaterialStatus materialStatus(ContentRef materialRef) {
+        GraphMaterialStatus status = null;
         if (materialRef == null) {
-            return null;
+            return status;
         }
         try {
-            return graphLoader.require(materialRef).material().getStatus();
+            status = graphLoader.require(materialRef).material().getStatus();
         } catch (RuntimeException ex) {
-            return null;
+            status = null;
         }
+        return status;
     }
 
     private ContentRef requireMaterialRef(ContentRef materialRef) {

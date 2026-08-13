@@ -31,6 +31,7 @@
 - 2026-07-09：Admin Web `format:check`、`lint`、`build`、`test` 通过。
 - 2026-07-09：Knowledge Playwright 6 个页面冒烟通过。
 - 2026-08-13：新版知识图谱应用层每个任务提交前均执行 `mvn -pl biz/knowledge/kuzhambu-knowledge-application spotless:check`、`checkstyle:check` 和 `mvn -pl biz/knowledge/kuzhambu-knowledge-application -am -DskipTests compile` 通过。
+- 2026-08-13：新版知识图谱收口检查已执行接口实现覆盖、禁用旧发布模型残留搜索、Impl 占位返回搜索和 RUNBOOK 清理；临时执行手册已删除。
 - 运行时证据以当前分支验证命令为准。
 
 ## Requirement Coverage Matrix
