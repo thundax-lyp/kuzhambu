@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱发布应用服务`：实现 GraphPublicationApplicationServiceImpl
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPublicationApplicationServiceImpl.java`、`GraphPublicationApplicationServiceImplTest.java`、批量发布测试（预计 2-3 个文件）
-    - 处理动作：实现发布预览、批量预览、发布、批量发布、撤回预览和撤回。
-    - 验收点：批量发布单项失败不回滚其他成功项，也不阻止后续素材继续执行。
-    - 重要度：10/10
-
 - [ ] `发布空间治理应用服务`：实现 GraphPublishedApplicationServiceImpl
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
