@@ -24,7 +24,7 @@ class KnowledgeTaxonomyCompatibilityTest {
 
     @Test
     void enumsShouldAcceptLegacyClassicsValues() {
-        assertEquals(ContentType.MING_CUSTOM, ContentType.from("MING_CUSTOMS"));
+        assertEquals(ContentType.MING_CUSTOMS, ContentType.from("MING_CUSTOMS"));
         assertEquals(TagSource.AI_EXTRACTED, TagSource.from("AI"));
     }
 

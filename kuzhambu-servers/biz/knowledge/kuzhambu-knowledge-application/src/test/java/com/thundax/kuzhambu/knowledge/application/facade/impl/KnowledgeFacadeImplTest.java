@@ -154,7 +154,7 @@ class KnowledgeFacadeImplTest {
                         contentTitleCaptor.capture(),
                         tagSourceCaptor.capture());
         assertEquals(12L, tagIdCaptor.getValue().value());
-        assertEquals(ContentType.MING_CUSTOM, contentTypeCaptor.getValue());
+        assertEquals(ContentType.MING_CUSTOMS, contentTypeCaptor.getValue());
         assertEquals(34L, contentIdCaptor.getValue());
         assertEquals("大明会典", contentTitleCaptor.getValue());
         assertEquals(TagSource.AI_EXTRACTED, tagSourceCaptor.getValue());
@@ -168,7 +168,7 @@ class KnowledgeFacadeImplTest {
                         removeContentTypeCaptor.capture(),
                         removeContentIdCaptor.capture());
         assertEquals(12L, removeTagIdCaptor.getValue().value());
-        assertEquals(ContentType.MING_CUSTOM, removeContentTypeCaptor.getValue());
+        assertEquals(ContentType.MING_CUSTOMS, removeContentTypeCaptor.getValue());
         assertEquals(34L, removeContentIdCaptor.getValue());
     }
 

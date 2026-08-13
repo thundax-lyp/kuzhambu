@@ -6,15 +6,15 @@ import java.util.Arrays;
 public enum ContentType {
     SANCAI_ENTRY,
     WANGQI_DOCUMENT,
-    MING_CUSTOM;
+    MING_CUSTOMS;
 
     public String value() {
         return name();
     }
 
     public static ContentType from(String value) {
-        if ("MING_CUSTOMS".equalsIgnoreCase(value)) {
-            return MING_CUSTOM;
+        if ("MING_CUSTOM".equalsIgnoreCase(value)) {
+            return MING_CUSTOMS;
         }
         return Arrays.stream(values())
                 .filter(item -> item.name().equalsIgnoreCase(value))
