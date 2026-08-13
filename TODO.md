@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Workbench 读仓储`：新增图谱工作台统计、搜索和质量快照查询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphWorkbenchMetrics.java`、`GraphPublishedSearchHit.java`、`GraphQualitySnapshot.java`、`GraphWorkbenchRepository.java`、`GraphWorkbenchRepositoryImpl.java`、`GraphWorkbenchMapper.java`、Mapper XML、测试（预计 8 个文件）
-    - 处理动作：把 overview、search 和 quality 查询下沉到 Repository/SQL 层。
-    - 验收点：overview 不统计未发布或已删除对象，search 不做内存分页。
-    - 重要度：8/10
-
 - [ ] `JSON Schema 装配`：打包并编译知识图谱 JSON Schema
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
