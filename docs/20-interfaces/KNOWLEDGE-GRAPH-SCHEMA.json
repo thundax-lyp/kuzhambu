@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kuzhambu.local/schemas/knowledge-graph/1.0.0",
+  "$ref": "#/$defs/graphDocument",
+  "x-kuzhambu-validation": {
+    "standardStage": "For extraction, import and draft writes, validate only graph shape, node id/type/name, edge endpoints/relation type and type/relation enums with any Draft 2020-12 validator.",
+    "publicationStage": "Before publishing, block only duplicate object identifiers, missing or invalid edge endpoints, and effective keys that cannot be calculated or resolved by a user decision.",
+    "qualityStage": "Validate property recommendations, source-target compatibility, relation qualifiers, cycles and core-relation rules as warnings or governance to-dos; they do not block first-release draft writes or publication.",
+    "implementation": "The backend owns all stages; the frontend only renders backend-provided validation results."
+  },
+  "schemaId": "kuzhambu.knowledge-graph",
+  "schemaVersion": "1.0.0",
+  "scope": {
+    "contentTypes": ["SANCAI_ENTRY"],
+    "nodeCategories": ["ENTITY", "CONCEPT", "EVENT"],
+    "sancaiCategoryCodes": ["TIANWEN", "DILI", "RENWU", "SHILING", "GONGSHI", "QIYONG", "SHENTI", "YIFU", "RENSHI", "YIZHI", "ZHENBAO", "WENSHI", "NIAOSHOU", "CAOMU"],
+    "freeNodeTypesAllowed": false,
+    "freeRelationTypesAllowed": false
+  },
+  "normalization": {
+    "unicode": "NFKC",
+    "trim": true,
+    "collapseWhitespace": true,
+    "caseInsensitive": true
+  },
+  "commonNodeFields": {
+    "name": { "valueType": "STRING", "required": true, "multiValue": false },
+    "aliases": { "valueType": "STRING", "required": false, "multiValue": true, "deduplicate": true },
+    "description": { "valueType": "STRING", "required": false, "multiValue": false },
+    "identityQualifier": { "valueType": "STRING", "required": false, "multiValue": false },
+    "period": { "valueType": "PERIOD", "required": false, "multiValue": true },
+    "categoryCodes": { "valueType": "STRING", "required": false, "multiValue": true, "allowedValues": ["TIANWEN", "DILI", "RENWU", "SHILING", "GONGSHI", "QIYONG", "SHENTI", "YIFU", "RENSHI", "YIZHI", "ZHENBAO", "WENSHI", "NIAOSHOU", "CAOMU"] },
+    "imageRefs": { "valueType": "REFERENCE", "required": false, "multiValue": true }
+  },
+  "nodeKey": {
+    "baseFields": ["nodeType", "name", "identityQualifier"],
+    "noAliasMatching": true,
+    "sameNameWithoutQualifierRequiresPublishDecision": true
+  },
+  "nodeTypes": {
+    "PERSON": {
+      "category": "ENTITY",
+      "label": "人物",
+      "core": true,
+      "fields": {
+        "courtesyName": { "valueType": "STRING", "multiValue": true },
+        "styleName": { "valueType": "STRING", "multiValue": true },
+        "gender": { "valueType": "STRING", "multiValue": false },
+        "birthYear": { "valueType": "YEAR", "multiValue": false },
+        "deathYear": { "valueType": "YEAR", "multiValue": false }
+      },
+      "keyFieldsWhenPresent": ["birthYear", "deathYear"],
+      "coreRelationPolicy": { "mode": "ANY_INCIDENT_RELATION", "relationTypes": ["PARENT_OF", "ANCESTOR_OF", "MEMBER_OF", "HOLDS_OFFICE", "AUTHORED", "COMPILED", "PARTICIPATED_IN"] }
+    },
+    "GROUP": {
+      "category": "ENTITY", "label": "群体/族群", "core": false,
+      "fields": { "groupKind": { "valueType": "STRING", "required": true, "multiValue": false } },
+      "keyFields": ["groupKind"]
+    },
+    "DYNASTY": {
+      "category": "ENTITY", "label": "朝代/政权", "core": true,
+      "fields": {
+        "regimeKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "startYear": { "valueType": "YEAR", "multiValue": false },
+        "endYear": { "valueType": "YEAR", "multiValue": false }
+      },
+      "keyFieldsWhenPresent": ["regimeKind", "startYear", "endYear"],
+      "coreRelationPolicy": { "mode": "ANY_INCIDENT_RELATION", "relationTypes": ["RULES", "SUCCEEDS"] }
+    },
+    "ORGANIZATION": {
+      "category": "ENTITY", "label": "机构", "core": true,
+      "fields": {
+        "organizationKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "foundedPeriod": { "valueType": "PERIOD", "multiValue": false },
+        "locatedIn": { "valueType": "NODE_REFERENCE", "targetTypes": ["PLACE"], "multiValue": false }
+      },
+      "keyFields": ["organizationKind", "locatedIn"],
+      "coreRelationPolicy": { "mode": "ANY_INCIDENT_RELATION", "relationTypes": ["MEMBER_OF", "LOCATED_IN", "RULES", "AUTHORED", "COMPILED"] }
+    },
+    "OFFICE": {
+      "category": "CONCEPT", "label": "官职/身份", "core": false,
+      "fields": {
+        "officeKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "rank": { "valueType": "STRING", "multiValue": false },
+        "regime": { "valueType": "NODE_REFERENCE", "targetTypes": ["DYNASTY"], "multiValue": false }
+      },
+      "keyFields": ["officeKind", "regime"]
+    },
+    "PLACE": {
+      "category": "ENTITY", "label": "地点/行政区", "core": true,
+      "fields": {
+        "placeKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "parentPlace": { "valueType": "NODE_REFERENCE", "targetTypes": ["PLACE"], "multiValue": false },
+        "latitude": { "valueType": "DECIMAL", "multiValue": false },
+        "longitude": { "valueType": "DECIMAL", "multiValue": false }
+      },
+      "keyFields": ["placeKind", "parentPlace"],
+      "coreRelationPolicy": { "mode": "ANY_INCIDENT_RELATION", "relationTypes": ["LOCATED_IN", "PART_OF", "RULES"] }
+    },
+    "BUILDING": {
+      "category": "ENTITY", "label": "建筑/场所", "core": false,
+      "fields": {
+        "buildingKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "locatedIn": { "valueType": "NODE_REFERENCE", "targetTypes": ["PLACE"], "multiValue": false },
+        "builtPeriod": { "valueType": "PERIOD", "multiValue": false }
+      },
+      "keyFields": ["buildingKind", "locatedIn"]
+    },
+    "WORK": {
+      "category": "ENTITY", "label": "著作/图卷", "core": true,
+      "fields": {
+        "workKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "creator": { "valueType": "NODE_REFERENCE", "targetTypes": ["PERSON", "ORGANIZATION"], "multiValue": false },
+        "edition": { "valueType": "STRING", "multiValue": false },
+        "createdPeriod": { "valueType": "PERIOD", "multiValue": false }
+      },
+      "keyFields": ["workKind", "creator", "edition"],
+      "coreRelationPolicy": { "mode": "ANY_INCIDENT_RELATION", "relationTypes": ["AUTHORED", "COMPILED", "DEPICTS", "DESCRIBES"] }
+    },
+    "EVENT": {
+      "category": "EVENT", "label": "事件", "core": true,
+      "fields": {
+        "eventKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "timeRange": { "valueType": "TIME_RANGE", "multiValue": false },
+        "locatedIn": { "valueType": "NODE_REFERENCE", "targetTypes": ["PLACE", "BUILDING"], "multiValue": false }
+      },
+      "keyFields": ["eventKind", "timeRange", "locatedIn"],
+      "coreRelationPolicy": { "mode": "ANY_INCIDENT_RELATION", "relationTypes": ["OCCURS_AT", "PARTICIPATED_IN"] }
+    },
+    "RITUAL": {
+      "category": "CONCEPT", "label": "礼仪/制度", "core": false,
+      "fields": {
+        "ritualKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "applicablePeriod": { "valueType": "PERIOD", "multiValue": false }
+      },
+      "keyFields": ["ritualKind", "applicablePeriod"]
+    },
+    "CONCEPT": {
+      "category": "CONCEPT", "label": "概念/学说", "core": false,
+      "fields": {
+        "conceptKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "discipline": { "valueType": "STRING", "multiValue": false }
+      },
+      "keyFields": ["conceptKind", "discipline"]
+    },
+    "OBJECT": {
+      "category": "ENTITY", "label": "器物/服饰", "core": false,
+      "fields": {
+        "objectKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "material": { "valueType": "NODE_REFERENCE", "targetTypes": ["MATERIAL"], "multiValue": false },
+        "form": { "valueType": "STRING", "multiValue": false }
+      },
+      "keyFields": ["objectKind", "material", "form"]
+    },
+    "MATERIAL": {
+      "category": "ENTITY", "label": "材料/矿物", "core": false,
+      "fields": {
+        "materialKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "originPlace": { "valueType": "NODE_REFERENCE", "targetTypes": ["PLACE"], "multiValue": false }
+      },
+      "keyFields": ["materialKind", "originPlace"]
+    },
+    "ANIMAL": {
+      "category": "ENTITY", "label": "动物", "core": false,
+      "fields": {
+        "animalKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "scientificOrTraditionalName": { "valueType": "STRING", "multiValue": false }
+      },
+      "keyFields": ["animalKind"]
+    },
+    "PLANT": {
+      "category": "ENTITY", "label": "植物", "core": false,
+      "fields": {
+        "plantKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "scientificOrTraditionalName": { "valueType": "STRING", "multiValue": false }
+      },
+      "keyFields": ["plantKind"]
+    },
+    "CELESTIAL_BODY": {
+      "category": "ENTITY", "label": "天体", "core": false,
+      "fields": { "celestialKind": { "valueType": "STRING", "required": true, "multiValue": false } },
+      "keyFields": ["celestialKind"]
+    },
+    "NATURAL_PHENOMENON": {
+      "category": "EVENT", "label": "自然现象", "core": false,
+      "fields": { "phenomenonKind": { "valueType": "STRING", "required": true, "multiValue": false } },
+      "keyFields": ["phenomenonKind"]
+    },
+    "DEITY": {
+      "category": "ENTITY", "label": "神祇/神话实体", "core": false,
+      "fields": {
+        "deityKind": { "valueType": "STRING", "required": true, "multiValue": false },
+        "tradition": { "valueType": "STRING", "multiValue": false }
+      },
+      "keyFields": ["deityKind", "tradition"]
+    }
+  },
+  "commonRelationFields": {
+    "timeRange": { "valueType": "TIME_RANGE", "required": false },
+    "place": { "valueType": "NODE_REFERENCE", "targetTypes": ["PLACE"], "required": false },
+    "role": { "valueType": "STRING", "required": false },
+    "sequence": { "valueType": "STRING", "required": false },
+    "note": { "valueType": "STRING", "required": false }
+  },
+  "relationTypes": {
+    "PARENT_OF": { "label": "父母/子女", "sourceTypes": ["PERSON"], "targetTypes": ["PERSON"], "directed": true, "keyQualifiers": [], "coreFor": ["PERSON"] },
+    "ANCESTOR_OF": { "label": "祖先/后裔", "sourceTypes": ["PERSON"], "targetTypes": ["PERSON"], "directed": true, "keyQualifiers": [], "coreFor": ["PERSON"], "legacyAliases": ["ANCESTOR"] },
+    "SPOUSE_OF": { "label": "配偶", "sourceTypes": ["PERSON"], "targetTypes": ["PERSON"], "directed": false, "keyQualifiers": ["timeRange"] },
+    "MEMBER_OF": { "label": "隶属/成员", "sourceTypes": ["PERSON", "GROUP"], "targetTypes": ["GROUP", "ORGANIZATION"], "directed": true, "keyQualifiers": ["timeRange", "role"], "coreFor": ["PERSON", "ORGANIZATION"] },
+    "HOLDS_OFFICE": { "label": "任职", "sourceTypes": ["PERSON"], "targetTypes": ["OFFICE"], "directed": true, "keyQualifiers": ["timeRange", "role"], "coreFor": ["PERSON"] },
+    "RULES": { "label": "统治/管辖", "sourceTypes": ["PERSON", "DYNASTY", "ORGANIZATION"], "targetTypes": ["PLACE", "GROUP", "DYNASTY"], "directed": true, "keyQualifiers": ["timeRange"], "coreFor": ["DYNASTY"] },
+    "LOCATED_IN": { "label": "位于", "sourceTypes": ["PLACE", "BUILDING", "ORGANIZATION", "OBJECT"], "targetTypes": ["PLACE"], "directed": true, "keyQualifiers": [], "coreFor": ["PLACE", "BUILDING", "ORGANIZATION"] },
+    "PART_OF": { "label": "构成/隶属", "sourceTypes": ["PLACE", "BUILDING", "OBJECT", "WORK", "RITUAL"], "targetTypes": ["PLACE", "BUILDING", "OBJECT", "WORK", "RITUAL"], "directed": true, "acyclic": true, "keyQualifiers": [], "coreFor": ["PLACE"] },
+    "AUTHORED": { "label": "撰著", "sourceTypes": ["PERSON", "ORGANIZATION"], "targetTypes": ["WORK"], "directed": true, "keyQualifiers": ["role"], "coreFor": ["WORK"], "legacyAliases": ["作者"] },
+    "COMPILED": { "label": "编纂", "sourceTypes": ["PERSON", "ORGANIZATION"], "targetTypes": ["WORK"], "directed": true, "keyQualifiers": ["role"], "coreFor": ["WORK"] },
+    "DEPICTS": { "label": "描绘", "sourceTypes": ["WORK", "OBJECT"], "targetCategories": ["ENTITY", "CONCEPT", "EVENT"], "directed": true, "keyQualifiers": ["role"] },
+    "DESCRIBES": { "label": "记述", "sourceTypes": ["WORK"], "targetCategories": ["ENTITY", "CONCEPT", "EVENT"], "directed": true, "keyQualifiers": ["role"] },
+    "OCCURS_AT": { "label": "发生于", "sourceTypes": ["EVENT", "RITUAL"], "targetTypes": ["PLACE", "BUILDING"], "directed": true, "keyQualifiers": [], "coreFor": ["EVENT"] },
+    "PARTICIPATED_IN": { "label": "参与", "sourceTypes": ["PERSON", "GROUP", "ORGANIZATION", "DEITY"], "targetTypes": ["EVENT", "RITUAL"], "directed": true, "keyQualifiers": ["role"], "coreFor": ["EVENT"] },
+    "OBSERVED_IN": { "label": "观测/出现于", "sourceTypes": ["CELESTIAL_BODY", "NATURAL_PHENOMENON"], "targetTypes": ["PLACE", "EVENT"], "directed": true, "keyQualifiers": ["timeRange"] },
+    "USES": { "label": "使用/采用", "sourceTypes": ["PERSON", "GROUP", "ORGANIZATION", "RITUAL", "OBJECT"], "targetTypes": ["OBJECT", "MATERIAL", "CONCEPT"], "directed": true, "keyQualifiers": ["timeRange", "role"] },
+    "MADE_OF": { "label": "制成材料", "sourceTypes": ["OBJECT", "BUILDING"], "targetTypes": ["MATERIAL"], "directed": true, "keyQualifiers": [] },
+    "PRACTICES": { "label": "实行/奉行", "sourceTypes": ["PERSON", "GROUP", "ORGANIZATION"], "targetTypes": ["RITUAL", "CONCEPT"], "directed": true, "keyQualifiers": ["timeRange"] },
+    "WORSHIPS": { "label": "崇祀", "sourceTypes": ["PERSON", "GROUP", "ORGANIZATION", "RITUAL"], "targetTypes": ["DEITY"], "directed": true, "keyQualifiers": ["timeRange"] },
+    "ASSOCIATED_WITH": { "label": "相关", "sourceCategories": ["ENTITY", "CONCEPT", "EVENT"], "targetCategories": ["ENTITY", "CONCEPT", "EVENT"], "directed": false, "keyQualifiers": ["role"], "requiredFields": ["note"] },
+    "CAUSES": { "label": "导致/引起", "sourceTypes": ["EVENT", "NATURAL_PHENOMENON", "CONCEPT"], "targetTypes": ["EVENT", "NATURAL_PHENOMENON", "CONCEPT"], "directed": true, "keyQualifiers": [] },
+    "SUCCEEDS": { "label": "继承/取代", "sourceTypes": ["DYNASTY", "OFFICE", "ORGANIZATION", "RITUAL"], "targetSameTypeAsSource": true, "directed": true, "acyclic": true, "keyQualifiers": ["timeRange"], "coreFor": ["DYNASTY"] }
+  },
+  "legacyMappings": {
+    "nodeTypes": { "PERSON": "PERSON", "人物": "PERSON", "作品": "WORK" },
+    "relationTypes": { "作者": "AUTHORED", "ANCESTOR": "ANCESTOR_OF" },
+    "unmappedRecordPolicy": "REPORT_ONLY_DO_NOT_AUTO_PUBLISH"
+  },
+  "$defs": {
+    "graphDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "nodes", "edges"],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" },
+        "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+        "edges": { "type": "array", "items": { "$ref": "#/$defs/edge" } }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "nodeType", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "nodeType": {
+          "type": "string",
+          "enum": ["PERSON", "GROUP", "DYNASTY", "ORGANIZATION", "OFFICE", "PLACE", "BUILDING", "WORK", "EVENT", "RITUAL", "CONCEPT", "OBJECT", "MATERIAL", "ANIMAL", "PLANT", "CELESTIAL_BODY", "NATURAL_PHENOMENON", "DEITY"]
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "description": { "type": "string" },
+        "identityQualifier": { "type": "string" },
+        "period": { "type": "array", "items": { "$ref": "#/$defs/period" } },
+        "categoryCodes": { "type": "array", "items": { "type": "string", "enum": ["TIANWEN", "DILI", "RENWU", "SHILING", "GONGSHI", "QIYONG", "SHENTI", "YIFU", "RENSHI", "YIZHI", "ZHENBAO", "WENSHI", "NIAOSHOU", "CAOMU"] }, "uniqueItems": true },
+        "imageRefs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "properties": { "type": "object" }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId", "targetId", "relationType"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "sourceId": { "type": "string", "minLength": 1 },
+        "targetId": { "type": "string", "minLength": 1 },
+        "relationType": {
+          "type": "string",
+          "enum": ["PARENT_OF", "ANCESTOR_OF", "SPOUSE_OF", "MEMBER_OF", "HOLDS_OFFICE", "RULES", "LOCATED_IN", "PART_OF", "AUTHORED", "COMPILED", "DEPICTS", "DESCRIBES", "OCCURS_AT", "PARTICIPATED_IN", "OBSERVED_IN", "USES", "MADE_OF", "PRACTICES", "WORSHIPS", "ASSOCIATED_WITH", "CAUSES", "SUCCEEDS"]
+        },
+        "qualifiers": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "timeRange": { "$ref": "#/$defs/timeRange" },
+            "place": { "type": "string", "minLength": 1 },
+            "role": { "type": "string", "minLength": 1 },
+            "sequence": { "type": "string", "minLength": 1 },
+            "note": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "startYear": { "type": "integer" },
+        "endYear": { "type": "integer" }
+      },
+      "anyOf": [
+        { "required": ["label"] },
+        { "required": ["startYear"] },
+        { "required": ["endYear"] }
+      ]
+    },
+    "timeRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "startYear": { "type": "integer" },
+        "endYear": { "type": "integer" }
+      },
+      "anyOf": [
+        { "required": ["startYear"] },
+        { "required": ["endYear"] }
+      ]
+    }
+  }
+}
