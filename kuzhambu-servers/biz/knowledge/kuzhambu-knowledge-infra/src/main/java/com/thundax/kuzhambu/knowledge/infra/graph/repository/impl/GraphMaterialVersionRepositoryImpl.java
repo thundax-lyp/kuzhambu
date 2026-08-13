@@ -2,7 +2,9 @@ package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialVersionIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialVersionId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialVersionRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialVersionDO;
@@ -45,7 +47,26 @@ public class GraphMaterialVersionRepositoryImpl extends GraphRepositorySupport
     }
 
     @Override
-    public int insert(GraphMaterialVersion version) {
-        return mapper.insert(GraphPersistenceAssembler.toObject(version, materialId(version.getMaterialRef())));
+    public long maxVersionNo(ContentRef ref) {
+        Long id = materialId(ref);
+        return id == null ? 0 : mapper.maxVersionNo(id);
+    }
+
+    @Override
+    public GraphMaterialVersionId insert(GraphMaterialVersion version) {
+        GraphMaterialVersionDO dataObject =
+                GraphPersistenceAssembler.toObject(version, materialId(version.getMaterialRef()));
+        mapper.insert(dataObject);
+        return GraphMaterialVersionIdCodec.toDomain(dataObject.getId());
+    }
+
+    @Override
+    public int deleteByMaterial(ContentRef ref) {
+        Long id = materialId(ref);
+        if (id == null) {
+            return 0;
+        }
+        QueryWrapper<GraphMaterialVersionDO> w = new QueryWrapper<>();
+        return mapper.delete(w.eq("material_id", id));
     }
 }

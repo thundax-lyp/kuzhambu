@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `素材版本和事件仓储`：补齐版本与 MaterialEvent 仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphMaterialVersionRepository.java`、`GraphMaterialEventRepository.java`、对应 RepositoryImpl、Mapper 和测试（预计 6-8 个文件）
-    - 处理动作：新增版本号查询、按素材删除、事件分页、领取查询、插入和事件 CAS 更新。
-    - 验收点：事件领取使用数据库 CAS，重复事件按 `ContentRef + type` 幂等处理。
-    - 重要度：9/10
-
 - [ ] `发布节点仓储`：补齐 GraphPublishedNode 仓储能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.domain.graph.repository;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialVersionId;
 import java.util.List;
 
 public interface GraphMaterialVersionRepository {
@@ -9,5 +10,9 @@ public interface GraphMaterialVersionRepository {
 
     GraphMaterialVersion getByMaterialAndVersionNo(ContentRef materialRef, long versionNo);
 
-    int insert(GraphMaterialVersion version);
+    long maxVersionNo(ContentRef materialRef);
+
+    GraphMaterialVersionId insert(GraphMaterialVersion version);
+
+    int deleteByMaterial(ContentRef materialRef);
 }
