@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `发布属性仓储`：补齐发布节点/边属性批量持久化和删除
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：节点属性和边属性 Repository、RepositoryImpl、Mapper、测试（预计 6-8 个文件）
-    - 处理动作：新增 insert、batchInsert、按发布对象删除和按发布对象集合删除能力。
-    - 验收点：唯一约束重复插入按幂等处理，其他数据库异常不会被吞掉。
-    - 重要度：8/10
-
 - [ ] `发布素材映射仓储`：补齐发布节点/边素材映射批量持久化和删除
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphPer
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphPublishedNodePropertyDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphPublishedNodePropertyMapper;
 import java.util.List;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -35,8 +36,26 @@ public class GraphPublishedNodePropertyRepositoryImpl implements GraphPublishedN
     }
 
     @Override
-    public int insert(GraphPublishedNodeProperty property) {
-        return mapper.insert(GraphPersistenceAssembler.toObject(property));
+    public GraphPublishedNodePropertyId insert(GraphPublishedNodeProperty property) {
+        GraphPublishedNodePropertyDO dataObject = GraphPersistenceAssembler.toObject(property);
+        try {
+            mapper.insert(dataObject);
+            return GraphPublishedNodePropertyIdCodec.toDomain(dataObject.getId());
+        } catch (DuplicateKeyException ex) {
+            GraphPublishedNodeProperty existing = getByUniqueKey(property);
+            if (existing != null) {
+                return existing.getId();
+            }
+            throw ex;
+        }
+    }
+
+    @Override
+    public void batchInsert(List<GraphPublishedNodeProperty> properties) {
+        if (properties == null || properties.isEmpty()) {
+            return;
+        }
+        properties.forEach(this::insert);
     }
 
     @Override
@@ -47,5 +66,30 @@ public class GraphPublishedNodePropertyRepositoryImpl implements GraphPublishedN
     @Override
     public int deleteById(GraphPublishedNodePropertyId id) {
         return mapper.deleteById(GraphPublishedNodePropertyIdCodec.toValue(id));
+    }
+
+    @Override
+    public int deleteByPublishedNodeId(GraphPublishedNodeId id) {
+        QueryWrapper<GraphPublishedNodePropertyDO> w = new QueryWrapper<>();
+        return mapper.delete(w.eq("published_node_id", GraphPublishedNodeIdCodec.toValue(id)));
+    }
+
+    @Override
+    public int deleteByPublishedNodeIds(List<GraphPublishedNodeId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        QueryWrapper<GraphPublishedNodePropertyDO> w = new QueryWrapper<>();
+        return mapper.delete(w.in(
+                "published_node_id",
+                ids.stream().map(GraphPublishedNodeIdCodec::toValue).toList()));
+    }
+
+    private GraphPublishedNodeProperty getByUniqueKey(GraphPublishedNodeProperty property) {
+        QueryWrapper<GraphPublishedNodePropertyDO> w = new QueryWrapper<>();
+        return GraphPersistenceAssembler.toDomain(mapper.selectOne(
+                w.eq("published_node_id", GraphPublishedNodeIdCodec.toValue(property.getPublishedNodeId()))
+                        .eq("property_name", property.getPropertyKey())
+                        .eq("value", property.getValue())));
     }
 }

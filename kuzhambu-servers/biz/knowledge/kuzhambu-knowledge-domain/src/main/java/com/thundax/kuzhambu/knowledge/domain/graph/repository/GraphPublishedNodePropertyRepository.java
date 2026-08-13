@@ -10,9 +10,15 @@ public interface GraphPublishedNodePropertyRepository {
 
     List<GraphPublishedNodeProperty> listByPublishedNodeId(GraphPublishedNodeId publishedNodeId);
 
-    int insert(GraphPublishedNodeProperty property);
+    GraphPublishedNodePropertyId insert(GraphPublishedNodeProperty property);
+
+    void batchInsert(List<GraphPublishedNodeProperty> properties);
 
     int update(GraphPublishedNodeProperty property);
 
     int deleteById(GraphPublishedNodePropertyId id);
+
+    int deleteByPublishedNodeId(GraphPublishedNodeId publishedNodeId);
+
+    int deleteByPublishedNodeIds(List<GraphPublishedNodeId> publishedNodeIds);
 }

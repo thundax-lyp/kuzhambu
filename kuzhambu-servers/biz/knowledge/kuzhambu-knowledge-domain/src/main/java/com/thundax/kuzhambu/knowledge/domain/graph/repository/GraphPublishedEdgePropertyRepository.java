@@ -10,9 +10,15 @@ public interface GraphPublishedEdgePropertyRepository {
 
     List<GraphPublishedEdgeProperty> listByPublishedEdgeId(GraphPublishedEdgeId publishedEdgeId);
 
-    int insert(GraphPublishedEdgeProperty property);
+    GraphPublishedEdgePropertyId insert(GraphPublishedEdgeProperty property);
+
+    void batchInsert(List<GraphPublishedEdgeProperty> properties);
 
     int update(GraphPublishedEdgeProperty property);
 
     int deleteById(GraphPublishedEdgePropertyId id);
+
+    int deleteByPublishedEdgeId(GraphPublishedEdgeId publishedEdgeId);
+
+    int deleteByPublishedEdgeIds(List<GraphPublishedEdgeId> publishedEdgeIds);
 }
