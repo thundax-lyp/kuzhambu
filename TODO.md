@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Workbench 图谱读取应用服务`：实现 GraphWorkbenchApplicationServiceImpl
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphWorkbenchApplicationServiceImpl.java`、`GraphWorkbenchApplicationServiceImplTest.java`（预计 2 个文件）
-    - 处理动作：实现 overview、最近种子节点、incident edges、搜索和质量快照读取。
-    - 验收点：种子节点最多 100、局部图节点最多 200，incident edges 通过 Repository 游标分页。
-    - 重要度：8/10
-
 - [ ] `图谱实现设计同步`：同步最终聚合边界、事务行为和仓储语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
