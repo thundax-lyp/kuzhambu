@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `素材删除事件执行器和调度器`：实现事件领取、清理、失败记录和后台消费
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphMaterialEventClaimExecutor.java`、`GraphMaterialEventCleanupExecutor.java`、`GraphMaterialEventFailureRecorder.java`、`GraphMaterialEventScheduler.java`、对应测试（预计 8 个文件）
-    - 处理动作：按 `claim → cleanup → failure recorder` 顺序实现异步幂等清理。
-    - 验收点：单条事件失败不影响其余事件，多实例并发依赖 CAS 只有一个处理者成功领取。
-    - 重要度：9/10
-
 - [ ] `Portal 图谱读取应用服务`：实现 GraphPortalApplicationServiceImpl
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

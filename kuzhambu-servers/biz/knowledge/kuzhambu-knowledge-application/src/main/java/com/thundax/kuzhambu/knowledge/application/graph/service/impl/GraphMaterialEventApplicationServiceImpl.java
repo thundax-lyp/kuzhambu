@@ -8,6 +8,9 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEve
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEventRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialEventQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialEventApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialEventClaimExecutor;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialEventCleanupExecutor;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialEventFailureRecorder;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEvent;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialEventStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialEventType;
@@ -21,9 +24,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class GraphMaterialEventApplicationServiceImpl implements GraphMaterialEventApplicationService {
 
     private final GraphMaterialEventRepository eventRepository;
+    private final GraphMaterialEventClaimExecutor claimExecutor;
+    private final GraphMaterialEventCleanupExecutor cleanupExecutor;
+    private final GraphMaterialEventFailureRecorder failureRecorder;
 
-    public GraphMaterialEventApplicationServiceImpl(GraphMaterialEventRepository eventRepository) {
+    public GraphMaterialEventApplicationServiceImpl(
+            GraphMaterialEventRepository eventRepository,
+            GraphMaterialEventClaimExecutor claimExecutor,
+            GraphMaterialEventCleanupExecutor cleanupExecutor,
+            GraphMaterialEventFailureRecorder failureRecorder) {
         this.eventRepository = eventRepository;
+        this.claimExecutor = claimExecutor;
+        this.cleanupExecutor = cleanupExecutor;
+        this.failureRecorder = failureRecorder;
     }
 
     @Override
@@ -75,14 +88,15 @@ public class GraphMaterialEventApplicationServiceImpl implements GraphMaterialEv
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public GraphMaterialEvent processEvent(GraphMaterialEventProcessCommand command) {
-        GraphMaterialEvent event = requireEvent(command == null ? null : command.eventId());
-        event.requireLockVersion(command.lockVersion());
-        event.startProcessing();
-        updateEvent(event, command.lockVersion());
-        GraphMaterialEvent processing = eventRepository.getById(event.getId());
-        processing.succeed();
-        updateEvent(processing, processing.getLockVersion());
-        return eventRepository.getById(event.getId());
+        GraphMaterialEvent claimed = claimExecutor.claim(command);
+        if (claimed == null) {
+            return requireEvent(command == null ? null : command.eventId());
+        }
+        try {
+            return cleanupExecutor.cleanup(claimed.getId(), claimed.getLockVersion());
+        } catch (RuntimeException ex) {
+            return failureRecorder.recordFailure(claimed.getId(), claimed.getLockVersion(), ex);
+        }
     }
 
     private GraphMaterialEvent requireEvent(GraphMaterialEventId eventId) {
