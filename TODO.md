@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱素材加载保存支持`：新增 ContentResolver、GraphLoader 和 GraphSaver
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphMaterialContentResolver.java`、`GraphMaterialContentSnapshot.java`、`GraphMaterialGraphLoader.java`、`GraphMaterialGraphSaver.java`、对应测试（预计 5 个文件）
-    - 处理动作：封装 Classics Facade 快照读取、素材图加载创建和按固定顺序保存。
-    - 验收点：Saver 先落节点取得真实 ID 后再构造并落边，最后 CAS 更新 Material。
-    - 重要度：10/10
-
 - [ ] `图谱应用层组装器`：新增 GraphApplicationAssembler
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
