@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱发布执行器`：实现单素材发布和撤回事务入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPublicationExecutor.java`、`GraphPublicationExecutorTest.java`、发布原子性集成测试（预计 2-3 个文件）
-    - 处理动作：按固定顺序创建/复用发布对象、写入属性和映射、创建版本并 CAS 更新 Material。
-    - 验收点：发布任一步失败时节点、边、属性、映射、版本和 Material 状态全部回滚。
-    - 重要度：10/10
-
 - [ ] `图谱发布应用服务`：实现 GraphPublicationApplicationServiceImpl
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
