@@ -16,5 +16,7 @@ public interface GraphMaterialEdgeRepository {
 
     int deleteById(GraphMaterialEdgeId id);
 
+    int deleteByMaterial(ContentRef materialRef);
+
     void batchReplaceByMaterial(ContentRef materialRef, List<GraphMaterialEdge> edges);
 }

@@ -2,8 +2,10 @@ package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
 
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphNodeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +20,8 @@ public class GraphPublishedNode {
     private GraphNodeKey nodeKey;
     private GraphNodeType nodeType;
     private String name;
+    private GraphSourceType source;
     private GraphPublishedStatus status;
+    private Instant updatedAt;
     private long lockVersion;
 }

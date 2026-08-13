@@ -1,9 +1,11 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
 
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphEdgeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +21,9 @@ public class GraphPublishedEdge {
     private GraphPublishedNodeId sourceNodeId;
     private GraphPublishedNodeId targetNodeId;
     private String relationType;
+    private GraphSourceType source;
     private String qualifiersJson;
     private GraphPublishedStatus status;
+    private Instant updatedAt;
     private long lockVersion;
 }

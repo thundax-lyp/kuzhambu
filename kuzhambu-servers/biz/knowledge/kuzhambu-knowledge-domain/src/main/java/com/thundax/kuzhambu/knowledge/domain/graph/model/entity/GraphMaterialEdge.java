@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphEdgeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialNodeId;
@@ -20,5 +21,6 @@ public class GraphMaterialEdge {
     private GraphMaterialNodeId targetNodeId;
     private GraphEdgeKey edgeKey;
     private String relationType;
+    private GraphSourceType source;
     private String qualifiersJson;
 }

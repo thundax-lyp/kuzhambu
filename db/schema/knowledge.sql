@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material_node` (
     `node_key` varchar(256) DEFAULT NULL,
     `node_type` varchar(64) NOT NULL,
     `name` varchar(255) NOT NULL,
+    `source` varchar(32) NOT NULL,
     `properties_json` json DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_material_node_key` (`material_id`, `node_key`),
@@ -98,6 +99,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material_edge` (
     `source_material_node_id` bigint NOT NULL,
     `target_material_node_id` bigint NOT NULL,
     `relation_type` varchar(64) NOT NULL,
+    `source` varchar(32) NOT NULL,
     `qualifiers_json` json DEFAULT NULL,
     `edge_key` varchar(512) DEFAULT NULL,
     PRIMARY KEY (`id`),
@@ -123,11 +125,13 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node` (
     `node_key` varchar(256) NOT NULL,
     `node_type` varchar(64) NOT NULL,
     `name` varchar(255) NOT NULL,
+    `source` varchar(32) NOT NULL,
     `status` varchar(32) NOT NULL,
+    `updated_at` BIGINT NOT NULL,
     `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_published_node_key` (`node_key`),
-    KEY `idx_knowledge_graph_published_node_status` (`status`),
+    KEY `idx_knowledge_graph_published_node_updated` (`status`, `updated_at`),
     KEY `idx_knowledge_graph_published_node_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间节点';
 
@@ -137,14 +141,16 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge` (
     `source_published_node_id` bigint NOT NULL,
     `target_published_node_id` bigint NOT NULL,
     `relation_type` varchar(64) NOT NULL,
+    `source` varchar(32) NOT NULL,
     `qualifiers_json` json DEFAULT NULL,
     `status` varchar(32) NOT NULL,
+    `updated_at` BIGINT NOT NULL,
     `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_published_edge_key` (`edge_key`),
     KEY `idx_knowledge_graph_published_edge_source` (`source_published_node_id`),
     KEY `idx_knowledge_graph_published_edge_target` (`target_published_node_id`),
-    KEY `idx_knowledge_graph_published_edge_status` (`status`)
+    KEY `idx_knowledge_graph_published_edge_updated` (`status`, `updated_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间关系';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node_property` (
@@ -169,16 +175,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge_property` (
     KEY `idx_knowledge_graph_edge_property_preferred` (`published_edge_id`, `property_name`, `is_preferred`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布关系多值属性';
 
-CREATE TABLE IF NOT EXISTS `knowledge_graph_manual_source` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `target_type` varchar(32) NOT NULL,
-    `target_id` bigint NOT NULL,
-    `reason` varchar(1024) NOT NULL,
-    `recorded_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_manual_source_target` (`target_type`, `target_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间人工来源';
-
 CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node_material` (
     `published_node_id` bigint NOT NULL,
     `content_type` varchar(32) NOT NULL,
@@ -196,20 +192,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge_material` (
     PRIMARY KEY (`published_edge_id`, `content_type`, `content_ref_id`),
     KEY `idx_knowledge_graph_published_edge_material_content` (`content_type`, `content_ref_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布边当前素材关联';
-
-CREATE TABLE IF NOT EXISTS `knowledge_graph_governance_operation` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `operation_type` varchar(32) NOT NULL,
-    `target_type` varchar(32) NOT NULL,
-    `target_id` bigint NOT NULL,
-    `before_snapshot_json` json DEFAULT NULL,
-    `after_snapshot_json` json DEFAULT NULL,
-    `reason` varchar(1024) NOT NULL,
-    `operated_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_governance_operation_target` (`target_type`, `target_id`, `operated_at`),
-    KEY `idx_knowledge_graph_governance_operation_type_time` (`operation_type`, `operated_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间治理操作记录';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_event` (
     `id` bigint NOT NULL AUTO_INCREMENT,

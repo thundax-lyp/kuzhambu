@@ -12,6 +12,8 @@ public interface GraphPublishedNodeRepository {
 
     List<GraphPublishedNode> listByIds(List<GraphPublishedNodeId> ids);
 
+    List<GraphPublishedNode> listRecentlyUpdated(int limit);
+
     int insert(GraphPublishedNode node);
 
     int update(GraphPublishedNode node);

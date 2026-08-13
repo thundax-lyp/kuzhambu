@@ -60,9 +60,9 @@ Schema 变更必须与代码评审、数据库迁移和现有数据迁移一同�
 | Aggregate | Responsibility |
 | --- | --- |
 | `GraphMaterial` | 以 `ContentRef` 标识的一份素材的图谱元数据与草稿锁定状态。 |
-| `GraphMaterialNode` / `GraphMaterialEdge` | 均持有归属 `ContentRef` 的当前可编辑草稿图；边的两个端点必须属于同一素材。 |
+| `GraphMaterialNode` / `GraphMaterialEdge` | 均持有归属 `ContentRef` 的当前可编辑草稿图与来源（`AI`、`MANUAL`、`IMPORT`）；边的两个端点必须属于同一素材。 |
 | `GraphMaterialVersion` | 每次成功发布后固化的、不可变的素材草稿图 JSON 快照；仅用于恢复草稿和审计。 |
-| `GraphPublishedNode` / `GraphPublishedEdge` | 发布库当前有效的全局图，支持治理、合并、拆分和删除；发布库没有版本。 |
+| `GraphPublishedNode` / `GraphPublishedEdge` | 发布库当前有效的全局图，支持治理、合并、拆分和删除；`source` 为 `MATERIAL` 或 `MANUAL`；发布库没有版本。 |
 | `GraphMaterialEvent` | 持久化的外部素材事件记录；后台按其处理状态消费。第一版事件类型仅为 `DELETED`。 |
 
 `GraphMaterial` 的业务身份为 common-core `ContentRef(contentType, contentId)`，而不是裸 `materialId`；数据库技术主键仅用于内部关联。首期仅接受 `SANCAI_ENTRY`。除共享 `ContentRef` 外，图谱局部 Domain 的对象均以 `Graph` 开头。
@@ -90,8 +90,8 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 | Table | Key fields and responsibility |
 | --- | --- |
 | `knowledge_graph_material` | 技术主键 `id`；业务 `content_type + content_ref_id` 唯一；`content_title_snapshot`、`status`、`published_at`、`lock_version`。`ContentRef` 是业务身份；标题快照只供列表展示和删除后追溯，不参与 Key 或发布匹配，不复制正文。 |
-| `knowledge_graph_material_node` | `material_id`、`node_key`、`node_type`、`name`、`properties_json`；同素材图内 `(material_id, node_key)` 唯一。未能计算 Key 的草稿对象允许 `node_key` 为空。 |
-| `knowledge_graph_material_edge` | `material_id`、两端素材节点、`relation_type`、`qualifiers_json`、`edge_key`；同素材图内 `(material_id, edge_key)` 唯一。未能计算 Key 的草稿关系允许 `edge_key` 为空。 |
+| `knowledge_graph_material_node` | `material_id`、`node_key`、`node_type`、`name`、`source`、`properties_json`；同素材图内 `(material_id, node_key)` 唯一。未能计算 Key 的草稿对象允许 `node_key` 为空。 |
+| `knowledge_graph_material_edge` | `material_id`、两端素材节点、`relation_type`、`source`、`qualifiers_json`、`edge_key`；同素材图内 `(material_id, edge_key)` 唯一。未能计算 Key 的草稿关系允许 `edge_key` 为空。 |
 | `knowledge_graph_material_version` | `material_id`、递增 `version_no`、`snapshot_json`（`nodes + edges`）、发布人和发布时间；成功发布后写入，永不修改。 |
 
 `properties_json` 与 `qualifiers_json` 是开放多值 JSON 载体：草稿写入只校验其为对象，细分属性和值域作为告警而非拒绝条件；它们不替代可查询的 Key、类型和关系字段。
@@ -102,11 +102,10 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 
 | Table | Key fields and responsibility |
 | --- | --- |
-| `knowledge_graph_published_node` | `node_key` 全局唯一、`node_type`、展示名称、`lock_version`、归档/删除状态；不保存单一发布时点。 |
-| `knowledge_graph_published_edge` | `edge_key` 全局唯一、两端发布节点、`relation_type`、`qualifiers_json`、`lock_version`；不保存单一发布时点。 |
+| `knowledge_graph_published_node` | `node_key` 全局唯一、`node_type`、展示名称、`source`、`status`、`updated_at`、`lock_version`；`updated_at` 在发布灌注或发布空间修改时刷新。 |
+| `knowledge_graph_published_edge` | `edge_key` 全局唯一、两端发布节点、`relation_type`、`source`、`qualifiers_json`、`status`、`updated_at`、`lock_version`；`updated_at` 在发布灌注或发布空间修改时刷新。 |
 | `knowledge_graph_published_node_property` | 发布节点的多值属性：字段、唯一 `value`、`is_preferred`。属性来源不在属性行重复保存，由对象级素材关联和系统审计追溯。 |
 | `knowledge_graph_published_edge_property` | 发布边的多值限定或展示属性，字段语义同节点属性。 |
-| `knowledge_graph_manual_source` | 人工创建或补充的原因、操作者和目标发布节点/边。 |
 
 同一字段允许多个值时，由 Schema 决定是否可并存、是否必须且只能有一个 `is_preferred`。身份字段或互斥字段不得通过属性表绕过发布冲突。
 
@@ -116,7 +115,6 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 | --- | --- |
 | `knowledge_graph_published_node_material` | `GraphPublishedNodeMaterial`：当前发布节点与素材的关联；`published_node_id + content_type + content_ref_id` 唯一，不关联 `GraphMaterialVersion`。素材删除后保留贡献时，以 `ContentRef` 与来源快照追溯。 |
 | `knowledge_graph_published_edge_material` | `GraphPublishedEdgeMaterial`：当前发布边与素材的关联；`published_edge_id + content_type + content_ref_id` 唯一，语义同节点关联。 |
-| `knowledge_graph_governance_operation` | 发布空间 CRUD、合并、拆分、删除的前后快照、理由、操作者和恢复信息。 |
 | `knowledge_graph_material_event` | `GraphMaterialEvent`：外部素材 `ContentRef`、事件类型、调度处理状态、变更时间和 `lock_version`；不保存删除快照、用户决策或独立任务。 |
 
 发布对象—素材关联是当前归属和撤回边界，不是版本映射或同步机制。撤回仅移除本素材与发布对象的关联。外部素材删除由 `GraphMaterialEvent(DELETED)` 的既定处理规则异步清理图谱素材及其关联；系统日志保留处理轨迹。
@@ -154,17 +152,19 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 ### Published-space Governance
 
 - 人工节点/边先通过 Schema 校验，再写发布对象和 `MANUAL` 来源。
-- 合并选择保留节点，将全部映射、边端点、可并存属性和人工来源迁移到保留节点；若迁移后产生重复边，按 `edge_key` 合并。
+- 合并选择保留节点，将全部映射、边端点和可并存属性迁移到保留节点；若迁移后产生重复边，按 `edge_key` 合并。
 - 拆分创建新节点，逐项分配属性、边和素材映射；所有受影响对象必须分配完毕才能提交。
-- 删除发布节点前必须显式删除关联边或解除依赖；历史映射和治理操作保留，目标状态标记已删除而非物理抹除审计数据。
+- 删除发布节点前必须显式删除关联边或解除依赖；素材映射按既有撤回与删除规则处理，操作轨迹由系统日志保留。
 
 ## Query and Rendering
 
-工作台默认查询最近成功发布的 100 个发布节点，不加载全图。前端分批请求这些种子节点的关联边；每批边返回即渲染边、补齐另一端节点并更新连接度。查询结束后移除连接度为零的节点并稳定布局。
+工作台默认查询最近更新的 100 个有效发布节点，不加载全图。前端分批请求这些种子节点的关联边；每批边返回即渲染边、补齐另一端节点并更新连接度。查询结束后移除连接度为零的节点并稳定布局。
 
-最终画布最多 200 个节点；边随已渲染节点集合返回，不另设边数上限。超过上限时，后端以发布时间倒序、再以关系数和稳定 ID 截断，返回 `truncated=true` 与继续展开游标。种子节点在命中首条边前使用骨架或淡化状态，避免孤立节点闪烁。
+领域读取端口以 `GraphPublishedNodeRepository.listRecentlyUpdated(limit)` 取得种子节点，并以 `GraphPublishedEdgeRepository.listIncidentEdges(nodeIds, afterEdgeId, limit)` 返回边、下一游标和截断标记；种子节点按 `updated_at` 倒序、稳定 ID 次序读取。
 
-鸟瞰层返回门类统计和质量指标；门类层按门类/类型过滤局部图；详情层返回节点或边的属性、来源素材、映射、人工来源和治理记录。前台只按稿件读取其素材图，不读取发布空间工作台数据；仅当素材处于 `PUBLISHED` 且稿件本身通过既有内容可见性校验时，才返回该稿件当前有效映射对应的图谱内容，草稿、撤回和已删除素材返回空状态。
+最终画布最多 200 个节点；边随已渲染节点集合返回，不另设边数上限。超过上限时，后端以 `updated_at` 倒序、再以关系数和稳定 ID 截断，返回 `truncated=true` 与继续展开游标。种子节点在命中首条边前使用骨架或淡化状态，避免孤立节点闪烁。
+
+鸟瞰层返回门类统计和质量指标；门类层按门类/类型过滤局部图；详情层返回节点或边的属性、来源素材、映射和 `source`。前台只按稿件读取其素材图，不读取发布空间工作台数据；仅当素材处于 `PUBLISHED` 且稿件本身通过既有内容可见性校验时，才返回该稿件当前有效映射对应的图谱内容，草稿、撤回和已删除素材返回空状态。
 
 质量查询仅计算并暴露：孤立节点数、核心节点关系缺失数及对应对象列表。核心节点规则由 Schema 提供：`coreRelationPolicy.mode = ANY_INCIDENT_RELATION` 表示节点只要存在一条入边或出边，其关系类型属于 `relationTypes`，即不计为关系缺失。
 
@@ -177,10 +177,10 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 | `/knowledge/graph/workbench` | 概览统计、最近发布种子、关联边分页、门类图、搜索、对象详情、质量待办。 |
 | `/knowledge/graph/materials` | 素材分页、素材草稿图读取、节点/边 CRUD、JSON 导入导出、抽取任务查看与触发。 |
 | `/knowledge/graph/materials/{id}/publish` | 预览、确认发布、撤回；批量发布请求逐素材返回结果。 |
-| `/knowledge/graph/published` | 发布节点/边 CRUD、来源、治理记录、合并、拆分、删除。 |
+| `/knowledge/graph/published` | 发布节点/边 CRUD、来源、合并、拆分、删除。 |
 | `/knowledge/graph/material-events` | 外部素材事件的状态查询与失败重试。 |
 
-门户入口另提供只读资源 `/portal/knowledge/graph/materials/{contentType}/{contentRefId}`：先执行稿件既有内容可见性校验，再按素材状态和有效映射返回该稿件图谱；该资源不暴露发布空间搜索、治理、人工来源或跨素材关系。
+门户入口另提供只读资源 `/portal/knowledge/graph/materials/{contentType}/{contentRefId}`：先执行稿件既有内容可见性校验，再按素材状态和有效映射返回该稿件图谱；该资源不暴露发布空间搜索、治理或跨素材关系。
 
 JSON 导入只允许写入未发布素材草稿图。先执行格式和 Schema 校验，返回对象级错误；确认后按照用户选择的 `MERGE` 或 `REPLACE` 执行。下载仅导出当前单素材草稿节点、边、属性、限定字段和 Schema 版本，不导出发布空间、映射、审计或人工治理数据。
 
@@ -211,7 +211,7 @@ Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 - 单元测试：Schema Key 与约束、草稿合并、发布匹配、冲突、乐观锁、属性首选、合并、拆分、撤回和素材事件状态。
 - 集成测试：发布事务原子性、唯一约束并发、AI 域协作与快照、素材事件幂等重试、素材删除后映射状态、权限拒绝。
 - 前端 E2E：抽取到草稿、发布预览冲突、冻结与撤回、发布治理、素材事件状态、最近发布渐进渲染、200 节点截断与 JSON 导入校验。
-- 数据迁移验证：迁移前后素材数、节点/边数、映射数和人工治理操作抽样核对；旧入口移除后确认不存在旧模型写入。
+- 数据迁移验证：迁移前后素材数、节点/边数和映射数抽样核对；旧入口移除后确认不存在旧模型写入。
 
 ## Related Documents
 

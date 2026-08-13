@@ -16,5 +16,7 @@ public interface GraphMaterialNodeRepository {
 
     int deleteById(GraphMaterialNodeId id);
 
+    int deleteByMaterial(ContentRef materialRef);
+
     void batchReplaceByMaterial(ContentRef materialRef, List<GraphMaterialNode> nodes);
 }

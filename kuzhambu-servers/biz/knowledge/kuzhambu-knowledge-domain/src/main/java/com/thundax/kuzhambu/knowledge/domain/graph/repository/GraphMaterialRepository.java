@@ -9,4 +9,6 @@ public interface GraphMaterialRepository {
     int insert(GraphMaterial material);
 
     int update(GraphMaterial material);
+
+    int deleteByContentRef(ContentRef contentRef);
 }
