@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphTaskId;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,27 +17,22 @@ public class GraphMaterial {
     private String contentTitleSnapshot;
     private GraphMaterialStatus status;
     private Instant publishedAt;
-    private GraphTaskId currentExtractionTaskId;
-    private long version;
+    private long lockVersion;
 
     public boolean editable() {
-        return status == GraphMaterialStatus.DRAFT;
+        return status == GraphMaterialStatus.DRAFT || status == GraphMaterialStatus.READY;
     }
 
-    public void beginExtraction(GraphTaskId taskId) {
-        if (!editable()) {
-            throw new IllegalStateException("Only draft graph materials can start extraction");
+    public void markReady() {
+        if (editable()) {
+            status = GraphMaterialStatus.READY;
         }
-        status = GraphMaterialStatus.EXTRACTING;
-        currentExtractionTaskId = taskId;
     }
 
-    public void finishExtraction() {
-        if (status != GraphMaterialStatus.EXTRACTING) {
-            throw new IllegalStateException("Graph material is not extracting");
+    public void markDraft() {
+        if (editable()) {
+            status = GraphMaterialStatus.DRAFT;
         }
-        status = GraphMaterialStatus.DRAFT;
-        currentExtractionTaskId = null;
     }
 
     public void beginPublication() {
@@ -60,7 +54,6 @@ public class GraphMaterial {
         if (status != GraphMaterialStatus.PUBLISHED) {
             throw new IllegalStateException("Only published graph materials can withdraw");
         }
-        status = GraphMaterialStatus.DRAFT;
-        publishedAt = null;
+        status = GraphMaterialStatus.READY;
     }
 }
