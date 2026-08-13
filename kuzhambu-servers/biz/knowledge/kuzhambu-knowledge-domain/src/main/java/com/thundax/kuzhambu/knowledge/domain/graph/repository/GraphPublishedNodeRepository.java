@@ -1,6 +1,10 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.repository;
 
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphNodeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import java.util.List;
@@ -14,7 +18,19 @@ public interface GraphPublishedNodeRepository {
 
     List<GraphPublishedNode> listRecentlyUpdated(int limit);
 
-    int insert(GraphPublishedNode node);
+    PageResult<GraphPublishedNode> page(
+            String keyword,
+            GraphNodeType nodeType,
+            GraphPublishedStatus status,
+            GraphSourceType source,
+            int pageNo,
+            int pageSize);
+
+    GraphPublishedNodeId insert(GraphPublishedNode node);
 
     int update(GraphPublishedNode node);
+
+    int updateIfLockVersion(GraphPublishedNode node, long expectedLockVersion);
+
+    long count(GraphPublishedStatus status);
 }

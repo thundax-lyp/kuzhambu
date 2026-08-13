@@ -1,9 +1,13 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphNodeKeyCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphNodeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeRepository;
@@ -48,23 +52,87 @@ public class GraphPublishedNodeRepositoryImpl implements GraphPublishedNodeRepos
     @Override
     public List<GraphPublishedNode> listRecentlyUpdated(int limit) {
         QueryWrapper<GraphPublishedNodeDO> w = new QueryWrapper<>();
+        int effectiveLimit = limit <= 0 ? 100 : limit;
         return mapper
-                .selectList(w.eq("status", "ACTIVE")
+                .selectList(w.eq("status", GraphPublishedStatus.ACTIVE.value())
                         .orderByDesc("modified_at")
                         .orderByDesc("id")
-                        .last("LIMIT " + limit))
+                        .last("limit " + effectiveLimit))
                 .stream()
                 .map(GraphPersistenceAssembler::toDomain)
                 .toList();
     }
 
     @Override
-    public int insert(GraphPublishedNode node) {
-        return mapper.insert(GraphPersistenceAssembler.toObject(node));
+    public PageResult<GraphPublishedNode> page(
+            String keyword,
+            GraphNodeType nodeType,
+            GraphPublishedStatus status,
+            GraphSourceType source,
+            int pageNo,
+            int pageSize) {
+        int effectivePageNo = pageNo <= 0 ? 1 : pageNo;
+        int effectivePageSize = pageSize <= 0 ? 10 : pageSize;
+        long total = mapper.selectCount(nodeQuery(keyword, nodeType, status, source));
+        QueryWrapper<GraphPublishedNodeDO> pageWrapper = nodeQuery(keyword, nodeType, status, source)
+                .orderByDesc("modified_at")
+                .orderByDesc("id")
+                .last("limit " + offset(effectivePageNo, effectivePageSize) + ", " + effectivePageSize);
+        List<GraphPublishedNode> records = mapper.selectList(pageWrapper).stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+        return PageResult.of(effectivePageNo, effectivePageSize, total, records);
+    }
+
+    @Override
+    public GraphPublishedNodeId insert(GraphPublishedNode node) {
+        GraphPublishedNodeDO dataObject = GraphPersistenceAssembler.toObject(node);
+        mapper.insert(dataObject);
+        return GraphPublishedNodeIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
     public int update(GraphPublishedNode node) {
         return mapper.updateById(GraphPersistenceAssembler.toObject(node));
+    }
+
+    @Override
+    public int updateIfLockVersion(GraphPublishedNode node, long expectedLockVersion) {
+        return mapper.updateIfLockVersion(GraphPersistenceAssembler.toObject(node), expectedLockVersion);
+    }
+
+    @Override
+    public long count(GraphPublishedStatus status) {
+        QueryWrapper<GraphPublishedNodeDO> w = new QueryWrapper<>();
+        if (status != null) {
+            w.eq("status", status.value());
+        }
+        return mapper.selectCount(w);
+    }
+
+    private QueryWrapper<GraphPublishedNodeDO> nodeQuery(
+            String keyword, GraphNodeType nodeType, GraphPublishedStatus status, GraphSourceType source) {
+        QueryWrapper<GraphPublishedNodeDO> w = new QueryWrapper<>();
+        if (!isBlank(keyword)) {
+            w.like("name", keyword);
+        }
+        if (nodeType != null) {
+            w.eq("node_type", nodeType.value());
+        }
+        if (status != null) {
+            w.eq("status", status.value());
+        }
+        if (source != null) {
+            w.eq("source", source.value());
+        }
+        return w;
+    }
+
+    private int offset(int pageNo, int pageSize) {
+        return (pageNo - 1) * pageSize;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

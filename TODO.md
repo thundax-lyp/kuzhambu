@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `发布节点仓储`：补齐 GraphPublishedNode 仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPublishedNodeRepository.java`、`GraphPublishedNodeRepositoryImpl.java`、`GraphPublishedNodeMapper.java`、`GraphPersistenceAssembler.java`、`GraphPublishedNodeRepositoryImplTest.java`（预计 5 个文件）
-    - 处理动作：新增条件分页、插入 ID 回填、CAS 更新、状态计数和最近 ACTIVE 节点查询。
-    - 验收点：发布节点分页稳定按 `modified_at DESC, id DESC` 返回。
-    - 重要度：9/10
-
 - [ ] `发布边仓储`：补齐 GraphPublishedEdge 仓储和 incident edges 游标查询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
