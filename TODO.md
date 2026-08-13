@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `素材仓储端口和实现`：补齐 GraphMaterial 及草稿节点边仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphMaterialRepository.java`、`GraphMaterialNodeRepository.java`、`GraphMaterialEdgeRepository.java`、对应 RepositoryImpl、Mapper 和测试（预计 8-10 个文件）
-    - 处理动作：新增分页、强类型自增 ID 回填、批量写入、批量删除和 Material CAS 更新。
-    - 验收点：Material CAS 冲突返回业务错误，节点和边 insert 返回真实数据库 ID。
-    - 重要度：10/10
-
 - [ ] `素材版本和事件仓储`：补齐版本与 MaterialEvent 仓储能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

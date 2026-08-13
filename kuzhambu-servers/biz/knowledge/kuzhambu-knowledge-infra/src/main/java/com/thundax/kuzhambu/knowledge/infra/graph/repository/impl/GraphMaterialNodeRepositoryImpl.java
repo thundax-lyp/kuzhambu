@@ -40,8 +40,35 @@ public class GraphMaterialNodeRepositoryImpl extends GraphRepositorySupport impl
     }
 
     @Override
-    public int insert(GraphMaterialNode node) {
-        return mapper.insert(GraphPersistenceAssembler.toObject(node, materialId(node.getMaterialRef())));
+    public GraphMaterialNodeId insert(GraphMaterialNode node) {
+        GraphMaterialNodeDO dataObject = GraphPersistenceAssembler.toObject(node, materialId(node.getMaterialRef()));
+        mapper.insert(dataObject);
+        return GraphMaterialNodeIdCodec.toDomain(dataObject.getId());
+    }
+
+    @Override
+    public void batchInsert(List<GraphMaterialNode> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
+        nodes.forEach(this::insert);
+    }
+
+    @Override
+    public void batchUpdate(List<GraphMaterialNode> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
+        nodes.forEach(this::update);
+    }
+
+    @Override
+    public void deleteByIds(List<GraphMaterialNodeId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        mapper.deleteBatchIds(
+                ids.stream().map(GraphMaterialNodeIdCodec::toValue).toList());
     }
 
     @Override
@@ -67,6 +94,6 @@ public class GraphMaterialNodeRepositoryImpl extends GraphRepositorySupport impl
     @Override
     public void batchReplaceByMaterial(ContentRef ref, List<GraphMaterialNode> nodes) {
         deleteByMaterial(ref);
-        nodes.forEach(this::insert);
+        batchInsert(nodes);
     }
 }

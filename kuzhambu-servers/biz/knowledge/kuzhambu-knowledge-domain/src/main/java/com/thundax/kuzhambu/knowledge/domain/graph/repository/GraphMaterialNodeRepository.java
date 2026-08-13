@@ -10,7 +10,13 @@ public interface GraphMaterialNodeRepository {
 
     List<GraphMaterialNode> listByMaterial(ContentRef materialRef);
 
-    int insert(GraphMaterialNode node);
+    GraphMaterialNodeId insert(GraphMaterialNode node);
+
+    void batchInsert(List<GraphMaterialNode> nodes);
+
+    void batchUpdate(List<GraphMaterialNode> nodes);
+
+    void deleteByIds(List<GraphMaterialNodeId> ids);
 
     int update(GraphMaterialNode node);
 

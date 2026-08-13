@@ -10,7 +10,13 @@ public interface GraphMaterialEdgeRepository {
 
     List<GraphMaterialEdge> listByMaterial(ContentRef materialRef);
 
-    int insert(GraphMaterialEdge edge);
+    GraphMaterialEdgeId insert(GraphMaterialEdge edge);
+
+    void batchInsert(List<GraphMaterialEdge> edges);
+
+    void batchUpdate(List<GraphMaterialEdge> edges);
+
+    void deleteByIds(List<GraphMaterialEdgeId> ids);
 
     int update(GraphMaterialEdge edge);
 

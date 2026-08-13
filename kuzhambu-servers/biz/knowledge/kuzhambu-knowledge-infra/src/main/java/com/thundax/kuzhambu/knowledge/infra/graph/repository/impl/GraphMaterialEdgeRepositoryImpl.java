@@ -40,8 +40,35 @@ public class GraphMaterialEdgeRepositoryImpl extends GraphRepositorySupport impl
     }
 
     @Override
-    public int insert(GraphMaterialEdge edge) {
-        return mapper.insert(GraphPersistenceAssembler.toObject(edge, materialId(edge.getMaterialRef())));
+    public GraphMaterialEdgeId insert(GraphMaterialEdge edge) {
+        GraphMaterialEdgeDO dataObject = GraphPersistenceAssembler.toObject(edge, materialId(edge.getMaterialRef()));
+        mapper.insert(dataObject);
+        return GraphMaterialEdgeIdCodec.toDomain(dataObject.getId());
+    }
+
+    @Override
+    public void batchInsert(List<GraphMaterialEdge> edges) {
+        if (edges == null || edges.isEmpty()) {
+            return;
+        }
+        edges.forEach(this::insert);
+    }
+
+    @Override
+    public void batchUpdate(List<GraphMaterialEdge> edges) {
+        if (edges == null || edges.isEmpty()) {
+            return;
+        }
+        edges.forEach(this::update);
+    }
+
+    @Override
+    public void deleteByIds(List<GraphMaterialEdgeId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+        mapper.deleteBatchIds(
+                ids.stream().map(GraphMaterialEdgeIdCodec::toValue).toList());
     }
 
     @Override
@@ -67,6 +94,6 @@ public class GraphMaterialEdgeRepositoryImpl extends GraphRepositorySupport impl
     @Override
     public void batchReplaceByMaterial(ContentRef ref, List<GraphMaterialEdge> edges) {
         deleteByMaterial(ref);
-        edges.forEach(this::insert);
+        batchInsert(edges);
     }
 }
