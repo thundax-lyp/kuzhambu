@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱发布实体和事件行为`：补齐 PublishedNode、PublishedEdge、MaterialEvent 领域方法
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPublishedNode.java`、`GraphPublishedEdge.java`、`GraphMaterialEvent.java`、`GraphPublishedNodeTest.java`、`GraphPublishedEdgeTest.java`、`GraphMaterialEventTest.java`（预计 6 个文件）
-    - 处理动作：实现乐观锁校验、软删除/恢复、touch 和事件状态流转。
-    - 验收点：重复删除、非法恢复和非法事件流转都会返回业务错误。
-    - 重要度：9/10
-
 - [ ] `素材草稿图聚合`：建立 GraphMaterialGraph 和变更集
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
