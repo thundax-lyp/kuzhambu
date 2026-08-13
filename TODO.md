@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱素材实体行为`：补齐 Material、MaterialNode、MaterialEdge 领域方法
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphMaterial.java`、`GraphMaterialNode.java`、`GraphMaterialEdge.java`、`GraphMaterialTest.java`、`GraphMaterialNodeTest.java`、`GraphMaterialEdgeTest.java`（预计 6 个文件）
-    - 处理动作：实现可编辑校验、状态刷新、归属校验、必填校验和 Key 重算行为。
-    - 验收点：每个公开领域方法至少覆盖成功路径和一个拒绝路径。
-    - 重要度：9/10
-
 - [ ] `图谱发布实体和事件行为`：补齐 PublishedNode、PublishedEdge、MaterialEvent 领域方法
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
