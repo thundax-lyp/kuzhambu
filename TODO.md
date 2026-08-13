@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `发布空间子图聚合`：建立发布空间删除、合并和拆分模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPublishedSubgraph.java`、`GraphPublishedChangeSet.java`、`GraphPublishedNodeSplitSpec.java`、`GraphPublishedSubgraphTest.java`（预计 4 个文件）
-    - 处理动作：实现发布节点/边软删除、节点合并和节点拆分的内存变换。
-    - 验收点：合并/拆分不修改草稿图和历史版本对象。
-    - 重要度：9/10
-
 - [ ] `素材仓储端口和实现`：补齐 GraphMaterial 及草稿节点边仓储能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
