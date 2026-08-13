@@ -156,7 +156,22 @@ CREATE TABLE IF NOT EXISTS `ai_batch_job` (
     `requested_at` BIGINT NOT NULL COMMENT '批量任务创建时间',
     `cancelled_at` BIGINT DEFAULT NULL COMMENT '批量任务取消时间',
     `completed_at` BIGINT DEFAULT NULL COMMENT '批量任务完成时间',
+    `running_content_key` varchar(256) GENERATED ALWAYS AS (
+        CASE
+            WHEN `status` = 'RUNNING' AND `content_id` IS NOT NULL
+            THEN concat(
+                coalesce(`scope`, ''),
+                ':',
+                `capability`,
+                ':',
+                `content_type`,
+                ':',
+                cast(`content_id` AS char))
+            ELSE NULL
+        END
+    ) STORED,
     PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_ai_batch_job_running_content` (`running_content_key`),
     KEY `idx_ai_batch_job_status` (`status`, `requested_at`),
     KEY `idx_ai_batch_job_capability` (`content_type`, `capability`),
     KEY `idx_ai_batch_job_content` (`content_type`, `content_id`, `capability`)

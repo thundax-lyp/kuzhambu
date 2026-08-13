@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI Batch Job 并发约束`：增加运行中素材任务唯一约束
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`kuzhambu-servers/db/schema/ai.sql`、AI Batch Job repository/mapper 异常转换相关文件、对应测试（预计 3-5 个文件）
-    - 处理动作：新增 `running_content_key` 派生列和唯一键，并把唯一键冲突转换为业务错误。
-    - 验收点：同一素材同一能力并发提交时只有一个 `RUNNING` Job 成功。
-    - 重要度：10/10
-
 - [ ] `图谱应用契约预调整`：补齐执行者、批量失败和 incident edges 返回契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
