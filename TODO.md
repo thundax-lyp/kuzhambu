@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `素材草稿应用服务`：实现 GraphMaterialApplicationServiceImpl
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphMaterialApplicationServiceImpl.java`、`GraphMaterialApplicationServiceImplTest.java`、必要的测试 fixture（预计 2-4 个文件）
-    - 处理动作：实现素材分页、草稿图 CRUD、合并/拆分、版本恢复、导入预览、导入和导出。
-    - 验收点：接口所有方法都有实现，`PUBLISHED` 状态写入、跨素材 ID 和 CAS 冲突被拒绝。
-    - 重要度：10/10
-
 - [ ] `图谱抽取应用编排`：实现 GraphExtractionApplicationServiceImpl 和 ApplyExecutor
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

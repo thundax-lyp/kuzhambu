@@ -120,7 +120,9 @@ public class GraphMaterialGraphSaver {
 
     private void insertNodes(List<GraphMaterialNode> nodes) {
         for (GraphMaterialNode node : nodes) {
-            node.setId(nodeRepository.insert(node));
+            if (node.getId() == null) {
+                node.setId(nodeRepository.insert(node));
+            }
         }
     }
 
