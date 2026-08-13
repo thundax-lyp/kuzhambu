@@ -102,8 +102,8 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 
 | Table | Key fields and responsibility |
 | --- | --- |
-| `knowledge_graph_published_node` | `node_key` 全局唯一、`node_type`、展示名称、`source`、`status`、`updated_at`、`lock_version`；`updated_at` 在发布灌注或发布空间修改时刷新。 |
-| `knowledge_graph_published_edge` | `edge_key` 全局唯一、两端发布节点、`relation_type`、`source`、`qualifiers_json`、`status`、`updated_at`、`lock_version`；`updated_at` 在发布灌注或发布空间修改时刷新。 |
+| `knowledge_graph_published_node` | `node_key` 全局唯一、`node_type`、展示名称、`source`、`status`、`modified_at`、`lock_version`；`modified_at` 在发布灌注或发布空间修改时刷新。 |
+| `knowledge_graph_published_edge` | `edge_key` 全局唯一、两端发布节点、`relation_type`、`source`、`qualifiers_json`、`status`、`modified_at`、`lock_version`；`modified_at` 在发布灌注或发布空间修改时刷新。 |
 | `knowledge_graph_published_node_property` | 发布节点的多值属性：字段、唯一 `value`、`is_preferred`。属性来源不在属性行重复保存，由对象级素材关联和系统审计追溯。 |
 | `knowledge_graph_published_edge_property` | 发布边的多值限定或展示属性，字段语义同节点属性。 |
 
@@ -160,9 +160,9 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 
 工作台默认查询最近更新的 100 个有效发布节点，不加载全图。前端分批请求这些种子节点的关联边；每批边返回即渲染边、补齐另一端节点并更新连接度。查询结束后移除连接度为零的节点并稳定布局。
 
-领域读取端口以 `GraphPublishedNodeRepository.listRecentlyUpdated(limit)` 取得种子节点，并以 `GraphPublishedEdgeRepository.listIncidentEdges(nodeIds, afterEdgeId, limit)` 返回边、下一游标和截断标记；种子节点按 `updated_at` 倒序、稳定 ID 次序读取。
+领域读取端口以 `GraphPublishedNodeRepository.listRecentlyUpdated(limit)` 取得种子节点，并以 `GraphPublishedEdgeRepository.listIncidentEdges(nodeIds, afterEdgeId, limit)` 返回边、下一游标和截断标记；种子节点按 `modified_at` 倒序、稳定 ID 次序读取。
 
-最终画布最多 200 个节点；边随已渲染节点集合返回，不另设边数上限。超过上限时，后端以 `updated_at` 倒序、再以关系数和稳定 ID 截断，返回 `truncated=true` 与继续展开游标。种子节点在命中首条边前使用骨架或淡化状态，避免孤立节点闪烁。
+最终画布最多 200 个节点；边随已渲染节点集合返回，不另设边数上限。超过上限时，后端以 `modified_at` 倒序、再以关系数和稳定 ID 截断，返回 `truncated=true` 与继续展开游标。种子节点在命中首条边前使用骨架或淡化状态，避免孤立节点闪烁。
 
 鸟瞰层返回门类统计和质量指标；门类层按门类/类型过滤局部图；详情层返回节点或边的属性、来源素材、映射和 `source`。前台只按稿件读取其素材图，不读取发布空间工作台数据；仅当素材处于 `PUBLISHED` 且稿件本身通过既有内容可见性校验时，才返回该稿件当前有效映射对应的图谱内容，草稿、撤回和已删除素材返回空状态。
 

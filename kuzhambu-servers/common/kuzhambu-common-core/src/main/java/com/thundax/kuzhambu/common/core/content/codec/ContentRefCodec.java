@@ -13,4 +13,8 @@ public final class ContentRefCodec {
     public static Long toValue(ContentRef contentRef) {
         return contentRef == null ? null : contentRef.getContentId();
     }
+
+    public static String toContentType(ContentRef contentRef) {
+        return contentRef == null ? null : contentRef.getContentType();
+    }
 }

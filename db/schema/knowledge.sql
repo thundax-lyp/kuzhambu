@@ -127,11 +127,11 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node` (
     `name` varchar(255) NOT NULL,
     `source` varchar(32) NOT NULL,
     `status` varchar(32) NOT NULL,
-    `updated_at` BIGINT NOT NULL,
+    `modified_at` BIGINT NOT NULL,
     `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_published_node_key` (`node_key`),
-    KEY `idx_knowledge_graph_published_node_updated` (`status`, `updated_at`),
+    KEY `idx_knowledge_graph_published_node_modified` (`status`, `modified_at`),
     KEY `idx_knowledge_graph_published_node_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间节点';
 
@@ -144,13 +144,13 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge` (
     `source` varchar(32) NOT NULL,
     `qualifiers_json` json DEFAULT NULL,
     `status` varchar(32) NOT NULL,
-    `updated_at` BIGINT NOT NULL,
+    `modified_at` BIGINT NOT NULL,
     `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_published_edge_key` (`edge_key`),
     KEY `idx_knowledge_graph_published_edge_source` (`source_published_node_id`),
     KEY `idx_knowledge_graph_published_edge_target` (`target_published_node_id`),
-    KEY `idx_knowledge_graph_published_edge_updated` (`status`, `updated_at`)
+    KEY `idx_knowledge_graph_published_edge_modified` (`status`, `modified_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间关系';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node_property` (

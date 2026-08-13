@@ -22,6 +22,6 @@ public class GraphPublishedNode {
     private String name;
     private GraphSourceType source;
     private GraphPublishedStatus status;
-    private Instant updatedAt;
+    private Instant modifiedAt;
     private long lockVersion;
 }

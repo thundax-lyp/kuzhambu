@@ -24,6 +24,6 @@ public class GraphPublishedEdge {
     private GraphSourceType source;
     private String qualifiersJson;
     private GraphPublishedStatus status;
-    private Instant updatedAt;
+    private Instant modifiedAt;
     private long lockVersion;
 }

@@ -18,5 +18,18 @@ public enum GraphNodeType {
     PLANT,
     CELESTIAL_BODY,
     NATURAL_PHENOMENON,
-    DEITY
+    DEITY;
+
+    public String value() {
+        return name();
+    }
+
+    public static GraphNodeType from(String value) {
+        for (GraphNodeType item : values()) {
+            if (item.value().equals(value)) {
+                return item;
+            }
+        }
+        throw new IllegalArgumentException("Unknown graph node type: " + value);
+    }
 }

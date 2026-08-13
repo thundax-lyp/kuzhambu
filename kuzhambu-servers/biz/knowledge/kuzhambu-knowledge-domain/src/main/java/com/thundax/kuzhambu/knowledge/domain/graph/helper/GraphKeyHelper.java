@@ -19,8 +19,8 @@ public final class GraphKeyHelper {
         if (nodeType == null || isBlank(name)) {
             return null;
         }
-        String canonical = String.join("|", nodeType.name(), normalize(name), normalize(identityQualifier));
-        return new GraphNodeKey("node:" + nodeType.name() + ":" + sha256(canonical));
+        String canonical = String.join("|", nodeType.value(), normalize(name), normalize(identityQualifier));
+        return new GraphNodeKey("node:" + nodeType.value() + ":" + sha256(canonical));
     }
 
     public static GraphEdgeKey generateEdgeKey(
