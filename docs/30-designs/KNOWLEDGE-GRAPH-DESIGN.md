@@ -90,9 +90,9 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 | Table | Key fields and responsibility |
 | --- | --- |
 | `knowledge_graph_material` | 技术主键 `id`；业务 `content_type + content_ref_id` 唯一；`status`、`published_at`、`current_extraction_task_id`。只保存 `ContentRef` 与图谱状态，不复制正文。 |
-| `knowledge_graph_material_node` | `material_graph_id`、`node_key`、`node_type`、`name`、`properties_json`；同素材图内 `(material_graph_id, node_key)` 唯一。 |
-| `knowledge_graph_material_edge` | `material_graph_id`、两端素材节点、`relation_type`、`qualifiers_json`、`edge_key`；同素材图内 `(material_graph_id, edge_key)` 唯一。 |
-| `knowledge_graph_extraction_task` | `material_graph_id`、`ContentRef` 快照、内容快照引用/摘要、AI 调用 ID、状态、进度、结果摘要、失败原因、重试来源任务。 |
+| `knowledge_graph_material_node` | `material_id`、`node_key`、`node_type`、`name`、`properties_json`；同素材图内 `(material_id, node_key)` 唯一。未能计算 Key 的草稿对象允许 `node_key` 为空。 |
+| `knowledge_graph_material_edge` | `material_id`、两端素材节点、`relation_type`、`qualifiers_json`、`edge_key`；同素材图内 `(material_id, edge_key)` 唯一。未能计算 Key 的草稿关系允许 `edge_key` 为空。 |
+| `knowledge_graph_extraction_task` | `material_id`、`ContentRef` 快照、内容快照、管道版本、当前阶段、状态、进度、结果摘要、失败原因、重试来源任务。阶段级输入/输出、AI 调用和失败原因由 `knowledge_graph_extraction_stage` 保存。 |
 
 `properties_json` 与 `qualifiers_json` 是开放多值 JSON 载体：草稿写入只校验其为对象，细分属性和值域作为告警而非拒绝条件；它们不替代可查询的 Key、类型和关系字段。
 
