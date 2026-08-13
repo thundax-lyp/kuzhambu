@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `发布空间治理应用服务`：实现 GraphPublishedApplicationServiceImpl
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPublishedApplicationServiceImpl.java`、`GraphPublishedApplicationServiceImplTest.java`、必要测试 fixture（预计 2-4 个文件）
-    - 处理动作：实现发布节点/边分页、详情、创建、更新、删除预览、删除、合并预览、合并、拆分预览和拆分。
-    - 验收点：所有受影响发布对象使用 CAS，治理操作不修改素材草稿和历史版本。
-    - 重要度：10/10
-
 - [ ] `素材删除事件应用服务`：实现 GraphMaterialEventApplicationServiceImpl
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
