@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `JSON Schema 装配`：打包并编译知识图谱 JSON Schema
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`kuzhambu-servers/pom.xml`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/pom.xml`、`GraphSchemaProvider.java`、`GraphSchemaProviderTest.java`（预计 4 个文件）
-    - 处理动作：引入 `json-schema-validator` 并在构建时复制 `KNOWLEDGE-GRAPH-SCHEMA.json` 到 classpath。
-    - 验收点：合法文档通过校验，缺少边端点的非法文档被拒绝。
-    - 重要度：9/10
-
 - [ ] `图谱文档解析和 Schema 支持`：新增 GraphDocument、SnapshotSupport 和 SchemaSupport
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

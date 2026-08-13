@@ -64,9 +64,43 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-knowledge-graph-schema</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <outputDirectory>${project.build.outputDirectory}/schema</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/../../../../docs/20-interfaces</directory>
+                  <includes>
+                    <include>KNOWLEDGE-GRAPH-SCHEMA.json</include>
+                  </includes>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>
