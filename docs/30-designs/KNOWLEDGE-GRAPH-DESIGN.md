@@ -157,6 +157,20 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 - 删除发布节点前必须显式删除关联边或解除依赖；素材映射按既有撤回与删除规则处理，操作轨迹由系统日志保留。
 - 合并、拆分和删除在确认时重新查询全部节点、边、属性和素材映射并执行强校验，不能只依赖预览时的影响列表；预览后新增的依赖必须按当前操作规则处理或拒绝提交。
 
+## Application and Repository Semantics
+
+Java 实现按素材空间、发布空间和读取空间拆分应用服务：
+
+- `GraphExtractionApplicationService` 只负责提交、查询、重试和应用 AI 结果。提交时固定模型、提示词版本、消息、变量、schema 和参数快照，后续执行不得重新解析可变业务配置。
+- `GraphMaterialApplicationService` 管理单素材草稿图、JSON 导入导出和素材版本恢复。写入统一经 `GraphMaterialGraphSaver` 保存 change set，并以 `GraphMaterial.lockVersion` 做数据库 CAS。
+- `GraphPublicationApplicationService` 提供发布/撤回预览和执行。单素材发布由 `GraphPublicationExecutor` 在独立事务内重新加载、重新匹配和强校验；批量发布逐素材隔离，单项失败不回滚已成功素材，也不阻止后续素材。
+- `GraphPublishedApplicationService` 管理发布空间治理。所有更新既有发布节点、边和事件状态的操作都调用对应 Repository 的 `updateIfLockVersion`，发布空间治理不修改 `GraphMaterialNode`、`GraphMaterialEdge` 或 `GraphMaterialVersion`。
+- `GraphMaterialEventApplicationService` 记录外部素材删除事件并委托 `claim -> cleanup -> failure recorder` 执行器链。`claim`、`cleanup` 和失败记录均使用 `REQUIRES_NEW`，使多实例并发只由数据库 CAS 决定。
+- `GraphPortalApplicationService` 只读发布空间映射，不回退读取草稿；素材不可见、未发布、撤回或已删除均返回空图。
+- `GraphWorkbenchApplicationService` 只使用发布空间读仓储；最近种子节点限制 100，局部图节点限制 200，关联边依赖 Repository 游标分页。
+
+Repository 语义固定为领域端口：`db/data-source/**` 是种子事实来源，`build/seed-sql/` 仅为临时生成物；所有 CAS SQL 必须在同一语句写业务字段并递增 `lock_version`，不得先查询再用普通 `updateById()` 代替 CAS。发布对象唯一键并发冲突由数据库约束兜底；发布执行器捕获唯一冲突后按 Key 重新查询并复用，其他 SQL 异常继续抛出并回滚。
+
 ## Query and Rendering
 
 工作台默认查询最近更新的 100 个有效发布节点，不加载全图。前端分批请求这些种子节点的关联边；每批边返回即渲染边、补齐另一端节点并更新连接度。查询结束后移除连接度为零的节点并稳定布局。

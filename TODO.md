@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱实现设计同步`：同步最终聚合边界、事务行为和仓储语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`docs/30-designs/KNOWLEDGE-GRAPH-DESIGN.md`、必要的 `docs/40-readiness/*` 证据文档（预计 1-3 个文件）
-    - 处理动作：把已实现的领域聚合、AI 提交契约、事务行为和 Repository 语义同步到正式文档。
-    - 验收点：RUNBOOK 中仍有长期价值的结论已迁移到正式设计或 readiness 证据。
-    - 重要度：8/10
-
 - [ ] `AI 接口文档同步`：同步图谱抽取 AI Facade 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

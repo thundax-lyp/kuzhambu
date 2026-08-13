@@ -14,6 +14,7 @@
 - 图谱抽取已完成 `RELATION`、`GRAPH`、`LINEAGE` 三类任务，支持批量、取消、重生成、候选应用和正式结果落库。
 - 精修工作台已完成实体、关系、世系节点、世系关系的确认、编辑、删除、新增、应用和人工质量标注。
 - 图谱正式结果已完成版本列表、版本详情、实体/关系/世系结果浏览和精修状态展示。
+- 新版知识图谱应用层已完成抽取提交、素材草稿、发布/撤回、发布空间治理、素材删除事件、Portal 读取和 Workbench 读取服务。
 - 质量报告已完成快照生成、问题清单、来源明细、人工标注、精修后过期提示和低质量门类重提取。
 - Portal 已完成 `/knowledge`、`/knowledge/quality`、`/knowledge/atlas`、`/knowledge/lineage` 四个只读入口。
 
@@ -29,6 +30,7 @@
 - 2026-07-09：Workers `ruff format --check`、`ruff check`、`pytest` 通过。
 - 2026-07-09：Admin Web `format:check`、`lint`、`build`、`test` 通过。
 - 2026-07-09：Knowledge Playwright 6 个页面冒烟通过。
+- 2026-08-13：新版知识图谱应用层每个任务提交前均执行 `mvn -pl biz/knowledge/kuzhambu-knowledge-application spotless:check`、`checkstyle:check` 和 `mvn -pl biz/knowledge/kuzhambu-knowledge-application -am -DskipTests compile` 通过。
 - 运行时证据以当前分支验证命令为准。
 
 ## Requirement Coverage Matrix
@@ -44,6 +46,7 @@
 | 数据精修 | 草稿确认和正式回写 | 已完成 | 实体、关系、世系节点和世系关系均已覆盖 |
 | 数据精修 | 人工质量标注 | 已完成 | 写入、删除、分页和质量汇总已完成 |
 | 图谱抽取 | AI 任务与候选应用 | 已完成 | 关系、图谱、世系三类任务已完成 |
+| 新版知识图谱 | 应用服务与发布空间治理 | 已完成 | 抽取、素材草稿、发布、治理、事件、Portal 和 Workbench 读取已覆盖 |
 | 图谱浏览 | Admin 正式结果 | 已完成 | 版本、实体、关系、世系结果和精修状态已完成 |
 | Portal | 图谱、世系、质量只读入口 | 已完成 | 四个 Portal 路由已接通 |
 | 质量报告 | 报告生成与重提取 | 已完成 | 快照、问题、来源、标注、低质量门类重提取已完成 |
