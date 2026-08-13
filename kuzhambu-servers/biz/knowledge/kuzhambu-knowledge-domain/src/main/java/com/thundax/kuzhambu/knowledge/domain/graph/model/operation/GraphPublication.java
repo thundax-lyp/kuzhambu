@@ -74,6 +74,10 @@ public class GraphPublication {
         return changes;
     }
 
+    public GraphPublicationContext context() {
+        return context;
+    }
+
     public int createdNodeCount() {
         return changes.createdNodes().size();
     }

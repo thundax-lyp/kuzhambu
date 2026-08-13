@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱应用层组装器`：新增 GraphApplicationAssembler
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphApplicationAssembler.java`、`GraphApplicationAssemblerTest.java`（预计 2 个文件）
-    - 处理动作：集中实现领域对象、发布规划、AI 任务和 Workbench 读模型到 Result 的无状态转换。
-    - 验收点：ApplicationServiceImpl 不重复拼装 Result 细节。
-    - 重要度：7/10
-
 - [ ] `素材草稿应用服务`：实现 GraphMaterialApplicationServiceImpl
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
