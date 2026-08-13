@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱应用契约预调整`：补齐执行者、批量失败和 incident edges 返回契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphExtractionCommand.java`、`GraphExtractionRetryCommand.java`、`GraphPublicationCommand.java`、`GraphPublicationResult.java`、`GraphIncidentEdgesResult.java`、`GraphWorkbenchApplicationService.java`（预计 6 个文件）
-    - 处理动作：按 RUNBOOK 调整 command/result/service 签名。
-    - 验收点：契约能表达 `requestedBy/publishedBy`、逐素材发布失败和补齐端点节点的边列表。
-    - 重要度：9/10
-
 - [ ] `图谱素材实体行为`：补齐 Material、MaterialNode、MaterialEdge 领域方法
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`

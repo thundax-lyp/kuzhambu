@@ -7,6 +7,8 @@ import java.util.List;
 public record GraphPublicationResult(
         ContentRef materialRef,
         GraphMaterialStatus materialStatus,
+        boolean success,
+        String failureMessage,
         int createdNodeCount,
         int reusedNodeCount,
         int createdEdgeCount,
