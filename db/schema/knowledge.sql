@@ -73,8 +73,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material` (
     `content_title_snapshot` varchar(255) NOT NULL,
     `status` varchar(32) NOT NULL,
     `published_at` BIGINT DEFAULT NULL,
-    `current_extraction_task_id` bigint DEFAULT NULL,
-    `version` bigint NOT NULL DEFAULT 0,
+    `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_material_content` (`content_type`, `content_ref_id`),
     KEY `idx_knowledge_graph_material_status_published` (`status`, `published_at`)
@@ -107,42 +106,17 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material_edge` (
     KEY `idx_knowledge_graph_material_edge_source_target` (`source_material_node_id`, `target_material_node_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材草稿图关系';
 
-CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `material_id` bigint NOT NULL,
-    `content_type` varchar(32) NOT NULL,
-    `content_ref_id` bigint NOT NULL,
-    `content_snapshot_json` json NOT NULL,
-    `pipeline_version` varchar(64) NOT NULL,
-    `status` varchar(32) NOT NULL,
-    `current_stage` varchar(64) DEFAULT NULL,
-    `progress` int NOT NULL DEFAULT 0,
-    `result_summary_json` json DEFAULT NULL,
-    `failure_reason` varchar(1024) DEFAULT NULL,
-    `retry_from_task_id` bigint DEFAULT NULL,
-    `requested_at` BIGINT NOT NULL,
-    `completed_at` BIGINT DEFAULT NULL,
+    `version_no` bigint NOT NULL,
+    `snapshot_json` json NOT NULL,
+    `published_by` bigint NOT NULL,
+    `published_at` BIGINT NOT NULL,
     PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_extraction_task_material_status` (`material_id`, `status`, `requested_at`),
-    KEY `idx_knowledge_graph_extraction_task_content` (`content_type`, `content_ref_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道任务';
-
-CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_stage` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `extraction_task_id` bigint NOT NULL,
-    `stage_name` varchar(64) NOT NULL,
-    `stage_order` int NOT NULL,
-    `status` varchar(32) NOT NULL,
-    `input_snapshot_json` json DEFAULT NULL,
-    `output_summary_json` json DEFAULT NULL,
-    `ai_call_id` bigint DEFAULT NULL,
-    `failure_reason` varchar(1024) DEFAULT NULL,
-    `started_at` BIGINT DEFAULT NULL,
-    `completed_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_extraction_stage_order` (`extraction_task_id`, `stage_order`),
-    KEY `idx_knowledge_graph_extraction_stage_task_status` (`extraction_task_id`, `status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道阶段';
+    UNIQUE KEY `uk_knowledge_graph_material_version_no` (`material_id`, `version_no`),
+    KEY `idx_knowledge_graph_material_version_published` (`material_id`, `published_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材成功发布快照';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -150,11 +124,10 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node` (
     `node_type` varchar(64) NOT NULL,
     `name` varchar(255) NOT NULL,
     `status` varchar(32) NOT NULL,
-    `published_at` BIGINT NOT NULL,
-    `version` bigint NOT NULL DEFAULT 0,
+    `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_published_node_key` (`node_key`),
-    KEY `idx_knowledge_graph_published_node_recent` (`status`, `published_at`),
+    KEY `idx_knowledge_graph_published_node_status` (`status`),
     KEY `idx_knowledge_graph_published_node_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间节点';
 
@@ -166,26 +139,22 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge` (
     `relation_type` varchar(64) NOT NULL,
     `qualifiers_json` json DEFAULT NULL,
     `status` varchar(32) NOT NULL,
-    `published_at` BIGINT NOT NULL,
-    `version` bigint NOT NULL DEFAULT 0,
+    `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_published_edge_key` (`edge_key`),
     KEY `idx_knowledge_graph_published_edge_source` (`source_published_node_id`),
     KEY `idx_knowledge_graph_published_edge_target` (`target_published_node_id`),
-    KEY `idx_knowledge_graph_published_edge_recent` (`status`, `published_at`)
+    KEY `idx_knowledge_graph_published_edge_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间关系';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node_property` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `published_node_id` bigint NOT NULL,
     `property_name` varchar(128) NOT NULL,
-    `normalized_value` varchar(512) NOT NULL,
-    `display_value` varchar(2048) NOT NULL,
+    `value` varchar(512) NOT NULL,
     `is_preferred` tinyint(1) NOT NULL DEFAULT 0,
-    `source_type` varchar(32) NOT NULL,
-    `source_ref_json` json DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_node_property_value` (`published_node_id`, `property_name`, `normalized_value`),
+    UNIQUE KEY `uk_knowledge_graph_node_property_value` (`published_node_id`, `property_name`, `value`),
     KEY `idx_knowledge_graph_node_property_preferred` (`published_node_id`, `property_name`, `is_preferred`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布节点多值属性';
 
@@ -193,13 +162,10 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge_property` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `published_edge_id` bigint NOT NULL,
     `property_name` varchar(128) NOT NULL,
-    `normalized_value` varchar(512) NOT NULL,
-    `display_value` varchar(2048) NOT NULL,
+    `value` varchar(512) NOT NULL,
     `is_preferred` tinyint(1) NOT NULL DEFAULT 0,
-    `source_type` varchar(32) NOT NULL,
-    `source_ref_json` json DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_edge_property_value` (`published_edge_id`, `property_name`, `normalized_value`),
+    UNIQUE KEY `uk_knowledge_graph_edge_property_value` (`published_edge_id`, `property_name`, `value`),
     KEY `idx_knowledge_graph_edge_property_preferred` (`published_edge_id`, `property_name`, `is_preferred`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布关系多值属性';
 
@@ -213,48 +179,23 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_manual_source` (
     KEY `idx_knowledge_graph_manual_source_target` (`target_type`, `target_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间人工来源';
 
-CREATE TABLE IF NOT EXISTS `knowledge_graph_publish_record` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `material_id` bigint NOT NULL,
-    `status` varchar(32) NOT NULL,
-    `preview_summary_json` json NOT NULL,
-    `conflict_decisions_json` json DEFAULT NULL,
-    `result_summary_json` json DEFAULT NULL,
-    `requested_at` BIGINT NOT NULL,
-    `completed_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_publish_record_material_status` (`material_id`, `status`, `requested_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材整体发布记录';
-
-CREATE TABLE IF NOT EXISTS `knowledge_graph_material_node_mapping` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `material_id` bigint NOT NULL,
-    `material_node_id` bigint DEFAULT NULL,
+CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node_material` (
     `published_node_id` bigint NOT NULL,
-    `publish_record_id` bigint NOT NULL,
+    `content_type` varchar(32) NOT NULL,
+    `content_ref_id` bigint NOT NULL,
     `source_snapshot_json` json DEFAULT NULL,
-    `status` varchar(32) NOT NULL,
-    `changed_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_node_mapping_publish` (`material_node_id`, `published_node_id`, `publish_record_id`),
-    KEY `idx_knowledge_graph_node_mapping_material_status` (`material_id`, `status`),
-    KEY `idx_knowledge_graph_node_mapping_published_status` (`published_node_id`, `status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材节点发布映射';
+    PRIMARY KEY (`published_node_id`, `content_type`, `content_ref_id`),
+    KEY `idx_knowledge_graph_published_node_material_content` (`content_type`, `content_ref_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布节点当前素材关联';
 
-CREATE TABLE IF NOT EXISTS `knowledge_graph_material_edge_mapping` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `material_id` bigint NOT NULL,
-    `material_edge_id` bigint DEFAULT NULL,
+CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge_material` (
     `published_edge_id` bigint NOT NULL,
-    `publish_record_id` bigint NOT NULL,
+    `content_type` varchar(32) NOT NULL,
+    `content_ref_id` bigint NOT NULL,
     `source_snapshot_json` json DEFAULT NULL,
-    `status` varchar(32) NOT NULL,
-    `changed_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_edge_mapping_publish` (`material_edge_id`, `published_edge_id`, `publish_record_id`),
-    KEY `idx_knowledge_graph_edge_mapping_material_status` (`material_id`, `status`),
-    KEY `idx_knowledge_graph_edge_mapping_published_status` (`published_edge_id`, `status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材关系发布映射';
+    PRIMARY KEY (`published_edge_id`, `content_type`, `content_ref_id`),
+    KEY `idx_knowledge_graph_published_edge_material_content` (`content_type`, `content_ref_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布边当前素材关联';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_governance_operation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -270,34 +211,15 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_governance_operation` (
     KEY `idx_knowledge_graph_governance_operation_type_time` (`operation_type`, `operated_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间治理操作记录';
 
-CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_change` (
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_event` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `material_id` bigint NOT NULL,
     `content_type` varchar(32) NOT NULL,
     `content_ref_id` bigint NOT NULL,
-    `material_snapshot_json` json NOT NULL,
-    `decision` varchar(32) DEFAULT NULL,
+    `event_type` varchar(32) NOT NULL,
     `status` varchar(32) NOT NULL,
-    `result_summary_json` json DEFAULT NULL,
-    `requested_at` BIGINT NOT NULL,
-    `completed_at` BIGINT DEFAULT NULL,
+    `changed_at` BIGINT NOT NULL,
+    `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_deletion_change_material_status` (`material_id`, `status`, `requested_at`),
-    KEY `idx_knowledge_graph_deletion_change_content` (`content_type`, `content_ref_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材删除变更快照';
-
-CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_task` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `deletion_change_id` bigint NOT NULL,
-    `idempotency_key` varchar(128) NOT NULL,
-    `status` varchar(32) NOT NULL,
-    `progress` int NOT NULL DEFAULT 0,
-    `failure_reason` varchar(1024) DEFAULT NULL,
-    `result_summary_json` json DEFAULT NULL,
-    `requested_at` BIGINT NOT NULL,
-    `completed_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_deletion_task_idempotency` (`idempotency_key`),
-    KEY `idx_knowledge_graph_deletion_task_status_requested` (`status`, `requested_at`),
-    KEY `idx_knowledge_graph_deletion_task_change` (`deletion_change_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材删除后台任务';
+    UNIQUE KEY `uk_knowledge_graph_material_event_type` (`content_type`, `content_ref_id`, `event_type`),
+    KEY `idx_knowledge_graph_material_event_status` (`status`, `changed_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='外部素材事件处理记录';

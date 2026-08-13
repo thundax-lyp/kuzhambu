@@ -6,9 +6,13 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublis
 import java.util.List;
 
 public interface GraphPublishedNodeMaterialRepository {
+    List<GraphPublishedNodeMaterial> listByPublishedNodeId(GraphPublishedNodeId publishedNodeId);
+
     List<GraphPublishedNodeMaterial> listByMaterial(ContentRef materialRef);
 
     int insert(GraphPublishedNodeMaterial relation);
 
-    int delete(GraphPublishedNodeId publishedNodeId, ContentRef materialRef);
+    int deleteByPublishedNodeIdAndMaterialRef(GraphPublishedNodeId publishedNodeId, ContentRef materialRef);
+
+    int deleteByMaterial(ContentRef materialRef);
 }

@@ -6,9 +6,13 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublis
 import java.util.List;
 
 public interface GraphPublishedEdgeMaterialRepository {
+    List<GraphPublishedEdgeMaterial> listByPublishedEdgeId(GraphPublishedEdgeId publishedEdgeId);
+
     List<GraphPublishedEdgeMaterial> listByMaterial(ContentRef materialRef);
 
     int insert(GraphPublishedEdgeMaterial relation);
 
-    int delete(GraphPublishedEdgeId publishedEdgeId, ContentRef materialRef);
+    int deleteByPublishedEdgeIdAndMaterialRef(GraphPublishedEdgeId publishedEdgeId, ContentRef materialRef);
+
+    int deleteByMaterial(ContentRef materialRef);
 }

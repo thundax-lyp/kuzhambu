@@ -35,16 +35,9 @@ public class GraphMaterial {
         }
     }
 
-    public void beginPublication() {
-        if (!editable()) {
-            throw new IllegalStateException("Only draft graph materials can publish");
-        }
-        status = GraphMaterialStatus.PUBLISHING;
-    }
-
-    public void finishPublication(Instant completedAt) {
-        if (status != GraphMaterialStatus.PUBLISHING) {
-            throw new IllegalStateException("Graph material is not publishing");
+    public void publish(Instant completedAt) {
+        if (status != GraphMaterialStatus.READY) {
+            throw new IllegalStateException("Only ready graph materials can publish");
         }
         status = GraphMaterialStatus.PUBLISHED;
         publishedAt = completedAt;

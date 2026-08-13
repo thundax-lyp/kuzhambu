@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
 
-import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.PublishedGraphStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphEdgeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
@@ -20,6 +20,6 @@ public class GraphPublishedEdge {
     private GraphPublishedNodeId targetNodeId;
     private String relationType;
     private String qualifiersJson;
-    private PublishedGraphStatus status;
+    private GraphPublishedStatus status;
     private long lockVersion;
 }
