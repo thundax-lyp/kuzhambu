@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResu
 import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeGraphExtractionTaskApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
@@ -619,6 +620,7 @@ class AiFacadeImplTest {
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
                 mock(KnowledgeAiExtractionApplicationService.class),
+                mock(KnowledgeGraphExtractionTaskApplicationService.class),
                 mock(AiInvocationRepository.class),
                 aiCandidateApplicationService);
 
@@ -680,6 +682,7 @@ class AiFacadeImplTest {
             AiBatchJobApplicationService aiBatchJobApplicationService,
             DiscoveryAiApplicationService discoveryAiApplicationService,
             KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
+            KnowledgeGraphExtractionTaskApplicationService knowledgeGraphExtractionTaskApplicationService,
             AiInvocationRepository aiInvocationRepository,
             AiCandidateApplicationService aiCandidateApplicationService) {
         return new AiFacadeImpl(
@@ -687,9 +690,27 @@ class AiFacadeImplTest {
                 aiBatchJobApplicationService,
                 discoveryAiApplicationService,
                 knowledgeAiExtractionApplicationService,
+                knowledgeGraphExtractionTaskApplicationService,
                 aiCandidateApplicationService,
                 aiInvocationRepository,
                 new AiFacadeAssembler());
+    }
+
+    private static AiFacadeImpl newFacade(
+            AiReportApplicationService aiReportApplicationService,
+            AiBatchJobApplicationService aiBatchJobApplicationService,
+            DiscoveryAiApplicationService discoveryAiApplicationService,
+            KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
+            AiInvocationRepository aiInvocationRepository,
+            AiCandidateApplicationService aiCandidateApplicationService) {
+        return newFacade(
+                aiReportApplicationService,
+                aiBatchJobApplicationService,
+                discoveryAiApplicationService,
+                knowledgeAiExtractionApplicationService,
+                null,
+                aiInvocationRepository,
+                aiCandidateApplicationService);
     }
 
     private static AiBatchJobResult batchJobResult(Long batchId) {

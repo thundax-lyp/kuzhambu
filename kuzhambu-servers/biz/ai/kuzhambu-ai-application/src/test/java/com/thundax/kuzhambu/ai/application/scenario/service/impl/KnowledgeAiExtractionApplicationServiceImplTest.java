@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
 import com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractionCommand;
 import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtractionResult;
+import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiExtractionSnapshotResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
@@ -27,12 +28,14 @@ import org.junit.jupiter.api.Test;
 class KnowledgeAiExtractionApplicationServiceImplTest {
 
     private final KnowledgeAiWorkerUsecaseResolver resolver = new KnowledgeAiWorkerUsecaseResolver();
+    private final KnowledgeAiExtractionSnapshotResolver snapshotResolver =
+            new KnowledgeAiExtractionSnapshotResolver(resolver, null);
 
     @Test
     void extractGraphShouldUseKnowledgeGraphUsecase() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl repository =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, snapshotResolver);
 
         KnowledgeAiExtractionResult result = extractGraph(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -52,7 +55,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractRelationShouldUseRelationExtractionCapability() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl repository =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, snapshotResolver);
 
         extractRelations(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -67,7 +70,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractLineageShouldUseLineageUsecase() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl repository =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, snapshotResolver);
 
         extractLineage(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -83,7 +86,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractTagsShouldUseTagExtractionUsecaseAndCreateCandidate() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl repository =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, snapshotResolver);
 
         extractTags(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -103,7 +106,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractGraphShouldPreserveCallAndCandidateIdentifiers() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl repository =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, snapshotResolver);
 
         KnowledgeAiExtractionResult result = extractGraph(repository);
 
@@ -117,11 +120,12 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractGraphShouldResolveBusinessPromptWhenRequestOmitsModelAndPromptFields() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
-        KnowledgeAiExtractionApplicationServiceImpl repository =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, businessResolver);
+        KnowledgeAiExtractionApplicationServiceImpl repository = new KnowledgeAiExtractionApplicationServiceImpl(
+                invocationService, resolver, new KnowledgeAiExtractionSnapshotResolver(resolver, businessResolver));
         KnowledgeAiExtractionCommand command = new KnowledgeAiExtractionCommand(
+                null,
                 "GRAPH",
-                "ENTRY",
+                null,
                 "{\"entryIds\":[1]}",
                 "SANCAI_ENTRY",
                 1L,
@@ -174,8 +178,9 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
 
     private KnowledgeAiExtractionCommand command() {
         return new KnowledgeAiExtractionCommand(
+                null,
                 "GRAPH",
-                "ENTRY",
+                "knowledge",
                 "{\"entryIds\":[1]}",
                 "SANCAI_ENTRY",
                 1L,
@@ -188,7 +193,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
                 new RequestId("req-1"),
                 new TraceId("trace-1"),
                 "[{\"role\":\"user\",\"content\":\"hello\"}]",
-                null,
+                "{}",
                 null,
                 "{\"text\":\"hello\"}",
                 "{\"type\":\"object\"}",
