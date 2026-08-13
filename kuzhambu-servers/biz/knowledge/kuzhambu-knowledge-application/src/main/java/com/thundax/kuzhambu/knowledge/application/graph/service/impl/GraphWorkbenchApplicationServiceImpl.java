@@ -50,7 +50,7 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
 
     @Override
     public GraphWorkbenchOverviewResult getOverview() {
-        GraphWorkbenchMetrics metrics = workbenchRepository.getOverview();
+        GraphWorkbenchMetrics metrics = workbenchRepository.getByOverview();
         return new GraphWorkbenchOverviewResult(
                 metrics.publishedNodeCount(),
                 metrics.publishedEdgeCount(),
@@ -80,7 +80,7 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
         effectivePage.normalize();
         PageResult<GraphSearchResult> result = new PageResult<>();
         PageResult<com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishedSearchHit> source =
-                workbenchRepository.search(
+                workbenchRepository.page(
                         query == null ? null : query.keyword(),
                         query == null ? null : query.nodeType(),
                         query == null ? null : query.relationType(),
@@ -104,7 +104,7 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
                 && !ISSUE_TYPE_MISSING_CORE_RELATION.equals(issueType)) {
             throw new BizException("Unsupported graph quality issue type");
         }
-        GraphQualitySnapshot snapshot = workbenchRepository.getQuality(
+        GraphQualitySnapshot snapshot = workbenchRepository.getByQuality(
                 issueType, query == null ? null : query.nodeType(), QUALITY_SAMPLE_LIMIT);
         return new GraphQualityResult(
                 snapshot.isolatedNodeCount(),

@@ -16,7 +16,7 @@ public interface GraphMaterialEdgeRepository {
 
     void batchUpdate(List<GraphMaterialEdge> edges);
 
-    void deleteByIds(List<GraphMaterialEdgeId> ids);
+    void batchDeleteById(List<GraphMaterialEdgeId> ids);
 
     int update(GraphMaterialEdge edge);
 

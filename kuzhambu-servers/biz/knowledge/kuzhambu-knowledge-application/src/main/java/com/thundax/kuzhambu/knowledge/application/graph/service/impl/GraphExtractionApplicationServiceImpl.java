@@ -20,21 +20,25 @@ import com.thundax.kuzhambu.knowledge.application.graph.assembler.GraphApplicati
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphSaver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphDocument;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphExtractionApplyExecutor;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialContentResolver;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialContentSnapshot;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialGraphLoader;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphSchemaSupport;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphSnapshotSupport;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphDocumentDto;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialContentSnapshotDto;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GraphExtractionApplicationServiceImpl implements GraphExtractionApplicationService {
@@ -48,31 +52,31 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     private final ObjectMapper objectMapper;
     private final GraphMaterialContentResolver contentResolver;
     private final GraphMaterialGraphLoader graphLoader;
-    private final GraphSnapshotSupport snapshotSupport;
-    private final GraphSchemaSupport schemaSupport;
-    private final GraphExtractionApplyExecutor applyExecutor;
+    private final GraphSnapshotResolver snapshotSupport;
+    private final GraphSchemaResolver schemaSupport;
+    private final GraphMaterialGraphSaver graphSaver;
 
     public GraphExtractionApplicationServiceImpl(
             AiFacade aiFacade,
             ObjectMapper objectMapper,
             GraphMaterialContentResolver contentResolver,
             GraphMaterialGraphLoader graphLoader,
-            GraphSnapshotSupport snapshotSupport,
-            GraphSchemaSupport schemaSupport,
-            GraphExtractionApplyExecutor applyExecutor) {
+            GraphSnapshotResolver snapshotSupport,
+            GraphSchemaResolver schemaSupport,
+            GraphMaterialGraphSaver graphSaver) {
         this.aiFacade = aiFacade;
         this.objectMapper = objectMapper;
         this.contentResolver = contentResolver;
         this.graphLoader = graphLoader;
         this.snapshotSupport = snapshotSupport;
         this.schemaSupport = schemaSupport;
-        this.applyExecutor = applyExecutor;
+        this.graphSaver = graphSaver;
     }
 
     @Override
     public GraphExtractionResult startExtraction(GraphExtractionCommand command) {
         ContentRef materialRef = requireMaterialRef(command == null ? null : command.materialRef());
-        GraphMaterialContentSnapshot snapshot = contentResolver.resolveWorkbench(materialRef);
+        GraphMaterialContentSnapshotDto snapshot = contentResolver.resolveWorkbench(materialRef);
         graphLoader.getOrCreate(materialRef, snapshot.title()).material().requireEditable();
         rejectRunningJob(materialRef);
         AiBatchJobActionFacadeResponse action = aiFacade.submitKnowledgeGraphExtraction(
@@ -91,7 +95,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         }
         AiBatchJobFacadeResponse failedJob = aiFacade.getBatchJob(command.failedBatchJobId());
         requireRetryableFailedJob(materialRef, failedJob);
-        GraphMaterialContentSnapshot snapshot = contentResolver.resolveWorkbench(materialRef);
+        GraphMaterialContentSnapshotDto snapshot = contentResolver.resolveWorkbench(materialRef);
         graphLoader.getOrCreate(materialRef, snapshot.title()).material().requireEditable();
         rejectRunningJob(materialRef);
         AiBatchJobActionFacadeResponse action = aiFacade.submitKnowledgeGraphExtraction(
@@ -121,6 +125,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public GraphMaterialResult applyExtractionResult(GraphExtractionApplyCommand command) {
         ContentRef materialRef = requireMaterialRef(command == null ? null : command.materialRef());
         if (command.candidateId() == null) {
@@ -134,12 +139,16 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                         .capability(AI_CAPABILITY)
                         .build());
         requireCandidate(materialRef, candidate);
-        GraphDocument document = snapshotSupport.parseCandidate(candidate.getResultPayload());
+        GraphDocumentDto document = snapshotSupport.parseCandidate(candidate.getResultPayload());
         List<GraphValidationIssueResult> issues = schemaSupport.validateLoose(document);
         if (!issues.isEmpty()) {
             throw new BizException("Graph extraction candidate does not match graph schema");
         }
-        GraphMaterialResult result = applyExecutor.apply(materialRef, document, command.materialLockVersion());
+        GraphMaterialGraph graph = graphLoader.require(materialRef);
+        graph.material().requireLockVersion(command.materialLockVersion());
+        graph.material().requireEditable();
+        GraphMaterialResult result = GraphApplicationAssembler.toMaterialResult(
+                graphSaver.replaceDocument(graph, document, GraphSourceType.AI, command.materialLockVersion()));
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
                 .candidateId(candidate.getCandidateId())
                 .resultFormat(candidate.getResultFormat())
@@ -150,7 +159,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     }
 
     private KnowledgeGraphExtractionJobFacadeRequest extractionRequest(
-            ContentRef materialRef, GraphMaterialContentSnapshot snapshot, Long requestedBy) {
+            ContentRef materialRef, GraphMaterialContentSnapshotDto snapshot, Long requestedBy) {
         return KnowledgeGraphExtractionJobFacadeRequest.builder()
                 .scope(AI_SCOPE)
                 .contentType(ContentRefCodec.toContentType(materialRef))
@@ -211,7 +220,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         return materialRef;
     }
 
-    private String snapshotJson(GraphMaterialContentSnapshot snapshot) {
+    private String snapshotJson(GraphMaterialContentSnapshotDto snapshot) {
         try {
             return objectMapper.writeValueAsString(snapshot);
         } catch (JsonProcessingException ex) {

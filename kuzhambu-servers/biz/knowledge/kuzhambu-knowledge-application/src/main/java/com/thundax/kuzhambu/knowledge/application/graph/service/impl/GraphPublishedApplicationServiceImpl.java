@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeSplitCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeDeleteQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeDeleteQuery;
@@ -21,7 +22,6 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdg
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphSchemaSupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphPublishedChangeSet;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphPublishedNodeSplitSpec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphPublishedSubgraph;
@@ -66,7 +66,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
     private final GraphPublishedEdgePropertyRepository edgePropertyRepository;
     private final GraphPublishedNodeMaterialRepository nodeMaterialRepository;
     private final GraphPublishedEdgeMaterialRepository edgeMaterialRepository;
-    private final GraphSchemaSupport schemaSupport;
+    private final GraphSchemaResolver schemaSupport;
     private final Clock clock;
 
     public GraphPublishedApplicationServiceImpl(
@@ -76,7 +76,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
             GraphPublishedEdgePropertyRepository edgePropertyRepository,
             GraphPublishedNodeMaterialRepository nodeMaterialRepository,
             GraphPublishedEdgeMaterialRepository edgeMaterialRepository,
-            GraphSchemaSupport schemaSupport,
+            GraphSchemaResolver schemaSupport,
             Clock clock) {
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;

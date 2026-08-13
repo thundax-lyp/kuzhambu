@@ -1,10 +1,13 @@
-package com.thundax.kuzhambu.knowledge.application.graph.support;
+package com.thundax.kuzhambu.knowledge.application.graph.operator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.Error;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentDto;
+import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentEdgeDto;
+import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentNodeDto;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNode;
@@ -13,27 +16,27 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GraphSnapshotSupport {
+public class GraphSnapshotResolver {
 
     private static final String SCHEMA_VERSION = "1.0.0";
 
     private final ObjectMapper objectMapper;
     private final GraphSchemaProvider schemaProvider;
 
-    public GraphSnapshotSupport(ObjectMapper objectMapper, GraphSchemaProvider schemaProvider) {
+    public GraphSnapshotResolver(ObjectMapper objectMapper, GraphSchemaProvider schemaProvider) {
         this.objectMapper = objectMapper;
         this.schemaProvider = schemaProvider;
     }
 
-    public GraphDocument parseImport(String graphJson) {
+    public GraphDocumentDto parseImport(String graphJson) {
         return parseAndValidate(graphJson);
     }
 
-    public GraphDocument parseCandidate(String resultPayload) {
+    public GraphDocumentDto parseCandidate(String resultPayload) {
         return parseAndValidate(resultPayload);
     }
 
-    public GraphDocument parseVersion(GraphMaterialVersion version) {
+    public GraphDocumentDto parseVersion(GraphMaterialVersion version) {
         if (version == null) {
             throw new BizException("Graph material version is required");
         }
@@ -41,7 +44,7 @@ public class GraphSnapshotSupport {
     }
 
     public String serialize(GraphMaterialGraph graph) {
-        GraphDocument document = new GraphDocument();
+        GraphDocumentDto document = new GraphDocumentDto();
         document.setSchemaVersion(SCHEMA_VERSION);
         document.setNodes(graph.nodes().stream().map(this::toDocumentNode).toList());
         document.setEdges(graph.edges().stream().map(this::toDocumentEdge).toList());
@@ -52,7 +55,7 @@ public class GraphSnapshotSupport {
         }
     }
 
-    private GraphDocument parseAndValidate(String graphJson) {
+    private GraphDocumentDto parseAndValidate(String graphJson) {
         if (graphJson == null || graphJson.trim().isEmpty()) {
             throw new BizException("Graph document JSON is required");
         }
@@ -62,14 +65,14 @@ public class GraphSnapshotSupport {
             if (!errors.isEmpty()) {
                 throw new BizException("Graph document JSON does not match schema");
             }
-            return objectMapper.treeToValue(jsonNode, GraphDocument.class);
+            return objectMapper.treeToValue(jsonNode, GraphDocumentDto.class);
         } catch (JsonProcessingException ex) {
             throw new BizException("Graph document JSON is invalid");
         }
     }
 
-    private GraphDocumentNode toDocumentNode(GraphMaterialNode node) {
-        GraphDocumentNode documentNode = new GraphDocumentNode();
+    private GraphDocumentNodeDto toDocumentNode(GraphMaterialNode node) {
+        GraphDocumentNodeDto documentNode = new GraphDocumentNodeDto();
         documentNode.setId("node-" + node.getId().value());
         documentNode.setNodeType(node.getNodeType().value());
         documentNode.setName(node.getName());
@@ -77,8 +80,8 @@ public class GraphSnapshotSupport {
         return documentNode;
     }
 
-    private GraphDocumentEdge toDocumentEdge(GraphMaterialEdge edge) {
-        GraphDocumentEdge documentEdge = new GraphDocumentEdge();
+    private GraphDocumentEdgeDto toDocumentEdge(GraphMaterialEdge edge) {
+        GraphDocumentEdgeDto documentEdge = new GraphDocumentEdgeDto();
         documentEdge.setId(edge.getId() == null ? null : "edge-" + edge.getId().value());
         documentEdge.setSourceId("node-" + edge.getSourceNodeId().value());
         documentEdge.setTargetId("node-" + edge.getTargetNodeId().value());

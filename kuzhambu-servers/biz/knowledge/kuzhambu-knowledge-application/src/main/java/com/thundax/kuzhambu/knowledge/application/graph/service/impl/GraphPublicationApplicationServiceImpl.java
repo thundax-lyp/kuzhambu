@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.assembler.GraphApplicati
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphPublicationExecutor;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
@@ -14,8 +16,6 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationR
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialGraphLoader;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphPublicationExecutor;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;

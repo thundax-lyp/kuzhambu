@@ -38,7 +38,7 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
     }
 
     @Override
-    public GraphWorkbenchMetrics getOverview() {
+    public GraphWorkbenchMetrics getByOverview() {
         return new GraphWorkbenchMetrics(
                 mapper.countActiveNodes(),
                 mapper.countActiveEdges(),
@@ -48,7 +48,7 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
     }
 
     @Override
-    public PageResult<GraphPublishedSearchHit> search(
+    public PageResult<GraphPublishedSearchHit> page(
             String keyword, GraphNodeType nodeType, String relationType, int pageNo, int pageSize) {
         int effectivePageNo = pageNo <= 0 ? 1 : pageNo;
         int effectivePageSize = pageSize <= 0 ? 10 : pageSize;
@@ -64,7 +64,7 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
     }
 
     @Override
-    public GraphQualitySnapshot getQuality(String issueType, GraphNodeType nodeType, int sampleLimit) {
+    public GraphQualitySnapshot getByQuality(String issueType, GraphNodeType nodeType, int sampleLimit) {
         int effectiveLimit = sampleLimit <= 0 ? 20 : sampleLimit;
         String nodeTypeValue = nodeType == null ? null : nodeType.value();
         long isolatedNodeCount = mapper.countIsolatedNodes(nodeTypeValue);

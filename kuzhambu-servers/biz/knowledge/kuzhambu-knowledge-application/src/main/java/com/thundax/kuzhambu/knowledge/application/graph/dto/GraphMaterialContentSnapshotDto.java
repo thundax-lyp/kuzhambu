@@ -1,9 +1,9 @@
-package com.thundax.kuzhambu.knowledge.application.graph.support;
+package com.thundax.kuzhambu.knowledge.application.graph.dto;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import java.util.List;
 
-public record GraphMaterialContentSnapshot(
+public record GraphMaterialContentSnapshotDto(
         ContentRef contentRef,
         String title,
         String summary,

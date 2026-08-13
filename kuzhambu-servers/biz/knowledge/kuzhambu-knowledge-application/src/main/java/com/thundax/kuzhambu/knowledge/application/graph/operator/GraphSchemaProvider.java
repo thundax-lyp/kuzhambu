@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.graph.support;
+package com.thundax.kuzhambu.knowledge.application.graph.operator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

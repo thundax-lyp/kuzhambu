@@ -65,7 +65,7 @@ public final class GraphKeyHelper {
         }
         return Normalizer.normalize(value, Normalizer.Form.NFKC)
                 .trim()
-                .replaceAll("\\s+", " ")
+                .replaceAll("\\s+", "")
                 .toLowerCase(java.util.Locale.ROOT);
     }
 

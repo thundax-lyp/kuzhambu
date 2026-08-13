@@ -13,6 +13,11 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNod
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeSplitCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialVersionRestoreCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphSaver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
@@ -23,15 +28,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImpo
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphDocument;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphDocumentPlan;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphDocumentPlanner;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialContentResolver;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialContentSnapshot;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialGraphLoader;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialGraphSaver;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphSchemaSupport;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphSnapshotSupport;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphDocumentDto;
+import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialContentSnapshotDto;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialChangeSet;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
@@ -62,9 +60,8 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
     private final GraphMaterialContentResolver contentResolver;
     private final GraphMaterialGraphLoader graphLoader;
     private final GraphMaterialGraphSaver graphSaver;
-    private final GraphDocumentPlanner documentPlanner;
-    private final GraphSnapshotSupport snapshotSupport;
-    private final GraphSchemaSupport schemaSupport;
+    private final GraphSnapshotResolver snapshotSupport;
+    private final GraphSchemaResolver schemaSupport;
 
     public GraphMaterialApplicationServiceImpl(
             GraphMaterialRepository materialRepository,
@@ -74,9 +71,8 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
             GraphMaterialContentResolver contentResolver,
             GraphMaterialGraphLoader graphLoader,
             GraphMaterialGraphSaver graphSaver,
-            GraphDocumentPlanner documentPlanner,
-            GraphSnapshotSupport snapshotSupport,
-            GraphSchemaSupport schemaSupport) {
+            GraphSnapshotResolver snapshotSupport,
+            GraphSchemaResolver schemaSupport) {
         this.materialRepository = materialRepository;
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
@@ -84,7 +80,6 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         this.contentResolver = contentResolver;
         this.graphLoader = graphLoader;
         this.graphSaver = graphSaver;
-        this.documentPlanner = documentPlanner;
         this.snapshotSupport = snapshotSupport;
         this.schemaSupport = schemaSupport;
     }
@@ -251,24 +246,22 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         if (version == null) {
             throw new BizException("Graph material version does not exist");
         }
-        GraphDocument document = snapshotSupport.parseVersion(version);
-        GraphDocumentPlan plan = documentPlanner.plan(graph, document, GraphSourceType.MATERIAL, "REPLACE");
+        GraphDocumentDto document = snapshotSupport.parseVersion(version);
         return GraphApplicationAssembler.toMaterialResult(
-                graphSaver.applyDocument(graph, plan, command.materialLockVersion()));
+                graphSaver.replaceDocument(graph, document, GraphSourceType.MATERIAL, command.materialLockVersion()));
     }
 
     @Override
     public GraphMaterialImportPreviewResult previewImport(GraphMaterialImportQuery query) {
-        GraphDocument document = snapshotSupport.parseImport(query.graphJson());
+        GraphDocumentDto document = snapshotSupport.parseImport(query.graphJson());
         GraphMaterialGraph graph = previewGraph(query.materialRef());
-        GraphDocumentPlan plan = documentPlanner.plan(graph, document, GraphSourceType.IMPORT, query.strategy());
         List<GraphValidationIssueResult> issues = schemaSupport.validateLoose(document);
         return new GraphMaterialImportPreviewResult(
                 GraphApplicationAssembler.toMaterialResult(graph),
-                plan.createdNodes().size(),
-                plan.updatedNodes().size(),
-                plan.createdEdges().size(),
-                plan.updatedEdges().size(),
+                document.getNodes() == null ? 0 : document.getNodes().size(),
+                0,
+                document.getEdges() == null ? 0 : document.getEdges().size(),
+                0,
                 issues,
                 issues.isEmpty());
     }
@@ -276,13 +269,12 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
     @Override
     @Transactional
     public GraphMaterialResult importGraph(GraphMaterialImportCommand command) {
-        GraphDocument document = snapshotSupport.parseImport(command.graphJson());
-        GraphMaterialContentSnapshot snapshot = contentResolver.resolveWorkbench(command.materialRef());
+        GraphDocumentDto document = snapshotSupport.parseImport(command.graphJson());
+        GraphMaterialContentSnapshotDto snapshot = contentResolver.resolveWorkbench(command.materialRef());
         GraphMaterialGraph graph = graphLoader.getOrCreate(command.materialRef(), snapshot.title());
         graph.material().requireLockVersion(command.materialLockVersion());
-        GraphDocumentPlan plan = documentPlanner.plan(graph, document, GraphSourceType.IMPORT, command.strategy());
         return GraphApplicationAssembler.toMaterialResult(
-                graphSaver.applyDocument(graph, plan, command.materialLockVersion()));
+                graphSaver.replaceDocument(graph, document, GraphSourceType.IMPORT, command.materialLockVersion()));
     }
 
     @Override

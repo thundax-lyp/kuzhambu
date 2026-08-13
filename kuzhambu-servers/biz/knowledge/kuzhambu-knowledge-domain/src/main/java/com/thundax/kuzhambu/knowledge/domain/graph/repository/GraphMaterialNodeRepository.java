@@ -16,7 +16,7 @@ public interface GraphMaterialNodeRepository {
 
     void batchUpdate(List<GraphMaterialNode> nodes);
 
-    void deleteByIds(List<GraphMaterialNodeId> ids);
+    void batchDeleteById(List<GraphMaterialNodeId> ids);
 
     int update(GraphMaterialNode node);
 

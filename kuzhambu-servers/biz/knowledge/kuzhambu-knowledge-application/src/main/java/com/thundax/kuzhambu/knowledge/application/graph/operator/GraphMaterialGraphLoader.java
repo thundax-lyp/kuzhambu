@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.graph.support;
+package com.thundax.kuzhambu.knowledge.application.graph.operator;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;

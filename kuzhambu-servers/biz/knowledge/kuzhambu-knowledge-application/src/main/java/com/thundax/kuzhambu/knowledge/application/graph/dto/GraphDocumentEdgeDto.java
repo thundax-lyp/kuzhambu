@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.graph.support;
+package com.thundax.kuzhambu.knowledge.application.graph.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class GraphDocumentEdge {
+public class GraphDocumentEdgeDto {
     private String id;
     private String sourceId;
     private String targetId;

@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.graph.support;
+package com.thundax.kuzhambu.knowledge.application.graph.operator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,8 +49,8 @@ public class GraphPublicationExecutor {
 
     private final ObjectMapper objectMapper;
     private final GraphMaterialGraphLoader graphLoader;
-    private final GraphSnapshotSupport snapshotSupport;
-    private final GraphSchemaSupport schemaSupport;
+    private final GraphSnapshotResolver snapshotSupport;
+    private final GraphSchemaResolver schemaSupport;
     private final GraphMaterialRepository materialRepository;
     private final GraphMaterialVersionRepository versionRepository;
     private final GraphPublishedNodeRepository publishedNodeRepository;
@@ -63,8 +63,8 @@ public class GraphPublicationExecutor {
     public GraphPublicationExecutor(
             ObjectMapper objectMapper,
             GraphMaterialGraphLoader graphLoader,
-            GraphSnapshotSupport snapshotSupport,
-            GraphSchemaSupport schemaSupport,
+            GraphSnapshotResolver snapshotSupport,
+            GraphSchemaResolver schemaSupport,
             GraphMaterialRepository materialRepository,
             GraphMaterialVersionRepository versionRepository,
             GraphPublishedNodeRepository publishedNodeRepository,

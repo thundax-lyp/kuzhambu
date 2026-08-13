@@ -7,10 +7,10 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphQualityS
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchMetrics;
 
 public interface GraphWorkbenchRepository {
-    GraphWorkbenchMetrics getOverview();
+    GraphWorkbenchMetrics getByOverview();
 
-    PageResult<GraphPublishedSearchHit> search(
+    PageResult<GraphPublishedSearchHit> page(
             String keyword, GraphNodeType nodeType, String relationType, int pageNo, int pageSize);
 
-    GraphQualitySnapshot getQuality(String issueType, GraphNodeType nodeType, int sampleLimit);
+    GraphQualitySnapshot getByQuality(String issueType, GraphNodeType nodeType, int sampleLimit);
 }

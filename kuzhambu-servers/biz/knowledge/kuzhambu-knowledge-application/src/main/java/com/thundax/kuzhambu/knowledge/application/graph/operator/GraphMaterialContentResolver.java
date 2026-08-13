@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.application.graph.support;
+package com.thundax.kuzhambu.knowledge.application.graph.operator;
 
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacade
 import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphMaterialContentSnapshotDto;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +23,7 @@ public class GraphMaterialContentResolver {
         this.classicsFacade = classicsFacade;
     }
 
-    public GraphMaterialContentSnapshot resolveWorkbench(ContentRef ref) {
+    public GraphMaterialContentSnapshotDto resolveWorkbench(ContentRef ref) {
         requireSancaiEntry(ref);
         ClassicsPublicContentFacadeResponse response = classicsFacade.getWorkbenchContent(toRequest(ref));
         ClassicsPublicContentFacadeDto content = content(response);
@@ -46,8 +47,8 @@ public class GraphMaterialContentResolver {
                 .build();
     }
 
-    private GraphMaterialContentSnapshot toSnapshot(ClassicsPublicContentFacadeDto content) {
-        return new GraphMaterialContentSnapshot(
+    private GraphMaterialContentSnapshotDto toSnapshot(ClassicsPublicContentFacadeDto content) {
+        return new GraphMaterialContentSnapshotDto(
                 ContentRefCodec.toDomain(content.getContentType(), Long.valueOf(content.getContentId())),
                 content.getTitle(),
                 content.getSummary(),

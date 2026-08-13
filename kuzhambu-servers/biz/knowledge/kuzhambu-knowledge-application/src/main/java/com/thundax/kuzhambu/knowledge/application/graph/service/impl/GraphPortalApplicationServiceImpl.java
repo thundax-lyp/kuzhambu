@@ -2,10 +2,10 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedGraphResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPortalApplicationService;
-import com.thundax.kuzhambu.knowledge.application.graph.support.GraphMaterialContentResolver;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdgeMaterial;

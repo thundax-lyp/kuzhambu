@@ -1,9 +1,10 @@
-package com.thundax.kuzhambu.knowledge.application.graph.support;
+package com.thundax.kuzhambu.knowledge.application.graph.operator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.Error;
+import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentDto;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GraphSchemaSupport {
+public class GraphSchemaResolver {
 
     private static final String SEVERITY_BLOCKING = "BLOCKING";
     private static final String OBJECT_TYPE_DOCUMENT = "DOCUMENT";
@@ -21,7 +22,7 @@ public class GraphSchemaSupport {
     private final ObjectMapper objectMapper;
     private final GraphSchemaProvider schemaProvider;
 
-    public GraphSchemaSupport(ObjectMapper objectMapper, GraphSchemaProvider schemaProvider) {
+    public GraphSchemaResolver(ObjectMapper objectMapper, GraphSchemaProvider schemaProvider) {
         this.objectMapper = objectMapper;
         this.schemaProvider = schemaProvider;
     }
@@ -59,7 +60,7 @@ public class GraphSchemaSupport {
         return propertyValues(qualifiersJson);
     }
 
-    public List<GraphValidationIssueResult> validateLoose(GraphDocument document) {
+    public List<GraphValidationIssueResult> validateLoose(GraphDocumentDto document) {
         JsonNode jsonNode = objectMapper.valueToTree(document);
         return schemaProvider.schema().validate(jsonNode).stream()
                 .map(this::toIssue)

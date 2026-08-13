@@ -63,7 +63,7 @@ public class GraphMaterialNodeRepositoryImpl extends GraphRepositorySupport impl
     }
 
     @Override
-    public void deleteByIds(List<GraphMaterialNodeId> ids) {
+    public void batchDeleteById(List<GraphMaterialNodeId> ids) {
         if (ids == null || ids.isEmpty()) {
             return;
         }
