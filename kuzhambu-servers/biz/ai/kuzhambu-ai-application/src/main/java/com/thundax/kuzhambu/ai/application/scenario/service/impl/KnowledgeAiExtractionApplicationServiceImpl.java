@@ -11,10 +11,10 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeTrace;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRoute;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
-import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
 import com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractionCommand;
 import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiExtractionSnapshotResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.KnowledgeAiWorkerUsecaseSpec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
@@ -30,16 +30,16 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final KnowledgeAiWorkerUsecaseResolver resolver;
-    private final AiBusinessInvokeConfigResolver businessInvokeConfigResolver;
+    private final KnowledgeAiExtractionSnapshotResolver snapshotResolver;
 
     @Autowired
     public KnowledgeAiExtractionApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,
             KnowledgeAiWorkerUsecaseResolver resolver,
-            AiBusinessInvokeConfigResolver businessInvokeConfigResolver) {
+            KnowledgeAiExtractionSnapshotResolver snapshotResolver) {
         this.invocationApplicationService = invocationApplicationService;
         this.resolver = resolver;
-        this.businessInvokeConfigResolver = businessInvokeConfigResolver;
+        this.snapshotResolver = snapshotResolver;
     }
 
     @Override
@@ -65,7 +65,9 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
     private KnowledgeAiExtractionResult invoke(KnowledgeAiExtractionCommand command, String taskType) {
         validateRequest(command);
         KnowledgeAiWorkerUsecaseSpec spec = resolver.resolve(taskType);
-        AiInvokeCommand invokeCommand = enrichBusinessInvokeConfig(toInvokeCommand(command, spec));
+        KnowledgeAiExtractionCommand snapshotCommand =
+                snapshotResolver.resolve(command).command();
+        AiInvokeCommand invokeCommand = toInvokeCommand(snapshotCommand, spec);
         AiInvokeResult result = invocationApplicationService.stream(invokeCommand, null);
         return new KnowledgeAiExtractionResult(
                 result.getCallId(),
@@ -95,7 +97,8 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
 
     private AiInvokeCommand toInvokeCommand(KnowledgeAiExtractionCommand command, KnowledgeAiWorkerUsecaseSpec spec) {
         return new AiInvokeCommand(
-                new AiInvokeContext(null, "knowledge", AiBusinessCapability.from(spec.capability())),
+                new AiInvokeContext(
+                        command.batchId(), command.scopeType(), AiBusinessCapability.from(spec.capability())),
                 new AiInvokeWorkerRoute(spec.workerCapability(), spec.operation(), spec.workerPath()),
                 new AiInvokeTarget(
                         AiContentRef.ofNullable(command.sourceContentType(), command.sourceContentId()), null),
@@ -109,26 +112,5 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
                         command.promptHash()),
                 new AiInvokePayload(command.inputPayloadJson(), command.outputSchemaJson()),
                 new AiInvokeOptions(false, command.forceJson(), command.locale(), false, true));
-    }
-
-    private AiInvokeCommand enrichBusinessInvokeConfig(AiInvokeCommand command) {
-        if (businessInvokeConfigResolver == null || command == null) {
-            return command;
-        }
-        var resolved = businessInvokeConfigResolver.resolveConfig(command);
-        return new AiInvokeCommand(
-                command.context(),
-                command.route(),
-                command.target(),
-                new AiInvokeModelConfig(
-                        resolved.serviceId(), resolved.serviceRole(), resolved.modelId(), resolved.modelName()),
-                command.trace(),
-                new AiInvokePrompt(
-                        resolved.promptVersionId(),
-                        resolved.promptMessagesJson(),
-                        resolved.promptVariablesJson(),
-                        command.prompt().promptHash()),
-                new AiInvokePayload(command.payload().inputPayloadJson(), resolved.outputSchemaJson()),
-                command.options());
     }
 }

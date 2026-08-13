@@ -196,6 +196,7 @@ public class AiFacadeAssembler {
             @NonNull KnowledgeAiExtractionFacadeRequest request) {
         Objects.requireNonNull(request, "request must not be null");
         return new KnowledgeAiExtractionCommand(
+                null,
                 request.getTaskType(),
                 request.getScopeType(),
                 request.getScopeJson(),
@@ -223,6 +224,7 @@ public class AiFacadeAssembler {
             @NonNull KnowledgeGraphExtractionJobFacadeRequest request) {
         Objects.requireNonNull(request, "request must not be null");
         return new KnowledgeAiExtractionCommand(
+                null,
                 "GRAPH",
                 request.getScope(),
                 request.getContentTitle(),

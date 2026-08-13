@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI Application 图谱任务提交`：实现图谱抽取 Batch Job 提交和 afterCommit 执行
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`KnowledgeAiExtractionCommand.java`、`KnowledgeAiExtractionApplicationServiceImpl.java`、`KnowledgeAiExtractionSnapshot.java`、`KnowledgeAiExtractionSnapshotResolver.java`、`KnowledgeGraphExtractionTaskApplicationService.java`、`KnowledgeGraphExtractionTaskApplicationServiceImpl.java`、对应测试（预计 7 个文件）
-    - 处理动作：固定输入和 AI 配置快照，创建 `AiBatchJob` 并在事务提交后执行图谱抽取。
-    - 验收点：InvocationLog 和 Candidate 都能关联同一个图谱抽取 batchId。
-    - 重要度：10/10
-
 - [ ] `AI Batch Job 并发约束`：增加运行中素材任务唯一约束
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
