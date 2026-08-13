@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCo
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
@@ -29,6 +30,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiReportBucketType;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
@@ -37,6 +39,7 @@ import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiTopCapabilityFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiUsageSnapshotFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
@@ -46,9 +49,12 @@ import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
+import com.thundax.kuzhambu.ai.facade.response.AiBatchJobPageFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.Collections;
@@ -260,6 +266,27 @@ public class AiFacadeAssembler {
     }
 
     @NonNull
+    public AiBatchJobsQuery toBatchJobsQuery(@NonNull AiBatchJobQueryFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new AiBatchJobsQuery(
+                request.getScope(),
+                request.getCapability() == null ? null : AiBusinessCapability.from(request.getCapability()),
+                request.getStatus() == null ? null : AiBatchJobStatus.from(request.getStatus()),
+                AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()));
+    }
+
+    @NonNull
+    public PageQuery toPageQuery(@NonNull AiBatchJobQueryFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new PageQuery(request.getPageNo(), request.getPageSize());
+    }
+
+    @NonNull
+    public PageQuery toLatestPageQuery() {
+        return new PageQuery(1, 1);
+    }
+
+    @NonNull
     public AiBatchJobCreateCommand toCreateBatchJobCommand(@NonNull CreateAiBatchJobFacadeRequest request) {
         Objects.requireNonNull(request, "request must not be null");
         return new AiBatchJobCreateCommand(
@@ -317,6 +344,20 @@ public class AiFacadeAssembler {
                 .requestedAt(result.getRequestedAt())
                 .cancelledAt(result.getCancelledAt())
                 .completedAt(result.getCompletedAt())
+                .build();
+    }
+
+    @NonNull
+    public AiBatchJobPageFacadeResponse toFacadeResponse(@NonNull PageResult<AiBatchJobResult> result) {
+        Objects.requireNonNull(result, "result must not be null");
+        List<AiBatchJobFacadeResponse> records =
+                result.getRecords().stream().map(this::toFacadeResponse).toList();
+        return AiBatchJobPageFacadeResponse.builder()
+                .pageNo(result.getPageNo())
+                .pageSize(result.getPageSize())
+                .totalCount(result.getTotalCount())
+                .totalPage(result.getTotalPage())
+                .records(records)
                 .build();
     }
 

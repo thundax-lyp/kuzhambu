@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.application.facade.impl;
 
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
@@ -17,6 +18,7 @@ import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
@@ -28,9 +30,11 @@ import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
+import com.thundax.kuzhambu.ai.facade.response.AiBatchJobPageFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -125,6 +129,29 @@ public class AiFacadeImpl implements AiFacade {
     public AiBatchJobFacadeResponse getBatchJob(Long batchId) {
         return aiFacadeAssembler.toFacadeResponse(
                 aiBatchJobApplicationService.get(aiFacadeAssembler.toGetBatchJobQuery(batchId)));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AiBatchJobFacadeResponse getLatestBatchJob(AiBatchJobQueryFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        PageResult<AiBatchJobResult> result = aiBatchJobApplicationService.page(
+                aiFacadeAssembler.toBatchJobsQuery(request), aiFacadeAssembler.toLatestPageQuery());
+        return result.getRecords().isEmpty()
+                ? null
+                : aiFacadeAssembler.toFacadeResponse(result.getRecords().get(0));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AiBatchJobPageFacadeResponse pageBatchJobs(AiBatchJobQueryFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.page(
+                aiFacadeAssembler.toBatchJobsQuery(request), aiFacadeAssembler.toPageQuery(request)));
     }
 
     @Override

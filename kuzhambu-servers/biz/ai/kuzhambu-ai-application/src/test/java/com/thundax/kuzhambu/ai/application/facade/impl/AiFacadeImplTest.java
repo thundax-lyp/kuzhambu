@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
@@ -35,6 +36,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiReportBucketType;
@@ -45,6 +47,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
@@ -53,6 +56,7 @@ import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.math.BigDecimal;
@@ -139,6 +143,65 @@ class AiFacadeImplTest {
         assertEquals(12, command.totalCount());
         assertEquals("{\"retry\":0}", command.failureSummaryJson());
         assertEquals(88L, response.getBatchId());
+    }
+
+    @Test
+    void getLatestBatchJobShouldQueryByContentAndCapability() {
+        AiBatchJobApplicationService batchJobService = mock(AiBatchJobApplicationService.class);
+        when(batchJobService.page(
+                        argThat(query -> query != null
+                                && "knowledge".equals(query.scope())
+                                && AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT == query.capability()
+                                && AiContentRef.of("SANCAI_ENTRY", 1001L).equals(query.contentRef())),
+                        argThat(page -> page != null && page.getPageNo() == 1 && page.getPageSize() == 1)))
+                .thenReturn(PageResult.of(1, 1, 1, List.of(batchJobResult(88L))));
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                batchJobService,
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
+                mock(AiInvocationRepository.class),
+                mock(AiCandidateApplicationService.class));
+
+        var response = facade.getLatestBatchJob(AiBatchJobQueryFacadeRequest.builder()
+                .scope("knowledge")
+                .capability("KNOWLEDGE_GRAPH_EXTRACT")
+                .contentType("SANCAI_ENTRY")
+                .contentId(1001L)
+                .build());
+
+        assertEquals(88L, response.getBatchId());
+        assertEquals("SANCAI_ENTRY", response.getContentType());
+        assertEquals(1001L, response.getContentId());
+    }
+
+    @Test
+    void pageBatchJobsShouldPreservePageMetadata() {
+        AiBatchJobApplicationService batchJobService = mock(AiBatchJobApplicationService.class);
+        when(batchJobService.page(any(), argThat(page -> page.getPageNo() == 2 && page.getPageSize() == 5)))
+                .thenReturn(PageResult.of(2, 5, 6, List.of(batchJobResult(89L))));
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                batchJobService,
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
+                mock(AiInvocationRepository.class),
+                mock(AiCandidateApplicationService.class));
+
+        var response = facade.pageBatchJobs(AiBatchJobQueryFacadeRequest.builder()
+                .scope("knowledge")
+                .capability("KNOWLEDGE_GRAPH_EXTRACT")
+                .contentType("SANCAI_ENTRY")
+                .contentId(1001L)
+                .pageNo(2)
+                .pageSize(5)
+                .build());
+
+        assertEquals(2, response.getPageNo());
+        assertEquals(5, response.getPageSize());
+        assertEquals(6, response.getTotalCount());
+        assertEquals(2, response.getTotalPage());
+        assertEquals(89L, response.getRecords().get(0).getBatchId());
     }
 
     @Test
@@ -627,6 +690,23 @@ class AiFacadeImplTest {
                 aiCandidateApplicationService,
                 aiInvocationRepository,
                 new AiFacadeAssembler());
+    }
+
+    private static AiBatchJobResult batchJobResult(Long batchId) {
+        return new AiBatchJobResult(
+                AiBatchJobIdCodec.toDomain(batchId),
+                "knowledge",
+                AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
+                AiContentRef.of("SANCAI_ENTRY", 1001L),
+                AiBatchJobStatus.SUCCEEDED,
+                1,
+                1,
+                0,
+                0,
+                null,
+                Instant.parse("2025-02-01T10:15:30Z"),
+                null,
+                Instant.parse("2025-02-01T10:16:30Z"));
     }
 
     private static DiscoveryAiInvokeResult discoveryResult(
