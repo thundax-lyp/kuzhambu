@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `content_type` varchar(32) NOT NULL,
     `content_ref_id` bigint NOT NULL,
+    `content_title_snapshot` varchar(255) NOT NULL,
     `status` varchar(32) NOT NULL,
     `published_at` BIGINT DEFAULT NULL,
     `current_extraction_task_id` bigint DEFAULT NULL,

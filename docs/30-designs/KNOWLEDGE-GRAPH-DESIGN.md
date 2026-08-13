@@ -4,7 +4,7 @@
 
 本文档定义三才图会知识图谱的实现设计。产品需求以 [`KNOWLEDGE-GRAPH-REQUIREMENTS.md`](../10-requirements/KNOWLEDGE-GRAPH-REQUIREMENTS.md) 为准；本文将其落实为 Knowledge 域的模型、持久化、应用服务、接口和前端读取设计。
 
-图谱展示与探索是核心。素材草稿图负责抽取与编辑，发布空间负责统一展示与治理；两者通过发布映射关联，不进行双向同步。
+图谱展示与探索是核心。`ContentRef` 表示一份素材；素材产生一组草稿 `GraphNode` 和 `GraphEdge`。发布库是另一套独立、可变的 `GraphPublishedNode` 和 `GraphPublishedEdge`；发布动作将素材图复制、按有效 Key 合并到发布库，并灌注两者的当前关联，不进行双向同步。
 
 ## Scope and Non-goals
 
@@ -12,7 +12,7 @@
 - 覆盖工作台、整体治理、素材空间、整体发布/撤回、抽取、删除任务、JSON 导入导出和质量待办。
 - 不实现世系图。
 - 不实现 Schema 后台管理或对外暴露 Schema。
-- 不实现发布空间全量导入导出、素材版本管理、正文证据片段定位或发布空间向素材空间自动回写。
+- 不实现发布空间全量导入导出、发布库版本、正文证据片段定位或发布空间向素材空间自动回写。
 
 ## Module Ownership
 
@@ -59,27 +59,26 @@ Schema 变更必须与代码评审、数据库迁移和现有数据迁移一同�
 
 | Aggregate | Responsibility |
 | --- | --- |
-| `MaterialGraph` | 一份三才图会素材的一张草稿图、锁定状态及素材侧节点/边编辑。 |
-| `PublishedGraph` | 统一发布节点、边、属性值、人工治理、合并、拆分和删除。 |
-| `GraphPublication` | 单素材整体发布的预览、确认、映射和审计；批量发布只是多个独立 publication 的前端聚合。 |
-| `GraphExtractionTask` | 素材内容快照下的异步抽取、结果合并追加和重试。 |
-| `MaterialDeletionTask` | 素材删除决策、异步删除和可重试执行。 |
+| `GraphMaterial` | 以 `ContentRef` 标识的一份素材的图谱元数据、草稿锁定状态与当前 AI Job 引用。 |
+| `GraphNode` / `GraphEdge` | 一份素材当前可编辑的草稿图；边的两个端点必须属于同一素材。 |
+| `GraphMaterialVersion` | 每次成功发布后固化的、不可变的素材草稿图 JSON 快照；仅用于恢复草稿和审计。 |
+| `GraphPublishedNode` / `GraphPublishedEdge` | 发布库当前有效的全局图，支持治理、合并、拆分和删除；发布库没有版本。 |
+| `GraphPublishRecord` | 单素材整体发布成功后的审计记录，不承担发布流程状态。 |
+| `GraphDeletionTask` | 素材删除决策后的异步清理与重试。 |
 
-`MaterialGraph` 以 `ContentRef` 为归属，而不是裸 `materialId`。`ContentRef` 为 `(contentType, refId)` 值对象；首期仅接受 `SANCAI_ENTRY`。图谱域定义自己的 `ContentRef` 值对象，与 taxonomy 的内容引用保持相同语义但不跨子域复用实体模型。
+`GraphMaterial` 的业务身份为 common-core `ContentRef(contentType, contentId)`，而不是裸 `materialId`；数据库技术主键仅用于内部关联。首期仅接受 `SANCAI_ENTRY`。除共享 `ContentRef` 外，图谱局部 Domain 的对象均以 `Graph` 开头。
 
-`MaterialGraph` 只能在 `DRAFT` 状态修改。已发布素材必须经整体撤回转回 `DRAFT`；发布空间治理永不反写草稿图。
+`GraphMaterial` 只有在 `DRAFT` 或 `WITHDRAWN` 时可编辑、抽取或切换素材版本。`PUBLISHED` 时草稿图只读；必须整体撤回后才能恢复编辑。发布空间治理永不反写草稿图。
 
 ### State
 
 ```text
-MaterialGraph: DRAFT → PUBLISHING → PUBLISHED → WITHDRAWING → DRAFT
-                         │                         │
-                         └──────── FAILED ─────────┘
+GraphMaterial: DRAFT / WITHDRAWN → PUBLISHING → PUBLISHED → WITHDRAWING → WITHDRAWN
 
 Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED / FAILED
 ```
 
-同一素材在 `PUBLISHING`、`WITHDRAWING`、`PENDING` 或 `RUNNING` 状态不得发起抽取、编辑、发布、撤回或第二个删除任务。
+同一素材在 `PUBLISHING`、`WITHDRAWING` 或删除处理中不得发起抽取、编辑、发布、撤回或第二个删除任务；同一素材同时只允许一个运行中的 AI 抽取 Job。
 
 ## Persistence Model
 
@@ -89,10 +88,10 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 
 | Table | Key fields and responsibility |
 | --- | --- |
-| `knowledge_graph_material` | 技术主键 `id`；业务 `content_type + content_ref_id` 唯一；`status`、`published_at`、`current_extraction_task_id`。只保存 `ContentRef` 与图谱状态，不复制正文。 |
+| `knowledge_graph_material` | 技术主键 `id`；业务 `content_type + content_ref_id` 唯一；`content_title_snapshot`、`status`、`published_at`、`current_ai_batch_job_id`。`ContentRef` 是业务身份；标题快照只供列表展示和删除后追溯，不参与 Key 或发布匹配，不复制正文。 |
 | `knowledge_graph_material_node` | `material_id`、`node_key`、`node_type`、`name`、`properties_json`；同素材图内 `(material_id, node_key)` 唯一。未能计算 Key 的草稿对象允许 `node_key` 为空。 |
 | `knowledge_graph_material_edge` | `material_id`、两端素材节点、`relation_type`、`qualifiers_json`、`edge_key`；同素材图内 `(material_id, edge_key)` 唯一。未能计算 Key 的草稿关系允许 `edge_key` 为空。 |
-| `knowledge_graph_extraction_task` | `material_id`、`ContentRef` 快照、内容快照、管道版本、当前阶段、状态、进度、结果摘要、失败原因、重试来源任务。阶段级输入/输出、AI 调用和失败原因由 `knowledge_graph_extraction_stage` 保存。 |
+| `knowledge_graph_material_version` | `material_id`、递增 `version_no`、`snapshot_json`（`nodes + edges`）、`ai_batch_job_id`、发布记录、发布人和发布时间；成功发布后写入，永不修改。 |
 
 `properties_json` 与 `qualifiers_json` 是开放多值 JSON 载体：草稿写入只校验其为对象，细分属性和值域作为告警而非拒绝条件；它们不替代可查询的 Key、类型和关系字段。
 
@@ -112,23 +111,23 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 
 | Table | Key fields and responsibility |
 | --- | --- |
-| `knowledge_graph_material_node_mapping` | 素材尚存在时以 `material_node_id` 关联 `published_node_id`；保留贡献后改以不可变 `source_snapshot_json`（含 ContentRef、节点 Key、类型、名称和属性快照）追溯，原素材节点引用置空；状态为 `ACTIVE`、`WITHDRAWN`、`SOURCE_DELETED_PRESERVED`。 |
-| `knowledge_graph_material_edge_mapping` | 素材尚存在时以 `material_edge_id` 关联 `published_edge_id`；保留贡献后存不可变边快照（含 ContentRef、边 Key、端点发布 Key、关系和限定字段）并置空原素材边引用；状态语义同节点映射。 |
-| `knowledge_graph_publish_record` | 单素材发布记录、发布预览摘要、冲突决策、创建/关联/复用结果和端点补齐结果。 |
+| `knowledge_graph_published_node_material` | 当前发布节点与素材的关联：`published_node_id + material_id` 唯一；不关联 `GraphMaterialVersion`。素材删除后保留贡献时，以 `ContentRef` 与来源快照替代素材技术引用。 |
+| `knowledge_graph_published_edge_material` | 当前发布边与素材的关联：`published_edge_id + material_id` 唯一；语义同节点关联。 |
+| `knowledge_graph_publish_record` | 单素材发布成功后的审计：预览摘要、冲突决策、创建/关联/复用结果和端点补齐结果。它不是任务、批次或发布库版本。 |
 | `knowledge_graph_governance_operation` | 发布空间 CRUD、合并、拆分、删除的前后快照、理由、操作者和恢复信息。 |
 | `knowledge_graph_material_deletion_change` | 删除前快照、用户选择 `PRESERVE_CONTRIBUTION` 或 `WITHDRAW_ASSOCIATIONS`、状态和结果摘要。 |
 | `knowledge_graph_material_deletion_task` | 关联变更项、任务状态、进度、失败原因、幂等键和执行结果。 |
 
-映射是溯源和撤回边界，不是同步机制。撤回仅将本素材的 `ACTIVE` 映射变为 `WITHDRAWN`；素材删除且选择保留贡献时，先写入不可变来源快照、再置空对草稿节点/边的引用并将映射变为 `SOURCE_DELETED_PRESERVED`，从而保留历史来源而不再依赖已删除草稿图。
+发布对象—素材关联是当前归属和撤回边界，不是版本映射或同步机制。撤回仅移除本素材与发布对象的关联；素材删除且选择保留贡献时，先写入不可变来源快照，再移除素材技术引用，从而保留历史来源而不再依赖已删除草稿图。
 
 ## Core Workflows
 
 ### Extraction and Draft Merge
 
 1. 素材列表发起抽取；应用层校验 `knowledge:graph:edit`、素材属于三才图会且当前为 `DRAFT`。
-2. 读取并固定素材内容快照，经 AI 域创建异步调用，写入 `GraphExtractionTask`。
-3. 回调或轮询成功后，应用层先执行宽松结构校验，再按素材内可计算的有效 Key 合并追加：同 Key 补充属性，不同 Key 新增节点或边；无法计算 Key 或命中质量规则的对象保留为草稿告警，不丢弃抽取结果。
-4. 失败记录原因；重试新建任务并保留历史。已发布素材必须先撤回，不能绕过冻结直接抽取。
+2. 读取并固定素材内容快照，经 AI 域创建 `AiBatchJob`，并将其 ID 写入 `GraphMaterial.currentAiBatchJobId`；不创建图谱专用抽取任务表。
+3. AI 域以 `AiInvocationLog` 记录调用、以 `AiCandidate` 保存候选输出。回调或轮询成功后，图谱应用层先执行宽松结构校验，再按素材内可计算的有效 Key 合并追加：同 Key 补充属性，不同 Key 新增节点或边；无法计算 Key 或命中质量规则的对象保留为草稿告警，不丢弃抽取结果。
+4. 重试创建新的 `AiBatchJob`，不覆盖既有 AI 执行历史。已发布素材必须先撤回，不能绕过冻结直接抽取。
 
 ### Publication
 
@@ -136,18 +135,18 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 
 确认发布时，在事务内重新执行匹配：
 
-1. 以 `node_key` 获取或创建发布节点，并写入节点映射。
-2. 用映射后的发布端点与关系限定字段计算 `edge_key`，获取或创建发布边，并写入边映射。
+1. 以 `node_key` 获取或创建发布节点，并灌注发布节点与本素材的当前关联。
+2. 用对应发布端点与关系限定字段计算 `edge_key`，获取或创建发布边，并灌注发布边与本素材的当前关联。
 3. 合并可并存属性；Key 不唯一、对象标识重复、端点无效或必须人工决定的身份冲突中止该素材发布。端点兼容、细分属性、限定字段、环和质量问题保留为告警或治理待办。
-4. 写入发布记录并将素材状态置为 `PUBLISHED`。
+4. 写入 `GraphMaterialVersion` JSON 快照、发布记录，并将素材状态置为 `PUBLISHED`。
 
-发布节点、边、映射和状态更新同事务提交。数据库唯一约束防止并发重复；若预览时命中的对象 `version` 已改变，则返回 `PREVIEW_STALE`，不写入并要求刷新预览。
+发布节点、边、当前素材关联、素材版本、发布记录和状态更新同事务提交。发布流程不是异步任务：页面先预检、让用户一次性处理冲突，确认提交时强校验；任一步失败整体回滚。数据库唯一约束防止并发重复；若预览时命中的对象 `version` 已改变，则返回 `PREVIEW_STALE`，不写入并要求刷新预览。
 
 批量发布接口只协调多份素材的独立预览与提交结果，不创建批次聚合实体，也不提供跨素材回滚。
 
 ### Withdrawal and Deletion
 
-整体撤回以素材为边界，在事务内把该素材所有有效节点/边映射置为 `WITHDRAWN`，解除素材锁定并回到 `DRAFT`。它不删除发布对象、不更改其他映射、不删除人工维护内容。
+整体撤回以素材为边界，在事务内删除该素材所有发布节点/边关联，解除素材锁定并转为 `WITHDRAWN`。它不删除或回写发布对象、不更改其他素材关联、不删除人工维护内容。发布库没有版本；素材版本只可在可编辑状态下恢复为当前草稿，随后重新发布会生成新的素材版本。
 
 素材删除先创建 `MaterialDeletionChange` 和发布快照，用户选择后再创建异步任务：
 
