@@ -4,8 +4,5 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdg
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import java.util.List;
 
-public record GraphEdgePublicationPlanResult(
-        GraphMaterialEdge materialEdge,
-        String action,
-        GraphPublishedEdge matchedEdge,
-        List<GraphValidationIssueResult> issues) {}
+public record GraphEdgePublicationPreviewResult(
+        GraphMaterialEdge materialEdge, GraphPublishedEdge matchedEdge, List<GraphValidationIssueResult> issues) {}

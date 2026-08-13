@@ -6,7 +6,7 @@ import java.util.List;
 public record GraphPublicationPreviewResult(
         ContentRef materialRef,
         long materialLockVersion,
-        List<GraphNodePublicationPlanResult> nodes,
-        List<GraphEdgePublicationPlanResult> edges,
+        List<GraphNodePublicationPreviewResult> nodes,
+        List<GraphEdgePublicationPreviewResult> edges,
         List<GraphValidationIssueResult> issues,
         boolean publishable) {}

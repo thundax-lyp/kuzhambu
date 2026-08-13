@@ -11,4 +11,4 @@ public record GraphPublicationResult(
         int reusedNodeCount,
         int createdEdgeCount,
         int reusedEdgeCount,
-        List<GraphValidationIssueResult> warnings) {}
+        List<GraphValidationIssueResult> issues) {}

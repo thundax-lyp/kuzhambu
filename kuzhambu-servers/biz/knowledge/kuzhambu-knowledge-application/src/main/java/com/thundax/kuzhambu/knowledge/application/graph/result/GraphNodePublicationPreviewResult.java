@@ -4,8 +4,5 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNod
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import java.util.List;
 
-public record GraphNodePublicationPlanResult(
-        GraphMaterialNode materialNode,
-        String action,
-        GraphPublishedNode matchedNode,
-        List<GraphValidationIssueResult> issues) {}
+public record GraphNodePublicationPreviewResult(
+        GraphMaterialNode materialNode, GraphPublishedNode matchedNode, List<GraphValidationIssueResult> issues) {}

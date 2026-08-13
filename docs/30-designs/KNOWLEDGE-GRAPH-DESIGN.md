@@ -124,7 +124,7 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 ### Extraction and Draft Merge
 
 1. 素材列表发起抽取；应用层校验 `knowledge:graph:edit`、素材属于三才图会且当前为 `DRAFT` 或 `READY`。
-2. 读取并固定素材内容快照，经 AI 域创建 `AiBatchJob`；不创建图谱专用抽取任务表或在 `GraphMaterial` 保存 Job 引用。图谱读取按 `ContentRef + GRAPH_EXTRACTION` 向 AI 域查询当前或历史 Job。
+2. 读取并固定素材内容快照，经 AI 域创建 `AiBatchJob`；不创建图谱专用抽取任务表或在 `GraphMaterial` 保存 Job 引用。图谱读取通过 AI facade 按 `ContentRef + GRAPH_EXTRACTION` 查询最新 Job 或分页历史，不直接依赖 AI application、domain 或 repository。
 3. AI 域以 `AiInvocationLog` 记录调用、以 `AiCandidate` 保存候选输出。回调或轮询成功后，图谱应用层先执行宽松结构校验，再按素材内可计算的有效 Key 合并追加：同 Key 补充属性，不同 Key 新增节点或边；无法计算 Key 或命中质量规则的对象保留为草稿告警，不丢弃抽取结果。
 4. 重试创建新的 `AiBatchJob`，不覆盖既有 AI 执行历史。已发布素材必须先撤回，不能绕过冻结直接抽取。
 
@@ -137,9 +137,9 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 1. 以 `node_key` 获取或创建发布节点，并灌注发布节点与本素材的当前关联。
 2. 用对应发布端点与关系限定字段计算 `edge_key`，获取或创建发布边，并灌注发布边与本素材的当前关联。
 3. 合并可并存属性；Key 不唯一、对象标识重复、端点无效或必须人工决定的身份冲突中止该素材发布。端点兼容、细分属性、限定字段、环和质量问题保留为告警或治理待办。
-4. 写入 `GraphMaterialVersion` JSON 快照，并将素材状态置为 `PUBLISHED`；发布命令、冲突决策与结果摘要写入系统审计日志。
+4. 写入 `GraphMaterialVersion` JSON 快照，并将素材状态置为 `PUBLISHED`；发布命令、校验结果与结果摘要写入系统审计日志。
 
-发布节点、边、当前素材关联、素材版本和状态更新同事务提交。发布流程不是异步任务：页面先预检、让用户一次性处理冲突，确认提交时强校验；任一步失败整体回滚。数据库唯一约束防止并发重复；若预览时命中的对象 `lock_version` 已改变，则返回 `PREVIEW_STALE`，不写入并要求刷新预览。
+发布节点、边、当前素材关联、素材版本和状态更新同事务提交。发布流程不是异步任务：页面先预检、让用户一次性处理冲突，确认提交时在事务内重新查询并强校验当前素材、目标节点、目标边及其依赖；任一步失败整体回滚。数据库唯一约束和对象 `lock_version` 防止并发重复或覆盖，不额外保存或传递预览凭证。
 
 批量发布接口只协调多份素材的独立预览与提交结果，不创建批次聚合实体，也不提供跨素材回滚。
 
@@ -155,6 +155,7 @@ GraphMaterialEvent: SCHEDULED → PROCESSING → SUCCEEDED / FAILED
 - 合并选择保留节点，将全部映射、边端点和可并存属性迁移到保留节点；若迁移后产生重复边，按 `edge_key` 合并。
 - 拆分创建新节点，逐项分配属性、边和素材映射；所有受影响对象必须分配完毕才能提交。
 - 删除发布节点前必须显式删除关联边或解除依赖；素材映射按既有撤回与删除规则处理，操作轨迹由系统日志保留。
+- 合并、拆分和删除在确认时重新查询全部节点、边、属性和素材映射并执行强校验，不能只依赖预览时的影响列表；预览后新增的依赖必须按当前操作规则处理或拒绝提交。
 
 ## Query and Rendering
 
