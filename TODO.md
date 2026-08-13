@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱文档规划器`：新增导入和 AI MERGE/REPLACE 规划
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphDocumentPlan.java`、`GraphDocumentPlanner.java`、`GraphDocumentPlannerTest.java`（预计 3 个文件）
-    - 处理动作：根据当前草稿图和 GraphDocument 生成创建、更新、删除和引用映射计划。
-    - 验收点：Preview 不伪造 `GraphMaterialNodeId`，持久化前能保留文档节点引用映射。
-    - 重要度：10/10
-
 - [ ] `图谱素材加载保存支持`：新增 ContentResolver、GraphLoader 和 GraphSaver
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
