@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.repository;
 
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphEdgeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeSlice;
@@ -17,7 +20,19 @@ public interface GraphPublishedEdgeRepository {
     GraphPublishedEdgeSlice listIncidentEdges(
             List<GraphPublishedNodeId> nodeIds, GraphPublishedEdgeId afterEdgeId, int limit);
 
-    int insert(GraphPublishedEdge edge);
+    PageResult<GraphPublishedEdge> page(
+            String keyword,
+            String relationType,
+            GraphPublishedStatus status,
+            GraphSourceType source,
+            int pageNo,
+            int pageSize);
+
+    GraphPublishedEdgeId insert(GraphPublishedEdge edge);
 
     int update(GraphPublishedEdge edge);
+
+    int updateIfLockVersion(GraphPublishedEdge edge, long expectedLockVersion);
+
+    long count(GraphPublishedStatus status);
 }

@@ -148,8 +148,8 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge` (
     `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_published_edge_key` (`edge_key`),
-    KEY `idx_knowledge_graph_published_edge_source` (`source_published_node_id`),
-    KEY `idx_knowledge_graph_published_edge_target` (`target_published_node_id`),
+    KEY `idx_knowledge_graph_published_edge_source` (`source_published_node_id`, `id`),
+    KEY `idx_knowledge_graph_published_edge_target` (`target_published_node_id`, `id`),
     KEY `idx_knowledge_graph_published_edge_modified` (`status`, `modified_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间关系';
 

@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `发布边仓储`：补齐 GraphPublishedEdge 仓储和 incident edges 游标查询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPublishedEdgeRepository.java`、`GraphPublishedEdgeRepositoryImpl.java`、`GraphPublishedEdgeMapper.java`、`GraphPersistenceAssembler.java`、`GraphPublishedEdgeRepositoryImplTest.java`、`db/schema/knowledge.sql`（预计 6 个文件）
-    - 处理动作：新增条件分页、插入 ID 回填、CAS 更新、状态计数和数据库层 incident edges 稳定游标读取。
-    - 验收点：incident edges 使用数据库 `limit + 1` 截断，不先全量加载再 Java 分页。
-    - 重要度：10/10
-
 - [ ] `发布属性仓储`：补齐发布节点/边属性批量持久化和删除
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
