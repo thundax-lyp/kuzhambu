@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal 图谱读取应用服务`：实现 GraphPortalApplicationServiceImpl
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphPortalApplicationServiceImpl.java`、`GraphPortalApplicationServiceImplTest.java`（预计 2 个文件）
-    - 处理动作：实现 Portal 只读发布空间的素材图查询。
-    - 验收点：不可见、未发布、已撤回和已删除素材都返回空图。
-    - 重要度：8/10
-
 - [ ] `Workbench 图谱读取应用服务`：实现 GraphWorkbenchApplicationServiceImpl
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
