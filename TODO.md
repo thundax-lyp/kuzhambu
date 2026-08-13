@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `图谱文档解析和 Schema 支持`：新增 GraphDocument、SnapshotSupport 和 SchemaSupport
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`GraphDocument.java`、`GraphDocumentNode.java`、`GraphDocumentEdge.java`、`GraphSnapshotSupport.java`、`GraphSchemaSupport.java`、对应测试（预计 6 个文件）
-    - 处理动作：实现导入、Candidate、版本快照解析和草稿图 JSON 序列化。
-    - 验收点：JSON 文档内 String ID 不会被当作数据库 ID 使用。
-    - 重要度：10/10
-
 - [ ] `图谱文档规划器`：新增导入和 AI MERGE/REPLACE 规划
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
