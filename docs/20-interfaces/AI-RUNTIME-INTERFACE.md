@@ -163,6 +163,40 @@ Admin Web 默认使用异步任务协议：
 - Discovery 和 Knowledge 的业务动作由 facade 方法名或任务类型决定，不由调用方传 workers capability。
 - `modelId`、`promptVersionId`、`promptMessagesJson` 等字段仅作为旧调用方兼容字段；新调用方不得依赖这些字段。
 
+### Knowledge Graph Extraction Facade
+
+Knowledge 图谱抽取通过 `AiFacade.submitKnowledgeGraphExtraction(KnowledgeGraphExtractionJobFacadeRequest request)` 提交异步任务。Facade 方法名固定业务意图为 `KNOWLEDGE_GRAPH_EXTRACT`，并由 AI 域内部解析 worker usecase `KNOWLEDGE_GRAPH_EXTRACTION` / `knowledge_graph`；Knowledge 调用方不得传 worker capability、模型、prompt version 或渲染后的 messages。
+
+请求字段：
+
+```json
+{
+  "scope": "knowledge",
+  "contentType": "SANCAI_ENTRY",
+  "contentId": 300000000001,
+  "contentTitle": "素材标题",
+  "contentSnapshotJson": "{\"ref\":...,\"title\":\"...\",\"textSegments\":[...]}",
+  "requestedBy": 10001
+}
+```
+
+字段规则：
+
+- `scope`：业务范围，Knowledge 默认传 `knowledge`。
+- `contentType` / `contentId`：素材 `ContentRef`，首期只支持 `SANCAI_ENTRY`。
+- `contentTitle`：提交时的素材标题快照，仅用于任务上下文和展示。
+- `contentSnapshotJson`：Knowledge 在提交瞬间固定的素材正文快照，包含标题、摘要、正文片段、标签、内容状态、可见性和版本号等 prompt 变量来源。
+- `requestedBy`：提交用户 ID；AI batch job、invocation log 和 candidate 追溯均应保留该操作者上下文。
+
+提交后 AI 域必须：
+
+- 校验 `taskType=GRAPH`、scope、内容标识、`requestedBy` 和 `contentSnapshotJson` 完整。
+- 拒绝同一 `ContentRef + KNOWLEDGE_GRAPH_EXTRACT` 的运行中重复任务。
+- 在同一事务内创建 `AiBatchJob(capability=KNOWLEDGE_GRAPH_EXTRACT,totalCount=1)`，提交事务提交后再异步执行。
+- 在执行前由 `KnowledgeAiExtractionSnapshotResolver` 固定模型、prompt version、prompt messages、prompt variables、output schema、requestId、traceId 和 worker route；后续执行不得重新解析可变业务配置。
+- 将 invocation log、candidate 和 batch job 均关联同一 `batchId`、业务 capability、`contentType/contentId` 和快照后的请求上下文，供 Knowledge 通过 batch/candidate 追溯和应用抽取结果。
+- 成功时将 batch 标记为 `SUCCEEDED`；失败时写 failure summary，并保留 candidate 或 invocation failure 供排查。孤儿 `RUNNING` 图谱抽取任务由 AI 域定时过期处理。
+
 ## Response
 
 Java AI 域对外响应中的 `capability` 固定返回业务 capability，不返回 workers canonical capability。

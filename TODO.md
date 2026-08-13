@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI 接口文档同步`：同步图谱抽取 AI Facade 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
-    - 范围对象：`docs/20-interfaces/AI-RUNTIME-INTERFACE.md`、必要关联接口文档（预计 1-2 个文件）
-    - 处理动作：记录 `submitKnowledgeGraphExtraction` 请求字段、快照边界和 batch/candidate 追溯要求。
-    - 验收点：接口文档与 AI Facade 和 Knowledge 调用方签名一致。
-    - 重要度：8/10
-
 - [ ] `图谱收口验证和 RUNBOOK 清理`：完成跨阶段验证并清理临时执行手册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-APPLICATION-SERVICES.md`
