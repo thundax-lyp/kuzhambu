@@ -41,10 +41,10 @@
 
 ## Exact Execution Steps
 
-1. 建立 `src/pages/knowledge/graph-*/__mocks__/graph-mock-data.ts`。固定提供：DRAFT 素材、PUBLISHED 素材、含红色冲突的发布预览、孤立节点、删除失败任务。Mock 不调用 HTTP。
+1. 建立 `src/pages/knowledge/graph-*/__mocks__/graph-mock-data.ts`。固定提供：DRAFT、PUBLISHING、PUBLISHED、WITHDRAWING、FAILED 五种素材状态（FAILED 含 `failureReason`）、含红色冲突的发布预览、两份素材的批量发布部分失败结果、孤立节点、删除失败任务。Mock 不调用 HTTP。
 2. 完成所有页面的 Mock 冒烟测试即为本分支完成条件。每页测试至少断言标题、主操作、无权限状态、空状态和一个失败状态；工作台还必须断言“边批次返回前种子为淡化状态，结束后孤立节点移除”。
 3. 完成单素材页：DRAFT 可 CRUD/抽取/导入；PUBLISHED 所有草稿写按钮禁用，仅显示撤回和发布结果；冲突未决时发布按钮禁用。
-4. 完成治理页：删除、合并、拆分一律先请求 preview，抽屉显示受影响节点、边、映射和 issue；用户确认后才 apply，并刷新详情和画布。
+4. 素材库批量发布固定按所选顺序显示每份素材的预览与结果；一份失败不隐藏或覆盖其他素材的成功/失败结果。完成治理页：删除、合并、拆分一律先请求 preview，抽屉显示受影响节点、边、映射和 issue；用户确认后才 apply，并刷新详情和画布。
 5. 完成删除列表：`PRESERVE_CONTRIBUTION` 和 `WITHDRAW_ASSOCIATIONS` 是两个明确按钮，显示不可逆影响；任务失败显示失败原因与重试。
 6. Playwright 固定通过 Mock provider 运行；不得替换为真实 service，不得访问后端端口。真实接口接入和跨分支联调不在本 RUNBOOK 范围。
 
@@ -69,14 +69,15 @@ Mock E2E 固定覆盖：抽取→草稿→冲突预览→发布→冻结→撤�
 1. `Feat(services/knowledge): 新增图谱 Mock 数据与路由菜单`：唯一可共享的 mock provider、五个固定数据状态、路由和 `system.json` 菜单；不含任何业务页面。
 2. `Feat(services/knowledge): 实现图谱工作台指标与筛选`：工作台指标卡、搜索、门类筛选及其页面测试；不含画布。
 3. `Feat(services/knowledge): 实现图谱工作台渐进画布`：种子淡化、分批加载、孤立节点移除、详情抽屉及其测试。
-4. `Feat(services/knowledge): 实现图谱素材库`：素材状态、抽取任务、批量发布入口、空态/失败态及其测试；不含单素材页。
-5. `Feat(services/knowledge): 实现图谱单素材草稿画布`：正文摘要、草稿 CRUD/抽取/导入、对象详情和 DRAFT/PUBLISHED 按钮状态测试。
-6. `Feat(services/knowledge): 实现图谱素材发布预览`：同画布内四色预览、冲突禁用、发布/冻结/撤回状态及其测试。
-7. `Feat(services/knowledge): 实现图谱治理节点关系浏览`：节点/关系表、局部画布、来源与审计抽屉及其测试；不含高风险动作。
-8. `Feat(services/knowledge): 实现图谱治理影响确认`：创建、编辑、删除、合并、拆分的影响抽屉、二次确认、映射分配和测试。
-9. `Feat(services/knowledge): 实现图谱删除变更列表`：两个决策按钮、不可逆影响展示、空态/失败态和测试。
-10. `Feat(services/knowledge): 实现图谱删除任务列表`：任务详情、失败原因、重试交互和测试。
-11. `Test(services/knowledge): 覆盖图谱 Mock 端到端流程`：只新增 Mock provider 下的 Playwright 用例，覆盖本手册列出的完整流程；不改业务组件。
+4. `Feat(services/knowledge): 实现图谱素材库`：五种素材状态、抽取任务、空态/失败态及其测试；不含单素材页和批量发布结果。
+5. `Feat(services/knowledge): 实现图谱素材批量发布结果`：按选择顺序的逐素材预览、确认、成功/失败结果与部分失败测试。
+6. `Feat(services/knowledge): 实现图谱单素材草稿画布`：正文摘要、草稿 CRUD/抽取/导入、对象详情和 DRAFT/PUBLISHED 按钮状态测试。
+7. `Feat(services/knowledge): 实现图谱素材发布预览`：同画布内四色预览、冲突禁用、发布/冻结/撤回状态及其测试。
+8. `Feat(services/knowledge): 实现图谱治理节点关系浏览`：节点/关系表、局部画布、来源与审计抽屉及其测试；不含高风险动作。
+9. `Feat(services/knowledge): 实现图谱治理影响确认`：创建、编辑、删除、合并、拆分的影响抽屉、二次确认、映射分配和测试。
+10. `Feat(services/knowledge): 实现图谱删除变更列表`：两个决策按钮、不可逆影响展示、空态/失败态和测试。
+11. `Feat(services/knowledge): 实现图谱删除任务列表`：任务详情、失败原因、重试交互和测试。
+12. `Test(services/knowledge): 覆盖图谱 Mock 端到端流程`：只新增 Mock provider 下的 Playwright 用例，覆盖本手册列出的完整流程；不改业务组件。
 
 ## Closure
 
