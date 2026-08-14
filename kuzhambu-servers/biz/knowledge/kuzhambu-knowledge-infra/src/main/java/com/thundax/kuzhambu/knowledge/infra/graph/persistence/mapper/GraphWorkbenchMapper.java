@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper;
 
-import java.util.List;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphCoreRelationPolicy;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.ibatis.annotations.Mapper;
