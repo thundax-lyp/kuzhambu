@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `10 graph 删除预检与决策`：实现素材删除影响确认
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-knowledge-application/.../GraphMaterialDeletionApplicationService.java`、其 impl、precheck/decision command、change query、service test（6 个文件）
-    - 处理动作：实现预检、保留贡献或撤回关联的决策，并通过 change 乐观锁提交。
-    - 验收点：先写 `source_snapshot_json` 再清空草稿引用；撤回只改变当前素材 ACTIVE mapping；决策冲突返回 `GRAPH_LOCK_CONFLICT`。
-    - 重要度：10/10
-
 - [ ] `11 graph 删除任务执行与重试`：实现删除后台任务闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
