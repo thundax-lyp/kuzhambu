@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `09 graph 删除表重建 DDL`：安全重建删除变更和任务表
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`db/schema/knowledge.sql`、删除表重建迁移脚本、迁移前置检查测试（3 个文件）
-    - 处理动作：按零行数前置检查、固定 drop 顺序和新 DDL 重建两张删除表。
-    - 验收点：任一旧表非零行即停止；新表含 `lock_version bigint NOT NULL DEFAULT 0`；不执行存量删除数据迁移。
-    - 重要度：10/10
-
 - [ ] `10 graph 删除预检与决策`：实现素材删除影响确认
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
