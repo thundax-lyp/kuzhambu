@@ -108,6 +108,35 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material_edge` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `id` bigint NOT NULL AUTO_INCREMENT,
+    -- Compatibility columns retained until the legacy graph infra is removed.
+    `batch_job_id` bigint DEFAULT NULL,
+    `task_type` varchar(32) DEFAULT NULL,
+    `scope_type` varchar(32) DEFAULT NULL,
+    `scope_json` json DEFAULT NULL,
+    `trigger_source` varchar(32) DEFAULT NULL,
+    `selection_scope_json` json DEFAULT NULL,
+    `replace_unconfirmed_only` tinyint(1) DEFAULT NULL,
+    `parent_task_id` bigint DEFAULT NULL,
+    `source_content_type` varchar(32) DEFAULT NULL,
+    `source_content_id` bigint DEFAULT NULL,
+    `model_id` bigint DEFAULT NULL,
+    `model_name` varchar(128) DEFAULT NULL,
+    `prompt_version_id` bigint DEFAULT NULL,
+    `request_id` varchar(128) DEFAULT NULL,
+    `trace_id` varchar(128) DEFAULT NULL,
+    `prompt_messages_json` json DEFAULT NULL,
+    `prompt_variables_json` json DEFAULT NULL,
+    `prompt_hash` varchar(128) DEFAULT NULL,
+    `input_payload_json` json DEFAULT NULL,
+    `output_schema_json` json DEFAULT NULL,
+    `force_json` tinyint(1) DEFAULT NULL,
+    `locale` varchar(16) DEFAULT NULL,
+    `ai_call_id` bigint DEFAULT NULL,
+    `ai_candidate_id` bigint DEFAULT NULL,
+    `error_type` varchar(64) DEFAULT NULL,
+    `error_message` varchar(1024) DEFAULT NULL,
+    `requested_by` bigint DEFAULT NULL,
+    `applied_at` BIGINT DEFAULT NULL,
     `material_id` bigint NOT NULL,
     `content_type` varchar(32) NOT NULL,
     `content_ref_id` bigint NOT NULL,
@@ -123,7 +152,9 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `completed_at` BIGINT DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `idx_knowledge_graph_extraction_task_material_status` (`material_id`, `status`, `requested_at`),
-    KEY `idx_knowledge_graph_extraction_task_content` (`content_type`, `content_ref_id`)
+    KEY `idx_knowledge_graph_extraction_task_content` (`content_type`, `content_ref_id`),
+    KEY `idx_knowledge_graph_extraction_task_source` (`source_content_type`, `source_content_id`),
+    KEY `idx_knowledge_graph_extraction_task_call_candidate` (`ai_call_id`, `ai_candidate_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道任务';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_stage` (
