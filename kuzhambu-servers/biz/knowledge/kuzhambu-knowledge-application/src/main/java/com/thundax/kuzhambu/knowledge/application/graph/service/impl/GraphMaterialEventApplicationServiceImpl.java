@@ -123,15 +123,16 @@ public class GraphMaterialEventApplicationServiceImpl implements GraphMaterialEv
     }
 
     @Override
-    public GraphMaterialEvent processScheduledEvent(GraphMaterialEventId eventId, long lockVersion) {
-        return processEvent(new GraphMaterialEventProcessCommand(eventId, lockVersion));
+    public GraphMaterialEvent processScheduledEvent(GraphMaterialEventId eventId) {
+        GraphMaterialEvent event = requireEvent(eventId);
+        return processEvent(new GraphMaterialEventProcessCommand(eventId, event.getLockVersion()));
     }
 
     @Override
     @Transactional
-    public GraphMaterialEvent reclaimStaleProcessingEvent(GraphMaterialEventId eventId, long lockVersion) {
+    public GraphMaterialEvent reclaimStaleProcessingEvent(GraphMaterialEventId eventId) {
         GraphMaterialEvent event = requireEvent(eventId);
-        event.requireLockVersion(lockVersion);
+        long lockVersion = event.getLockVersion();
         event.reclaimStaleProcessing();
         updateEvent(event, lockVersion);
         return eventRepository.getById(eventId);

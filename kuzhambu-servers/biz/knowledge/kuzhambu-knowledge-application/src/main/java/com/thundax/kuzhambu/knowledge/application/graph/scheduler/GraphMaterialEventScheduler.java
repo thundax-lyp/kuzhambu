@@ -33,7 +33,7 @@ public class GraphMaterialEventScheduler {
         reclaimStaleProcessingEvents();
         for (GraphMaterialEvent event : eventRepository.listByStatus(GraphMaterialEventStatus.SCHEDULED, BATCH_SIZE)) {
             try {
-                eventApplicationService.processScheduledEvent(event.getId(), event.getLockVersion());
+                eventApplicationService.processScheduledEvent(event.getId());
             } catch (RuntimeException ex) {
                 LOGGER.warn("Graph material event processing failed, eventId={}", event.getId(), ex);
             }
@@ -44,7 +44,7 @@ public class GraphMaterialEventScheduler {
         Instant changedBefore = Instant.now().minus(PROCESSING_LEASE_TIMEOUT);
         for (GraphMaterialEvent event : eventRepository.listProcessingBefore(changedBefore, BATCH_SIZE)) {
             try {
-                eventApplicationService.reclaimStaleProcessingEvent(event.getId(), event.getLockVersion());
+                eventApplicationService.reclaimStaleProcessingEvent(event.getId());
             } catch (RuntimeException ex) {
                 LOGGER.warn("Graph material event reclaim failed, eventId={}", event.getId(), ex);
             }

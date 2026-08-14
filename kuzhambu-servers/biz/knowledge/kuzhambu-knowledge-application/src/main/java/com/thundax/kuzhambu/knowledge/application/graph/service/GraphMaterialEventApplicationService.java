@@ -19,7 +19,7 @@ public interface GraphMaterialEventApplicationService {
 
     GraphMaterialEvent processEvent(GraphMaterialEventProcessCommand command);
 
-    GraphMaterialEvent processScheduledEvent(GraphMaterialEventId eventId, long lockVersion);
+    GraphMaterialEvent processScheduledEvent(GraphMaterialEventId eventId);
 
-    GraphMaterialEvent reclaimStaleProcessingEvent(GraphMaterialEventId eventId, long lockVersion);
+    GraphMaterialEvent reclaimStaleProcessingEvent(GraphMaterialEventId eventId);
 }
