@@ -207,6 +207,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
             }
 
             const initialGraphData = initialGraphDataRef.current ?? { nodes: [], edges: [] };
+            const pendingRenders = pendingRendersRef.current;
             isMountedRef.current = true;
             const graph = new Graph({
                 container,
@@ -306,7 +307,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
                 isMountedRef.current = false;
                 resizeObserver.disconnect();
                 graph.off(NodeEvent.DRAG_END, rerunForceLayout);
-                void Promise.allSettled(Array.from(pendingRendersRef.current)).then(() => {
+                void Promise.allSettled(Array.from(pendingRenders)).then(() => {
                     if (graph.destroyed) {
                         return;
                     }
