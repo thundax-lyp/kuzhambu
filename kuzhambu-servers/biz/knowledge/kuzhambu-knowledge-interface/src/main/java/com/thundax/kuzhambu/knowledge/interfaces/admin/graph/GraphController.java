@@ -8,12 +8,15 @@ import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler.GraphInterfaceAssembler;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublishedRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublishedResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphWorkbenchResponses;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -27,14 +30,17 @@ public class GraphController {
     private final GraphWorkbenchApplicationService workbenchService;
     private final GraphMaterialApplicationService materialService;
     private final GraphPublicationApplicationService publicationService;
+    private final GraphPublishedApplicationService publishedService;
 
     public GraphController(
             GraphWorkbenchApplicationService workbenchService,
             GraphMaterialApplicationService materialService,
-            GraphPublicationApplicationService publicationService) {
+            GraphPublicationApplicationService publicationService,
+            GraphPublishedApplicationService publishedService) {
         this.workbenchService = workbenchService;
         this.materialService = materialService;
         this.publicationService = publicationService;
+        this.publishedService = publishedService;
     }
 
     @HasPermission("knowledge:graph:view")
@@ -170,5 +176,35 @@ public class GraphController {
     @PostMapping("publication/withdrawal/withdraw")
     public Object withdrawal(@Valid @RequestBody GraphPublicationRequests.WithdrawalRequest request) {
         return publicationService.withdraw(GraphInterfaceAssembler.toCommand(request));
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("published/node/page")
+    public PageResponse<GraphPublishedResponses.NodeData> publishedNodePage(
+            @Valid @RequestBody GraphPublishedRequests.PublishedNodePageRequest request) {
+        var result = publishedService.pageNodes(
+                GraphInterfaceAssembler.toQuery(request), pageQuery(request.getPageNo(), request.getPageSize()));
+        return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toNodeData);
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("published/node/get")
+    public Object publishedNodeGet(@Valid @RequestBody GraphPublishedRequests.PublishedIdRequest request) {
+        return publishedService.getNodeDetail(GraphInterfaceAssembler.toNodeId(request.getNodeId()));
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("published/edge/page")
+    public PageResponse<GraphPublishedResponses.EdgeData> publishedEdgePage(
+            @Valid @RequestBody GraphPublishedRequests.PublishedEdgePageRequest request) {
+        var result = publishedService.pageEdges(
+                GraphInterfaceAssembler.toQuery(request), pageQuery(request.getPageNo(), request.getPageSize()));
+        return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toEdgeData);
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("published/edge/get")
+    public Object publishedEdgeGet(@Valid @RequestBody GraphPublishedRequests.PublishedEdgeIdRequest request) {
+        return publishedService.getEdgeDetail(GraphInterfaceAssembler.toEdgeId(request.getEdgeId()));
     }
 }

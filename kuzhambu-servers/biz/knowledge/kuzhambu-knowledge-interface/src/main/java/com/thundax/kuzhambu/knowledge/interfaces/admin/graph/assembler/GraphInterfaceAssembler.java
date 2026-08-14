@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdges
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
@@ -18,6 +20,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEd
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublishedRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublishedResponses;
@@ -96,6 +99,47 @@ public final class GraphInterfaceAssembler {
 
     public static GraphWithdrawalCommand toCommand(GraphPublicationRequests.WithdrawalRequest request) {
         return new GraphWithdrawalCommand(toContentRef(request), Long.valueOf(request.getMaterialLockVersion()));
+    }
+
+    public static GraphPublishedNodeQuery toQuery(GraphPublishedRequests.PublishedNodePageRequest request) {
+        return new GraphPublishedNodeQuery(
+                request.getKeyword(),
+                request.getNodeType() == null
+                        ? null
+                        : com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType.valueOf(
+                                request.getNodeType()),
+                request.getStatus() == null
+                        ? null
+                        : com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus.valueOf(
+                                request.getStatus()),
+                request.getSource() == null
+                        ? null
+                        : com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType.valueOf(
+                                request.getSource()));
+    }
+
+    public static GraphPublishedEdgeQuery toQuery(GraphPublishedRequests.PublishedEdgePageRequest request) {
+        return new GraphPublishedEdgeQuery(
+                request.getKeyword(),
+                request.getRelationType(),
+                request.getStatus() == null
+                        ? null
+                        : com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus.valueOf(
+                                request.getStatus()),
+                request.getSource() == null
+                        ? null
+                        : com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType.valueOf(
+                                request.getSource()));
+    }
+
+    public static com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId toNodeId(
+            String value) {
+        return GraphPublishedNodeIdCodec.toDomain(Long.valueOf(value));
+    }
+
+    public static com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId toEdgeId(
+            String value) {
+        return GraphPublishedEdgeIdCodec.toDomain(Long.valueOf(value));
     }
 
     public static GraphIncidentEdgesQuery toQuery(GraphWorkbenchRequests.IncidentEdgesListRequest request) {
