@@ -42,4 +42,21 @@ describe("GraphGovernancePage", () => {
         await user.click(screen.getByRole("button", { name: "模拟加载失败" }));
         expect(screen.getByText("治理记录加载失败，请重试。")).toBeInTheDocument();
     });
+
+    it("previews impact before apply and assigns mappings for merge and split", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        render(<GraphGovernancePage />);
+        const user = userEvent.setup();
+
+        await user.click(screen.getByRole("button", { name: "合并变更" }));
+        expect(screen.getByText("合并影响预览")).toBeInTheDocument();
+        expect(screen.getByText("受影响节点：2")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "确认并应用合并" })).toBeDisabled();
+        await user.click(screen.getByRole("button", { name: "分配到李白" }));
+        await user.click(screen.getByRole("button", { name: "确认并应用合并" }));
+        expect(screen.getByText("Mock 已应用合并变更")).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: "拆分变更" }));
+        expect(screen.getByText("映射分配")).toBeInTheDocument();
+    });
 });

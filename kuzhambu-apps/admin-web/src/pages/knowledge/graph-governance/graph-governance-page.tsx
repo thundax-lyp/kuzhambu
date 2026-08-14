@@ -10,11 +10,21 @@ import {
 } from "@/components";
 import { graphGovernanceMockData } from "./__mocks__/graph-mock-data";
 import { GovernanceDetailDrawer } from "./governance-detail-drawer";
+import { GovernanceImpactDrawer } from "./governance-impact-drawer";
 import { GovernanceTable } from "./governance-table";
+import type { GovernanceAction } from "./governance-impact-drawer";
 import type {
     GraphGovernanceNodeRecord,
     GraphGovernanceRelationRecord
 } from "./graph-governance-types";
+
+const GOVERNANCE_ACTION_LABELS: Record<GovernanceAction, string> = {
+    CREATE: "创建",
+    EDIT: "编辑",
+    DELETE: "删除",
+    MERGE: "合并",
+    SPLIT: "拆分"
+};
 
 export const GraphGovernancePage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
@@ -24,6 +34,8 @@ export const GraphGovernancePage = () => {
     const [selectedRelation, setSelectedRelation] = useState<GraphGovernanceRelationRecord | null>(
         null
     );
+    const [impactAction, setImpactAction] = useState<GovernanceAction | null>(null);
+    const [appliedAction, setAppliedAction] = useState<GovernanceAction | null>(null);
     const nodes = graphGovernanceMockData.nodes as readonly GraphGovernanceNodeRecord[];
     const relations = graphGovernanceMockData.relations as readonly GraphGovernanceRelationRecord[];
     const graphItems = useMemo(() => {
@@ -63,7 +75,23 @@ export const GraphGovernancePage = () => {
                     >
                         模拟加载失败
                     </KuzhambuButton>
+                    {(Object.keys(GOVERNANCE_ACTION_LABELS) as GovernanceAction[]).map((action) => (
+                        <KuzhambuButton
+                            key={action}
+                            testId={`knowledge-graph-governance-${action.toLowerCase()}-button`}
+                            onClick={() => setImpactAction(action)}
+                        >
+                            {GOVERNANCE_ACTION_LABELS[action]}变更
+                        </KuzhambuButton>
+                    ))}
                 </KuzhambuSpace>
+                {appliedAction ? (
+                    <KuzhambuAlert
+                        title={`Mock 已应用${GOVERNANCE_ACTION_LABELS[appliedAction]}变更`}
+                        type="success"
+                        showIcon
+                    />
+                ) : null}
                 {isMockFailure ? (
                     <KuzhambuAlert
                         title={graphGovernanceMockData.failureMessage}
@@ -104,6 +132,14 @@ export const GraphGovernancePage = () => {
                 onClose={() => {
                     setSelectedNode(null);
                     setSelectedRelation(null);
+                }}
+            />
+            <GovernanceImpactDrawer
+                action={impactAction}
+                onClose={() => setImpactAction(null)}
+                onApply={(action) => {
+                    setAppliedAction(action);
+                    setImpactAction(null);
                 }}
             />
         </KuzhambuPage>

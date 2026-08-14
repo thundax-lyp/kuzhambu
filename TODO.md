@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `09` `admin-web graph governance confirmation`：实现治理影响确认
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-governance/graph-governance-page.tsx`、`graph-governance-page.test.tsx`、`governance-impact-drawer/`、`governance-mapping-assignment/`（5–7 个文件）
-    - 处理动作：实现创建、编辑、删除、合并和拆分的 Mock 影响预览与二次确认。
-    - 验收点：确认前显示受影响节点、边、映射和 issue；合并与拆分使用映射分配界面而非表格。
-    - 重要度：10/10
-
 - [ ] `10` `admin-web graph deletion changes`：实现删除变更列表
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
