@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentDto;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphCoreRelationPolicy;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -91,6 +92,29 @@ public class GraphSchemaResolver {
             return List.of(new GraphValidationIssueResult(
                     "GRAPH_INVALID", SEVERITY_BLOCKING, OBJECT_TYPE_DOCUMENT, null, null, ex.getMessage()));
         }
+    }
+
+    public List<GraphCoreRelationPolicy> coreRelationPolicies() {
+        JsonNode nodeTypes = schemaProvider.rawSchema().get("nodeTypes");
+        if (nodeTypes == null || !nodeTypes.isObject()) {
+            return List.of();
+        }
+        List<GraphCoreRelationPolicy> policies = new ArrayList<>();
+        nodeTypes.fields().forEachRemaining(entry -> {
+            JsonNode policy = entry.getValue().get("coreRelationPolicy");
+            JsonNode relationTypes = policy == null ? null : policy.get("relationTypes");
+            if (entry.getValue().path("core").asBoolean(false)
+                    && "ANY_INCIDENT_RELATION"
+                            .equals(policy == null ? null : policy.path("mode").asText())
+                    && relationTypes != null
+                    && relationTypes.isArray()
+                    && !relationTypes.isEmpty()) {
+                List<String> types = new ArrayList<>();
+                relationTypes.forEach(type -> types.add(type.asText()));
+                policies.add(new GraphCoreRelationPolicy(entry.getKey(), types));
+            }
+        });
+        return List.copyOf(policies);
     }
 
     private Map<String, List<String>> propertyValues(String json) {
