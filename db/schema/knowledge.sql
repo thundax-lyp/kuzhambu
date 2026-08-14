@@ -312,6 +312,16 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_publication_preview_token` (
     KEY `idx_knowledge_graph_publication_preview_material_expiry` (`material_id`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱发布预览令牌';
 
+CREATE TABLE IF NOT EXISTS `knowledge_graph_governance_impact_token` (
+    `token` varchar(64) NOT NULL,
+    `operation_type` varchar(32) NOT NULL,
+    `snapshot_json` json NOT NULL,
+    `expires_at` BIGINT NOT NULL,
+    `consumed_at` BIGINT DEFAULT NULL,
+    PRIMARY KEY (`token`),
+    KEY `idx_knowledge_graph_governance_impact_expiry` (`operation_type`, `expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱治理影响预览令牌';
+
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_node_mapping` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `material_id` bigint NOT NULL,

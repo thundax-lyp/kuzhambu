@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `20 graph 治理影响令牌存储`：持久化治理预览影响快照
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`GraphGovernanceImpactToken.java`、Repository、`GraphGovernanceImpactTokenDO.java`、Mapper、PersistenceAssembler、RepositoryImpl、`db/schema/knowledge.sql`、token repository test（8 个文件）
-    - 处理动作：保存删除、合并、拆分预览所涉节点、边、mapping 和对象版本的完整快照。
-    - 验收点：token 过期或已消费返回 `GRAPH_PREVIEW_STALE`；快照不是 hash 或仅 ID；DDL 类型与索引不变。
-    - 重要度：10/10
-
 - [ ] `21 graph 治理确认令牌校验`：拒绝预览后变化的删除、合并和拆分
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
