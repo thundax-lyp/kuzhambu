@@ -281,9 +281,11 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_manual_source` (
     `target_type` varchar(32) NOT NULL,
     `target_id` bigint NOT NULL,
     `reason` varchar(1024) NOT NULL,
+    `audit_log_id` bigint NOT NULL,
     `recorded_at` BIGINT NOT NULL,
     PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_manual_source_target` (`target_type`, `target_id`)
+    KEY `idx_knowledge_graph_manual_source_target` (`target_type`, `target_id`),
+    KEY `idx_knowledge_graph_manual_source_audit` (`audit_log_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间人工来源';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_publish_record` (
@@ -337,10 +339,12 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_governance_operation` (
     `before_snapshot_json` json DEFAULT NULL,
     `after_snapshot_json` json DEFAULT NULL,
     `reason` varchar(1024) NOT NULL,
+    `audit_log_id` bigint NOT NULL,
     `operated_at` BIGINT NOT NULL,
     PRIMARY KEY (`id`),
     KEY `idx_knowledge_graph_governance_operation_target` (`target_type`, `target_id`, `operated_at`),
-    KEY `idx_knowledge_graph_governance_operation_type_time` (`operation_type`, `operated_at`)
+    KEY `idx_knowledge_graph_governance_operation_type_time` (`operation_type`, `operated_at`),
+    KEY `idx_knowledge_graph_governance_operation_audit` (`audit_log_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间治理操作记录';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_change` (

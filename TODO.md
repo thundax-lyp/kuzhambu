@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `16 graph 治理审计 DDL`：重建审计引用字段与索引
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`db/schema/knowledge.sql`、审计表迁移脚本、DDL 结构测试（3 个文件）
-    - 处理动作：在 governance operation 和 manual source 表加入非空 `audit_log_id` 与固定索引。
-    - 验收点：字段位置、非空约束与索引名符合 RUNBOOK；不在 knowledge 表增加操作者 ID。
-    - 重要度：9/10
-
 - [ ] `17 graph 发布预览令牌存储`：持久化预览快照与原子消费条件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
