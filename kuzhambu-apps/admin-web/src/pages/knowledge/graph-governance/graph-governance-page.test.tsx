@@ -70,5 +70,6 @@ describe("GraphGovernancePage", () => {
 
         await user.click(screen.getByRole("button", { name: "拆分变更" }));
         expect(screen.getByText("映射分配")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "确认并应用拆分" })).toBeDisabled();
     });
 });

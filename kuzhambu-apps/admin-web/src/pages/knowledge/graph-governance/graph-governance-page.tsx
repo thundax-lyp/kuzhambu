@@ -150,6 +150,7 @@ export const GraphGovernancePage = () => {
                 }}
             />
             <GovernanceImpactDrawer
+                key={impactAction ?? "closed"}
                 action={impactAction}
                 onClose={() => setImpactAction(null)}
                 onApply={(action) => {
