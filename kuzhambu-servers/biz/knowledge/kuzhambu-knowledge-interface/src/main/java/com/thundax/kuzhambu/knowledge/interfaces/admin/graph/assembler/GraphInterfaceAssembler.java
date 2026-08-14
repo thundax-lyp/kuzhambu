@@ -1,16 +1,23 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedEdgeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublishedResponses;
@@ -59,6 +66,36 @@ public final class GraphInterfaceAssembler {
                         : String.valueOf(value.getPublishedAt().toEpochMilli()),
                 null,
                 null);
+    }
+
+    public static GraphPublicationPreviewQuery toQuery(GraphPublicationRequests.PublicationPreviewRequest request) {
+        return new GraphPublicationPreviewQuery(toContentRef(request));
+    }
+
+    public static GraphBatchPublicationPreviewQuery toQuery(
+            GraphPublicationRequests.BatchPublicationPreviewRequest request) {
+        return new GraphBatchPublicationPreviewQuery(request.getContentRefs().stream()
+                .map(GraphInterfaceAssembler::toContentRef)
+                .toList());
+    }
+
+    public static GraphWithdrawalPreviewQuery toQuery(GraphPublicationRequests.WithdrawalRequest request) {
+        return new GraphWithdrawalPreviewQuery(toContentRef(request));
+    }
+
+    public static GraphPublicationCommand toCommand(GraphPublicationRequests.PublicationConfirmRequest request) {
+        return new GraphPublicationCommand(toContentRef(request), Long.valueOf(request.getMaterialLockVersion()), null);
+    }
+
+    public static GraphBatchPublicationCommand toCommand(
+            GraphPublicationRequests.BatchPublicationConfirmRequest request) {
+        return new GraphBatchPublicationCommand(request.getMaterials().stream()
+                .map(GraphInterfaceAssembler::toCommand)
+                .toList());
+    }
+
+    public static GraphWithdrawalCommand toCommand(GraphPublicationRequests.WithdrawalRequest request) {
+        return new GraphWithdrawalCommand(toContentRef(request), Long.valueOf(request.getMaterialLockVersion()));
     }
 
     public static GraphIncidentEdgesQuery toQuery(GraphWorkbenchRequests.IncidentEdgesListRequest request) {

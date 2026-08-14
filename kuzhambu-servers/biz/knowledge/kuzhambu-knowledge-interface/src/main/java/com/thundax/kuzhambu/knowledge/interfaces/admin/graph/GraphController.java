@@ -7,9 +7,11 @@ import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler.GraphInterfaceAssembler;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphWorkbenchResponses;
@@ -24,11 +26,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class GraphController {
     private final GraphWorkbenchApplicationService workbenchService;
     private final GraphMaterialApplicationService materialService;
+    private final GraphPublicationApplicationService publicationService;
 
     public GraphController(
-            GraphWorkbenchApplicationService workbenchService, GraphMaterialApplicationService materialService) {
+            GraphWorkbenchApplicationService workbenchService,
+            GraphMaterialApplicationService materialService,
+            GraphPublicationApplicationService publicationService) {
         this.workbenchService = workbenchService;
         this.materialService = materialService;
+        this.publicationService = publicationService;
     }
 
     @HasPermission("knowledge:graph:view")
@@ -126,5 +132,43 @@ public class GraphController {
         return new GraphMaterialResponses.ExportData(
                 "graph.json",
                 java.util.Map.of("graphJson", materialService.exportGraph(GraphInterfaceAssembler.toQuery(request))));
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("publication/preview")
+    public Object publicationPreview(@Valid @RequestBody GraphPublicationRequests.PublicationPreviewRequest request) {
+        return publicationService.previewPublication(GraphInterfaceAssembler.toQuery(request));
+    }
+
+    @HasPermission("knowledge:graph:edit")
+    @PostMapping("publication/publish")
+    public Object publicationPublish(@Valid @RequestBody GraphPublicationRequests.PublicationConfirmRequest request) {
+        return publicationService.publish(GraphInterfaceAssembler.toCommand(request));
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("publication/batch/preview")
+    public Object publicationBatchPreview(
+            @Valid @RequestBody GraphPublicationRequests.BatchPublicationPreviewRequest request) {
+        return publicationService.previewBatchPublication(GraphInterfaceAssembler.toQuery(request));
+    }
+
+    @HasPermission("knowledge:graph:edit")
+    @PostMapping("publication/batch/publish")
+    public Object publicationBatchPublish(
+            @Valid @RequestBody GraphPublicationRequests.BatchPublicationConfirmRequest request) {
+        return publicationService.publishBatch(GraphInterfaceAssembler.toCommand(request));
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("publication/withdrawal/preview")
+    public Object withdrawalPreview(@Valid @RequestBody GraphPublicationRequests.WithdrawalRequest request) {
+        return publicationService.previewWithdrawal(GraphInterfaceAssembler.toQuery(request));
+    }
+
+    @HasPermission("knowledge:graph:edit")
+    @PostMapping("publication/withdrawal/withdraw")
+    public Object withdrawal(@Valid @RequestBody GraphPublicationRequests.WithdrawalRequest request) {
+        return publicationService.withdraw(GraphInterfaceAssembler.toCommand(request));
     }
 }
