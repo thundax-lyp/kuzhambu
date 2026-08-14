@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `03 graph admin controller 装配`：暴露管理端图谱 HTTP 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/GraphController.java`、`assembler/GraphInterfaceAssembler.java`，及 controller integration test（3 个文件）
-    - 处理动作：将所有 Admin URL 映射到既有 application service，并在 assembler 完成 request/response 转换。
-    - 验收点：读接口校验 `knowledge:graph:view`、写接口校验 `knowledge:graph:edit`；成功和业务错误码映射受集成测试覆盖；controller 不直接调用 repository。
-    - 重要度：10/10
-
 - [ ] `04 graph portal 素材查询接口`：暴露门户已发布素材查询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
