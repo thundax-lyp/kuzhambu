@@ -11,7 +11,7 @@ describe("GraphDeletionTaskPage", () => {
     });
 
     it("shows failure detail and retry status change", async () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:apply"]);
         render(<GraphDeletionTaskPage />);
         const user = userEvent.setup();
         expect(screen.getByText("删除关联时检测到并发发布，请重试。")).toBeInTheDocument();

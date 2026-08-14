@@ -11,7 +11,7 @@ describe("GraphDeletionChangePage", () => {
     });
 
     it("shows deletion impact and both irreversible decisions", async () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:apply"]);
         render(<GraphDeletionChangePage />);
         const user = userEvent.setup();
         expect(screen.getByRole("heading", { name: "图谱删除变更" })).toBeInTheDocument();

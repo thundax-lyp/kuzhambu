@@ -15,7 +15,7 @@ describe("GraphMaterialPage", () => {
     });
 
     it("shows five material states and failure reason", () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         render(<GraphMaterialPage />);
 
         expect(screen.getByRole("heading", { name: "图谱素材库" })).toBeInTheDocument();
@@ -29,7 +29,11 @@ describe("GraphMaterialPage", () => {
     });
 
     it("does not offer draft writes for publishing or withdrawing materials", () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
         render(<GraphMaterialPage />);
 
         expect(
@@ -45,7 +49,11 @@ describe("GraphMaterialPage", () => {
         const { rerender } = render(<GraphMaterialPage />);
         expect(screen.getByText("无权查看图谱素材库")).toBeInTheDocument();
 
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
         rerender(<GraphMaterialPage />);
         const user = userEvent.setup();
         await user.click(screen.getByRole("button", { name: "模拟空态" }));
@@ -55,7 +63,11 @@ describe("GraphMaterialPage", () => {
     });
 
     it("keeps selected order and preserves partial publication failures", async () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
         render(<GraphMaterialPage />);
         const user = userEvent.setup();
 
@@ -73,7 +85,11 @@ describe("GraphMaterialPage", () => {
     });
 
     it("shows draft editing controls and published read-only result", async () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
         render(<GraphMaterialPage />);
         const user = userEvent.setup();
 
@@ -93,7 +109,11 @@ describe("GraphMaterialPage", () => {
     });
 
     it("keeps publication disabled until red conflicts are resolved, then freezes and withdraws", async () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
         render(<GraphMaterialPage />);
         const user = userEvent.setup();
         await user.click(screen.getByTestId("knowledge-graph-material-open-material-draft-button"));

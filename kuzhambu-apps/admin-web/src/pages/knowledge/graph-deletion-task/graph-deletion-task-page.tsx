@@ -15,6 +15,7 @@ import "./graph-deletion-task-page.css";
 
 export const GraphDeletionTaskPage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
+    const canApplyGraph = hasPermission("knowledge:graph:apply");
     const [isMockEmpty, setIsMockEmpty] = useState(false);
     const [tasks, setTasks] = useState<GraphDeletionTaskRecord[]>([
         ...graphDeletionTaskMockData.tasks
@@ -69,6 +70,7 @@ export const GraphDeletionTaskPage = () => {
                                   </KuzhambuButton>
                                   {task.status === "FAILED" ? (
                                       <KuzhambuButton
+                                          disabled={!canApplyGraph}
                                           testId="knowledge-graph-deletion-task-retry-button"
                                           onClick={() =>
                                               setTasks((current) => {

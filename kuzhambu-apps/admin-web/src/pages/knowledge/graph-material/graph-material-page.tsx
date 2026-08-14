@@ -41,6 +41,8 @@ const canEditDraft = (status: GraphMaterialStatus) => status === "DRAFT" || stat
 
 export const GraphMaterialPage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
+    const canEditGraph = hasPermission("knowledge:graph:edit");
+    const canApplyGraph = hasPermission("knowledge:graph:apply");
     const [isMockFailure, setIsMockFailure] = useState(false);
     const [isMockEmpty, setIsMockEmpty] = useState(false);
     const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
@@ -82,7 +84,7 @@ export const GraphMaterialPage = () => {
                         {isMockFailure ? "恢复模拟数据" : "模拟加载失败"}
                     </KuzhambuButton>
                     <KuzhambuButton
-                        disabled={selectedMaterialIds.length === 0}
+                        disabled={selectedMaterialIds.length === 0 || !canApplyGraph}
                         testId="knowledge-graph-material-open-batch-publication-button"
                         onClick={() => setIsBatchPanelOpen(true)}
                     >
@@ -104,6 +106,7 @@ export const GraphMaterialPage = () => {
                             itemKey={(material) => material.id}
                             renderItem={(material) => (
                                 <GraphMaterialListItem
+                                    canEditGraph={canEditGraph}
                                     material={material}
                                     onOpen={() => setActiveMaterial(material)}
                                 />
@@ -140,6 +143,8 @@ export const GraphMaterialPage = () => {
                 ) : null}
                 {activeMaterial ? (
                     <MaterialDraftCanvas
+                        canApplyGraph={canApplyGraph}
+                        canEditGraph={canEditGraph}
                         material={activeMaterial}
                         onClose={() => {
                             setActiveMaterial(null);
@@ -154,6 +159,7 @@ export const GraphMaterialPage = () => {
                     .map((id) => materials.find((material) => material.id === id))
                     .filter((material): material is GraphMaterialRecord => material !== undefined)}
                 results={graphMaterialMockData.batchPublicationResults}
+                canApplyGraph={canApplyGraph}
                 onClose={() => setIsBatchPanelOpen(false)}
                 open={isBatchPanelOpen}
             />
@@ -167,18 +173,19 @@ export const GraphMaterialPage = () => {
 };
 
 interface GraphMaterialListItemProps {
+    canEditGraph: boolean;
     material: GraphMaterialRecord;
     onOpen: () => void;
 }
 
-const GraphMaterialListItem = ({ material, onOpen }: GraphMaterialListItemProps) => (
+const GraphMaterialListItem = ({ canEditGraph, material, onOpen }: GraphMaterialListItemProps) => (
     <KuzhambuListItem
         extra={
             <KuzhambuSpace>
                 <KuzhambuTag type={STATUS_TYPES[material.status]}>
                     {STATUS_LABELS[material.status]}
                 </KuzhambuTag>
-                {canEditDraft(material.status) ? (
+                {canEditGraph && canEditDraft(material.status) ? (
                     <KuzhambuButton
                         testId={`knowledge-graph-material-extract-${material.id}-button`}
                         size="small"

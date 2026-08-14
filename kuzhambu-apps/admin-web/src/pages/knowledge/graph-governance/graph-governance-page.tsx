@@ -29,6 +29,8 @@ const GOVERNANCE_ACTION_LABELS: Record<GovernanceAction, string> = {
 
 export const GraphGovernancePage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
+    const canEditGraph = hasPermission("knowledge:graph:edit");
+    const canApplyGraph = hasPermission("knowledge:graph:apply");
     const [isMockFailure, setIsMockFailure] = useState(false);
     const [isMockEmpty, setIsMockEmpty] = useState(false);
     const [selectedNode, setSelectedNode] = useState<GraphGovernanceNodeRecord | null>(null);
@@ -84,15 +86,19 @@ export const GraphGovernancePage = () => {
                     >
                         模拟加载失败
                     </KuzhambuButton>
-                    {(Object.keys(GOVERNANCE_ACTION_LABELS) as GovernanceAction[]).map((action) => (
-                        <KuzhambuButton
-                            key={action}
-                            testId={`knowledge-graph-governance-${action.toLowerCase()}-button`}
-                            onClick={() => setImpactAction(action)}
-                        >
-                            {GOVERNANCE_ACTION_LABELS[action]}变更
-                        </KuzhambuButton>
-                    ))}
+                    {(Object.keys(GOVERNANCE_ACTION_LABELS) as GovernanceAction[])
+                        .filter((action) =>
+                            action === "CREATE" || action === "EDIT" ? canEditGraph : canApplyGraph
+                        )
+                        .map((action) => (
+                            <KuzhambuButton
+                                key={action}
+                                testId={`knowledge-graph-governance-${action.toLowerCase()}-button`}
+                                onClick={() => setImpactAction(action)}
+                            >
+                                {GOVERNANCE_ACTION_LABELS[action]}变更
+                            </KuzhambuButton>
+                        ))}
                 </KuzhambuSpace>
                 {appliedAction ? (
                     <KuzhambuAlert

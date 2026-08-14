@@ -17,6 +17,7 @@ import "./graph-deletion-change-page.css";
 
 export const GraphDeletionChangePage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
+    const canApplyGraph = hasPermission("knowledge:graph:apply");
     const [isMockFailure, setIsMockFailure] = useState(false);
     const [isMockEmpty, setIsMockEmpty] = useState(false);
     const [selectedChange, setSelectedChange] = useState<GraphDeletionChangeRecord | null>(null);
@@ -81,7 +82,11 @@ export const GraphDeletionChangePage = () => {
                       ))
                     : null}
                 {selectedChange ? (
-                    <DeletionDecisionPanel change={selectedChange} onDecision={setDecision} />
+                    <DeletionDecisionPanel
+                        canApplyGraph={canApplyGraph}
+                        change={selectedChange}
+                        onDecision={setDecision}
+                    />
                 ) : null}
                 {decision ? (
                     <KuzhambuAlert title={`已选择 ${decision}`} type="success" showIcon />

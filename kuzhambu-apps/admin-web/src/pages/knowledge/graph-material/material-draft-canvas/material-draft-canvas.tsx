@@ -9,6 +9,8 @@ import type { GraphMaterialDraftObject, GraphMaterialRecord } from "../graph-mat
 import { PublicationPreview } from "../publication-preview";
 
 interface MaterialDraftCanvasProps {
+    canApplyGraph: boolean;
+    canEditGraph: boolean;
     material: GraphMaterialRecord;
     onClose: () => void;
     onOpenObject: (objectId: string) => void;
@@ -20,6 +22,8 @@ const DRAFT_OBJECTS: GraphMaterialDraftObject[] = [
 ];
 
 export const MaterialDraftCanvas = ({
+    canApplyGraph,
+    canEditGraph,
     material,
     onClose,
     onOpenObject
@@ -47,7 +51,7 @@ export const MaterialDraftCanvas = ({
                         </KuzhambuButton>
                     ))}
                 </KuzhambuSpace>
-                {isDraft ? (
+                {isDraft && canEditGraph ? (
                     <KuzhambuSpace wrap>
                         <KuzhambuButton testId="knowledge-graph-material-create-draft-object-button">
                             新增对象
@@ -63,12 +67,15 @@ export const MaterialDraftCanvas = ({
                 {material.status === "PUBLISHED" ? (
                     <KuzhambuSpace>
                         <KuzhambuTag type="success">发布结果：已成功发布</KuzhambuTag>
-                        <KuzhambuButton testId="knowledge-graph-material-withdraw-button">
+                        <KuzhambuButton
+                            disabled={!canApplyGraph}
+                            testId="knowledge-graph-material-withdraw-button"
+                        >
                             撤回素材
                         </KuzhambuButton>
                     </KuzhambuSpace>
                 ) : null}
-                <PublicationPreview />
+                <PublicationPreview canApplyGraph={canApplyGraph} enabled={isDraft} />
                 <KuzhambuButton
                     testId="knowledge-graph-material-close-draft-canvas-button"
                     onClick={onClose}

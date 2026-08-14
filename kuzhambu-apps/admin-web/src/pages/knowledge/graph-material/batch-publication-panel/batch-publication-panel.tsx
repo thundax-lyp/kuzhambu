@@ -12,6 +12,7 @@ import type {
 } from "../graph-material-types";
 
 interface BatchPublicationPanelProps {
+    canApplyGraph: boolean;
     materials: GraphMaterialRecord[];
     onClose: () => void;
     open: boolean;
@@ -19,6 +20,7 @@ interface BatchPublicationPanelProps {
 }
 
 export const BatchPublicationPanel = ({
+    canApplyGraph,
     materials,
     onClose,
     open,
@@ -69,6 +71,7 @@ export const BatchPublicationPanel = ({
                 <KuzhambuSpace>
                     {!isConfirmed ? (
                         <KuzhambuButton
+                            disabled={!canApplyGraph}
                             testId="knowledge-graph-material-confirm-batch-publication-button"
                             type="primary"
                             onClick={() => setIsConfirmed(true)}

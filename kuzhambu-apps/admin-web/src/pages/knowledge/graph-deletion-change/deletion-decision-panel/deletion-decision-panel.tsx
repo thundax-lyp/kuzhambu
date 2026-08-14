@@ -5,11 +5,16 @@ import type {
 } from "../graph-deletion-change-types";
 
 interface DeletionDecisionPanelProps {
+    canApplyGraph: boolean;
     change: GraphDeletionChangeRecord;
     onDecision: (decision: GraphDeletionDecision) => void;
 }
 
-export const DeletionDecisionPanel = ({ change, onDecision }: DeletionDecisionPanelProps) => (
+export const DeletionDecisionPanel = ({
+    canApplyGraph,
+    change,
+    onDecision
+}: DeletionDecisionPanelProps) => (
     <KuzhambuCard title={`${change.materialTitle} 删除影响`}>
         <KuzhambuSpace orientation="vertical" size={10}>
             <span>将影响节点：{change.affectedNodeCount}</span>
@@ -18,6 +23,7 @@ export const DeletionDecisionPanel = ({ change, onDecision }: DeletionDecisionPa
             <KuzhambuSpace>
                 <KuzhambuButton
                     testId="knowledge-graph-deletion-preserve-contribution-button"
+                    disabled={!canApplyGraph}
                     onClick={() => onDecision("PRESERVE_CONTRIBUTION")}
                 >
                     保留贡献
@@ -25,6 +31,7 @@ export const DeletionDecisionPanel = ({ change, onDecision }: DeletionDecisionPa
                 <KuzhambuButton
                     danger
                     testId="knowledge-graph-deletion-withdraw-associations-button"
+                    disabled={!canApplyGraph}
                     onClick={() => onDecision("WITHDRAW_ASSOCIATIONS")}
                 >
                     撤回关联

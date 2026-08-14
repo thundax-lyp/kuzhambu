@@ -15,7 +15,11 @@ describe("GraphGovernancePage", () => {
     });
 
     it("shows nodes, relations, local canvas and detail", async () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
         render(<GraphGovernancePage />);
         const user = userEvent.setup();
 
@@ -34,7 +38,11 @@ describe("GraphGovernancePage", () => {
         const { rerender } = render(<GraphGovernancePage />);
         expect(screen.getByText("无权查看图谱治理")).toBeInTheDocument();
 
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
         rerender(<GraphGovernancePage />);
         const user = userEvent.setup();
         await user.click(screen.getByRole("button", { name: "模拟空态" }));
@@ -44,7 +52,11 @@ describe("GraphGovernancePage", () => {
     });
 
     it("previews impact before apply and assigns mappings for merge and split", async () => {
-        replacePermissions(["knowledge:graph:view"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
         render(<GraphGovernancePage />);
         const user = userEvent.setup();
 

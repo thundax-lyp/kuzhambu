@@ -16,10 +16,19 @@ const PREVIEW_TAG_TYPES = {
     blue: "info"
 } as const;
 
-export const PublicationPreview = () => {
+interface PublicationPreviewProps {
+    canApplyGraph: boolean;
+    enabled: boolean;
+}
+
+export const PublicationPreview = ({ canApplyGraph, enabled }: PublicationPreviewProps) => {
     const [isConflictResolved, setIsConflictResolved] = useState(false);
     const [isFrozen, setIsFrozen] = useState(false);
     const [isWithdrawn, setIsWithdrawn] = useState(false);
+
+    if (!enabled) {
+        return null;
+    }
 
     return (
         <KuzhambuSpace orientation="vertical" size={10} style={{ width: "100%" }}>
@@ -46,7 +55,7 @@ export const PublicationPreview = () => {
             {isWithdrawn ? <KuzhambuAlert title="素材已撤回" type="warning" showIcon /> : null}
             <KuzhambuSpace>
                 <KuzhambuButton
-                    disabled={!isConflictResolved || isFrozen || isWithdrawn}
+                    disabled={!canApplyGraph || !isConflictResolved || isFrozen || isWithdrawn}
                     testId="knowledge-graph-material-publish-preview-button"
                     type="primary"
                     onClick={() => setIsFrozen(true)}
@@ -54,7 +63,7 @@ export const PublicationPreview = () => {
                     发布
                 </KuzhambuButton>
                 <KuzhambuButton
-                    disabled={!isFrozen || isWithdrawn}
+                    disabled={!canApplyGraph || !isFrozen || isWithdrawn}
                     testId="knowledge-graph-material-withdraw-preview-button"
                     onClick={() => setIsWithdrawn(true)}
                 >
