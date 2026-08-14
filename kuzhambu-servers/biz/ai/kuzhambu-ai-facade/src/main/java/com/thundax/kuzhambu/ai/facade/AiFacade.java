@@ -60,6 +60,8 @@ public interface AiFacade {
 
     AiInvocationLogFacadeDto getInvocationLog(GetAiInvocationLogFacadeRequest request);
 
+    AiCandidateFacadeDto getLatestCandidateByBatch(Long batchId);
+
     AiCandidateFacadeDto getCandidate(GetAiCandidateFacadeRequest request);
 
     AiCandidateFacadeDto requirePendingCandidate(RequirePendingAiCandidateFacadeRequest request);
