@@ -452,7 +452,8 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
 
     private void mergeNodeMaterials(GraphPublishedNodeId retainedNodeId, List<GraphPublishedNodeId> mergedNodeIds) {
         List<GraphPublishedNodeMaterial> retained = nodeMaterialRepository.listByPublishedNodeId(retainedNodeId);
-        for (GraphPublishedNodeId mergedNodeId : safeNodeIds(mergedNodeIds)) {
+        List<GraphPublishedNodeId> effectiveMergedNodeIds = safeNodeIds(mergedNodeIds);
+        for (GraphPublishedNodeId mergedNodeId : effectiveMergedNodeIds) {
             for (GraphPublishedNodeMaterial relation : nodeMaterialRepository.listByPublishedNodeId(mergedNodeId)) {
                 if (containsMaterial(retained, relation.getMaterialRef())) {
                     continue;
@@ -461,6 +462,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
                         retainedNodeId, relation.getMaterialRef(), relation.getSourceSnapshotJson()));
             }
         }
+        nodeMaterialRepository.deleteByPublishedNodeIds(effectiveMergedNodeIds);
     }
 
     private void mergeEdgeProperties(GraphPublishedEdgeId retainedEdgeId, GraphPublishedEdgeId mergedEdgeId) {
