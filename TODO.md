@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `02` `admin-web graph workbench overview`：实现工作台指标与筛选
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-workbench/graph-workbench-page.tsx`、`graph-workbench-types.ts`、`graph-workbench-page.test.tsx`（3 个文件）
-    - 处理动作：实现指标卡、关键词搜索和门类筛选的 Mock 页面状态。
-    - 验收点：测试覆盖标题、主操作、筛选、空态、无权限态和失败态；页面不加载全图。
-    - 重要度：9/10
-
 - [ ] `03` `admin-web graph workbench canvas`：实现工作台渐进局部画布
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`

@@ -17,6 +17,7 @@ import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
 import { PublicationJobPage } from "../pages/classics/publication-job/publication-job-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
+import { GraphWorkbenchPage } from "../pages/knowledge/graph-workbench/graph-workbench-page";
 import { LineagePage } from "../pages/knowledge/lineage/lineage-page";
 import { GraphResultPage } from "../pages/knowledge/graph-result/graph-result-page";
 import { QualityReportPage } from "../pages/knowledge/quality-report/quality-report-page";
@@ -137,7 +138,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "knowledge/graph-workbench",
-                            element: <Navigate to="/knowledge/graph" replace />
+                            element: <GraphWorkbenchPage />
                         },
                         {
                             path: "knowledge/graph-governance",
