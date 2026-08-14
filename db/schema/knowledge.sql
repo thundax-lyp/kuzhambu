@@ -301,6 +301,17 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_publish_record` (
     KEY `idx_knowledge_graph_publish_record_material_status` (`material_id`, `status`, `requested_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材整体发布记录';
 
+CREATE TABLE IF NOT EXISTS `knowledge_graph_publication_preview_token` (
+    `token` varchar(64) NOT NULL,
+    `material_id` bigint NOT NULL,
+    `material_lock_version` bigint NOT NULL,
+    `snapshot_json` json NOT NULL,
+    `expires_at` BIGINT NOT NULL,
+    `consumed_at` BIGINT DEFAULT NULL,
+    PRIMARY KEY (`token`),
+    KEY `idx_knowledge_graph_publication_preview_material_expiry` (`material_id`, `expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱发布预览令牌';
+
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_node_mapping` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `material_id` bigint NOT NULL,

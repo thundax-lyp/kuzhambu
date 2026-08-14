@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `17 graph 发布预览令牌存储`：持久化预览快照与原子消费条件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`GraphPublicationPreviewToken.java`、Repository、`GraphPublicationPreviewTokenDO.java`、Mapper、PersistenceAssembler、RepositoryImpl、`db/schema/knowledge.sql`、token repository test（8 个文件）
-    - 处理动作：保存素材版本、发布对象 ID/版本、过期时间和消费状态的完整发布预览快照。
-    - 验收点：`snapshot_json` 含所有受影响对象的 ID、`lockVersion` 和关联集合；过期或已消费返回 `GRAPH_PREVIEW_STALE`；消费更新原子化。
-    - 重要度：10/10
-
 - [ ] `18 graph 发布确认冲突决策`：绑定单素材决策并校验版本
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
