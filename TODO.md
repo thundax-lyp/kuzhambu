@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `12` `admin-web graph mock e2e`：覆盖图谱 Mock 端到端流程
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/knowledge/graph/graph-mock.spec.ts`、`graph-mock.fixture.ts`（2 个文件）
-    - 处理动作：通过 Mock provider 覆盖抽取至撤回、治理合并拆分、删除预检至重试和工作台截断。
-    - 验收点：E2E 不访问后端端口；完整流程与发布部分失败、删除任务失败重试分支均通过。
-    - 重要度：10/10
-
 - [ ] `13` `graph admin-web closure`：清理图谱 Admin Web 任务现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`、`docs/00-governance/TODO-RULES.md`

@@ -18,6 +18,10 @@ import { PublicationJobPage } from "../pages/classics/publication-job/publicatio
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
 import { GraphWorkbenchPage } from "../pages/knowledge/graph-workbench/graph-workbench-page";
+import { GraphMaterialPage } from "../pages/knowledge/graph-material/graph-material-page";
+import { GraphGovernancePage } from "../pages/knowledge/graph-governance/graph-governance-page";
+import { GraphDeletionChangePage } from "../pages/knowledge/graph-deletion-change/graph-deletion-change-page";
+import { GraphDeletionTaskPage } from "../pages/knowledge/graph-deletion-task/graph-deletion-task-page";
 import { LineagePage } from "../pages/knowledge/lineage/lineage-page";
 import { GraphResultPage } from "../pages/knowledge/graph-result/graph-result-page";
 import { QualityReportPage } from "../pages/knowledge/quality-report/quality-report-page";
@@ -142,19 +146,19 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "knowledge/graph-governance",
-                            element: <Navigate to="/knowledge/graph" replace />
+                            element: <GraphGovernancePage />
                         },
                         {
                             path: "knowledge/graph-materials",
-                            element: <Navigate to="/knowledge/graph" replace />
+                            element: <GraphMaterialPage />
                         },
                         {
                             path: "knowledge/graph-deletion-changes",
-                            element: <Navigate to="/knowledge/graph" replace />
+                            element: <GraphDeletionChangePage />
                         },
                         {
                             path: "knowledge/graph-deletion-tasks",
-                            element: <Navigate to="/knowledge/graph" replace />
+                            element: <GraphDeletionTaskPage />
                         },
                         {
                             path: "knowledge/graph-extraction",
