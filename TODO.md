@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `03` `admin-web graph workbench canvas`：实现工作台渐进局部画布
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-workbench/graph-workbench-page.tsx`、`graph-workbench-page.test.tsx`、`workbench-canvas/`、`workbench-detail-drawer/`（4–6 个文件）
-    - 处理动作：使用 `KuzhambuGraph` 实现种子淡化、批次补边、孤立节点移除和详情抽屉。
-    - 验收点：测试断言边批次返回前种子淡化、批次追加和完成后移除孤立节点；详情可跳转治理或素材；画布最多 200 个节点。
-    - 重要度：10/10
-
 - [ ] `04` `admin-web graph material library`：实现素材库与状态展示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`

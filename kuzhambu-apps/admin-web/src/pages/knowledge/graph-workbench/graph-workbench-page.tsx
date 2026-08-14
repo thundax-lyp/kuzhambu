@@ -9,6 +9,8 @@ import {
     KuzhambuSelect,
     KuzhambuSpace
 } from "@/components";
+import { WorkbenchCanvas } from "./workbench-canvas";
+import { WorkbenchDetailDrawer } from "./workbench-detail-drawer";
 
 import { graphWorkbenchMockData } from "./__mocks__/graph-mock-data";
 import type {
@@ -43,6 +45,7 @@ export const GraphWorkbenchPage = () => {
     const [searchText, setSearchText] = useState("");
     const [categoryCode, setCategoryCode] = useState("all");
     const [isMockFailure, setIsMockFailure] = useState(false);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const metrics = useMemo(createMetrics, []);
     const visibleSeeds = useMemo(
         () =>
@@ -52,6 +55,9 @@ export const GraphWorkbenchPage = () => {
                     .includes(searchText.toLocaleLowerCase("zh-CN"))
             ),
         [searchText]
+    );
+    const selectedNode = graphWorkbenchMockData.seedNodes.find(
+        (node) => node.id === selectedNodeId
     );
 
     if (!canViewGraph) {
@@ -102,13 +108,18 @@ export const GraphWorkbenchPage = () => {
                     <KuzhambuAlert title="没有匹配的图谱种子" type="info" showIcon />
                 ) : null}
                 {!isMockFailure && visibleSeeds.length > 0 ? (
-                    <KuzhambuAlert
-                        title={`已按${CATEGORY_OPTIONS.find((category) => category.code === categoryCode)?.name ?? "全部门类"}筛选 ${visibleSeeds.length} 个种子；局部画布将在下一步加载。`}
-                        type="info"
-                        showIcon
+                    <WorkbenchCanvas
+                        edgeBatches={graphWorkbenchMockData.edgeBatches}
+                        seedNodes={visibleSeeds}
+                        onSelectNode={(node) => setSelectedNodeId(node.id)}
                     />
                 ) : null}
             </KuzhambuSpace>
+            <WorkbenchDetailDrawer
+                node={selectedNode}
+                open={selectedNode !== undefined}
+                onClose={() => setSelectedNodeId(null)}
+            />
         </KuzhambuPage>
     );
 };
