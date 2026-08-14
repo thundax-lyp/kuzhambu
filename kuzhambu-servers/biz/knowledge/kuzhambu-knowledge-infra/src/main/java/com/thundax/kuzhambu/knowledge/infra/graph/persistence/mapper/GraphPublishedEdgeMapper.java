@@ -22,6 +22,7 @@ public interface GraphPublishedEdgeMapper extends BaseMapper<GraphPublishedEdgeD
                 <foreach collection="nodeIds" item="nodeId" open="(" separator="," close=")">
                     #{nodeId}
                 </foreach>
+                and status = 'ACTIVE'
                 <if test="afterEdgeId != null">
                     and id &gt; #{afterEdgeId}
                 </if>
@@ -32,6 +33,7 @@ public interface GraphPublishedEdgeMapper extends BaseMapper<GraphPublishedEdgeD
                 <foreach collection="nodeIds" item="nodeId" open="(" separator="," close=")">
                     #{nodeId}
                 </foreach>
+                and status = 'ACTIVE'
                 <if test="afterEdgeId != null">
                     and id &gt; #{afterEdgeId}
                 </if>
