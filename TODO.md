@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `02 graph admin 接口响应 DTO`：定义管理端图谱响应模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/controller/response/GraphWorkbenchResponses.java`、`GraphMaterialResponses.java`、`GraphPublicationResponses.java`、`GraphPublishedResponses.java`、`GraphDeletionResponses.java`，及对应 response 序列化单测（6 个文件）
-    - 处理动作：按唯一 HTTP 契约定义五组 Admin response，固定可空字段和字符串 ID 序列化。
-    - 验收点：素材非 `FAILED` 时失败字段显式为 `null`；分页、审计、预览和任务结构与接口文档一致；序列化单测通过。
-    - 重要度：10/10
-
 - [ ] `03 graph admin controller 装配`：暴露管理端图谱 HTTP 入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
