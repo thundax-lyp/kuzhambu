@@ -2,8 +2,10 @@ package com.thundax.kuzhambu.knowledge.domain.graph.model.enums;
 
 public enum GraphMaterialStatus {
     DRAFT,
-    READY,
-    PUBLISHED;
+    PUBLISHING,
+    PUBLISHED,
+    WITHDRAWING,
+    FAILED;
 
     public String value() {
         return name();

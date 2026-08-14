@@ -53,7 +53,7 @@ class GraphMaterialGraphTest {
 
         assertEquals(1, graph.nodes().size());
         assertEquals(0, graph.edges().size());
-        assertEquals(GraphMaterialStatus.READY, material.getStatus());
+        assertEquals(GraphMaterialStatus.DRAFT, material.getStatus());
     }
 
     @Test
@@ -69,7 +69,7 @@ class GraphMaterialGraphTest {
     private static GraphMaterial material() {
         GraphMaterial material = new GraphMaterial();
         material.setContentRef(new ContentRef("SANCAI_ENTRY", 1L));
-        material.setStatus(GraphMaterialStatus.READY);
+        material.setStatus(GraphMaterialStatus.DRAFT);
         return material;
     }
 

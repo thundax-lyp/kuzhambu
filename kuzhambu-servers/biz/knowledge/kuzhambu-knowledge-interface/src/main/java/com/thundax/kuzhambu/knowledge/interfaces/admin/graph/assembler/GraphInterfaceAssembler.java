@@ -130,8 +130,12 @@ public final class GraphInterfaceAssembler {
                 value.getPublishedAt() == null
                         ? null
                         : String.valueOf(value.getPublishedAt().toEpochMilli()),
-                null,
-                null);
+                value.getStatus() == com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus.FAILED
+                        ? value.getFailureReason()
+                        : null,
+                value.getStatus() == com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus.FAILED
+                        ? value.getFailedOperation()
+                        : null);
     }
 
     @NonNull

@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `05 graph 素材状态领域模型`：收敛为五态素材状态机
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-knowledge-domain/.../GraphMaterialStatus.java`、`GraphMaterial.java`、`GraphMaterialGraph.java`、`kuzhambu-knowledge-application/.../GraphPublicationExecutor.java`、`GraphPublicationApplicationServiceImpl.java`，及状态机单测（6 个文件）
-    - 处理动作：删除 `READY` 并实现发布、撤回、失败重试和失败字段清空的五态转换。
-    - 验收点：仅 `DRAFT` 可编辑或抽取；成功与失败转换符合 RUNBOOK；`READY` 被拒绝；五个状态均有持久化值测试。
-    - 重要度：10/10
-
 - [ ] `06 graph 素材状态迁移 DDL`：落地状态字段与 READY 数据迁移
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`

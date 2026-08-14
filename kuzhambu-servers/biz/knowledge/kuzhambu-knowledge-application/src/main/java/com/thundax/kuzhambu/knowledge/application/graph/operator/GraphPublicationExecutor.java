@@ -40,9 +40,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
 public class GraphPublicationExecutor {
@@ -59,6 +62,7 @@ public class GraphPublicationExecutor {
     private final GraphPublishedEdgePropertyRepository edgePropertyRepository;
     private final GraphPublishedNodeMaterialRepository nodeMaterialRepository;
     private final GraphPublishedEdgeMaterialRepository edgeMaterialRepository;
+    private final TransactionTemplate statusTransactionTemplate;
 
     public GraphPublicationExecutor(
             ObjectMapper objectMapper,
@@ -72,7 +76,8 @@ public class GraphPublicationExecutor {
             GraphPublishedNodePropertyRepository nodePropertyRepository,
             GraphPublishedEdgePropertyRepository edgePropertyRepository,
             GraphPublishedNodeMaterialRepository nodeMaterialRepository,
-            GraphPublishedEdgeMaterialRepository edgeMaterialRepository) {
+            GraphPublishedEdgeMaterialRepository edgeMaterialRepository,
+            PlatformTransactionManager transactionManager) {
         this.objectMapper = objectMapper;
         this.graphLoader = graphLoader;
         this.snapshotSupport = snapshotSupport;
@@ -85,17 +90,30 @@ public class GraphPublicationExecutor {
         this.edgePropertyRepository = edgePropertyRepository;
         this.nodeMaterialRepository = nodeMaterialRepository;
         this.edgeMaterialRepository = edgeMaterialRepository;
+        this.statusTransactionTemplate = new TransactionTemplate(transactionManager);
+        this.statusTransactionTemplate.setPropagationBehavior(Propagation.REQUIRES_NEW.value());
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public GraphPublicationResult publishOne(GraphPublicationCommand command) {
+        try {
+            return doPublishOne(command);
+        } catch (RuntimeException ex) {
+            markPublicationFailed(command == null ? null : command.materialRef(), ex.getMessage());
+            throw ex;
+        }
+    }
+
+    private GraphPublicationResult doPublishOne(GraphPublicationCommand command) {
         if (command == null || command.materialRef() == null) {
             throw new BizException("Graph publication command is required");
         }
         GraphMaterialGraph graph = graphLoader.require(command.materialRef());
         GraphMaterial material = graph.material();
-        material.requireReady();
+        material.requirePublishable();
         material.requireLockVersion(command.materialLockVersion());
+        runStatusTransition(command.materialRef(), command.materialLockVersion(), GraphMaterial::startPublishing);
+        material.startPublishing();
 
         Map<GraphMaterialNodeId, GraphPublishedNode> matchedNodes = matchedNodes(graph.nodes());
         Map<GraphMaterialEdgeId, GraphPublishedEdge> matchedEdges = matchedEdges(graph.edges());
@@ -118,12 +136,21 @@ public class GraphPublicationExecutor {
         insertVersion(graph, command.publishedBy(), now);
 
         material.publish(now);
-        updateMaterial(material, command.materialLockVersion());
+        updateMaterial(material, command.materialLockVersion() + 1);
         return GraphApplicationAssembler.toPublicationResult(command.materialRef(), material.getStatus(), publication);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public GraphMaterial withdrawOne(GraphWithdrawalCommand command) {
+        try {
+            return doWithdrawOne(command);
+        } catch (RuntimeException ex) {
+            markWithdrawalFailed(command == null ? null : command.materialRef(), ex.getMessage());
+            throw ex;
+        }
+    }
+
+    private GraphMaterial doWithdrawOne(GraphWithdrawalCommand command) {
         if (command == null || command.materialRef() == null) {
             throw new BizException("Graph withdrawal command is required");
         }
@@ -131,10 +158,12 @@ public class GraphPublicationExecutor {
         GraphMaterial material = graph.material();
         material.requirePublished();
         material.requireLockVersion(command.materialLockVersion());
+        runStatusTransition(command.materialRef(), command.materialLockVersion(), GraphMaterial::startWithdrawal);
+        material.startWithdrawal();
         edgeMaterialRepository.deleteByMaterial(command.materialRef());
         nodeMaterialRepository.deleteByMaterial(command.materialRef());
-        material.withdraw(graph.nodes().isEmpty());
-        updateMaterial(material, command.materialLockVersion());
+        material.withdraw();
+        updateMaterial(material, command.materialLockVersion() + 1);
         return material;
     }
 
@@ -344,6 +373,44 @@ public class GraphPublicationExecutor {
         if (materialRepository.updateIfLockVersion(material, expectedLockVersion) != 1) {
             throw new BizException("Graph material lock version mismatch");
         }
+    }
+
+    private void runStatusTransition(
+            ContentRef materialRef, long expectedLockVersion, Consumer<GraphMaterial> transition) {
+        statusTransactionTemplate.executeWithoutResult(status -> {
+            GraphMaterial material = materialRepository.getByContentRef(materialRef);
+            if (material == null) {
+                throw new BizException("Graph material does not exist");
+            }
+            transition.accept(material);
+            updateMaterial(material, expectedLockVersion);
+        });
+    }
+
+    private void markPublicationFailed(ContentRef materialRef, String failureReason) {
+        markFailed(materialRef, material -> material.failPublication(failureReason));
+    }
+
+    private void markWithdrawalFailed(ContentRef materialRef, String failureReason) {
+        markFailed(materialRef, material -> material.failWithdrawal(failureReason));
+    }
+
+    private void markFailed(ContentRef materialRef, Consumer<GraphMaterial> transition) {
+        if (materialRef == null) {
+            return;
+        }
+        statusTransactionTemplate.executeWithoutResult(status -> {
+            GraphMaterial material = materialRepository.getByContentRef(materialRef);
+            if (material == null) {
+                return;
+            }
+            try {
+                transition.accept(material);
+            } catch (RuntimeException ex) {
+                return;
+            }
+            materialRepository.update(material);
+        });
     }
 
     private String snapshotJson(Object value) {
