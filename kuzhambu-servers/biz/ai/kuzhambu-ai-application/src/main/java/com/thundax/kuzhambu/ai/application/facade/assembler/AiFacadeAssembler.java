@@ -1,5 +1,10 @@
 package com.thundax.kuzhambu.ai.application.facade.assembler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
@@ -54,6 +59,7 @@ import com.thundax.kuzhambu.ai.facade.response.AiBatchJobPageFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
@@ -66,6 +72,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AiFacadeAssembler {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @NonNull
     public AiInvocationLogFacadeDto toFacadeDto(@NonNull AiInvocationLog invocationLog) {
@@ -241,10 +249,37 @@ public class AiFacadeAssembler {
                 null,
                 null,
                 null,
-                request.getContentSnapshotJson(),
+                graphExtractionInputPayload(request.getContentSnapshotJson()),
                 null,
                 true,
                 null);
+    }
+
+    private String graphExtractionInputPayload(String contentSnapshotJson) {
+        try {
+            JsonNode snapshot = OBJECT_MAPPER.readTree(contentSnapshotJson);
+            if (snapshot == null || !snapshot.isObject()) {
+                throw new BizException("Knowledge graph extraction content snapshot must be an object");
+            }
+            ObjectNode payload = OBJECT_MAPPER.createObjectNode();
+            payload.set("contentSnapshot", snapshot);
+            payload.put("sourceTitle", snapshot.path("title").asText(""));
+            payload.put("sourceText", textSegments(snapshot));
+            ArrayNode entryRefs = payload.putArray("entryRefs");
+            JsonNode contentRef = snapshot.get("contentRef");
+            if (contentRef != null && !contentRef.isNull()) {
+                entryRefs.add(contentRef);
+            }
+            return OBJECT_MAPPER.writeValueAsString(payload);
+        } catch (JsonProcessingException exception) {
+            throw new BizException("Knowledge graph extraction content snapshot is invalid", exception);
+        }
+    }
+
+    private String textSegments(JsonNode snapshot) {
+        List<String> segments = new java.util.ArrayList<>();
+        snapshot.path("textSegments").forEach(segment -> segments.add(segment.asText()));
+        return String.join("\n", segments);
     }
 
     @NonNull
