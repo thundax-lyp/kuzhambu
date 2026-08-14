@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.ai.application.scenario.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.ExpireRunningAiBatchJobsCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
@@ -24,6 +26,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import org.slf4j.Logger;
@@ -48,6 +51,7 @@ public class KnowledgeGraphExtractionTaskApplicationServiceImpl
     private static final Duration ORPHANED_TASK_TIMEOUT = Duration.ofHours(1L);
     private static final int ORPHANED_TASK_EXPIRE_LIMIT = 100;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final AiBatchJobApplicationService aiBatchJobApplicationService;
     private final KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService;
     private final KnowledgeAiExtractionSnapshotResolver snapshotResolver;
@@ -184,7 +188,15 @@ public class KnowledgeGraphExtractionTaskApplicationServiceImpl
 
     private String failureSummaryJson(String errorMessage) {
         String message = errorMessage == null ? "Knowledge graph extraction failed" : errorMessage;
-        return "{\"errorType\":\"INTERNAL_FAILURE\",\"errorMessage\":\"" + message.replace("\"", "\\\"") + "\"}";
+        try {
+            return objectMapper.writeValueAsString(Map.of("errorType", "INTERNAL_FAILURE", "errorMessage", message));
+        } catch (JsonProcessingException exception) {
+            throw new BizException(
+                    "KNOWLEDGE-GRAPH-EXTRACTION-500",
+                    "knowledge.graph.extraction.failure-summary-invalid",
+                    "Knowledge graph extraction task failure summary is not valid JSON",
+                    exception);
+        }
     }
 
     private boolean isBlank(String value) {
