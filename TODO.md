@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `01 graph admin 接口请求 DTO`：定义管理端图谱请求模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/controller/request/GraphWorkbenchRequests.java`、`GraphMaterialRequests.java`、`GraphPublicationRequests.java`、`GraphPublishedRequests.java`、`GraphDeletionRequests.java`，及对应 request 单测（6 个文件）
-    - 处理动作：按唯一 HTTP 契约定义五组 Admin request，所有 ID、版本和游标保持字符串协议。
-    - 验收点：所有 Admin URL 的 body 均有唯一 DTO；请求体不含操作者字段；DTO 单测覆盖必填字段与非法枚举拒绝。
-    - 重要度：10/10
-
 - [ ] `02 graph admin 接口响应 DTO`：定义管理端图谱响应模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
