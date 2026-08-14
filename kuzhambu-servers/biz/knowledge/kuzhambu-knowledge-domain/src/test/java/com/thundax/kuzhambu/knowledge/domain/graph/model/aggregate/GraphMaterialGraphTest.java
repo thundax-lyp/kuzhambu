@@ -38,8 +38,9 @@ class GraphMaterialGraphTest {
 
     @Test
     void ofShouldRejectDuplicateNodeId() {
-        assertThrows(DomainException.class, () -> GraphMaterialGraph.of(
-                material(), List.of(node(1L, "node:a"), node(1L, "node:b")), List.of()));
+        assertThrows(
+                DomainException.class,
+                () -> GraphMaterialGraph.of(material(), List.of(node(1L, "node:a"), node(1L, "node:b")), List.of()));
     }
 
     @Test
