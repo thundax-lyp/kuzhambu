@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `01` `admin-web graph mock/router/menu`：建立图谱 Mock 基础与入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：5 个 `src/pages/knowledge/graph-*/__mocks__/graph-mock-data.ts`、`src/router/index.tsx`、`db/data-source/system.json`（7 个文件）
-    - 处理动作：建立无 HTTP 的固定 Mock 数据，并注册五个图谱路由和菜单。
-    - 验收点：Mock 覆盖五种素材状态、冲突预览、批量部分失败、孤立节点和删除失败任务；路由与菜单可解析；不新增 service、`postJson` 或网络等待。
-    - 重要度：10/10
-
 - [ ] `02` `admin-web graph workbench overview`：实现工作台指标与筛选
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`

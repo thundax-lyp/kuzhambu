@@ -136,6 +136,26 @@ const router = createBrowserRouter(
                             element: <RefinementPage />
                         },
                         {
+                            path: "knowledge/graph-workbench",
+                            element: <Navigate to="/knowledge/graph" replace />
+                        },
+                        {
+                            path: "knowledge/graph-governance",
+                            element: <Navigate to="/knowledge/graph" replace />
+                        },
+                        {
+                            path: "knowledge/graph-materials",
+                            element: <Navigate to="/knowledge/graph" replace />
+                        },
+                        {
+                            path: "knowledge/graph-deletion-changes",
+                            element: <Navigate to="/knowledge/graph" replace />
+                        },
+                        {
+                            path: "knowledge/graph-deletion-tasks",
+                            element: <Navigate to="/knowledge/graph" replace />
+                        },
+                        {
                             path: "knowledge/graph-extraction",
                             element: <GraphExtractionPage />
                         },
