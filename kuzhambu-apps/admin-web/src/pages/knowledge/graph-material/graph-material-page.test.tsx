@@ -1,8 +1,12 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { replacePermissions } from "@/auth/permission-storage";
 import { GraphMaterialPage } from "./graph-material-page";
+
+vi.mock("@/components/kuzhambu-graph", () => ({
+    KuzhambuGraph: () => <div data-testid="knowledge-graph-material-canvas-mock" />
+}));
 
 describe("GraphMaterialPage", () => {
     afterEach(() => {
@@ -66,5 +70,25 @@ describe("GraphMaterialPage", () => {
         expect(panel.textContent).toContain("古诗源");
         expect(screen.getByText("部分素材发布失败，其余结果已保留。")).toBeInTheDocument();
         expect(screen.getByText("发布预览存在未解决冲突。")).toBeInTheDocument();
+    });
+
+    it("shows draft editing controls and published read-only result", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        render(<GraphMaterialPage />);
+        const user = userEvent.setup();
+
+        await user.click(screen.getByTestId("knowledge-graph-material-open-material-draft-button"));
+        expect(screen.getByText("素材画布：唐诗选注")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "新增对象" })).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "对象：李白" }));
+        expect(screen.getByText("素材对象详情")).toBeInTheDocument();
+
+        await user.click(screen.getByTestId("knowledge-graph-material-close-draft-canvas-button"));
+        await user.click(
+            screen.getByTestId("knowledge-graph-material-open-material-published-button")
+        );
+        expect(screen.getByText("发布结果：已成功发布")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "新增对象" })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "撤回素材" })).toBeInTheDocument();
     });
 });

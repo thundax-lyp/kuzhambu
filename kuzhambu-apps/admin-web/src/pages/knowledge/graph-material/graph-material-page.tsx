@@ -13,6 +13,8 @@ import {
 } from "@/components";
 import { graphMaterialMockData } from "./__mocks__/graph-mock-data";
 import { BatchPublicationPanel } from "./batch-publication-panel";
+import { MaterialDraftCanvas } from "./material-draft-canvas";
+import { MaterialObjectDrawer } from "./material-object-drawer";
 import type { GraphMaterialRecord, GraphMaterialStatus } from "./graph-material-types";
 
 const STATUS_LABELS: Record<GraphMaterialStatus, string> = {
@@ -42,6 +44,8 @@ export const GraphMaterialPage = () => {
     const [isMockEmpty, setIsMockEmpty] = useState(false);
     const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
     const [isBatchPanelOpen, setIsBatchPanelOpen] = useState(false);
+    const [activeMaterial, setActiveMaterial] = useState<GraphMaterialRecord | null>(null);
+    const [activeObjectId, setActiveObjectId] = useState<string | null>(null);
     const materials = graphMaterialMockData.materials as readonly GraphMaterialRecord[];
 
     if (!canViewGraph) {
@@ -89,7 +93,12 @@ export const GraphMaterialPage = () => {
                             bordered
                             dataSource={[...materials]}
                             itemKey={(material) => material.id}
-                            renderItem={(material) => <GraphMaterialListItem material={material} />}
+                            renderItem={(material) => (
+                                <GraphMaterialListItem
+                                    material={material}
+                                    onOpen={() => setActiveMaterial(material)}
+                                />
+                            )}
                         />
                     </KuzhambuCard>
                 ) : null}
@@ -120,6 +129,16 @@ export const GraphMaterialPage = () => {
                         </KuzhambuSpace>
                     </KuzhambuCard>
                 ) : null}
+                {activeMaterial ? (
+                    <MaterialDraftCanvas
+                        material={activeMaterial}
+                        onClose={() => {
+                            setActiveMaterial(null);
+                            setActiveObjectId(null);
+                        }}
+                        onOpenObject={setActiveObjectId}
+                    />
+                ) : null}
             </KuzhambuSpace>
             <BatchPublicationPanel
                 materials={selectedMaterialIds
@@ -129,15 +148,21 @@ export const GraphMaterialPage = () => {
                 onClose={() => setIsBatchPanelOpen(false)}
                 open={isBatchPanelOpen}
             />
+            <MaterialObjectDrawer
+                objectId={activeObjectId}
+                onClose={() => setActiveObjectId(null)}
+                open={activeObjectId !== null}
+            />
         </KuzhambuPage>
     );
 };
 
 interface GraphMaterialListItemProps {
     material: GraphMaterialRecord;
+    onOpen: () => void;
 }
 
-const GraphMaterialListItem = ({ material }: GraphMaterialListItemProps) => (
+const GraphMaterialListItem = ({ material, onOpen }: GraphMaterialListItemProps) => (
     <KuzhambuListItem
         extra={
             <KuzhambuSpace>
@@ -152,6 +177,13 @@ const GraphMaterialListItem = ({ material }: GraphMaterialListItemProps) => (
                         发起抽取任务
                     </KuzhambuButton>
                 ) : null}
+                <KuzhambuButton
+                    testId={`knowledge-graph-material-open-${material.id}-button`}
+                    size="small"
+                    onClick={onOpen}
+                >
+                    打开素材
+                </KuzhambuButton>
             </KuzhambuSpace>
         }
     >

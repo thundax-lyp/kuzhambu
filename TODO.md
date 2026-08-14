@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `06` `admin-web graph material draft`：实现单素材草稿画布
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-material/graph-material-page.tsx`、`graph-material-types.ts`、`graph-material-page.test.tsx`、`material-draft-canvas/`、`material-object-drawer/`（5–7 个文件）
-    - 处理动作：实现素材摘要、草稿 CRUD、抽取、导入、画布和对象详情的 Mock 交互。
-    - 验收点：`DRAFT` 显示写操作；`PUBLISHED` 仅显示发布结果和撤回；测试覆盖无权限、空态和失败态。
-    - 重要度：10/10
-
 - [ ] `07` `admin-web graph publication preview`：实现画布内发布预览
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`

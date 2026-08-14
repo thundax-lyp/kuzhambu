@@ -12,3 +12,10 @@ export interface GraphMaterialBatchPublicationResult {
     status: "PUBLISHED" | "FAILED";
     failureReason?: string;
 }
+
+export interface GraphMaterialDraftObject {
+    id: string;
+    name: string;
+    type: string;
+    sourceText: string;
+}
