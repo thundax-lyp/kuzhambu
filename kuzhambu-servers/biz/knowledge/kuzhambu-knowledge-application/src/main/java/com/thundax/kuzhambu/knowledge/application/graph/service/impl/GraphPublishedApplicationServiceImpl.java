@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -27,6 +28,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIs
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphPublishedMutationSet;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphPublishedSubgraph;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphGovernanceImpactToken;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphGovernanceOperation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphManualSource;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
@@ -41,6 +43,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphEdgeKe
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodePropertyId;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphGovernanceImpactTokenRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphGovernanceOperationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphManualSourceRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdgeMaterialRepository;
@@ -53,13 +56,16 @@ import com.thundax.kuzhambu.system.facade.SystemAuditFacade;
 import com.thundax.kuzhambu.system.facade.request.SystemAuditFacadeRequest;
 import com.thundax.kuzhambu.system.facade.response.SystemAuditFacadeResponse;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +78,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
     private static final String TARGET_EDGE = "EDGE";
     private static final String AUDIT_OBJECT_PREFIX = "KNOWLEDGE_GRAPH_";
     private static final String AUDIT_SOURCE = "KNOWLEDGE_GRAPH_GOVERNANCE";
+    private static final Duration IMPACT_TOKEN_TTL = Duration.ofMinutes(15);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final GraphPublishedNodeRepository nodeRepository;
@@ -80,6 +87,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
     private final GraphPublishedEdgePropertyRepository edgePropertyRepository;
     private final GraphPublishedNodeMaterialRepository nodeMaterialRepository;
     private final GraphPublishedEdgeMaterialRepository edgeMaterialRepository;
+    private final GraphGovernanceImpactTokenRepository impactTokenRepository;
     private final GraphGovernanceOperationRepository governanceOperationRepository;
     private final GraphManualSourceRepository manualSourceRepository;
     private final SystemAuditFacade auditFacade;
@@ -93,6 +101,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
             GraphPublishedEdgePropertyRepository edgePropertyRepository,
             GraphPublishedNodeMaterialRepository nodeMaterialRepository,
             GraphPublishedEdgeMaterialRepository edgeMaterialRepository,
+            GraphGovernanceImpactTokenRepository impactTokenRepository,
             GraphGovernanceOperationRepository governanceOperationRepository,
             GraphManualSourceRepository manualSourceRepository,
             SystemAuditFacade auditFacade,
@@ -104,6 +113,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
         this.edgePropertyRepository = edgePropertyRepository;
         this.nodeMaterialRepository = nodeMaterialRepository;
         this.edgeMaterialRepository = edgeMaterialRepository;
+        this.impactTokenRepository = impactTokenRepository;
         this.governanceOperationRepository = governanceOperationRepository;
         this.manualSourceRepository = manualSourceRepository;
         this.auditFacade = auditFacade;
@@ -212,7 +222,9 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
             List<GraphPublishedEdge> edges = edgeRepository.listByNodeIds(List.of(nodeId));
             GraphPublishedMutationSet changes =
                     new GraphPublishedSubgraph(List.of(node), edges).deleteNode(nodeId, query.cascadeEdges(), now());
-            return toImpact(changes, nodeMaterials(List.of(nodeId)), edgeMaterials(edges), List.of(), true);
+            return withImpactToken(
+                    "NODE_DELETE",
+                    toImpact(changes, nodeMaterials(List.of(nodeId)), edgeMaterials(edges), List.of(), true));
         } catch (RuntimeException ex) {
             return failedImpact(ex);
         }
@@ -227,6 +239,10 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
         List<GraphPublishedEdge> edges = edgeRepository.listByNodeIds(List.of(command.nodeId()));
         GraphPublishedMutationSet changes = new GraphPublishedSubgraph(List.of(node), edges)
                 .deleteNode(command.nodeId(), command.cascadeEdges(), now());
+        validateImpactToken(
+                command.impactToken(),
+                "NODE_DELETE",
+                toImpact(changes, nodeMaterials(List.of(command.nodeId())), edgeMaterials(edges), List.of(), true));
         updateEdgesCas(changes.updatedEdges());
         updateNodesCas(changes.updatedNodes(), Map.of(command.nodeId(), command.nodeLockVersion()));
         recordGovernanceOperation(
@@ -236,6 +252,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
                 command.reason(),
                 beforeSnapshot,
                 nodeSnapshot(node, nodePropertyRepository.listByPublishedNodeId(node.getId())));
+        impactTokenRepository.updateConsumedAtIfAvailable(command.impactToken(), now());
     }
 
     @Override
@@ -300,7 +317,8 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
             GraphPublishedEdge edge = requireEdge(query == null ? null : query.edgeId());
             GraphPublishedMutationSet changes =
                     new GraphPublishedSubgraph(List.of(), List.of(edge)).deleteEdge(edge.getId(), now());
-            return toImpact(changes, List.of(), edgeMaterials(List.of(edge)), List.of(), true);
+            return withImpactToken(
+                    "EDGE_DELETE", toImpact(changes, List.of(), edgeMaterials(List.of(edge)), List.of(), true));
         } catch (RuntimeException ex) {
             return failedImpact(ex);
         }
@@ -314,6 +332,10 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
         String beforeSnapshot = edgeSnapshot(edge, edgePropertyRepository.listByPublishedEdgeId(edge.getId()));
         GraphPublishedMutationSet changes =
                 new GraphPublishedSubgraph(List.of(), List.of(edge)).deleteEdge(command.edgeId(), now());
+        validateImpactToken(
+                command.impactToken(),
+                "EDGE_DELETE",
+                toImpact(changes, List.of(), edgeMaterials(List.of(edge)), List.of(), true));
         updateEdgesCas(changes.updatedEdges(), Map.of(command.edgeId(), command.edgeLockVersion()));
         recordGovernanceOperation(
                 "DELETE",
@@ -322,14 +344,21 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
                 command.reason(),
                 beforeSnapshot,
                 edgeSnapshot(edge, edgePropertyRepository.listByPublishedEdgeId(edge.getId())));
+        impactTokenRepository.updateConsumedAtIfAvailable(command.impactToken(), now());
     }
 
     @Override
     public GraphGovernanceImpactResult previewNodeMerge(GraphPublishedNodeMergeQuery query) {
         try {
             GraphPublishedMutationSet changes = planMerge(query.retainedNodeId(), query.mergedNodeIds(), false);
-            return toImpact(
-                    changes, mergeNodeMaterials(query), mergeEdgeMaterials(changes.updatedEdges()), List.of(), true);
+            return withImpactToken(
+                    "NODE_MERGE",
+                    toImpact(
+                            changes,
+                            mergeNodeMaterialSnapshot(query.retainedNodeId(), query.mergedNodeIds()),
+                            mergeEdgeMaterials(changes.updatedEdges()),
+                            List.of(),
+                            true));
         } catch (RuntimeException ex) {
             return failedImpact(ex);
         }
@@ -342,13 +371,23 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
         retainedNode.requireLockVersion(command.retainedNodeLockVersion());
         String beforeSnapshot =
                 nodeSnapshot(retainedNode, nodePropertyRepository.listByPublishedNodeId(retainedNode.getId()));
+        GraphPublishedMutationSet previewChanges = planMerge(command.retainedNodeId(), command.mergedNodeIds(), false);
+        validateImpactToken(
+                command.impactToken(),
+                "NODE_MERGE",
+                toImpact(
+                        previewChanges,
+                        mergeNodeMaterialSnapshot(command.retainedNodeId(), command.mergedNodeIds()),
+                        mergeEdgeMaterials(previewChanges.updatedEdges()),
+                        List.of(),
+                        true));
         mergeNodeProperties(command.retainedNodeId(), command.mergedNodeIds());
         mergeNodeMaterials(command.retainedNodeId(), command.mergedNodeIds());
-        GraphPublishedMutationSet changes = planMerge(command.retainedNodeId(), command.mergedNodeIds(), true);
+        previewChanges.updatedEdges().forEach(this::refreshEdgeKey);
         Map<GraphPublishedNodeId, Long> expectedNodeVersions = new LinkedHashMap<>();
         expectedNodeVersions.put(command.retainedNodeId(), command.retainedNodeLockVersion());
-        updateEdgesCas(deduplicateEdges(changes.updatedEdges()));
-        updateNodesCas(changes.updatedNodes(), expectedNodeVersions);
+        updateEdgesCas(deduplicateEdges(previewChanges.updatedEdges()));
+        updateNodesCas(previewChanges.updatedNodes(), expectedNodeVersions);
         recordGovernanceOperation(
                 "MERGE",
                 TARGET_NODE,
@@ -356,6 +395,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
                 command.reason(),
                 beforeSnapshot,
                 nodeSnapshot(retainedNode, nodePropertyRepository.listByPublishedNodeId(retainedNode.getId())));
+        impactTokenRepository.updateConsumedAtIfAvailable(command.impactToken(), now());
         return getNodeDetail(command.retainedNodeId());
     }
 
@@ -364,8 +404,16 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
         GraphPublishedNodeId nodeId = query == null ? null : query.sourceNodeId();
         GraphPublishedNode node = requireNode(nodeId);
         List<GraphPublishedEdge> edges = edgeRepository.listByNodeIds(List.of(nodeId));
-        return new GraphGovernanceImpactResult(
-                List.of(node), edges, nodeMaterials(List.of(nodeId)), edgeMaterials(edges), List.of(), true);
+        return withImpactToken(
+                "NODE_SPLIT",
+                new GraphGovernanceImpactResult(
+                        null,
+                        List.of(node),
+                        edges,
+                        nodeMaterials(List.of(nodeId)),
+                        edgeMaterials(edges),
+                        List.of(),
+                        true));
     }
 
     @Override
@@ -375,6 +423,18 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
         sourceNode.requireLockVersion(command.sourceNodeLockVersion());
         String beforeSnapshot =
                 nodeSnapshot(sourceNode, nodePropertyRepository.listByPublishedNodeId(sourceNode.getId()));
+        List<GraphPublishedEdge> previewEdges = edgeRepository.listByNodeIds(List.of(command.sourceNodeId()));
+        validateImpactToken(
+                command.impactToken(),
+                "NODE_SPLIT",
+                new GraphGovernanceImpactResult(
+                        null,
+                        List.of(sourceNode),
+                        previewEdges,
+                        nodeMaterials(List.of(command.sourceNodeId())),
+                        edgeMaterials(previewEdges),
+                        List.of(),
+                        true));
         validateSplitCoverage(command, sourceNode);
         GraphPublishedNode splitNode = command.splitNode();
         if (splitNode == null || splitNode.getId() != null) {
@@ -402,6 +462,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
                 command.reason(),
                 beforeSnapshot,
                 nodeSnapshot(splitNode, nodePropertyRepository.listByPublishedNodeId(splitNode.getId())));
+        impactTokenRepository.updateConsumedAtIfAvailable(command.impactToken(), now());
         return getNodeDetail(splitNode.getId());
     }
 
@@ -608,11 +669,12 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
         nodes.addAll(changes.createdNodes());
         nodes.addAll(changes.updatedNodes());
         return new GraphGovernanceImpactResult(
-                nodes, changes.updatedEdges(), nodeMaterials, edgeMaterials, issues, executable);
+                null, nodes, changes.updatedEdges(), nodeMaterials, edgeMaterials, issues, executable);
     }
 
     private GraphGovernanceImpactResult failedImpact(RuntimeException ex) {
         return new GraphGovernanceImpactResult(
+                null,
                 List.of(),
                 List.of(),
                 List.of(),
@@ -622,10 +684,122 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
                 false);
     }
 
-    private List<GraphPublishedNodeMaterial> mergeNodeMaterials(GraphPublishedNodeMergeQuery query) {
+    private GraphGovernanceImpactResult withImpactToken(String operationType, GraphGovernanceImpactResult impact) {
+        if (!impact.executable()) {
+            return impact;
+        }
+        String token = UUID.randomUUID().toString().replace("-", "");
+        impactTokenRepository.insert(new GraphGovernanceImpactToken(
+                token, operationType, impactSnapshotJson(impact), now().plus(IMPACT_TOKEN_TTL), null));
+        return new GraphGovernanceImpactResult(
+                token,
+                impact.nodes(),
+                impact.edges(),
+                impact.nodeMaterials(),
+                impact.edgeMaterials(),
+                impact.issues(),
+                impact.executable());
+    }
+
+    private void validateImpactToken(
+            String tokenValue, String operationType, GraphGovernanceImpactResult currentImpact) {
+        GraphGovernanceImpactToken token = impactTokenRepository.getByToken(tokenValue);
+        if (token == null || !operationType.equals(token.getOperationType()) || !token.consumableAt(now())) {
+            throw GraphGovernanceImpactToken.stale();
+        }
+        try {
+            JsonNode expected = OBJECT_MAPPER.readTree(token.getSnapshotJson());
+            JsonNode actual = OBJECT_MAPPER.readTree(impactSnapshotJson(currentImpact));
+            if (!expected.equals(actual)) {
+                throw GraphGovernanceImpactToken.stale();
+            }
+        } catch (JsonProcessingException exception) {
+            throw GraphGovernanceImpactToken.stale();
+        }
+    }
+
+    private String impactSnapshotJson(GraphGovernanceImpactResult impact) {
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put(
+                "nodes",
+                impact.nodes().stream()
+                        .sorted(Comparator.comparing(node -> node.getId().value()))
+                        .map(this::impactNodeSnapshot)
+                        .toList());
+        snapshot.put(
+                "edges",
+                impact.edges().stream()
+                        .sorted(Comparator.comparing(edge -> edge.getId().value()))
+                        .map(this::impactEdgeSnapshot)
+                        .toList());
+        snapshot.put(
+                "nodeMaterials",
+                impact.nodeMaterials().stream()
+                        .sorted(Comparator.comparing((GraphPublishedNodeMaterial material) ->
+                                        material.getPublishedNodeId().value())
+                                .thenComparing(
+                                        material -> material.getMaterialRef().getContentType())
+                                .thenComparing(
+                                        material -> material.getMaterialRef().getContentId()))
+                        .map(this::impactNodeMaterialSnapshot)
+                        .toList());
+        snapshot.put(
+                "edgeMaterials",
+                impact.edgeMaterials().stream()
+                        .sorted(Comparator.comparing((GraphPublishedEdgeMaterial material) ->
+                                        material.getPublishedEdgeId().value())
+                                .thenComparing(
+                                        material -> material.getMaterialRef().getContentType())
+                                .thenComparing(
+                                        material -> material.getMaterialRef().getContentId()))
+                        .map(this::impactEdgeMaterialSnapshot)
+                        .toList());
+        return toJson(snapshot);
+    }
+
+    private Map<String, Object> impactNodeSnapshot(GraphPublishedNode node) {
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put("id", node.getId().value());
+        snapshot.put("lockVersion", node.getLockVersion());
+        snapshot.put(
+                "status", node.getStatus() == null ? null : node.getStatus().name());
+        return snapshot;
+    }
+
+    private Map<String, Object> impactEdgeSnapshot(GraphPublishedEdge edge) {
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put("id", edge.getId().value());
+        snapshot.put("lockVersion", edge.getLockVersion());
+        snapshot.put("sourceNodeId", edge.getSourceNodeId().value());
+        snapshot.put("targetNodeId", edge.getTargetNodeId().value());
+        snapshot.put(
+                "status", edge.getStatus() == null ? null : edge.getStatus().name());
+        return snapshot;
+    }
+
+    private Map<String, Object> impactNodeMaterialSnapshot(GraphPublishedNodeMaterial material) {
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put("publishedNodeId", material.getPublishedNodeId().value());
+        snapshot.put("contentType", material.getMaterialRef().getContentType());
+        snapshot.put("contentRefId", material.getMaterialRef().getContentId());
+        snapshot.put("sourceSnapshotJson", material.getSourceSnapshotJson());
+        return snapshot;
+    }
+
+    private Map<String, Object> impactEdgeMaterialSnapshot(GraphPublishedEdgeMaterial material) {
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put("publishedEdgeId", material.getPublishedEdgeId().value());
+        snapshot.put("contentType", material.getMaterialRef().getContentType());
+        snapshot.put("contentRefId", material.getMaterialRef().getContentId());
+        snapshot.put("sourceSnapshotJson", material.getSourceSnapshotJson());
+        return snapshot;
+    }
+
+    private List<GraphPublishedNodeMaterial> mergeNodeMaterialSnapshot(
+            GraphPublishedNodeId retainedNodeId, List<GraphPublishedNodeId> mergedNodeIds) {
         List<GraphPublishedNodeMaterial> result = new ArrayList<>();
-        result.addAll(nodeMaterialRepository.listByPublishedNodeId(query.retainedNodeId()));
-        for (GraphPublishedNodeId nodeId : safeNodeIds(query.mergedNodeIds())) {
+        result.addAll(nodeMaterialRepository.listByPublishedNodeId(retainedNodeId));
+        for (GraphPublishedNodeId nodeId : safeNodeIds(mergedNodeIds)) {
             result.addAll(nodeMaterialRepository.listByPublishedNodeId(nodeId));
         }
         return result;

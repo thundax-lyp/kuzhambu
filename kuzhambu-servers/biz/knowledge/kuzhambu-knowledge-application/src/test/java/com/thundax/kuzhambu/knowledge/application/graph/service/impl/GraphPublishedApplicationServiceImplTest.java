@@ -1,14 +1,18 @@
 package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedEdgeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeDeleteCommand;
@@ -16,6 +20,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeSplitCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphGovernanceImpactToken;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphGovernanceOperation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphManualSource;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
@@ -28,6 +33,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodePropertyId;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphGovernanceImpactTokenRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphGovernanceOperationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphManualSourceRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdgeMaterialRepository;
@@ -89,12 +95,44 @@ class GraphPublishedApplicationServiceImplTest {
         GraphPublishedNode node = node(nodeId, "待删节点");
         when(fixture.nodeRepository.getById(nodeId)).thenReturn(node);
         when(fixture.nodeRepository.updateIfLockVersion(node, 1L)).thenReturn(1);
+        fixture.validImpactToken(
+                "delete-token",
+                "NODE_DELETE",
+                "{\"nodes\":[{\"id\":31,\"lockVersion\":1,\"status\":\"DELETED\"}],"
+                        + "\"edges\":[],\"nodeMaterials\":[],\"edgeMaterials\":[]}");
 
-        fixture.service.deleteNode(new GraphPublishedNodeDeleteCommand(nodeId, true, 1L, "删除重复节点"));
+        fixture.service.deleteNode(new GraphPublishedNodeDeleteCommand(nodeId, true, 1L, "delete-token", "删除重复节点"));
 
         verify(fixture.governanceOperationRepository)
                 .insert(argThat(operation ->
                         operationMatches(operation, "DELETE", "NODE", nodeId.value(), "删除重复节点", "ACTIVE", "DELETED")));
+    }
+
+    @Test
+    void deleteNodeShouldRejectStaleImpactTokenWhenNewIncidentEdgeAppears() {
+        Fixture fixture = new Fixture();
+        GraphPublishedNodeId nodeId = new GraphPublishedNodeId(51L);
+        GraphPublishedNodeId targetNodeId = new GraphPublishedNodeId(52L);
+        GraphPublishedNode node = node(nodeId, "待删节点");
+        GraphPublishedEdge newIncidentEdge =
+                edge(new GraphPublishedEdgeId(5101L), nodeId, targetNodeId, "RELATED_TO", 1L);
+        when(fixture.nodeRepository.getById(nodeId)).thenReturn(node);
+        when(fixture.edgeRepository.listByNodeIds(List.of(nodeId))).thenReturn(List.of(newIncidentEdge));
+        fixture.validImpactToken(
+                "stale-delete-token",
+                "NODE_DELETE",
+                "{\"nodes\":[{\"id\":51,\"lockVersion\":1,\"status\":\"DELETED\"}],"
+                        + "\"edges\":[],\"nodeMaterials\":[],\"edgeMaterials\":[]}");
+
+        assertThatThrownBy(() -> fixture.service.deleteNode(
+                        new GraphPublishedNodeDeleteCommand(nodeId, true, 1L, "stale-delete-token", "删除重复节点")))
+                .isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", GraphGovernanceImpactToken.STALE_CODE);
+
+        verify(fixture.nodeRepository, never()).updateIfLockVersion(any(), anyLong());
+        verify(fixture.edgeRepository, never()).updateIfLockVersion(any(), anyLong());
+        verify(fixture.governanceOperationRepository, never()).insert(any());
+        verify(fixture.impactTokenRepository, never()).updateConsumedAtIfAvailable(eq("stale-delete-token"), any());
     }
 
     @Test
@@ -111,9 +149,18 @@ class GraphPublishedApplicationServiceImplTest {
         when(fixture.nodeMaterialRepository.listByPublishedNodeId(mergedNodeId))
                 .thenReturn(List.of(new GraphPublishedNodeMaterial(
                         mergedNodeId, new ContentRef("SANCAI_ENTRY", 1001L), "{\"title\":\"原文\"}")));
+        fixture.validImpactToken(
+                "merge-token",
+                "NODE_MERGE",
+                "{\"nodes\":[{\"id\":1,\"lockVersion\":1,\"status\":\"ACTIVE\"},"
+                        + "{\"id\":2,\"lockVersion\":1,\"status\":\"DELETED\"}],"
+                        + "\"edges\":[],"
+                        + "\"nodeMaterials\":[{\"publishedNodeId\":2,\"contentType\":\"SANCAI_ENTRY\","
+                        + "\"contentRefId\":1001,\"sourceSnapshotJson\":\"{\\\"title\\\":\\\"原文\\\"}\"}],"
+                        + "\"edgeMaterials\":[]}");
 
         fixture.service.mergeNodes(
-                new GraphPublishedNodeMergeCommand(retainedNodeId, List.of(mergedNodeId), 1L, "合并同名节点"));
+                new GraphPublishedNodeMergeCommand(retainedNodeId, List.of(mergedNodeId), 1L, "merge-token", "合并同名节点"));
 
         verify(fixture.nodeMaterialRepository)
                 .insert(argThat(mapping -> retainedNodeId.equals(mapping.getPublishedNodeId())
@@ -141,6 +188,11 @@ class GraphPublishedApplicationServiceImplTest {
         when(fixture.nodePropertyRepository.listByPublishedNodeId(sourceNodeId)).thenReturn(List.of(sourceProperty));
         when(fixture.nodePropertyRepository.getById(sourceProperty.getId())).thenReturn(sourceProperty);
         when(fixture.nodePropertyRepository.listByPublishedNodeId(splitNodeId)).thenReturn(List.of(sourceProperty));
+        fixture.validImpactToken(
+                "split-token",
+                "NODE_SPLIT",
+                "{\"nodes\":[{\"id\":41,\"lockVersion\":1,\"status\":\"ACTIVE\"}],"
+                        + "\"edges\":[],\"nodeMaterials\":[],\"edgeMaterials\":[]}");
 
         GraphPublishedNodeDetailResult result = fixture.service.splitNode(new GraphPublishedNodeSplitCommand(
                 sourceNodeId,
@@ -152,6 +204,7 @@ class GraphPublishedApplicationServiceImplTest {
                 List.of(),
                 List.of(),
                 1L,
+                "split-token",
                 "拆分复合节点"));
 
         assertThat(result.node()).isSameAs(splitNode);
@@ -238,6 +291,8 @@ class GraphPublishedApplicationServiceImplTest {
                 mock(GraphPublishedNodeMaterialRepository.class);
         private final GraphPublishedEdgeMaterialRepository edgeMaterialRepository =
                 mock(GraphPublishedEdgeMaterialRepository.class);
+        private final GraphGovernanceImpactTokenRepository impactTokenRepository =
+                mock(GraphGovernanceImpactTokenRepository.class);
         private final GraphGovernanceOperationRepository governanceOperationRepository =
                 mock(GraphGovernanceOperationRepository.class);
         private final GraphManualSourceRepository manualSourceRepository = mock(GraphManualSourceRepository.class);
@@ -249,6 +304,9 @@ class GraphPublishedApplicationServiceImplTest {
             when(auditFacade.record(any())).thenReturn(9001L);
             when(schemaResolver.directed(any())).thenReturn(true);
             when(schemaResolver.keyQualifiers(any(), any())).thenReturn(java.util.Map.of());
+            when(edgeRepository.listByNodeIds(any())).thenReturn(List.of());
+            when(nodeMaterialRepository.listByPublishedNodeId(any())).thenReturn(List.of());
+            when(edgeMaterialRepository.listByPublishedEdgeId(any())).thenReturn(List.of());
             service = new GraphPublishedApplicationServiceImpl(
                     nodeRepository,
                     edgeRepository,
@@ -256,11 +314,25 @@ class GraphPublishedApplicationServiceImplTest {
                     edgePropertyRepository,
                     nodeMaterialRepository,
                     edgeMaterialRepository,
+                    impactTokenRepository,
                     governanceOperationRepository,
                     manualSourceRepository,
                     auditFacade,
                     schemaResolver,
                     Clock.fixed(Instant.parse("2026-08-14T00:00:00Z"), ZoneOffset.UTC));
+        }
+
+        private void validImpactToken(String token, String operationType, String snapshotJson) {
+            when(impactTokenRepository.getByToken(token))
+                    .thenReturn(new GraphGovernanceImpactToken(
+                            token, operationType, snapshotJson, Instant.parse("2026-08-14T00:15:00Z"), null));
+            when(impactTokenRepository.updateConsumedAtIfAvailable(eq(token), any()))
+                    .thenReturn(new GraphGovernanceImpactToken(
+                            token,
+                            operationType,
+                            snapshotJson,
+                            Instant.parse("2026-08-14T00:15:00Z"),
+                            Instant.parse("2026-08-14T00:01:00Z")));
         }
     }
 }

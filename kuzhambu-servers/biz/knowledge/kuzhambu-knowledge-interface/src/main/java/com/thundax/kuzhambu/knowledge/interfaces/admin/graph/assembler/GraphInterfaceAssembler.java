@@ -691,7 +691,7 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphGovernanceImpactResult value) {
         Objects.requireNonNull(value, "value");
         return new GraphPublishedResponses.GovernanceImpactData(
-                null,
+                value.impactToken(),
                 value.nodes().stream().map(GraphInterfaceAssembler::toNodeData).toList(),
                 value.edges().stream().map(GraphInterfaceAssembler::toEdgeData).toList(),
                 value.nodeMaterials().stream()
@@ -753,6 +753,7 @@ public final class GraphInterfaceAssembler {
                 toNodeId(request.getNodeId()),
                 request.getCascadeEdges(),
                 Long.parseLong(request.getLockVersion()),
+                request.getImpactToken(),
                 request.getReason());
     }
 
@@ -768,7 +769,10 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphPublishedRequests.PublishedEdgeDeleteRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphPublishedEdgeDeleteCommand(
-                toEdgeId(request.getEdgeId()), Long.parseLong(request.getLockVersion()), request.getReason());
+                toEdgeId(request.getEdgeId()),
+                Long.parseLong(request.getLockVersion()),
+                request.getImpactToken(),
+                request.getReason());
     }
 
     @NonNull
@@ -792,6 +796,7 @@ public final class GraphInterfaceAssembler {
                         .map(GraphInterfaceAssembler::toNodeId)
                         .toList(),
                 Long.parseLong(request.getRetainedNodeLockVersion()),
+                request.getImpactToken(),
                 request.getReason());
     }
 
@@ -828,6 +833,7 @@ public final class GraphInterfaceAssembler {
                                 .map(GraphInterfaceAssembler::toContentRef)
                                 .toList(),
                 Long.parseLong(request.getSourceNodeLockVersion()),
+                request.getImpactToken(),
                 request.getReason());
     }
 

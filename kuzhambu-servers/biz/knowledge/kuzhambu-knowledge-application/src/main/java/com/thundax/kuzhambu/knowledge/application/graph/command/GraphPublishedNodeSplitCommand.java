@@ -18,4 +18,5 @@ public record GraphPublishedNodeSplitCommand(
         List<ContentRef> movedMaterialRefs,
         List<ContentRef> copiedMaterialRefs,
         long sourceNodeLockVersion,
+        String impactToken,
         String reason) {}

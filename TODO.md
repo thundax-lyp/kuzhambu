@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `21 graph 治理确认令牌校验`：拒绝预览后变化的删除、合并和拆分
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：四个 GraphPublished * Delete/Merge/Split command、`GraphPublishedApplicationServiceImpl.java`、`GraphGovernanceImpactResult.java`、service test（7 个文件）
-    - 处理动作：为四个确认 command 加入 `impactToken`，确认前逐项比对 token 快照。
-    - 验收点：节点级联删除只删 preview 中的边；预览后新增 incident edge 时返回 `GRAPH_PREVIEW_STALE` 且不写数据；合并和拆分映射完整性受测试覆盖；提交并验证后按 RUNBOOK 回复并 resolve PR #248 的 impact-token thread。
-    - 重要度：10/10
-
 - [ ] `22 graph 工作台活动读模型`：补齐近期活动与待处理冲突统计
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`

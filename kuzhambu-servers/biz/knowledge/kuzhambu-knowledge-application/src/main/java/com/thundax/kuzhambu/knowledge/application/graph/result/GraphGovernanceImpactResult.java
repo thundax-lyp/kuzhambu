@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNo
 import java.util.List;
 
 public record GraphGovernanceImpactResult(
+        String impactToken,
         List<GraphPublishedNode> nodes,
         List<GraphPublishedEdge> edges,
         List<GraphPublishedNodeMaterial> nodeMaterials,

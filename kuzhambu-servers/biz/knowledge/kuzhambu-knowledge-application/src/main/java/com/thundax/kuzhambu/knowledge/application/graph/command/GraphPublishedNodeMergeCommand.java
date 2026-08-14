@@ -7,4 +7,5 @@ public record GraphPublishedNodeMergeCommand(
         GraphPublishedNodeId retainedNodeId,
         List<GraphPublishedNodeId> mergedNodeIds,
         long retainedNodeLockVersion,
+        String impactToken,
         String reason) {}
