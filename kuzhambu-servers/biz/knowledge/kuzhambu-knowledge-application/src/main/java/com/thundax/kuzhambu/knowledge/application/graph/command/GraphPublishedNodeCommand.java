@@ -4,4 +4,5 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNodeProperty;
 import java.util.List;
 
-public record GraphPublishedNodeCommand(GraphPublishedNode node, List<GraphPublishedNodeProperty> properties) {}
+public record GraphPublishedNodeCommand(
+        GraphPublishedNode node, List<GraphPublishedNodeProperty> properties, String reason) {}

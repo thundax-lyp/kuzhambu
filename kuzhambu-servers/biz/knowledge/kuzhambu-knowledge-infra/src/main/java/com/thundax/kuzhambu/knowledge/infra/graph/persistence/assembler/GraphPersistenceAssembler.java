@@ -3,6 +3,10 @@ package com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler;
 import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphEdgeKeyCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphGovernanceOperationIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphManualSourceIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialDeletionChangeIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialDeletionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialEdgeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialEventIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialNodeIdCodec;
@@ -12,7 +16,11 @@ import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedEdgeIdCod
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedEdgePropertyIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodePropertyIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphGovernanceOperation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphManualSource;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialDeletionChange;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialDeletionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEvent;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNode;
@@ -23,13 +31,19 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEd
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNodeMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNodeProperty;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionDecision;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialEventStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialEventType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphGovernanceOperationDO;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphManualSourceDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialDO;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialDeletionChangeDO;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialDeletionTaskDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialEdgeDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialEventDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialNodeDO;
@@ -45,6 +59,64 @@ public final class GraphPersistenceAssembler {
 
     private GraphPersistenceAssembler() {}
 
+    public static GraphGovernanceOperationDO toObject(GraphGovernanceOperation entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new GraphGovernanceOperationDO(
+                GraphGovernanceOperationIdCodec.toValue(entity.getId()),
+                entity.getOperationType(),
+                entity.getTargetType(),
+                entity.getTargetId(),
+                entity.getBeforeSnapshotJson(),
+                entity.getAfterSnapshotJson(),
+                entity.getReason(),
+                entity.getAuditLogId(),
+                entity.getOperatedAt());
+    }
+
+    public static GraphGovernanceOperation toDomain(GraphGovernanceOperationDO dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        return new GraphGovernanceOperation(
+                GraphGovernanceOperationIdCodec.toDomain(dataObject.getId()),
+                dataObject.getOperationType(),
+                dataObject.getTargetType(),
+                dataObject.getTargetId(),
+                dataObject.getBeforeSnapshotJson(),
+                dataObject.getAfterSnapshotJson(),
+                dataObject.getReason(),
+                dataObject.getAuditLogId(),
+                dataObject.getOperatedAt());
+    }
+
+    public static GraphManualSourceDO toObject(GraphManualSource entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new GraphManualSourceDO(
+                GraphManualSourceIdCodec.toValue(entity.getId()),
+                entity.getTargetType(),
+                entity.getTargetId(),
+                entity.getReason(),
+                entity.getAuditLogId(),
+                entity.getRecordedAt());
+    }
+
+    public static GraphManualSource toDomain(GraphManualSourceDO dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        return new GraphManualSource(
+                GraphManualSourceIdCodec.toDomain(dataObject.getId()),
+                dataObject.getTargetType(),
+                dataObject.getTargetId(),
+                dataObject.getReason(),
+                dataObject.getAuditLogId(),
+                dataObject.getRecordedAt());
+    }
+
     public static GraphMaterialDO toObject(GraphMaterial entity) {
         if (entity == null) {
             return null;
@@ -56,6 +128,8 @@ public final class GraphPersistenceAssembler {
                 entity.getContentTitleSnapshot(),
                 entity.getStatus() == null ? null : entity.getStatus().value(),
                 entity.getPublishedAt(),
+                entity.getFailureReason(),
+                entity.getFailedOperation(),
                 entity.getLockVersion());
     }
 
@@ -68,6 +142,8 @@ public final class GraphPersistenceAssembler {
                 dataObject.getContentTitleSnapshot(),
                 GraphMaterialStatus.from(dataObject.getStatus()),
                 dataObject.getPublishedAt(),
+                dataObject.getFailureReason(),
+                dataObject.getFailedOperation(),
                 dataObject.getLockVersion());
     }
 
@@ -180,6 +256,75 @@ public final class GraphPersistenceAssembler {
                 GraphMaterialEventStatus.from(dataObject.getStatus()),
                 dataObject.getChangedAt(),
                 dataObject.getLockVersion());
+    }
+
+    public static GraphMaterialDeletionChangeDO toObject(GraphMaterialDeletionChange entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new GraphMaterialDeletionChangeDO(
+                GraphMaterialDeletionChangeIdCodec.toValue(entity.getId()),
+                entity.getMaterialId(),
+                ContentRefCodec.toContentType(entity.getMaterialRef()),
+                ContentRefCodec.toValue(entity.getMaterialRef()),
+                entity.getMaterialSnapshotJson(),
+                entity.getDecision() == null ? null : entity.getDecision().value(),
+                entity.getStatus() == null ? null : entity.getStatus().value(),
+                entity.getLockVersion(),
+                entity.getResultSummaryJson(),
+                entity.getRequestedAt(),
+                entity.getCompletedAt());
+    }
+
+    public static GraphMaterialDeletionChange toDomain(GraphMaterialDeletionChangeDO dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        return new GraphMaterialDeletionChange(
+                GraphMaterialDeletionChangeIdCodec.toDomain(dataObject.getId()),
+                dataObject.getMaterialId(),
+                ContentRefCodec.toDomain(dataObject.getContentType(), dataObject.getContentRefId()),
+                dataObject.getMaterialSnapshotJson(),
+                GraphMaterialDeletionDecision.from(dataObject.getDecision()),
+                GraphMaterialDeletionStatus.from(dataObject.getStatus()),
+                dataObject.getLockVersion(),
+                dataObject.getResultSummaryJson(),
+                dataObject.getRequestedAt(),
+                dataObject.getCompletedAt());
+    }
+
+    public static GraphMaterialDeletionTaskDO toObject(GraphMaterialDeletionTask entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new GraphMaterialDeletionTaskDO(
+                GraphMaterialDeletionTaskIdCodec.toValue(entity.getId()),
+                GraphMaterialDeletionChangeIdCodec.toValue(entity.getDeletionChangeId()),
+                entity.getIdempotencyKey(),
+                entity.getStatus() == null ? null : entity.getStatus().value(),
+                entity.getLockVersion(),
+                entity.getProgress(),
+                entity.getFailureReason(),
+                entity.getResultSummaryJson(),
+                entity.getRequestedAt(),
+                entity.getCompletedAt());
+    }
+
+    public static GraphMaterialDeletionTask toDomain(GraphMaterialDeletionTaskDO dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        return new GraphMaterialDeletionTask(
+                GraphMaterialDeletionTaskIdCodec.toDomain(dataObject.getId()),
+                GraphMaterialDeletionChangeIdCodec.toDomain(dataObject.getDeletionChangeId()),
+                dataObject.getIdempotencyKey(),
+                GraphMaterialDeletionStatus.from(dataObject.getStatus()),
+                dataObject.getLockVersion(),
+                dataObject.getProgress() == null ? 0 : dataObject.getProgress(),
+                dataObject.getFailureReason(),
+                dataObject.getResultSummaryJson(),
+                dataObject.getRequestedAt(),
+                dataObject.getCompletedAt());
     }
 
     public static GraphPublishedNodeDO toObject(GraphPublishedNode entity) {

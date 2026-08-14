@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphEdgePublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphIncidentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphNodePublicationPreviewResult;
@@ -47,9 +48,10 @@ public final class GraphApplicationAssembler {
             GraphPublishedNode node,
             List<GraphPublishedNodeProperty> properties,
             List<GraphPublishedNodeMaterial> materials,
-            List<GraphPublishedEdge> incidentEdges) {
+            List<GraphPublishedEdge> incidentEdges,
+            List<GraphGovernanceOperationResult> operations) {
         return new GraphPublishedNodeDetailResult(
-                node, safeList(properties), safeList(materials), safeList(incidentEdges));
+                node, safeList(properties), safeList(materials), safeList(incidentEdges), safeList(operations));
     }
 
     public static GraphPublishedEdgeDetailResult toEdgeDetail(
@@ -57,9 +59,10 @@ public final class GraphApplicationAssembler {
             GraphPublishedNode sourceNode,
             GraphPublishedNode targetNode,
             List<GraphPublishedEdgeProperty> properties,
-            List<GraphPublishedEdgeMaterial> materials) {
+            List<GraphPublishedEdgeMaterial> materials,
+            List<GraphGovernanceOperationResult> operations) {
         return new GraphPublishedEdgeDetailResult(
-                edge, sourceNode, targetNode, safeList(properties), safeList(materials));
+                edge, sourceNode, targetNode, safeList(properties), safeList(materials), safeList(operations));
     }
 
     public static GraphPublicationPreviewResult toPublicationPreview(GraphPublication publication) {
@@ -74,6 +77,7 @@ public final class GraphApplicationAssembler {
         Map<GraphMaterialEdgeId, GraphPublishedEdge> matchedEdges =
                 safeMap(publication.context().matchedEdgesByMaterialEdgeId());
         return new GraphPublicationPreviewResult(
+                null,
                 graph.material().getContentRef(),
                 graph.material().getLockVersion(),
                 graph.nodes().stream()

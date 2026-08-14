@@ -73,6 +73,8 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material` (
     `content_title_snapshot` varchar(255) NOT NULL,
     `status` varchar(32) NOT NULL,
     `published_at` BIGINT DEFAULT NULL,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `failed_operation` varchar(16) DEFAULT NULL,
     `current_extraction_task_id` bigint DEFAULT NULL,
     `lock_version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
@@ -279,9 +281,11 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_manual_source` (
     `target_type` varchar(32) NOT NULL,
     `target_id` bigint NOT NULL,
     `reason` varchar(1024) NOT NULL,
+    `audit_log_id` bigint NOT NULL,
     `recorded_at` BIGINT NOT NULL,
     PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_manual_source_target` (`target_type`, `target_id`)
+    KEY `idx_knowledge_graph_manual_source_target` (`target_type`, `target_id`),
+    KEY `idx_knowledge_graph_manual_source_audit` (`audit_log_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间人工来源';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_publish_record` (
@@ -296,6 +300,27 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_publish_record` (
     PRIMARY KEY (`id`),
     KEY `idx_knowledge_graph_publish_record_material_status` (`material_id`, `status`, `requested_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材整体发布记录';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_publication_preview_token` (
+    `token` varchar(64) NOT NULL,
+    `material_id` bigint NOT NULL,
+    `material_lock_version` bigint NOT NULL,
+    `snapshot_json` json NOT NULL,
+    `expires_at` BIGINT NOT NULL,
+    `consumed_at` BIGINT DEFAULT NULL,
+    PRIMARY KEY (`token`),
+    KEY `idx_knowledge_graph_publication_preview_material_expiry` (`material_id`, `expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱发布预览令牌';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_governance_impact_token` (
+    `token` varchar(64) NOT NULL,
+    `operation_type` varchar(32) NOT NULL,
+    `snapshot_json` json NOT NULL,
+    `expires_at` BIGINT NOT NULL,
+    `consumed_at` BIGINT DEFAULT NULL,
+    PRIMARY KEY (`token`),
+    KEY `idx_knowledge_graph_governance_impact_expiry` (`operation_type`, `expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱治理影响预览令牌';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_node_mapping` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -335,10 +360,12 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_governance_operation` (
     `before_snapshot_json` json DEFAULT NULL,
     `after_snapshot_json` json DEFAULT NULL,
     `reason` varchar(1024) NOT NULL,
+    `audit_log_id` bigint NOT NULL,
     `operated_at` BIGINT NOT NULL,
     PRIMARY KEY (`id`),
     KEY `idx_knowledge_graph_governance_operation_target` (`target_type`, `target_id`, `operated_at`),
-    KEY `idx_knowledge_graph_governance_operation_type_time` (`operation_type`, `operated_at`)
+    KEY `idx_knowledge_graph_governance_operation_type_time` (`operation_type`, `operated_at`),
+    KEY `idx_knowledge_graph_governance_operation_audit` (`audit_log_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间治理操作记录';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_change` (
@@ -349,6 +376,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_change` (
     `material_snapshot_json` json NOT NULL,
     `decision` varchar(32) DEFAULT NULL,
     `status` varchar(32) NOT NULL,
+    `lock_version` bigint NOT NULL DEFAULT 0,
     `result_summary_json` json DEFAULT NULL,
     `requested_at` BIGINT NOT NULL,
     `completed_at` BIGINT DEFAULT NULL,
@@ -362,6 +390,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_task` (
     `deletion_change_id` bigint NOT NULL,
     `idempotency_key` varchar(128) NOT NULL,
     `status` varchar(32) NOT NULL,
+    `lock_version` bigint NOT NULL DEFAULT 0,
     `progress` int NOT NULL DEFAULT 0,
     `failure_reason` varchar(1024) DEFAULT NULL,
     `result_summary_json` json DEFAULT NULL,

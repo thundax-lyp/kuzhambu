@@ -38,7 +38,7 @@ public class GraphMaterialGraph {
         requireNode(node);
         rejectDuplicateNodeKey(node, null);
         nodes.add(node);
-        material.refreshStatus(nodes.isEmpty());
+        material.refreshStatus(false);
         return node;
     }
 
@@ -48,7 +48,7 @@ public class GraphMaterialGraph {
         int index = indexOfNode(node.getId());
         rejectDuplicateNodeKey(node, node.getId());
         nodes.set(index, node);
-        material.refreshStatus(nodes.isEmpty());
+        material.refreshStatus(nodes.isEmpty() && edges.isEmpty());
     }
 
     public void removeNode(GraphMaterialNodeId nodeId) {

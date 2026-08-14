@@ -49,6 +49,8 @@ public interface GraphMaterialMapper extends BaseMapper<GraphMaterialDO> {
             set content_title_snapshot = #{row.contentTitleSnapshot},
                 status = #{row.status},
                 published_at = #{row.publishedAt},
+                failure_reason = #{row.failureReason},
+                failed_operation = #{row.failedOperation},
                 lock_version = lock_version + 1
             where content_type = #{row.contentType}
               and content_ref_id = #{row.contentRefId}

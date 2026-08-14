@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
@@ -10,6 +12,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphPublicatio
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
@@ -18,6 +22,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublication
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublicationPreviewToken;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdgeMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
@@ -27,39 +32,54 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.operation.GraphPublicat
 import com.thundax.kuzhambu.knowledge.domain.graph.model.operation.GraphPublicationContext;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialNodeId;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublicationPreviewTokenRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdgeMaterialRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdgeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeMaterialRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeRepository;
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GraphPublicationApplicationServiceImpl implements GraphPublicationApplicationService {
 
+    private static final Duration PREVIEW_TOKEN_TTL = Duration.ofMinutes(15);
+
+    private final ObjectMapper objectMapper;
     private final GraphMaterialGraphLoader graphLoader;
     private final GraphPublicationExecutor publicationExecutor;
     private final GraphPublishedNodeRepository publishedNodeRepository;
     private final GraphPublishedEdgeRepository publishedEdgeRepository;
     private final GraphPublishedNodeMaterialRepository nodeMaterialRepository;
     private final GraphPublishedEdgeMaterialRepository edgeMaterialRepository;
+    private final GraphPublicationPreviewTokenRepository previewTokenRepository;
+    private final Clock clock;
 
     public GraphPublicationApplicationServiceImpl(
+            ObjectMapper objectMapper,
             GraphMaterialGraphLoader graphLoader,
             GraphPublicationExecutor publicationExecutor,
             GraphPublishedNodeRepository publishedNodeRepository,
             GraphPublishedEdgeRepository publishedEdgeRepository,
             GraphPublishedNodeMaterialRepository nodeMaterialRepository,
-            GraphPublishedEdgeMaterialRepository edgeMaterialRepository) {
+            GraphPublishedEdgeMaterialRepository edgeMaterialRepository,
+            GraphPublicationPreviewTokenRepository previewTokenRepository,
+            Clock clock) {
+        this.objectMapper = objectMapper;
         this.graphLoader = graphLoader;
         this.publicationExecutor = publicationExecutor;
         this.publishedNodeRepository = publishedNodeRepository;
         this.publishedEdgeRepository = publishedEdgeRepository;
         this.nodeMaterialRepository = nodeMaterialRepository;
         this.edgeMaterialRepository = edgeMaterialRepository;
+        this.previewTokenRepository = previewTokenRepository;
+        this.clock = clock;
     }
 
     @Override
@@ -68,10 +88,10 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     }
 
     @Override
-    public List<GraphPublicationPreviewResult> previewBatchPublication(GraphBatchPublicationPreviewQuery query) {
-        return safeRefs(query == null ? null : query.materialRefs()).stream()
+    public GraphBatchPublicationPreviewResult previewBatchPublication(GraphBatchPublicationPreviewQuery query) {
+        return new GraphBatchPublicationPreviewResult(safeRefs(query == null ? null : query.materialRefs()).stream()
                 .map(this::previewPublication)
-                .toList();
+                .toList());
     }
 
     @Override
@@ -80,10 +100,10 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     }
 
     @Override
-    public List<GraphPublicationResult> publishBatch(GraphBatchPublicationCommand command) {
-        return safeCommands(command == null ? null : command.materials()).stream()
+    public GraphBatchPublicationResult publishBatch(GraphBatchPublicationCommand command) {
+        return new GraphBatchPublicationResult(safeCommands(command == null ? null : command.materials()).stream()
                 .map(this::publishOneSafely)
-                .toList();
+                .toList());
     }
 
     @Override
@@ -130,8 +150,78 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
             }
         });
         GraphPublication publication = GraphPublication.plan(
-                new GraphPublicationContext(graph, matchedNodes, matchedEdges, Map.of(), Map.of(), Instant.now()));
-        return GraphApplicationAssembler.toPublicationPreview(publication);
+                new GraphPublicationContext(graph, matchedNodes, matchedEdges, Map.of(), Map.of(), now()));
+        GraphPublicationPreviewResult preview = GraphApplicationAssembler.toPublicationPreview(publication);
+        String previewToken = UUID.randomUUID().toString().replace("-", "");
+        previewTokenRepository.insert(new GraphPublicationPreviewToken(
+                previewToken,
+                materialRef,
+                graph.material().getLockVersion(),
+                previewSnapshotJson(preview),
+                now().plus(PREVIEW_TOKEN_TTL),
+                null));
+        return new GraphPublicationPreviewResult(
+                previewToken,
+                preview.materialRef(),
+                preview.materialLockVersion(),
+                preview.nodes(),
+                preview.edges(),
+                preview.issues(),
+                preview.publishable());
+    }
+
+    private String previewSnapshotJson(GraphPublicationPreviewResult preview) {
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put("materialLockVersion", preview.materialLockVersion());
+        snapshot.put(
+                "nodes",
+                preview.nodes().stream()
+                        .map(node -> {
+                            Map<String, Object> row = new LinkedHashMap<>();
+                            row.put(
+                                    "materialObjectId",
+                                    node.materialNode().getId().value());
+                            row.put("matchType", node.matchedNode() == null ? "CREATE" : "CONFLICT");
+                            row.put(
+                                    "matchedObjectId",
+                                    node.matchedNode() == null
+                                            ? null
+                                            : node.matchedNode().getId().value());
+                            row.put(
+                                    "matchedObjectLockVersion",
+                                    node.matchedNode() == null
+                                            ? null
+                                            : node.matchedNode().getLockVersion());
+                            return row;
+                        })
+                        .toList());
+        snapshot.put(
+                "edges",
+                preview.edges().stream()
+                        .map(edge -> {
+                            Map<String, Object> row = new LinkedHashMap<>();
+                            row.put(
+                                    "materialObjectId",
+                                    edge.materialEdge().getId().value());
+                            row.put("matchType", edge.matchedEdge() == null ? "CREATE" : "CONFLICT");
+                            row.put(
+                                    "matchedObjectId",
+                                    edge.matchedEdge() == null
+                                            ? null
+                                            : edge.matchedEdge().getId().value());
+                            row.put(
+                                    "matchedObjectLockVersion",
+                                    edge.matchedEdge() == null
+                                            ? null
+                                            : edge.matchedEdge().getLockVersion());
+                            return row;
+                        })
+                        .toList());
+        try {
+            return objectMapper.writeValueAsString(snapshot);
+        } catch (JsonProcessingException exception) {
+            throw new BizException("Graph publication preview snapshot cannot be serialized");
+        }
     }
 
     private GraphPublicationResult publishOneSafely(GraphPublicationCommand command) {
@@ -179,5 +269,9 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
 
     private List<GraphPublicationCommand> safeCommands(List<GraphPublicationCommand> commands) {
         return commands == null ? List.of() : commands;
+    }
+
+    private Instant now() {
+        return Instant.now(clock);
     }
 }

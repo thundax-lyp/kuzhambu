@@ -17,4 +17,6 @@ public record GraphPublishedNodeSplitCommand(
         List<GraphPublishedEdge> copiedEdges,
         List<ContentRef> movedMaterialRefs,
         List<ContentRef> copiedMaterialRefs,
-        long sourceNodeLockVersion) {}
+        long sourceNodeLockVersion,
+        String impactToken,
+        String reason) {}

@@ -64,7 +64,7 @@ public class GraphPublication {
     }
 
     public void validateForPublication() {
-        context.materialGraph().material().requireReady();
+        context.materialGraph().material().requirePublishable();
         if (changes.hasBlockingIssue()) {
             throw new DomainException("Graph publication has blocking issues");
         }

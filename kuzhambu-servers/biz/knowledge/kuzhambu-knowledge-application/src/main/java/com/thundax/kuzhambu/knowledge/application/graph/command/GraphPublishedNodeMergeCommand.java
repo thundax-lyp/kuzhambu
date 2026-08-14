@@ -4,4 +4,8 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublis
 import java.util.List;
 
 public record GraphPublishedNodeMergeCommand(
-        GraphPublishedNodeId retainedNodeId, List<GraphPublishedNodeId> mergedNodeIds, long retainedNodeLockVersion) {}
+        GraphPublishedNodeId retainedNodeId,
+        List<GraphPublishedNodeId> mergedNodeIds,
+        long retainedNodeLockVersion,
+        String impactToken,
+        String reason) {}

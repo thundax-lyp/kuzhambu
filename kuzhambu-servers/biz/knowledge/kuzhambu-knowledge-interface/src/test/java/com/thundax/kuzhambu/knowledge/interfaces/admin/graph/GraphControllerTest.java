@@ -1,0 +1,103 @@
+package com.thundax.kuzhambu.knowledge.interfaces.admin.graph;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.web.exception.ApiException;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+class GraphControllerTest {
+
+    @Test
+    void shouldKeepReadAndWritePermissionsOnAdminEndpoints() throws Exception {
+        assertThat(permission("materialPage")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("materialGet")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("materialNodeCreate")).isEqualTo("knowledge:graph:edit");
+        assertThat(permission("publicationPublish")).isEqualTo("knowledge:graph:edit");
+        assertThat(permission("publishedNodeDelete")).isEqualTo("knowledge:graph:edit");
+    }
+
+    @Test
+    void shouldMapMaterialNodeCreateThroughAssemblerAndApplicationService() {
+        GraphMaterialApplicationService materialService = mock(GraphMaterialApplicationService.class);
+        GraphController controller = controller(materialService);
+        GraphMaterialRequests.MaterialObjectRequest request = materialNodeRequest();
+        when(materialService.getMaterialGraph(any()))
+                .thenReturn(new GraphMaterialResult(
+                        new GraphMaterial(
+                                new ContentRef("SANCAI_ENTRY", 1001L), "三才图会", GraphMaterialStatus.DRAFT, null, 7),
+                        List.of(),
+                        List.of()));
+
+        var response = controller.materialNodeCreate(request);
+
+        ArgumentCaptor<GraphMaterialNodeCommand> captor = ArgumentCaptor.forClass(GraphMaterialNodeCommand.class);
+        verify(materialService).createNode(captor.capture());
+        GraphMaterialNodeCommand command = captor.getValue();
+        assertThat(command.materialLockVersion()).isEqualTo(7);
+        assertThat(command.node().getMaterialRef()).isEqualTo(new ContentRef("SANCAI_ENTRY", 1001L));
+        assertThat(command.node().getName()).isEqualTo("张三");
+        assertThat(command.node().getPropertiesJson()).contains("identityQualifier");
+        assertThat(response.material().contentRef().contentRefId()).isEqualTo("1001");
+    }
+
+    @Test
+    void shouldPropagateBusinessErrorForUnifiedApiExceptionMapping() {
+        GraphMaterialApplicationService materialService = mock(GraphMaterialApplicationService.class);
+        GraphController controller = controller(materialService);
+        GraphMaterialRequests.MaterialObjectRequest request = materialNodeRequest();
+        when(materialService.createNode(any())).thenThrow(new ApiException("GRAPH_LOCK_CONFLICT"));
+
+        assertThrows(ApiException.class, () -> controller.materialNodeCreate(request));
+    }
+
+    private static String permission(String methodName) {
+        for (Method method : GraphController.class.getDeclaredMethods()) {
+            if (method.getName().equals(methodName)) {
+                return method.getAnnotation(HasPermission.class).value()[0];
+            }
+        }
+        throw new AssertionError("missing method " + methodName);
+    }
+
+    private static GraphController controller(GraphMaterialApplicationService materialService) {
+        return new GraphController(
+                mock(GraphWorkbenchApplicationService.class),
+                materialService,
+                mock(GraphPublicationApplicationService.class),
+                mock(GraphPublishedApplicationService.class));
+    }
+
+    private static GraphMaterialRequests.MaterialObjectRequest materialNodeRequest() {
+        GraphMaterialRequests.MaterialObjectRequest request = new GraphMaterialRequests.MaterialObjectRequest();
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentRefId("1001");
+        request.setMaterialLockVersion("7");
+        GraphMaterialRequests.MaterialObjectRequestData node = new GraphMaterialRequests.MaterialObjectRequestData();
+        node.setNodeType("PERSON");
+        node.setName("张三");
+        node.setSource("MANUAL");
+        node.setProperties(Map.of("identityQualifier", "明代"));
+        request.setNode(node);
+        return request;
+    }
+}

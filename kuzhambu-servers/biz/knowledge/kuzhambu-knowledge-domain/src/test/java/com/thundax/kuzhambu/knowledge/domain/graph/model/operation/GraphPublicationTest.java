@@ -26,7 +26,7 @@ class GraphPublicationTest {
     @Test
     void planShouldCreatePublishedNodeForUnmatchedMaterialNode() {
         GraphPublication publication = GraphPublication.plan(new GraphPublicationContext(
-                graph(GraphMaterialStatus.READY), Map.of(), Map.of(), Map.of(), Map.of(), Instant.now()));
+                graph(GraphMaterialStatus.DRAFT), Map.of(), Map.of(), Map.of(), Map.of(), Instant.now()));
 
         assertEquals(1, publication.createdNodeCount());
         assertEquals(0, publication.reusedNodeCount());
@@ -36,7 +36,7 @@ class GraphPublicationTest {
     void planShouldProduceBlockingIssueForDeletedPublishedNode() {
         GraphPublishedNode deletedNode = publishedNode(GraphPublishedStatus.DELETED);
         GraphPublication publication = GraphPublication.plan(new GraphPublicationContext(
-                graph(GraphMaterialStatus.READY),
+                graph(GraphMaterialStatus.DRAFT),
                 Map.of(new GraphMaterialNodeId(1L), deletedNode),
                 Map.of(),
                 Map.of(),
@@ -53,7 +53,7 @@ class GraphPublicationTest {
         node.setNodeKey(null);
         GraphMaterial material = new GraphMaterial();
         material.setContentRef(new ContentRef("SANCAI_ENTRY", 1L));
-        material.setStatus(GraphMaterialStatus.READY);
+        material.setStatus(GraphMaterialStatus.DRAFT);
 
         GraphPublication publication = GraphPublication.plan(new GraphPublicationContext(
                 GraphMaterialGraph.of(material, List.of(node), List.of()),

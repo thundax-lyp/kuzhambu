@@ -4,4 +4,5 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEd
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdgeProperty;
 import java.util.List;
 
-public record GraphPublishedEdgeCommand(GraphPublishedEdge edge, List<GraphPublishedEdgeProperty> properties) {}
+public record GraphPublishedEdgeCommand(
+        GraphPublishedEdge edge, List<GraphPublishedEdgeProperty> properties, String reason) {}
