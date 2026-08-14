@@ -272,7 +272,11 @@ public class AiFacadeAssembler {
             }
             return OBJECT_MAPPER.writeValueAsString(payload);
         } catch (JsonProcessingException exception) {
-            throw new BizException("Knowledge graph extraction content snapshot is invalid", exception);
+            throw new BizException(
+                    "KNOWLEDGE-GRAPH-EXTRACTION-400",
+                    "knowledge.graph.extraction.snapshot-invalid",
+                    "Knowledge graph extraction content snapshot is invalid",
+                    exception);
         }
     }
 
