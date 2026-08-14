@@ -94,7 +94,7 @@ const createForceLayout = (graphData: GraphData) => {
     const groups = getGraphGroups(graphData);
     return {
         type: "d3-force",
-        animation: true,
+        animation: false,
         iterations: FORCE_LAYOUT_ITERATIONS,
         link: {
             distance: getEdgeLinkDistance,
@@ -134,6 +134,22 @@ const fitGraphView = async (graph: Graph) => {
     );
 };
 
+const renderGraphSafely = async (graph: Graph, isMounted: () => boolean) => {
+    if (!isMounted()) {
+        return;
+    }
+
+    try {
+        await graph.render();
+        if (isMounted()) {
+            await fitGraphView(graph);
+        }
+    } catch {
+        // G6 can reject a render when an unmount races with its internal draw cycle.
+        // The graph no longer has a consumer in that case, so the rejection is ignored.
+    }
+};
+
 export interface KuzhambuGraphProps {
     spoList: KuzhambuGraphSpoItem[];
     className?: string;
@@ -146,9 +162,18 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
         const graphRef = useRef<Graph | null>(null);
         const initialGraphDataRef = useRef<GraphData | null>(null);
         const dataRef = useRef<GraphData>({ nodes: [], edges: [] });
+        const isMountedRef = useRef(false);
+        const pendingRendersRef = useRef(new Set<Promise<void>>());
         const graphData = useMemo(() => buildKuzhambuGraphData(spoList), [spoList]);
         const classNames = ["kuzhambu-graph", className].filter(Boolean).join(" ");
         const hasSpoItems = spoList.length > 0;
+
+        const scheduleRender = (graph: Graph) => {
+            const task = renderGraphSafely(graph, () => isMountedRef.current);
+            pendingRendersRef.current.add(task);
+            void task.finally(() => pendingRendersRef.current.delete(task));
+            return task;
+        };
 
         if (!initialGraphDataRef.current) {
             initialGraphDataRef.current = graphData;
@@ -169,8 +194,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
 
                     graph.setData(nextData);
                     graph.setLayout(createForceLayout(nextData));
-                    await graph.render();
-                    await fitGraphView(graph);
+                    await scheduleRender(graph);
                 }
             }),
             []
@@ -183,6 +207,8 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
             }
 
             const initialGraphData = initialGraphDataRef.current ?? { nodes: [], edges: [] };
+            const pendingRenders = pendingRendersRef.current;
+            isMountedRef.current = true;
             const graph = new Graph({
                 container,
                 autoFit: "view",
@@ -257,27 +283,44 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
             });
 
             const rerunForceLayout = async () => {
+                if (!isMountedRef.current) {
+                    return;
+                }
                 graph.setLayout(createForceLayout(dataRef.current));
-                await graph.render();
-                await fitGraphView(graph);
+                await scheduleRender(graph);
             };
 
             graph.on(NodeEvent.DRAG_END, rerunForceLayout);
             graphRef.current = graph;
             dataRef.current = initialGraphData;
 
-            void graph.render().then(() => fitGraphView(graph));
+            void scheduleRender(graph);
 
             const resizeObserver = new ResizeObserver(() => {
-                graph.resize();
+                if (isMountedRef.current) {
+                    graph.resize();
+                }
             });
             resizeObserver.observe(container);
 
             return () => {
+                isMountedRef.current = false;
                 resizeObserver.disconnect();
                 graph.off(NodeEvent.DRAG_END, rerunForceLayout);
-                graph.destroy();
-                graphRef.current = null;
+                void Promise.allSettled(Array.from(pendingRenders)).then(() => {
+                    if (graph.destroyed) {
+                        return;
+                    }
+                    try {
+                        graph.stopLayout();
+                    } catch {
+                        // G6 may already have released its layout context during StrictMode cleanup.
+                    }
+                    graph.destroy();
+                    if (graphRef.current === graph) {
+                        graphRef.current = null;
+                    }
+                });
             };
         }, []);
 
@@ -290,7 +333,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
 
             graph.setData(graphData);
             graph.setLayout(createForceLayout(graphData));
-            void graph.render().then(() => fitGraphView(graph));
+            void scheduleRender(graph);
         }, [graphData]);
 
         return (

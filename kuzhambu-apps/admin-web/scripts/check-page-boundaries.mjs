@@ -13,6 +13,7 @@ const readDirectories = (path) =>
     readdirSync(path)
         .map((name) => join(path, name))
         .filter(isDirectory);
+const isMockOnlyDomain = (entries) => entries.length === 1 && entries[0] === "__mocks__";
 const errors = [];
 
 const validateComponentDirectory = (componentPath, domainKey, relativeComponentPath) => {
@@ -53,12 +54,13 @@ for (const modulePath of readDirectories(pagesRoot)) {
         const pageEntries = domainEntries.filter(
             (entry) => entry.endsWith("-page.tsx") && !entry.endsWith("-page.test.tsx")
         );
+        const hasOnlyMockData = isMockOnlyDomain(domainEntries);
 
         if (SHARED_PAGE_DOMAIN_NAMES.has(domainName)) {
             continue;
         }
 
-        if (!domainEntries.includes(pageFileName)) {
+        if (!domainEntries.includes(pageFileName) && !hasOnlyMockData) {
             errors.push(
                 `ADMIN_WEB_PATH_PAGE_SHAPE: ${domainKey} must contain its page entry ${pageFileName}; found ${pageEntries.join(", ")}.`
             );
@@ -88,7 +90,12 @@ for (const modulePath of readDirectories(pagesRoot)) {
                 );
             }
 
-            if (isDirectory(entryPath) && entry !== "hooks" && entry !== "components") {
+            if (
+                isDirectory(entryPath) &&
+                entry !== "__mocks__" &&
+                entry !== "hooks" &&
+                entry !== "components"
+            ) {
                 validateComponentDirectory(entryPath, domainKey, entry);
             }
         }

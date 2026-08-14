@@ -17,6 +17,11 @@ import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
 import { PublicationJobPage } from "../pages/classics/publication-job/publication-job-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
+import { GraphWorkbenchPage } from "../pages/knowledge/graph-workbench/graph-workbench-page";
+import { GraphMaterialPage } from "../pages/knowledge/graph-material/graph-material-page";
+import { GraphGovernancePage } from "../pages/knowledge/graph-governance/graph-governance-page";
+import { GraphDeletionChangePage } from "../pages/knowledge/graph-deletion-change/graph-deletion-change-page";
+import { GraphDeletionTaskPage } from "../pages/knowledge/graph-deletion-task/graph-deletion-task-page";
 import { LineagePage } from "../pages/knowledge/lineage/lineage-page";
 import { GraphResultPage } from "../pages/knowledge/graph-result/graph-result-page";
 import { QualityReportPage } from "../pages/knowledge/quality-report/quality-report-page";
@@ -134,6 +139,26 @@ const router = createBrowserRouter(
                         {
                             path: "knowledge/graph",
                             element: <RefinementPage />
+                        },
+                        {
+                            path: "knowledge/graph-workbench",
+                            element: <GraphWorkbenchPage />
+                        },
+                        {
+                            path: "knowledge/graph-governance",
+                            element: <GraphGovernancePage />
+                        },
+                        {
+                            path: "knowledge/graph-materials",
+                            element: <GraphMaterialPage />
+                        },
+                        {
+                            path: "knowledge/graph-deletion-changes",
+                            element: <GraphDeletionChangePage />
+                        },
+                        {
+                            path: "knowledge/graph-deletion-tasks",
+                            element: <GraphDeletionTaskPage />
                         },
                         {
                             path: "knowledge/graph-extraction",
