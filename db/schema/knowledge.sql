@@ -66,372 +66,237 @@ CREATE TABLE IF NOT EXISTS `knowledge_tag_content_ref` (
     KEY `idx_knowledge_tag_content_ref_content` (`content_type`, `content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='内容标签关联表';
 
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `content_type` varchar(32) NOT NULL,
+    `content_ref_id` bigint NOT NULL,
+    `status` varchar(32) NOT NULL,
+    `published_at` BIGINT DEFAULT NULL,
+    `current_extraction_task_id` bigint DEFAULT NULL,
+    `version` bigint NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_material_content` (`content_type`, `content_ref_id`),
+    KEY `idx_knowledge_graph_material_status_published` (`status`, `published_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识图谱素材空间';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_node` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `material_id` bigint NOT NULL,
+    `node_key` varchar(256) DEFAULT NULL,
+    `node_type` varchar(64) NOT NULL,
+    `name` varchar(255) NOT NULL,
+    `properties_json` json DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_material_node_key` (`material_id`, `node_key`),
+    KEY `idx_knowledge_graph_material_node_material_type` (`material_id`, `node_type`),
+    KEY `idx_knowledge_graph_material_node_material_name` (`material_id`, `name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材草稿图节点';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_edge` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `material_id` bigint NOT NULL,
+    `source_material_node_id` bigint NOT NULL,
+    `target_material_node_id` bigint NOT NULL,
+    `relation_type` varchar(64) NOT NULL,
+    `qualifiers_json` json DEFAULT NULL,
+    `edge_key` varchar(512) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_material_edge_key` (`material_id`, `edge_key`),
+    KEY `idx_knowledge_graph_material_edge_material` (`material_id`),
+    KEY `idx_knowledge_graph_material_edge_source_target` (`source_material_node_id`, `target_material_node_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材草稿图关系';
+
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `batch_job_id` bigint DEFAULT NULL,
-    `task_type` varchar(32) NOT NULL,
-    `scope_type` varchar(32) DEFAULT NULL,
-    `scope_json` json DEFAULT NULL,
-    `trigger_source` varchar(32) DEFAULT NULL,
-    `selection_scope_json` json DEFAULT NULL,
-    `replace_unconfirmed_only` tinyint(1) DEFAULT NULL,
-    `parent_task_id` bigint DEFAULT NULL,
-    `source_content_type` varchar(32) NOT NULL,
-    `source_content_id` bigint NOT NULL,
-    `model_id` bigint DEFAULT NULL,
-    `model_name` varchar(128) DEFAULT NULL,
-    `prompt_version_id` bigint DEFAULT NULL,
-    `request_id` varchar(128) DEFAULT NULL,
-    `trace_id` varchar(128) DEFAULT NULL,
-    `prompt_messages_json` json DEFAULT NULL,
-    `prompt_variables_json` json DEFAULT NULL,
-    `prompt_hash` varchar(128) DEFAULT NULL,
-    `input_payload_json` json DEFAULT NULL,
-    `output_schema_json` json DEFAULT NULL,
-    `force_json` tinyint(1) DEFAULT NULL,
-    `locale` varchar(16) DEFAULT NULL,
-    `ai_call_id` bigint DEFAULT NULL,
-    `ai_candidate_id` bigint DEFAULT NULL,
+    `material_id` bigint NOT NULL,
+    `content_type` varchar(32) NOT NULL,
+    `content_ref_id` bigint NOT NULL,
+    `content_snapshot_json` json NOT NULL,
+    `pipeline_version` varchar(64) NOT NULL,
     `status` varchar(32) NOT NULL,
-    `error_type` varchar(64) DEFAULT NULL,
-    `error_message` varchar(1024) DEFAULT NULL,
-    `requested_by` bigint DEFAULT NULL,
+    `current_stage` varchar(64) DEFAULT NULL,
+    `progress` int NOT NULL DEFAULT 0,
+    `result_summary_json` json DEFAULT NULL,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `retry_from_task_id` bigint DEFAULT NULL,
     `requested_at` BIGINT NOT NULL,
     `completed_at` BIGINT DEFAULT NULL,
-    `applied_at` BIGINT DEFAULT NULL,
     PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_extraction_task_status_requested` (`status`, `requested_at`),
-    KEY `idx_knowledge_graph_extraction_task_source` (`source_content_type`, `source_content_id`),
-    KEY `idx_knowledge_graph_extraction_task_call_candidate` (`ai_call_id`, `ai_candidate_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取任务表';
+    KEY `idx_knowledge_graph_extraction_task_material_status` (`material_id`, `status`, `requested_at`),
+    KEY `idx_knowledge_graph_extraction_task_content` (`content_type`, `content_ref_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道任务';
 
-CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
+CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_stage` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `task_id` bigint NOT NULL,
-    `candidate_id` bigint NOT NULL,
-    `task_type` varchar(32) NOT NULL,
-    `scope_type` varchar(32) DEFAULT NULL,
-    `scope_json` json DEFAULT NULL,
-    `source_content_type` varchar(32) NOT NULL,
-    `source_content_id` bigint NOT NULL,
-    `source_category_code` varchar(64) NOT NULL,
-    `source_category_name` varchar(128) NOT NULL,
-    `version_no` int NOT NULL,
+    `extraction_task_id` bigint NOT NULL,
+    `stage_name` varchar(64) NOT NULL,
+    `stage_order` int NOT NULL,
     `status` varchar(32) NOT NULL,
-    `applied_at` BIGINT NOT NULL,
+    `input_snapshot_json` json DEFAULT NULL,
+    `output_summary_json` json DEFAULT NULL,
+    `ai_call_id` bigint DEFAULT NULL,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `started_at` BIGINT DEFAULT NULL,
+    `completed_at` BIGINT DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_version_task_candidate` (`task_id`, `candidate_id`),
-    UNIQUE KEY `uk_knowledge_graph_version_source_version` (`task_type`, `source_content_type`, `source_content_id`, `version_no`),
-    KEY `idx_knowledge_graph_version_source_status` (`task_type`, `source_content_type`, `source_content_id`, `status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱正式版本表';
+    UNIQUE KEY `uk_knowledge_graph_extraction_stage_order` (`extraction_task_id`, `stage_order`),
+    KEY `idx_knowledge_graph_extraction_stage_task_status` (`extraction_task_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道阶段';
 
-CREATE TABLE IF NOT EXISTS `knowledge_entity` (
+CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `entity_key` varchar(160) NOT NULL,
-    `name` varchar(128) NOT NULL,
-    `entity_type` varchar(64) NOT NULL,
-    `description` varchar(1024) DEFAULT NULL,
-    `confirmation_status` varchar(32) NOT NULL,
-    `latest_version_id` bigint NOT NULL,
-    `source_refs_json` json DEFAULT NULL,
-    `first_extracted_at` BIGINT NOT NULL,
-    `last_extracted_at` BIGINT NOT NULL,
-    `confirmed_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_entity_entity_key` (`entity_key`),
-    KEY `idx_knowledge_entity_latest_version` (`latest_version_id`),
-    KEY `idx_knowledge_entity_confirmation_status` (`confirmation_status`, `last_extracted_at`),
-    KEY `idx_knowledge_entity_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱实体表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_relation` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `relation_key` varchar(256) NOT NULL,
-    `source_entity_key` varchar(160) NOT NULL,
-    `target_entity_key` varchar(160) NOT NULL,
-    `source_name` varchar(128) NOT NULL,
-    `target_name` varchar(128) NOT NULL,
-    `relation_type` varchar(64) NOT NULL,
-    `evidence` varchar(1024) DEFAULT NULL,
-    `confirmation_status` varchar(32) NOT NULL,
-    `latest_version_id` bigint NOT NULL,
-    `source_refs_json` json DEFAULT NULL,
-    `first_extracted_at` BIGINT NOT NULL,
-    `last_extracted_at` BIGINT NOT NULL,
-    `confirmed_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_relation_relation_key` (`relation_key`),
-    KEY `idx_knowledge_relation_latest_version` (`latest_version_id`),
-    KEY `idx_knowledge_relation_confirmation_status` (`confirmation_status`, `last_extracted_at`),
-    KEY `idx_knowledge_relation_source_target` (`source_entity_key`, `target_entity_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱关系表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `node_key` varchar(160) NOT NULL,
-    `name` varchar(128) NOT NULL,
+    `node_key` varchar(256) NOT NULL,
     `node_type` varchar(64) NOT NULL,
-    `generation` int DEFAULT NULL,
-    `gender` varchar(32) DEFAULT NULL,
-    `confirmation_status` varchar(32) NOT NULL,
-    `latest_version_id` bigint NOT NULL,
-    `source_refs_json` json DEFAULT NULL,
-    `first_extracted_at` BIGINT NOT NULL,
-    `last_extracted_at` BIGINT NOT NULL,
-    `confirmed_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_lineage_node_node_key` (`node_key`),
-    KEY `idx_knowledge_lineage_node_latest_version` (`latest_version_id`),
-    KEY `idx_knowledge_lineage_node_confirmation_status` (`confirmation_status`, `last_extracted_at`),
-    KEY `idx_knowledge_lineage_node_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='世系节点表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `relation_key` varchar(256) NOT NULL,
-    `source_node_key` varchar(160) NOT NULL,
-    `target_node_key` varchar(160) NOT NULL,
-    `source_name` varchar(128) NOT NULL,
-    `target_name` varchar(128) NOT NULL,
-    `relation_type` varchar(64) NOT NULL,
-    `evidence` varchar(1024) DEFAULT NULL,
-    `confirmation_status` varchar(32) NOT NULL,
-    `latest_version_id` bigint NOT NULL,
-    `source_refs_json` json DEFAULT NULL,
-    `first_extracted_at` BIGINT NOT NULL,
-    `last_extracted_at` BIGINT NOT NULL,
-    `confirmed_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_lineage_relation_relation_key` (`relation_key`),
-    KEY `idx_knowledge_lineage_relation_latest_version` (`latest_version_id`),
-    KEY `idx_knowledge_lineage_relation_confirmation_status` (`confirmation_status`, `last_extracted_at`),
-    KEY `idx_knowledge_lineage_relation_source_target` (`source_node_key`, `target_node_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='世系关系表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_refinement_task` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `refinement_task_id` bigint NOT NULL,
-    `task_type` varchar(32) NOT NULL,
-    `source_content_type` varchar(32) NOT NULL,
-    `source_content_id` bigint NOT NULL,
-    `source_category_code` varchar(64) NOT NULL,
-    `source_category_name` varchar(128) NOT NULL,
-    `graph_version_id` bigint NOT NULL,
+    `name` varchar(255) NOT NULL,
     `status` varchar(32) NOT NULL,
-    `opened_by` bigint NOT NULL,
-    `opened_at` BIGINT NOT NULL,
-    `submitted_by` bigint DEFAULT NULL,
-    `submitted_at` BIGINT DEFAULT NULL,
-    `applied_by` bigint DEFAULT NULL,
-    `applied_at` BIGINT DEFAULT NULL,
-    `cancelled_by` bigint DEFAULT NULL,
-    `cancelled_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_refinement_task_id` (`refinement_task_id`),
-    UNIQUE KEY `uk_knowledge_refinement_source_version_status` (
-        `task_type`,
-        `source_content_type`,
-        `source_content_id`,
-        `graph_version_id`,
-        `status`
-    ),
-    KEY `idx_knowledge_refinement_task_category` (`status`, `source_category_code`, `opened_at`),
-    KEY `idx_knowledge_refinement_task_source` (`source_content_type`, `source_content_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修任务表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_refinement_entity_draft` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `draft_id` bigint NOT NULL,
-    `refinement_task_id` bigint NOT NULL,
-    `entity_id` bigint DEFAULT NULL,
-    `entity_key` varchar(160) NOT NULL,
-    `origin_type` varchar(32) NOT NULL,
-    `operation_type` varchar(32) NOT NULL,
-    `name` varchar(128) NOT NULL,
-    `entity_type` varchar(64) NOT NULL,
-    `description` varchar(1024) DEFAULT NULL,
-    `confirmation_status` varchar(32) NOT NULL,
-    `source_refs_json` json DEFAULT NULL,
-    `sort_order` int NOT NULL,
-    `created_by` bigint NOT NULL,
-    `created_at` BIGINT NOT NULL,
-    `updated_by` bigint NOT NULL,
-    `updated_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_refinement_entity_draft_id` (`draft_id`),
-    UNIQUE KEY `uk_knowledge_refinement_entity_task_key` (`refinement_task_id`, `entity_key`),
-    KEY `idx_knowledge_refinement_entity_task_sort` (`refinement_task_id`, `sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修实体草稿表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_refinement_relation_draft` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `draft_id` bigint NOT NULL,
-    `refinement_task_id` bigint NOT NULL,
-    `relation_id` bigint DEFAULT NULL,
-    `relation_key` varchar(256) NOT NULL,
-    `origin_type` varchar(32) NOT NULL,
-    `operation_type` varchar(32) NOT NULL,
-    `source_entity_key` varchar(160) NOT NULL,
-    `target_entity_key` varchar(160) NOT NULL,
-    `source_name` varchar(128) NOT NULL,
-    `target_name` varchar(128) NOT NULL,
-    `relation_type` varchar(64) NOT NULL,
-    `evidence` varchar(1024) DEFAULT NULL,
-    `confirmation_status` varchar(32) NOT NULL,
-    `source_refs_json` json DEFAULT NULL,
-    `sort_order` int NOT NULL,
-    `created_by` bigint NOT NULL,
-    `created_at` BIGINT NOT NULL,
-    `updated_by` bigint NOT NULL,
-    `updated_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_refinement_relation_draft_id` (`draft_id`),
-    UNIQUE KEY `uk_knowledge_refinement_relation_task_key` (`refinement_task_id`, `relation_key`),
-    KEY `idx_knowledge_refinement_relation_task_sort` (`refinement_task_id`, `sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修关系草稿表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_refinement_lineage_node_draft` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `draft_id` bigint NOT NULL,
-    `refinement_task_id` bigint NOT NULL,
-    `node_id` bigint DEFAULT NULL,
-    `node_key` varchar(160) NOT NULL,
-    `origin_type` varchar(32) NOT NULL,
-    `operation_type` varchar(32) NOT NULL,
-    `name` varchar(128) NOT NULL,
-    `node_type` varchar(64) NOT NULL,
-    `generation` int DEFAULT NULL,
-    `gender` varchar(32) DEFAULT NULL,
-    `confirmation_status` varchar(32) NOT NULL,
-    `source_refs_json` json DEFAULT NULL,
-    `sort_order` int NOT NULL,
-    `created_by` bigint NOT NULL,
-    `created_at` BIGINT NOT NULL,
-    `updated_by` bigint NOT NULL,
-    `updated_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_refinement_lineage_node_draft_id` (`draft_id`),
-    UNIQUE KEY `uk_knowledge_refinement_lineage_node_task_key` (`refinement_task_id`, `node_key`),
-    KEY `idx_knowledge_refinement_lineage_node_task_sort` (`refinement_task_id`, `sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修世系节点草稿表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_refinement_lineage_relation_draft` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `draft_id` bigint NOT NULL,
-    `refinement_task_id` bigint NOT NULL,
-    `relation_id` bigint DEFAULT NULL,
-    `relation_key` varchar(256) NOT NULL,
-    `origin_type` varchar(32) NOT NULL,
-    `operation_type` varchar(32) NOT NULL,
-    `source_node_key` varchar(160) NOT NULL,
-    `target_node_key` varchar(160) NOT NULL,
-    `source_name` varchar(128) NOT NULL,
-    `target_name` varchar(128) NOT NULL,
-    `relation_type` varchar(64) NOT NULL,
-    `evidence` varchar(1024) DEFAULT NULL,
-    `confirmation_status` varchar(32) NOT NULL,
-    `source_refs_json` json DEFAULT NULL,
-    `sort_order` int NOT NULL,
-    `created_by` bigint NOT NULL,
-    `created_at` BIGINT NOT NULL,
-    `updated_by` bigint NOT NULL,
-    `updated_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_refinement_lineage_relation_draft_id` (`draft_id`),
-    UNIQUE KEY `uk_knowledge_refinement_lineage_relation_task_key` (`refinement_task_id`, `relation_key`),
-    KEY `idx_knowledge_refinement_lineage_relation_task_sort` (`refinement_task_id`, `sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修世系关系草稿表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_quality_annotation` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `annotation_id` bigint NOT NULL,
-    `object_type` varchar(32) NOT NULL,
-    `object_key` varchar(256) NOT NULL,
-    `source_content_type` varchar(32) NOT NULL,
-    `source_content_id` bigint NOT NULL,
-    `graph_version_id` bigint NOT NULL,
-    `annotation_status` varchar(32) NOT NULL,
-    `annotation_label` varchar(64) NOT NULL,
-    `comment` varchar(1024) DEFAULT NULL,
-    `created_by` bigint NOT NULL,
-    `created_at` BIGINT NOT NULL,
-    `updated_by` bigint NOT NULL,
-    `updated_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_quality_annotation_id` (`annotation_id`),
-    KEY `idx_knowledge_quality_annotation_object` (`object_type`, `object_key`),
-    KEY `idx_knowledge_quality_annotation_source` (`source_content_type`, `source_content_id`, `graph_version_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量标注表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_quality_report` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `report_id` bigint NOT NULL,
-    `report_no` varchar(64) NOT NULL,
-    `graph_version_id` bigint NOT NULL,
-    `source_content_type` varchar(32) NOT NULL,
-    `source_content_id` bigint NOT NULL,
-    `source_category_code` varchar(64) NOT NULL,
-    `source_category_name` varchar(128) NOT NULL,
-    `report_status` varchar(32) NOT NULL,
-    `entity_total_count` bigint NOT NULL,
-    `entity_confirmed_count` bigint NOT NULL,
-    `relation_total_count` bigint NOT NULL,
-    `relation_confirmed_count` bigint NOT NULL,
-    `lineage_total_count` bigint NOT NULL,
-    `lineage_confirmed_count` bigint NOT NULL,
-    `entity_coverage_rate` decimal(10,4) NOT NULL,
-    `relation_accuracy_rate` decimal(10,4) NOT NULL,
-    `lineage_coverage_rate` decimal(10,4) NOT NULL,
-    `completeness_rate` decimal(10,4) NOT NULL,
-    `annotation_count` bigint NOT NULL,
-    `issue_count` bigint NOT NULL,
-    `generated_by` bigint NOT NULL,
-    `generated_at` BIGINT NOT NULL,
     `published_at` BIGINT NOT NULL,
-    `created_at` BIGINT NOT NULL,
-    `updated_at` BIGINT NOT NULL,
+    `version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_quality_report_id` (`report_id`),
-    UNIQUE KEY `uk_knowledge_quality_report_no` (`report_no`),
-    KEY `idx_knowledge_quality_report_version_status` (`graph_version_id`, `report_status`, `generated_at`),
-    KEY `idx_knowledge_quality_report_latest` (`report_status`, `generated_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量报告表';
+    UNIQUE KEY `uk_knowledge_graph_published_node_key` (`node_key`),
+    KEY `idx_knowledge_graph_published_node_recent` (`status`, `published_at`),
+    KEY `idx_knowledge_graph_published_node_name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间节点';
 
-CREATE TABLE IF NOT EXISTS `knowledge_quality_report_issue` (
+CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `issue_id` bigint NOT NULL,
-    `report_id` bigint NOT NULL,
-    `issue_type` varchar(64) NOT NULL,
-    `severity` varchar(16) NOT NULL,
-    `object_type` varchar(32) DEFAULT NULL,
-    `object_key` varchar(256) DEFAULT NULL,
-    `title` varchar(128) NOT NULL,
-    `description` varchar(1024) NOT NULL,
-    `suggestion` varchar(1024) DEFAULT NULL,
-    `href` varchar(256) DEFAULT NULL,
-    `priority` int NOT NULL,
-    `created_at` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_quality_report_issue_id` (`issue_id`),
-    KEY `idx_knowledge_quality_report_issue_report` (`report_id`, `severity`, `priority`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量报告问题快照表';
-
-CREATE TABLE IF NOT EXISTS `knowledge_quality_report_source_detail` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `detail_id` bigint NOT NULL,
-    `report_id` bigint NOT NULL,
-    `source_content_type` varchar(32) NOT NULL,
-    `source_content_id` bigint NOT NULL,
-    `source_category_code` varchar(64) NOT NULL,
-    `source_category_name` varchar(128) NOT NULL,
-    `graph_version_id` bigint NOT NULL,
-    `applied_at` BIGINT NOT NULL,
-    `annotation_count` bigint NOT NULL,
-    `issue_count` bigint NOT NULL,
+    `edge_key` varchar(512) NOT NULL,
+    `source_published_node_id` bigint NOT NULL,
+    `target_published_node_id` bigint NOT NULL,
+    `relation_type` varchar(64) NOT NULL,
+    `qualifiers_json` json DEFAULT NULL,
     `status` varchar(32) NOT NULL,
-    `href` varchar(256) DEFAULT NULL,
-    `created_at` BIGINT NOT NULL,
+    `published_at` BIGINT NOT NULL,
+    `version` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_quality_report_source_detail_id` (`detail_id`),
-    KEY `idx_knowledge_quality_report_source_detail_report` (`report_id`, `graph_version_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量报告来源明细快照表';
+    UNIQUE KEY `uk_knowledge_graph_published_edge_key` (`edge_key`),
+    KEY `idx_knowledge_graph_published_edge_source` (`source_published_node_id`),
+    KEY `idx_knowledge_graph_published_edge_target` (`target_published_node_id`),
+    KEY `idx_knowledge_graph_published_edge_recent` (`status`, `published_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间关系';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node_property` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `published_node_id` bigint NOT NULL,
+    `property_name` varchar(128) NOT NULL,
+    `normalized_value` varchar(512) NOT NULL,
+    `display_value` varchar(2048) NOT NULL,
+    `is_preferred` tinyint(1) NOT NULL DEFAULT 0,
+    `source_type` varchar(32) NOT NULL,
+    `source_ref_json` json DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_node_property_value` (`published_node_id`, `property_name`, `normalized_value`),
+    KEY `idx_knowledge_graph_node_property_preferred` (`published_node_id`, `property_name`, `is_preferred`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布节点多值属性';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge_property` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `published_edge_id` bigint NOT NULL,
+    `property_name` varchar(128) NOT NULL,
+    `normalized_value` varchar(512) NOT NULL,
+    `display_value` varchar(2048) NOT NULL,
+    `is_preferred` tinyint(1) NOT NULL DEFAULT 0,
+    `source_type` varchar(32) NOT NULL,
+    `source_ref_json` json DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_edge_property_value` (`published_edge_id`, `property_name`, `normalized_value`),
+    KEY `idx_knowledge_graph_edge_property_preferred` (`published_edge_id`, `property_name`, `is_preferred`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布关系多值属性';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_manual_source` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `target_type` varchar(32) NOT NULL,
+    `target_id` bigint NOT NULL,
+    `reason` varchar(1024) NOT NULL,
+    `recorded_at` BIGINT NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_knowledge_graph_manual_source_target` (`target_type`, `target_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间人工来源';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_publish_record` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `material_id` bigint NOT NULL,
+    `status` varchar(32) NOT NULL,
+    `preview_summary_json` json NOT NULL,
+    `conflict_decisions_json` json DEFAULT NULL,
+    `result_summary_json` json DEFAULT NULL,
+    `requested_at` BIGINT NOT NULL,
+    `completed_at` BIGINT DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_knowledge_graph_publish_record_material_status` (`material_id`, `status`, `requested_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材整体发布记录';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_node_mapping` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `material_id` bigint NOT NULL,
+    `material_node_id` bigint DEFAULT NULL,
+    `published_node_id` bigint NOT NULL,
+    `publish_record_id` bigint NOT NULL,
+    `source_snapshot_json` json DEFAULT NULL,
+    `status` varchar(32) NOT NULL,
+    `changed_at` BIGINT NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_node_mapping_publish` (`material_node_id`, `published_node_id`, `publish_record_id`),
+    KEY `idx_knowledge_graph_node_mapping_material_status` (`material_id`, `status`),
+    KEY `idx_knowledge_graph_node_mapping_published_status` (`published_node_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材节点发布映射';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_edge_mapping` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `material_id` bigint NOT NULL,
+    `material_edge_id` bigint DEFAULT NULL,
+    `published_edge_id` bigint NOT NULL,
+    `publish_record_id` bigint NOT NULL,
+    `source_snapshot_json` json DEFAULT NULL,
+    `status` varchar(32) NOT NULL,
+    `changed_at` BIGINT NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_edge_mapping_publish` (`material_edge_id`, `published_edge_id`, `publish_record_id`),
+    KEY `idx_knowledge_graph_edge_mapping_material_status` (`material_id`, `status`),
+    KEY `idx_knowledge_graph_edge_mapping_published_status` (`published_edge_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材关系发布映射';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_governance_operation` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `operation_type` varchar(32) NOT NULL,
+    `target_type` varchar(32) NOT NULL,
+    `target_id` bigint NOT NULL,
+    `before_snapshot_json` json DEFAULT NULL,
+    `after_snapshot_json` json DEFAULT NULL,
+    `reason` varchar(1024) NOT NULL,
+    `operated_at` BIGINT NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_knowledge_graph_governance_operation_target` (`target_type`, `target_id`, `operated_at`),
+    KEY `idx_knowledge_graph_governance_operation_type_time` (`operation_type`, `operated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布空间治理操作记录';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_change` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `material_id` bigint NOT NULL,
+    `content_type` varchar(32) NOT NULL,
+    `content_ref_id` bigint NOT NULL,
+    `material_snapshot_json` json NOT NULL,
+    `decision` varchar(32) DEFAULT NULL,
+    `status` varchar(32) NOT NULL,
+    `result_summary_json` json DEFAULT NULL,
+    `requested_at` BIGINT NOT NULL,
+    `completed_at` BIGINT DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_knowledge_graph_deletion_change_material_status` (`material_id`, `status`, `requested_at`),
+    KEY `idx_knowledge_graph_deletion_change_content` (`content_type`, `content_ref_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材删除变更快照';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_task` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `deletion_change_id` bigint NOT NULL,
+    `idempotency_key` varchar(128) NOT NULL,
+    `status` varchar(32) NOT NULL,
+    `progress` int NOT NULL DEFAULT 0,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `result_summary_json` json DEFAULT NULL,
+    `requested_at` BIGINT NOT NULL,
+    `completed_at` BIGINT DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_deletion_task_idempotency` (`idempotency_key`),
+    KEY `idx_knowledge_graph_deletion_task_status_requested` (`status`, `requested_at`),
+    KEY `idx_knowledge_graph_deletion_task_change` (`deletion_change_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='素材删除后台任务';
