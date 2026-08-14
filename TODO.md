@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `04 graph portal 素材查询接口`：暴露门户已发布素材查询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/graph/GraphPortalController.java`、`assembler/GraphPortalInterfaceAssembler.java`、`controller/request/GraphPortalMaterialRequest.java`、`controller/response/GraphPortalMaterialResponse.java`，及 controller integration test（5 个文件）
-    - 处理动作：实现唯一 Portal URL，并仅调用 `GraphPortalApplicationService`。
-    - 验收点：未发布、不可见和不存在均返回 HTTP 200 的 `visible:false` 与空数组；响应不泄漏草稿、映射、人工来源或治理记录。
-    - 重要度：9/10
-
 - [ ] `05 graph 素材状态领域模型`：收敛为五态素材状态机
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
