@@ -12,7 +12,6 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNod
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeSplitCommand;
-import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialVersionRestoreCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentDto;
 import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphMaterialContentSnapshotDto;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphDocumentMerger;
@@ -36,7 +35,6 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterial
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNode;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialEdgeId;
@@ -44,9 +42,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMateri
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialEdgeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialRepository;
-import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialVersionRepository;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +53,6 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
     private final GraphMaterialRepository materialRepository;
     private final GraphMaterialNodeRepository nodeRepository;
     private final GraphMaterialEdgeRepository edgeRepository;
-    private final GraphMaterialVersionRepository versionRepository;
     private final GraphMaterialContentResolver contentResolver;
     private final GraphMaterialGraphLoader graphLoader;
     private final GraphMaterialGraphSaver graphSaver;
@@ -69,7 +64,6 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
             GraphMaterialRepository materialRepository,
             GraphMaterialNodeRepository nodeRepository,
             GraphMaterialEdgeRepository edgeRepository,
-            GraphMaterialVersionRepository versionRepository,
             GraphMaterialContentResolver contentResolver,
             GraphMaterialGraphLoader graphLoader,
             GraphMaterialGraphSaver graphSaver,
@@ -79,7 +73,6 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         this.materialRepository = materialRepository;
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
-        this.versionRepository = versionRepository;
         this.contentResolver = contentResolver;
         this.graphLoader = graphLoader;
         this.graphSaver = graphSaver;
@@ -220,30 +213,6 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         refreshAndDeduplicateEdges(graph);
         graphSaver.save(graph, command.materialLockVersion());
         return GraphApplicationAssembler.toMaterialResult(graphLoader.require(command.materialRef()));
-    }
-
-    @Override
-    public List<GraphMaterialVersion> listVersions(GraphMaterialQuery query) {
-        return versionRepository.listByMaterial(requireMaterialRef(query)).stream()
-                .sorted(Comparator.comparingLong(GraphMaterialVersion::getVersionNo)
-                        .reversed())
-                .toList();
-    }
-
-    @Override
-    @Transactional
-    public GraphMaterialResult restoreVersion(GraphMaterialVersionRestoreCommand command) {
-        GraphMaterialGraph graph = graphLoader.require(command.materialRef());
-        graph.material().requireLockVersion(command.materialLockVersion());
-        graph.material().requireEditable();
-        GraphMaterialVersion version =
-                versionRepository.getByMaterialAndVersionNo(command.materialRef(), command.versionNo());
-        if (version == null) {
-            throw new BizException("Graph material version does not exist");
-        }
-        GraphDocumentDto document = snapshotSupport.parseVersion(version);
-        return GraphApplicationAssembler.toMaterialResult(
-                graphSaver.replaceDocument(graph, document, GraphSourceType.MATERIAL, command.materialLockVersion()));
     }
 
     @Override

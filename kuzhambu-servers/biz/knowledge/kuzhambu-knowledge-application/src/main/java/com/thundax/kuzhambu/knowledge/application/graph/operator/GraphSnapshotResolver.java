@@ -11,7 +11,6 @@ import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentNodeDto
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNode;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialVersion;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -34,13 +33,6 @@ public class GraphSnapshotResolver {
 
     public GraphDocumentDto parseCandidate(String resultPayload) {
         return parseAndValidate(resultPayload);
-    }
-
-    public GraphDocumentDto parseVersion(GraphMaterialVersion version) {
-        if (version == null) {
-            throw new BizException("Graph material version is required");
-        }
-        return parseAndValidate(version.getSnapshotJson());
     }
 
     public String serialize(GraphMaterialGraph graph) {

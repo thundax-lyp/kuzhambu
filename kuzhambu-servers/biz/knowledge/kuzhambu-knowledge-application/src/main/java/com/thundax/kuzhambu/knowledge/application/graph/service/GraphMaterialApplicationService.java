@@ -9,7 +9,6 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNod
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeSplitCommand;
-import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialVersionRestoreCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
@@ -19,10 +18,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChan
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialNodeId;
-import java.util.List;
 
 public interface GraphMaterialApplicationService {
 
@@ -49,10 +46,6 @@ public interface GraphMaterialApplicationService {
     GraphMaterialChangeImpactResult previewNodeSplit(GraphMaterialNodeSplitQuery query);
 
     GraphMaterialResult splitNode(GraphMaterialNodeSplitCommand command);
-
-    List<GraphMaterialVersion> listVersions(GraphMaterialQuery query);
-
-    GraphMaterialResult restoreVersion(GraphMaterialVersionRestoreCommand command);
 
     GraphMaterialImportPreviewResult previewImport(GraphMaterialImportQuery query);
 
