@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `15 graph 治理审计写入`：在发布空间变更中记录审计操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`GraphPublishedApplicationServiceImpl.java`、`GraphPublishedNodeDetailResult.java`、`GraphPublishedEdgeDetailResult.java`、application assembler、service test（5 个文件）
-    - 处理动作：在发布节点和边的 create、update、delete、merge、split 中记录审计并经 facade 填充详情。
-    - 验收点：每次治理操作都有理由、前后快照和 `auditLogId`；详情由 facade 查询操作者；测试覆盖五种写入动作。
-    - 重要度：10/10
-
 - [ ] `16 graph 治理审计 DDL`：重建审计引用字段与索引
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`

@@ -39,6 +39,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceImpactResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
@@ -617,7 +618,9 @@ public final class GraphInterfaceAssembler {
                 value.incidentEdges().stream()
                         .map(GraphInterfaceAssembler::toEdgeData)
                         .toList(),
-                List.of());
+                value.operations().stream()
+                        .map(GraphInterfaceAssembler::toOperationData)
+                        .toList());
     }
 
     @NonNull
@@ -640,7 +643,28 @@ public final class GraphInterfaceAssembler {
                                 String.valueOf(material.getPublishedEdgeId().value()),
                                 fromJsonObject(material.getSourceSnapshotJson())))
                         .toList(),
-                List.of());
+                value.operations().stream()
+                        .map(GraphInterfaceAssembler::toOperationData)
+                        .toList());
+    }
+
+    @NonNull
+    public static GraphPublishedResponses.OperationData toOperationData(@NonNull GraphGovernanceOperationResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphPublishedResponses.OperationData(
+                value.id() == null ? null : String.valueOf(value.id()),
+                value.operationType(),
+                value.targetType(),
+                value.targetId() == null ? null : String.valueOf(value.targetId()),
+                value.reason(),
+                value.auditLogId() == null ? null : String.valueOf(value.auditLogId()),
+                value.operatorId(),
+                value.operatorName(),
+                value.occurredAt() == null
+                        ? null
+                        : String.valueOf(value.occurredAt().toEpochMilli()),
+                value.beforeSummary(),
+                value.afterSummary());
     }
 
     @NonNull
@@ -680,7 +704,9 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphPublishedRequests.PublishedNodeSaveRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphPublishedNodeCommand(
-                toPublishedNode(request.getNode(), request.getLockVersion()), toNodeProperties(request));
+                toPublishedNode(request.getNode(), request.getLockVersion()),
+                toNodeProperties(request),
+                request.getReason());
     }
 
     @NonNull
@@ -688,7 +714,9 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphPublishedRequests.PublishedEdgeSaveRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphPublishedEdgeCommand(
-                toPublishedEdge(request.getEdge(), request.getLockVersion()), toEdgeProperties(request));
+                toPublishedEdge(request.getEdge(), request.getLockVersion()),
+                toEdgeProperties(request),
+                request.getReason());
     }
 
     @NonNull
@@ -703,7 +731,10 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphPublishedRequests.PublishedNodeDeleteRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphPublishedNodeDeleteCommand(
-                toNodeId(request.getNodeId()), request.getCascadeEdges(), Long.parseLong(request.getLockVersion()));
+                toNodeId(request.getNodeId()),
+                request.getCascadeEdges(),
+                Long.parseLong(request.getLockVersion()),
+                request.getReason());
     }
 
     @NonNull
@@ -718,7 +749,7 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphPublishedRequests.PublishedEdgeDeleteRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphPublishedEdgeDeleteCommand(
-                toEdgeId(request.getEdgeId()), Long.parseLong(request.getLockVersion()));
+                toEdgeId(request.getEdgeId()), Long.parseLong(request.getLockVersion()), request.getReason());
     }
 
     @NonNull
@@ -741,7 +772,8 @@ public final class GraphInterfaceAssembler {
                 request.getMergedNodeIds().stream()
                         .map(GraphInterfaceAssembler::toNodeId)
                         .toList(),
-                Long.parseLong(request.getRetainedNodeLockVersion()));
+                Long.parseLong(request.getRetainedNodeLockVersion()),
+                request.getReason());
     }
 
     @NonNull
@@ -776,7 +808,8 @@ public final class GraphInterfaceAssembler {
                         : request.getCopiedMaterialRefs().stream()
                                 .map(GraphInterfaceAssembler::toContentRef)
                                 .toList(),
-                Long.parseLong(request.getSourceNodeLockVersion()));
+                Long.parseLong(request.getSourceNodeLockVersion()),
+                request.getReason());
     }
 
     @NonNull

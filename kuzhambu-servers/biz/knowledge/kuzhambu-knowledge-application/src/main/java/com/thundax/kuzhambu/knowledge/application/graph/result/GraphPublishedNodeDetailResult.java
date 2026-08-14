@@ -10,4 +10,5 @@ public record GraphPublishedNodeDetailResult(
         GraphPublishedNode node,
         List<GraphPublishedNodeProperty> properties,
         List<GraphPublishedNodeMaterial> materials,
-        List<GraphPublishedEdge> incidentEdges) {}
+        List<GraphPublishedEdge> incidentEdges,
+        List<GraphGovernanceOperationResult> operations) {}
