@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08` `admin-web graph governance browse`：实现整体治理浏览
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-governance/graph-governance-page.tsx`、`graph-governance-types.ts`、`graph-governance-page.test.tsx`、`governance-table/`、`governance-detail-drawer/`（5–7 个文件）
-    - 处理动作：实现节点关系表、局部画布、来源和审计详情的 Mock 浏览。
-    - 验收点：节点与关系选择联动画布和详情；测试覆盖标题、空态、无权限态和失败态；不含高风险写操作。
-    - 重要度：9/10
-
 - [ ] `09` `admin-web graph governance confirmation`：实现治理影响确认
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
