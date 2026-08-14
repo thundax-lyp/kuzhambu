@@ -5,7 +5,7 @@ import { replacePermissions } from "@/auth/permission-storage";
 import { GraphGovernancePage } from "./graph-governance-page";
 
 vi.mock("@/components/kuzhambu-graph", () => ({
-    KuzhambuGraph: () => <div data-testid="knowledge-graph-governance-canvas-mock" />
+    ["KuzhambuGraph"]: () => <div data-testid="knowledge-graph-governance-canvas-mock" />
 }));
 
 describe("GraphGovernancePage", () => {

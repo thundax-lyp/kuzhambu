@@ -14,8 +14,8 @@ export interface GraphWorkbenchNodeRecord {
     label: string;
     isFaded: boolean;
     isOrphan?: boolean;
-    sourceName: string;
-    qualityTodo: string;
+    sourceName?: string;
+    qualityTodo?: string;
 }
 
 export interface GraphWorkbenchEdgeRecord {

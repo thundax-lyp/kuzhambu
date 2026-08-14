@@ -13,6 +13,7 @@ import type {
     GraphDeletionChangeRecord,
     GraphDeletionDecision
 } from "./graph-deletion-change-types";
+import "./graph-deletion-change-page.css";
 
 export const GraphDeletionChangePage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
@@ -24,21 +25,32 @@ export const GraphDeletionChangePage = () => {
 
     if (!canViewGraph)
         return (
-            <KuzhambuPage description="需要知识图谱查看权限。" title="图谱删除变更">
+            <KuzhambuPage
+                className="graph-deletion-change-page"
+                description="需要知识图谱查看权限。"
+                title="图谱删除变更"
+            >
                 <KuzhambuAlert title="无权查看图谱删除变更" type="warning" showIcon />
             </KuzhambuPage>
         );
     return (
         <KuzhambuPage
+            className="graph-deletion-change-page"
             description="查看删除来源对正式图谱的影响并选择关联处理方式。"
             title="图谱删除变更"
         >
             <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                 <KuzhambuSpace>
-                    <KuzhambuButton onClick={() => setIsMockEmpty((value) => !value)}>
+                    <KuzhambuButton
+                        testId="knowledge-graph-deletion-change-toggle-empty-button"
+                        onClick={() => setIsMockEmpty((value) => !value)}
+                    >
                         模拟空态
                     </KuzhambuButton>
-                    <KuzhambuButton onClick={() => setIsMockFailure((value) => !value)}>
+                    <KuzhambuButton
+                        testId="knowledge-graph-deletion-change-toggle-failure-button"
+                        onClick={() => setIsMockFailure((value) => !value)}
+                    >
                         模拟加载失败
                     </KuzhambuButton>
                 </KuzhambuSpace>
@@ -58,7 +70,10 @@ export const GraphDeletionChangePage = () => {
                               <KuzhambuSpace>
                                   <span>节点 {change.affectedNodeCount}</span>
                                   <span>关系 {change.affectedRelationCount}</span>
-                                  <KuzhambuButton onClick={() => setSelectedChange(change)}>
+                                  <KuzhambuButton
+                                      testId={`knowledge-graph-deletion-change-view-${change.id}-button`}
+                                      onClick={() => setSelectedChange(change)}
+                                  >
                                       查看影响
                                   </KuzhambuButton>
                               </KuzhambuSpace>

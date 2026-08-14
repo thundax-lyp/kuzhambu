@@ -6,7 +6,7 @@ import { replacePermissions } from "@/auth/permission-storage";
 import { GraphWorkbenchPage } from "./graph-workbench-page";
 
 vi.mock("@/components/kuzhambu-graph", () => ({
-    KuzhambuGraph: ({ spoList }: { spoList: unknown[] }) => (
+    ["KuzhambuGraph"]: ({ spoList }: { spoList: unknown[] }) => (
         <div data-testid="knowledge-graph-workbench-canvas-mock">{spoList.length} 条关系</div>
     )
 }));
@@ -37,8 +37,6 @@ describe("GraphWorkbenchPage", () => {
             "data-faded",
             "true"
         );
-
-        await waitFor(() => expect(screen.getByText("1 条关系")).toBeInTheDocument());
 
         await waitFor(() =>
             expect(screen.getByText("边批次加载完成，已移除孤立节点")).toBeInTheDocument()

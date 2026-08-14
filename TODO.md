@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `13` `graph admin-web closure`：清理图谱 Admin Web 任务现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`（2 个文件）
-    - 处理动作：在全部前置任务及完整验证完成后，删除本任务 TODO 和 RUNBOOK。
-    - 验收点：不保留已完成任务、完成历史、失效 RUNBOOK 或临时文件；Mock 路由、provider、页面单测与 Mock E2E 保留。
-    - 重要度：10/10
-
 ## 待讨论项

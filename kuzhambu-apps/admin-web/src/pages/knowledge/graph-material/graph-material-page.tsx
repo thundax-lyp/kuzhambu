@@ -16,6 +16,7 @@ import { BatchPublicationPanel } from "./batch-publication-panel";
 import { MaterialDraftCanvas } from "./material-draft-canvas";
 import { MaterialObjectDrawer } from "./material-object-drawer";
 import type { GraphMaterialRecord, GraphMaterialStatus } from "./graph-material-types";
+import "./graph-material-page.css";
 
 const STATUS_LABELS: Record<GraphMaterialStatus, string> = {
     DRAFT: "草稿",
@@ -50,14 +51,22 @@ export const GraphMaterialPage = () => {
 
     if (!canViewGraph) {
         return (
-            <KuzhambuPage description="需要知识图谱查看权限。" title="图谱素材库">
+            <KuzhambuPage
+                className="graph-material-page"
+                description="需要知识图谱查看权限。"
+                title="图谱素材库"
+            >
                 <KuzhambuAlert title="无权查看图谱素材库" type="warning" showIcon />
             </KuzhambuPage>
         );
     }
 
     return (
-        <KuzhambuPage description="查看素材抽取状态和图谱草稿入口。" title="图谱素材库">
+        <KuzhambuPage
+            className="graph-material-page"
+            description="查看素材抽取状态和图谱草稿入口。"
+            title="图谱素材库"
+        >
             <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                 <KuzhambuSpace>
                     <KuzhambuButton

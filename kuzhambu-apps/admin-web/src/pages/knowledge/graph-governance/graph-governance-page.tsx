@@ -17,6 +17,7 @@ import type {
     GraphGovernanceNodeRecord,
     GraphGovernanceRelationRecord
 } from "./graph-governance-types";
+import "./graph-governance-page.css";
 
 const GOVERNANCE_ACTION_LABELS: Record<GovernanceAction, string> = {
     CREATE: "创建",
@@ -53,14 +54,22 @@ export const GraphGovernancePage = () => {
 
     if (!canViewGraph) {
         return (
-            <KuzhambuPage description="需要知识图谱查看权限。" title="图谱治理">
+            <KuzhambuPage
+                className="graph-governance-page"
+                description="需要知识图谱查看权限。"
+                title="图谱治理"
+            >
                 <KuzhambuAlert title="无权查看图谱治理" type="warning" showIcon />
             </KuzhambuPage>
         );
     }
 
     return (
-        <KuzhambuPage description="浏览正式节点、关系、来源与审计信息。" title="图谱治理">
+        <KuzhambuPage
+            className="graph-governance-page"
+            description="浏览正式节点、关系、来源与审计信息。"
+            title="图谱治理"
+        >
             <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                 <KuzhambuSpace>
                     <KuzhambuButton

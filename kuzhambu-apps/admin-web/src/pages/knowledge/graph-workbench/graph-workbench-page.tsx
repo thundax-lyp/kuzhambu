@@ -17,6 +17,7 @@ import type {
     GraphWorkbenchCategoryRecord,
     GraphWorkbenchMetricRecord
 } from "./graph-workbench-types";
+import "./graph-workbench-page.css";
 
 const CATEGORY_OPTIONS: GraphWorkbenchCategoryRecord[] = [
     { code: "all", name: "全部门类" },
@@ -46,7 +47,7 @@ export const GraphWorkbenchPage = () => {
     const [categoryCode, setCategoryCode] = useState("all");
     const [isMockFailure, setIsMockFailure] = useState(false);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-    const metrics = useMemo(createMetrics, []);
+    const metrics = useMemo(() => createMetrics(), []);
     const visibleSeeds = useMemo(
         () =>
             graphWorkbenchMockData.seedNodes.filter((node) =>
@@ -62,14 +63,22 @@ export const GraphWorkbenchPage = () => {
 
     if (!canViewGraph) {
         return (
-            <KuzhambuPage description="需要知识图谱查看权限。" title="图谱工作台">
+            <KuzhambuPage
+                className="graph-workbench-page"
+                description="需要知识图谱查看权限。"
+                title="图谱工作台"
+            >
                 <KuzhambuAlert title="无权查看图谱工作台" type="warning" showIcon />
             </KuzhambuPage>
         );
     }
 
     return (
-        <KuzhambuPage description="从近期发布种子开始，逐步浏览局部知识图谱。" title="图谱工作台">
+        <KuzhambuPage
+            className="graph-workbench-page"
+            description="从近期发布种子开始，逐步浏览局部知识图谱。"
+            title="图谱工作台"
+        >
             <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                 <KuzhambuSpace wrap>
                     {metrics.map((metric) => (

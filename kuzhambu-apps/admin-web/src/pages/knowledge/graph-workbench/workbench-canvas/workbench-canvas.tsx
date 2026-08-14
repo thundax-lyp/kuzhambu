@@ -31,8 +31,6 @@ export const WorkbenchCanvas = ({ edgeBatches, seedNodes, onSelectNode }: Workbe
     const [isComplete, setIsComplete] = useState(false);
 
     useEffect(() => {
-        setLoadedBatchCount(0);
-        setIsComplete(false);
         const timers = edgeBatches.map((_, index) =>
             window.setTimeout(
                 () => {
@@ -78,7 +76,7 @@ export const WorkbenchCanvas = ({ edgeBatches, seedNodes, onSelectNode }: Workbe
                 <KuzhambuGraph height={360} spoList={spoItems} />
                 <KuzhambuSpace wrap>
                     {visibleNodes.map((node) => (
-                        <KuzhambuButtonLike
+                        <GraphNodeButton
                             key={node.id}
                             isFaded={!isComplete && node.isFaded}
                             label={node.label}
@@ -92,13 +90,13 @@ export const WorkbenchCanvas = ({ edgeBatches, seedNodes, onSelectNode }: Workbe
     );
 };
 
-interface KuzhambuButtonLikeProps {
+interface GraphNodeButtonProps {
     isFaded: boolean;
     label: string;
     onClick: () => void;
 }
 
-const KuzhambuButtonLike = ({ isFaded, label, onClick }: KuzhambuButtonLikeProps) => (
+const GraphNodeButton = ({ isFaded, label, onClick }: GraphNodeButtonProps) => (
     <button aria-label={`查看节点 ${label}`} data-faded={isFaded} type="button" onClick={onClick}>
         {label}
     </button>

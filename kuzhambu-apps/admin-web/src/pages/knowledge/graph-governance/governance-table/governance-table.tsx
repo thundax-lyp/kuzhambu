@@ -1,4 +1,4 @@
-import { KuzhambuButton, KuzhambuTable } from "@/components";
+import { KuzhambuTable } from "@/components";
 import type {
     GraphGovernanceNodeRecord,
     GraphGovernanceRelationRecord
