@@ -49,4 +49,22 @@ describe("GraphMaterialPage", () => {
         await user.click(screen.getByRole("button", { name: "模拟加载失败" }));
         expect(screen.getByText("素材库 Mock 数据加载失败")).toBeInTheDocument();
     });
+
+    it("keeps selected order and preserves partial publication failures", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        render(<GraphMaterialPage />);
+        const user = userEvent.setup();
+
+        await user.click(screen.getByRole("button", { name: "选择 唐诗选注" }));
+        await user.click(screen.getByRole("button", { name: "选择 古诗源" }));
+        expect(screen.getByText("批量发布（2）")).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "批量发布（2）" }));
+
+        await user.click(screen.getByRole("button", { name: "确认批量发布" }));
+        const panel = screen.getByTestId("knowledge-graph-material-batch-panel");
+        expect(panel.textContent).toContain("唐诗选注");
+        expect(panel.textContent).toContain("古诗源");
+        expect(screen.getByText("部分素材发布失败，其余结果已保留。")).toBeInTheDocument();
+        expect(screen.getByText("发布预览存在未解决冲突。")).toBeInTheDocument();
+    });
 });

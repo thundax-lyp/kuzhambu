@@ -12,6 +12,7 @@ import {
     KuzhambuTag
 } from "@/components";
 import { graphMaterialMockData } from "./__mocks__/graph-mock-data";
+import { BatchPublicationPanel } from "./batch-publication-panel";
 import type { GraphMaterialRecord, GraphMaterialStatus } from "./graph-material-types";
 
 const STATUS_LABELS: Record<GraphMaterialStatus, string> = {
@@ -39,6 +40,8 @@ export const GraphMaterialPage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
     const [isMockFailure, setIsMockFailure] = useState(false);
     const [isMockEmpty, setIsMockEmpty] = useState(false);
+    const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
+    const [isBatchPanelOpen, setIsBatchPanelOpen] = useState(false);
     const materials = graphMaterialMockData.materials as readonly GraphMaterialRecord[];
 
     if (!canViewGraph) {
@@ -65,6 +68,13 @@ export const GraphMaterialPage = () => {
                     >
                         {isMockFailure ? "恢复模拟数据" : "模拟加载失败"}
                     </KuzhambuButton>
+                    <KuzhambuButton
+                        disabled={selectedMaterialIds.length === 0}
+                        testId="knowledge-graph-material-open-batch-publication-button"
+                        onClick={() => setIsBatchPanelOpen(true)}
+                    >
+                        批量发布（{selectedMaterialIds.length}）
+                    </KuzhambuButton>
                 </KuzhambuSpace>
                 {isMockFailure ? (
                     <KuzhambuAlert title="素材库 Mock 数据加载失败" type="error" showIcon />
@@ -83,7 +93,42 @@ export const GraphMaterialPage = () => {
                         />
                     </KuzhambuCard>
                 ) : null}
+                {!isMockFailure && !isMockEmpty ? (
+                    <KuzhambuCard title="批量发布选择">
+                        <KuzhambuSpace wrap>
+                            {materials.map((material) => (
+                                <KuzhambuButton
+                                    key={material.id}
+                                    testId={`knowledge-graph-material-select-${material.id}-button`}
+                                    type={
+                                        selectedMaterialIds.includes(material.id)
+                                            ? "primary"
+                                            : "default"
+                                    }
+                                    onClick={() =>
+                                        setSelectedMaterialIds((currentIds) =>
+                                            currentIds.includes(material.id)
+                                                ? currentIds.filter((id) => id !== material.id)
+                                                : [...currentIds, material.id]
+                                        )
+                                    }
+                                >
+                                    {selectedMaterialIds.includes(material.id) ? "已选择" : "选择"}{" "}
+                                    {material.title}
+                                </KuzhambuButton>
+                            ))}
+                        </KuzhambuSpace>
+                    </KuzhambuCard>
+                ) : null}
             </KuzhambuSpace>
+            <BatchPublicationPanel
+                materials={selectedMaterialIds
+                    .map((id) => materials.find((material) => material.id === id))
+                    .filter((material): material is GraphMaterialRecord => material !== undefined)}
+                results={graphMaterialMockData.batchPublicationResults}
+                onClose={() => setIsBatchPanelOpen(false)}
+                open={isBatchPanelOpen}
+            />
         </KuzhambuPage>
     );
 };

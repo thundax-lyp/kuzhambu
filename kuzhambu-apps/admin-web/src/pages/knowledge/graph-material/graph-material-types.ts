@@ -6,3 +6,9 @@ export interface GraphMaterialRecord {
     status: GraphMaterialStatus;
     failureReason?: string;
 }
+
+export interface GraphMaterialBatchPublicationResult {
+    materialId: string;
+    status: "PUBLISHED" | "FAILED";
+    failureReason?: string;
+}

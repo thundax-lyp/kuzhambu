@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `05` `admin-web graph batch publication`：实现批量发布结果
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-material/graph-material-page.tsx`、`graph-material-page.test.tsx`、`batch-publication-panel/`（4–5 个文件）
-    - 处理动作：按选择顺序展示逐素材的 Mock 预览、确认和结果。
-    - 验收点：部分失败不覆盖其他结果且顺序不变；不引入真实发布请求。
-    - 重要度：9/10
-
 - [ ] `06` `admin-web graph material draft`：实现单素材草稿画布
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
