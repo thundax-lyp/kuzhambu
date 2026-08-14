@@ -12,13 +12,17 @@ import com.thundax.kuzhambu.ai.domain.invocation.repository.AiBatchJobRepository
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.assembler.AiBatchJobPersistenceAssembler;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiBatchJobDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiBatchJobMapper;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
+
+    private static final String RUNNING_CONTENT_UNIQUE_KEY = "uk_ai_batch_job_running_content";
 
     private final AiBatchJobMapper aiBatchJobMapper;
 
@@ -38,8 +42,19 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
         if (dataObject.getRequestedAt() == null) {
             dataObject.setRequestedAt(Instant.now());
         }
-        aiBatchJobMapper.insert(dataObject);
+        try {
+            aiBatchJobMapper.insert(dataObject);
+        } catch (DuplicateKeyException ex) {
+            if (isRunningContentUniqueKey(ex)) {
+                throw new BizException("该素材已有运行中的 AI 任务");
+            }
+            throw ex;
+        }
         return AiBatchJobIdCodec.toDomain(dataObject.getId());
+    }
+
+    private boolean isRunningContentUniqueKey(DuplicateKeyException exception) {
+        return exception.getMessage() != null && exception.getMessage().contains(RUNNING_CONTENT_UNIQUE_KEY);
     }
 
     @Override
