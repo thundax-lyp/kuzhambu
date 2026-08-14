@@ -27,24 +27,25 @@
   "outputSchema": {
     "type": "object",
     "properties": {
-      "entities": {
+      "schemaVersion": {
+        "type": "string",
+        "const": "1.0.0"
+      },
+      "nodes": {
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
+            "id": { "type": "string" },
             "name": {
               "type": "string"
             },
-            "entityType": {
+            "nodeType": {
               "type": "string",
               "enum": [
-                "人物",
-                "作品",
-                "地点",
-                "时间",
-                "事件",
-                "概念",
-                "其他"
+                "PERSON", "GROUP", "DYNASTY", "ORGANIZATION", "OFFICE", "PLACE", "BUILDING",
+                "WORK", "EVENT", "RITUAL", "CONCEPT", "OBJECT", "MATERIAL", "ANIMAL", "PLANT",
+                "CELESTIAL_BODY", "NATURAL_PHENOMENON", "DEITY"
               ]
             },
             "description": {
@@ -52,52 +53,44 @@
             }
           },
           "required": [
-            "name",
-            "entityType"
+            "id", "name", "nodeType"
           ]
         }
       },
-      "relations": {
+      "edges": {
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
-            "sourceName": {
+            "id": { "type": "string" },
+            "sourceId": {
               "type": "string"
             },
-            "targetName": {
+            "targetId": {
               "type": "string"
             },
             "relationType": {
-              "type": "string"
-            },
-            "evidence": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "PARENT_OF", "ANCESTOR_OF", "SPOUSE_OF", "MEMBER_OF", "HOLDS_OFFICE", "RULES",
+                "LOCATED_IN", "PART_OF", "AUTHORED", "COMPILED", "DEPICTS", "DESCRIBES", "OCCURS_AT",
+                "PARTICIPATED_IN", "OBSERVED_IN"
+              ]
             }
           },
           "required": [
-            "sourceName",
-            "targetName",
+            "id",
+            "sourceId",
+            "targetId",
             "relationType"
           ]
-        }
-      },
-      "entryRefs": {
-        "type": "array",
-        "items": {
-          "type": "object"
-        }
-      },
-      "warnings": {
-        "type": "array",
-        "items": {
-          "type": "string"
         }
       }
     },
     "required": [
-      "entities",
-      "relations"
+      "schemaVersion",
+      "nodes",
+      "edges"
     ]
   },
   "changeSummary": "Initial knowledge default graph extraction prompt."

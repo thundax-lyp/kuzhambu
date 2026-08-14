@@ -1,11 +1,17 @@
 package com.thundax.kuzhambu.ai.application.facade.assembler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.ApplyAiCandidateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.CancelAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFailureCommand;
 import com.thundax.kuzhambu.ai.application.invocation.command.RejectAiCandidateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.AiReportSummaryQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.CanDispatchNextAiBatchUnitQuery;
 import com.thundax.kuzhambu.ai.application.invocation.query.GetAiBatchJobQuery;
@@ -29,6 +35,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiReportBucketType;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
@@ -37,18 +44,24 @@ import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiTopCapabilityFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiUsageSnapshotFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
+import com.thundax.kuzhambu.ai.facade.response.AiBatchJobPageFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.Collections;
@@ -59,6 +72,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AiFacadeAssembler {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @NonNull
     public AiInvocationLogFacadeDto toFacadeDto(@NonNull AiInvocationLog invocationLog) {
@@ -189,6 +204,7 @@ public class AiFacadeAssembler {
             @NonNull KnowledgeAiExtractionFacadeRequest request) {
         Objects.requireNonNull(request, "request must not be null");
         return new KnowledgeAiExtractionCommand(
+                null,
                 request.getTaskType(),
                 request.getScopeType(),
                 request.getScopeJson(),
@@ -209,6 +225,65 @@ public class AiFacadeAssembler {
                 request.getOutputSchemaJson(),
                 request.isForceJson(),
                 request.getLocale());
+    }
+
+    @NonNull
+    public KnowledgeAiExtractionCommand toKnowledgeGraphExtractionCommand(
+            @NonNull KnowledgeGraphExtractionJobFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new KnowledgeAiExtractionCommand(
+                null,
+                "GRAPH",
+                request.getScope(),
+                request.getContentTitle(),
+                request.getContentType(),
+                request.getContentId(),
+                request.getRequestedBy(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                graphExtractionInputPayload(request.getContentSnapshotJson()),
+                null,
+                true,
+                null);
+    }
+
+    private String graphExtractionInputPayload(String contentSnapshotJson) {
+        try {
+            JsonNode snapshot = OBJECT_MAPPER.readTree(contentSnapshotJson);
+            if (snapshot == null || !snapshot.isObject()) {
+                throw new BizException("Knowledge graph extraction content snapshot must be an object");
+            }
+            ObjectNode payload = OBJECT_MAPPER.createObjectNode();
+            payload.set("contentSnapshot", snapshot);
+            payload.put("sourceTitle", snapshot.path("title").asText(""));
+            payload.put("sourceText", textSegments(snapshot));
+            ArrayNode entryRefs = payload.putArray("entryRefs");
+            JsonNode contentRef = snapshot.get("contentRef");
+            if (contentRef != null && !contentRef.isNull()) {
+                entryRefs.add(contentRef);
+            }
+            return OBJECT_MAPPER.writeValueAsString(payload);
+        } catch (JsonProcessingException exception) {
+            throw new BizException(
+                    "KNOWLEDGE-GRAPH-EXTRACTION-400",
+                    "knowledge.graph.extraction.snapshot-invalid",
+                    "Knowledge graph extraction content snapshot is invalid",
+                    exception);
+        }
+    }
+
+    private String textSegments(JsonNode snapshot) {
+        List<String> segments = new java.util.ArrayList<>();
+        snapshot.path("textSegments").forEach(segment -> segments.add(segment.asText()));
+        return String.join("\n", segments);
     }
 
     @NonNull
@@ -257,6 +332,27 @@ public class AiFacadeAssembler {
     public GetAiBatchJobQuery toGetBatchJobQuery(@NonNull Long batchId) {
         Objects.requireNonNull(batchId, "batchId must not be null");
         return new GetAiBatchJobQuery(AiBatchJobIdCodec.toDomain(batchId));
+    }
+
+    @NonNull
+    public AiBatchJobsQuery toBatchJobsQuery(@NonNull AiBatchJobQueryFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new AiBatchJobsQuery(
+                request.getScope(),
+                request.getCapability() == null ? null : AiBusinessCapability.from(request.getCapability()),
+                request.getStatus() == null ? null : AiBatchJobStatus.from(request.getStatus()),
+                AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()));
+    }
+
+    @NonNull
+    public PageQuery toPageQuery(@NonNull AiBatchJobQueryFacadeRequest request) {
+        Objects.requireNonNull(request, "request must not be null");
+        return new PageQuery(request.getPageNo(), request.getPageSize());
+    }
+
+    @NonNull
+    public PageQuery toLatestPageQuery() {
+        return new PageQuery(1, 1);
     }
 
     @NonNull
@@ -317,6 +413,20 @@ public class AiFacadeAssembler {
                 .requestedAt(result.getRequestedAt())
                 .cancelledAt(result.getCancelledAt())
                 .completedAt(result.getCompletedAt())
+                .build();
+    }
+
+    @NonNull
+    public AiBatchJobPageFacadeResponse toFacadeResponse(@NonNull PageResult<AiBatchJobResult> result) {
+        Objects.requireNonNull(result, "result must not be null");
+        List<AiBatchJobFacadeResponse> records =
+                result.getRecords().stream().map(this::toFacadeResponse).toList();
+        return AiBatchJobPageFacadeResponse.builder()
+                .pageNo(result.getPageNo())
+                .pageSize(result.getPageSize())
+                .totalCount(result.getTotalCount())
+                .totalPage(result.getTotalPage())
+                .records(records)
                 .build();
     }
 

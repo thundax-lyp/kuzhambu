@@ -9,17 +9,20 @@ import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
+import com.thundax.kuzhambu.ai.facade.response.AiBatchJobPageFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
@@ -1386,6 +1389,16 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
+        public AiBatchJobFacadeResponse getLatestBatchJob(AiBatchJobQueryFacadeRequest request) {
+            return null;
+        }
+
+        @Override
+        public AiBatchJobPageFacadeResponse pageBatchJobs(AiBatchJobQueryFacadeRequest request) {
+            return null;
+        }
+
+        @Override
         public AiBatchJobActionFacadeResponse createBatchJob(CreateAiBatchJobFacadeRequest request) {
             Long batchId = aiBatchJobApplicationService == null
                     ? null
@@ -1397,6 +1410,12 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                             request.getTotalCount(),
                             request.getFailureSummaryJson()));
             return AiBatchJobActionFacadeResponse.builder().batchId(batchId).build();
+        }
+
+        @Override
+        public AiBatchJobActionFacadeResponse submitKnowledgeGraphExtraction(
+                KnowledgeGraphExtractionJobFacadeRequest request) {
+            return null;
         }
 
         @Override

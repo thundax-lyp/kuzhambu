@@ -9,17 +9,21 @@ import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public final class GraphKeyHelper {
 
     private GraphKeyHelper() {}
 
     public static GraphNodeKey generateNodeKey(GraphNodeType nodeType, String name, String identityQualifier) {
+        return generateNodeKey(
+                nodeType, name, Map.of("identityQualifier", identityQualifier == null ? "" : identityQualifier));
+    }
+
+    public static GraphNodeKey generateNodeKey(GraphNodeType nodeType, String name, Map<String, String> keyFields) {
         if (nodeType == null || isBlank(name)) {
             return null;
         }
-        String canonical = String.join("|", nodeType.value(), normalize(name), normalize(identityQualifier));
+        String canonical = canonicalValues(nodeType.value(), name, normalizeQualifiers(keyFields));
         return new GraphNodeKey("node:" + nodeType.value() + ":" + sha256(canonical));
     }
 
@@ -39,13 +43,8 @@ public final class GraphKeyHelper {
             source = target;
             target = temporary;
         }
-        String canonical = String.join(
-                "|",
-                normalize(relationType),
-                Boolean.toString(directed),
-                source,
-                target,
-                normalizeQualifiers(keyQualifiers));
+        String canonical = canonicalValues(
+                relationType, Boolean.toString(directed), source, target, normalizeQualifiers(keyQualifiers));
         return new GraphEdgeKey("edge:" + normalize(relationType) + ":" + sha256(canonical));
     }
 
@@ -53,10 +52,25 @@ public final class GraphKeyHelper {
         if (keyQualifiers == null || keyQualifiers.isEmpty()) {
             return "";
         }
-        return new TreeMap<>(keyQualifiers)
-                .entrySet().stream()
-                        .map(entry -> normalize(entry.getKey()) + "=" + normalize(entry.getValue()))
-                        .collect(Collectors.joining("&"));
+        StringBuilder canonical = new StringBuilder();
+        new TreeMap<>(keyQualifiers).forEach((key, value) -> {
+            appendValue(canonical, key);
+            appendValue(canonical, value);
+        });
+        return canonical.toString();
+    }
+
+    private static String canonicalValues(String... values) {
+        StringBuilder canonical = new StringBuilder();
+        for (String value : values) {
+            appendValue(canonical, value);
+        }
+        return canonical.toString();
+    }
+
+    private static void appendValue(StringBuilder target, String value) {
+        String normalized = normalize(value);
+        target.append(normalized.length()).append(':').append(normalized);
     }
 
     private static String normalize(String value) {
@@ -65,7 +79,7 @@ public final class GraphKeyHelper {
         }
         return Normalizer.normalize(value, Normalizer.Form.NFKC)
                 .trim()
-                .replaceAll("\\s+", "")
+                .replaceAll("\\s+", " ")
                 .toLowerCase(java.util.Locale.ROOT);
     }
 

@@ -24,7 +24,9 @@ public class GraphMaterialNodeRepositoryImpl extends GraphRepositorySupport impl
 
     @Override
     public GraphMaterialNode getById(GraphMaterialNodeId id) {
-        return GraphPersistenceAssembler.toDomain(mapper.selectById(GraphMaterialNodeIdCodec.toValue(id)), null);
+        GraphMaterialNodeDO dataObject = mapper.selectById(GraphMaterialNodeIdCodec.toValue(id));
+        return GraphPersistenceAssembler.toDomain(
+                dataObject, dataObject == null ? null : materialRef(dataObject.getMaterialId()));
     }
 
     @Override

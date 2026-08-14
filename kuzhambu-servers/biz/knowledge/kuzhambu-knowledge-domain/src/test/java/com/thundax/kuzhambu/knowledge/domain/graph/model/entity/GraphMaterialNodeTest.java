@@ -16,7 +16,7 @@ class GraphMaterialNodeTest {
     @Test
     void refreshNodeKeyShouldGenerateStableBusinessKey() {
         GraphMaterialNode first = node("李白");
-        GraphMaterialNode second = node(" 李　白 ");
+        GraphMaterialNode second = node("\t李白 ");
 
         first.refreshNodeKey("唐");
         second.refreshNodeKey(" 唐 ");

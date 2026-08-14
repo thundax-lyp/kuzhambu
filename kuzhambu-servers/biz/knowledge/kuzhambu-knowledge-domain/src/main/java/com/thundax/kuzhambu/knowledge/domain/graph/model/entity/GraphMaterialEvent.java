@@ -60,4 +60,12 @@ public class GraphMaterialEvent {
         status = GraphMaterialEventStatus.SCHEDULED;
         changedAt = Instant.now();
     }
+
+    public void reclaimStaleProcessing() {
+        if (status != GraphMaterialEventStatus.PROCESSING) {
+            throw new DomainException("Only processing graph material events can be reclaimed");
+        }
+        status = GraphMaterialEventStatus.SCHEDULED;
+        changedAt = Instant.now();
+    }
 }

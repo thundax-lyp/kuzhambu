@@ -128,7 +128,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 
 ### Transaction Boundary
 
-- `SERVERS_TRANSACTION_APPLICATION_SERVICE_ONLY`：全 servers 生产源码中的 `@Transactional` 只能标注在 application 层 `*ApplicationServiceImpl` 或 `*FacadeImpl` 类，或其公开用例方法上；interface、domain、infra、starter 和 common 模块不得声明该注解。
+- `SERVERS_TRANSACTION_APPLICATION_SERVICE_ONLY`：全 servers 生产源码中的 `@Transactional` 只能标注在 application 层 `*ApplicationServiceImpl`、`*FacadeImpl` 或 `operator` 包的公开方法上。`operator` 仅用于需要独立事务传播或原子写入边界的应用层执行器，不得承载 HTTP、领域规则或持久化实现；interface、domain、infra、starter 和 common 模块不得声明该注解。
 
 ### Exception Boundary
 
