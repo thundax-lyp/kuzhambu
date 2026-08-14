@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `11` `admin-web graph deletion tasks`：实现删除任务列表
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-deletion-task/graph-deletion-task-page.tsx`、`graph-deletion-task-types.ts`、`graph-deletion-task-page.test.tsx`、`deletion-task-detail-drawer/`（4–5 个文件）
-    - 处理动作：实现删除任务、失败原因和重试入口的 Mock 列表。
-    - 验收点：失败任务显示原因并可重试；测试覆盖详情、重试后的状态变化和空态。
-    - 重要度：9/10
-
 - [ ] `12` `admin-web graph mock e2e`：覆盖图谱 Mock 端到端流程
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
