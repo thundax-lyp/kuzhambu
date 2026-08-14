@@ -365,6 +365,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_task` (
     `deletion_change_id` bigint NOT NULL,
     `idempotency_key` varchar(128) NOT NULL,
     `status` varchar(32) NOT NULL,
+    `lock_version` bigint NOT NULL DEFAULT 0,
     `progress` int NOT NULL DEFAULT 0,
     `failure_reason` varchar(1024) DEFAULT NULL,
     `result_summary_json` json DEFAULT NULL,

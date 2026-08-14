@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08 graph 删除任务领域存储`：建立删除任务的幂等与乐观锁模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`kuzhambu-knowledge-domain/.../GraphMaterialDeletionTask.java`、其状态 enum、value object、repository，`kuzhambu-knowledge-infra/.../GraphMaterialDeletionTaskDO.java`、Mapper、PersistenceAssembler、RepositoryImpl，及存储测试（10 个文件）
-    - 处理动作：建立 deletion task 的领域、持久化、幂等键和以 `lockVersion` 更新的仓储边界。
-    - 验收点：`idempotency_key` 唯一；重试和状态更新均做版本校验；版本不一致返回 `GRAPH_LOCK_CONFLICT`。
-    - 重要度：10/10
-
 - [ ] `09 graph 删除表重建 DDL`：安全重建删除变更和任务表
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
