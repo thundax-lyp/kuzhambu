@@ -35,6 +35,7 @@
     <palantir-java-format.version>2.72.0</palantir-java-format.version>
     <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
     <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+    <json-schema-validator.version>2.0.0</json-schema-validator.version>
   </properties>
 
   <dependencyManagement>
@@ -90,6 +91,11 @@
         <groupId>com.tngtech.archunit</groupId>
         <artifactId>archunit-junit5</artifactId>
         <version>${archunit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.networknt</groupId>
+        <artifactId>json-schema-validator</artifactId>
+        <version>${json-schema-validator.version}</version>
       </dependency>
       <dependency>
         <groupId>com.thundax</groupId>
