@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialEvent
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialEventDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphMaterialEventMapper;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
@@ -57,6 +58,21 @@ public class GraphMaterialEventRepositoryImpl implements GraphMaterialEventRepos
         int effectiveLimit = limit <= 0 ? 20 : limit;
         return mapper
                 .selectList(w.eq("status", status.value())
+                        .orderByAsc("changed_at")
+                        .orderByAsc("id")
+                        .last("limit " + effectiveLimit))
+                .stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<GraphMaterialEvent> listProcessingBefore(Instant changedBefore, int limit) {
+        QueryWrapper<GraphMaterialEventDO> w = new QueryWrapper<>();
+        int effectiveLimit = limit <= 0 ? 20 : limit;
+        return mapper
+                .selectList(w.eq("status", GraphMaterialEventStatus.PROCESSING.value())
+                        .lt("changed_at", changedBefore)
                         .orderByAsc("changed_at")
                         .orderByAsc("id")
                         .last("limit " + effectiveLimit))

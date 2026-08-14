@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEve
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialEventStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialEventType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialEventId;
+import java.time.Instant;
 import java.util.List;
 
 public interface GraphMaterialEventRepository {
@@ -21,6 +22,8 @@ public interface GraphMaterialEventRepository {
             int pageSize);
 
     List<GraphMaterialEvent> listByStatus(GraphMaterialEventStatus status, int limit);
+
+    List<GraphMaterialEvent> listProcessingBefore(Instant changedBefore, int limit);
 
     GraphMaterialEventId insert(GraphMaterialEvent event);
 
