@@ -60,7 +60,9 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
                 metrics.publishedEdgeCount(),
                 metrics.coveredMaterialCount(),
                 metrics.isolatedNodeCount(),
-                metrics.missingCoreRelationNodeCount());
+                metrics.missingCoreRelationNodeCount(),
+                metrics.recentActivities(),
+                metrics.pendingConflictCount());
     }
 
     @Override

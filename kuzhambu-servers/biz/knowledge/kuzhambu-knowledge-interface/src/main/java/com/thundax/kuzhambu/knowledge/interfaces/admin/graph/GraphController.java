@@ -72,8 +72,10 @@ public class GraphController {
                 String.valueOf(result.coveredMaterialCount()),
                 String.valueOf(result.isolatedNodeCount()),
                 String.valueOf(result.missingCoreRelationNodeCount()),
-                List.of(),
-                "0");
+                result.recentActivities().stream()
+                        .map(GraphInterfaceAssembler::toActivityData)
+                        .toList(),
+                String.valueOf(result.pendingConflictCount()));
     }
 
     @Operation(summary = "查询图谱种子节点", description = "knowledge:graph:view")

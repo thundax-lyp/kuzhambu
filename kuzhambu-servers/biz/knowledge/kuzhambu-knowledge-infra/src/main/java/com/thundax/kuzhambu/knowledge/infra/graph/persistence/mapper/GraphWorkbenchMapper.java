@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper;
 
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphCoreRelationPolicy;
+import java.time.Instant;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -69,6 +70,56 @@ public interface GraphWorkbenchMapper {
             """)
     long countMissingCoreRelationNodes(
             @Param("nodeType") String nodeType, @Param("policies") List<GraphCoreRelationPolicy> policies);
+
+    @Select(
+            """
+            select type, contentType, contentRefId, occurredAt, summary
+            from (
+                select
+                  'PUBLICATION' as type,
+                  m.content_type as contentType,
+                  m.content_ref_id as contentRefId,
+                  coalesce(r.completed_at, r.requested_at) as occurredAt,
+                  concat('发布素材 ', m.content_title_snapshot, ' ', r.status) as summary
+                from knowledge_graph_publish_record r
+                join knowledge_graph_material m on m.id = r.material_id
+                union all
+                select
+                  concat('GOVERNANCE_', o.operation_type) as type,
+                  null as contentType,
+                  null as contentRefId,
+                  o.operated_at as occurredAt,
+                  concat(o.target_type, '#', o.target_id, ' ', o.operation_type) as summary
+                from knowledge_graph_governance_operation o
+                union all
+                select
+                  'DELETION' as type,
+                  c.content_type as contentType,
+                  c.content_ref_id as contentRefId,
+                  coalesce(c.completed_at, c.requested_at) as occurredAt,
+                  concat('素材删除变更 ', c.status) as summary
+                from knowledge_graph_material_deletion_change c
+            ) activity
+            order by occurredAt desc
+            limit #{limit}
+            """)
+    List<ActivityRow> listRecentActivities(@Param("limit") int limit);
+
+    @Select(
+            """
+            select count(*)
+            from knowledge_graph_publication_preview_token
+            where consumed_at is null
+              and expires_at > cast(unix_timestamp(current_timestamp(3)) * 1000 as unsigned)
+              and json_search(
+                    snapshot_json,
+                    'one',
+                    'CONFLICT',
+                    null,
+                    '$.nodes[*].matchType',
+                    '$.edges[*].matchType') is not null
+            """)
+    long countPendingPublicationConflicts();
 
     @Select(
             """
@@ -195,5 +246,15 @@ public interface GraphWorkbenchMapper {
     class SearchHitRow {
         private String objectType;
         private Long objectId;
+    }
+
+    @Getter
+    @Setter
+    class ActivityRow {
+        private String type;
+        private String contentType;
+        private Long contentRefId;
+        private Instant occurredAt;
+        private String summary;
     }
 }

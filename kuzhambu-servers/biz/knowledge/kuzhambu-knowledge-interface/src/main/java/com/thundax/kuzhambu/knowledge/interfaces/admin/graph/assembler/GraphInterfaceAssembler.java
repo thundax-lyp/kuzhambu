@@ -67,6 +67,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchActivity;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublishedRequests;
@@ -117,6 +118,18 @@ public final class GraphInterfaceAssembler {
 
     private static GraphMaterialResponses.ContentRefData toNullableContentRefData(ContentRef value) {
         return value == null ? null : toContentRefData(value);
+    }
+
+    @NonNull
+    public static GraphWorkbenchResponses.ActivityData toActivityData(@NonNull GraphWorkbenchActivity value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphWorkbenchResponses.ActivityData(
+                value.type(),
+                toNullableContentRefData(value.contentRef()),
+                value.occurredAt() == null
+                        ? null
+                        : String.valueOf(value.occurredAt().toEpochMilli()),
+                value.summary());
     }
 
     @NonNull

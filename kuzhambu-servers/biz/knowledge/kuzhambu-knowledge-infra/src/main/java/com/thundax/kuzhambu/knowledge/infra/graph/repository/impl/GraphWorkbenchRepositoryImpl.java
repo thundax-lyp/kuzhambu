@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
+import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
@@ -7,12 +8,14 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphCoreRelationPolicy;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishedSearchHit;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphQualitySnapshot;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchActivity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchMetrics;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphWorkbenchRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphPublishedEdgeMapper;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphPublishedNodeMapper;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphWorkbenchMapper;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphWorkbenchMapper.ActivityRow;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphWorkbenchMapper.SearchHitRow;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +29,7 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
     private static final String OBJECT_TYPE_EDGE = "EDGE";
     private static final String ISSUE_TYPE_ISOLATED = "ISOLATED";
     private static final String ISSUE_TYPE_MISSING_CORE_RELATION = "MISSING_CORE_RELATION";
+    private static final int RECENT_ACTIVITY_LIMIT = 10;
 
     private final GraphWorkbenchMapper mapper;
     private final GraphPublishedNodeMapper nodeMapper;
@@ -46,7 +50,11 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
                 mapper.countActiveEdges(),
                 mapper.countCoveredMaterials(),
                 mapper.countIsolatedNodes(null),
-                policies.isEmpty() ? 0 : mapper.countMissingCoreRelationNodes(null, policies));
+                policies.isEmpty() ? 0 : mapper.countMissingCoreRelationNodes(null, policies),
+                mapper.listRecentActivities(RECENT_ACTIVITY_LIMIT).stream()
+                        .map(this::toActivity)
+                        .toList(),
+                mapper.countPendingPublicationConflicts());
     }
 
     @Override
@@ -132,6 +140,13 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
             return new GraphPublishedSearchHit(row.getObjectType(), nodes.get(row.getObjectId()), null);
         }
         return new GraphPublishedSearchHit(row.getObjectType(), null, edges.get(row.getObjectId()));
+    }
+
+    private GraphWorkbenchActivity toActivity(ActivityRow row) {
+        ContentRef contentRef = row.getContentType() == null || row.getContentRefId() == null
+                ? null
+                : new ContentRef(row.getContentType(), row.getContentRefId());
+        return new GraphWorkbenchActivity(row.getType(), contentRef, row.getOccurredAt(), row.getSummary());
     }
 
     private boolean shouldIncludeIssue(String requestedIssueType, String issueType) {
