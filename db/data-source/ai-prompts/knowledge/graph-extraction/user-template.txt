@@ -5,16 +5,14 @@
 来源文本：
 {{sourceText}}
 
-请生成知识图谱候选，返回 JSON：
+请生成知识图谱文档，返回 JSON：
 {
-  "entities": [
-    { "name": "实体名", "entityType": "人物/作品/地点/时间/事件/概念/其他", "description": "说明" }
+  "schemaVersion": "1.0.0",
+  "nodes": [
+    { "id": "n1", "nodeType": "OBJECT", "name": "实体名", "description": "说明" }
   ],
-  "relations": [
-    { "sourceName": "来源实体", "targetName": "目标实体", "relationType": "关系类型", "evidence": "证据" }
-  ],
-  "entryRefs": [
-    { "contentType": "内容类型", "contentId": "内容ID", "title": "标题" }
+  "edges": [
+    { "id": "e1", "sourceId": "n1", "targetId": "n2", "relationType": "PART_OF" }
   ],
   "warnings": []
 }
