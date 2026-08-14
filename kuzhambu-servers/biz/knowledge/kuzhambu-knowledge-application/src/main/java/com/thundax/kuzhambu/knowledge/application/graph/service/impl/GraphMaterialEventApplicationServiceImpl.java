@@ -122,6 +122,11 @@ public class GraphMaterialEventApplicationServiceImpl implements GraphMaterialEv
         }
     }
 
+    @Override
+    public GraphMaterialEvent processScheduledEvent(GraphMaterialEventId eventId, long lockVersion) {
+        return processEvent(new GraphMaterialEventProcessCommand(eventId, lockVersion));
+    }
+
     private GraphMaterialEvent claim(GraphMaterialEventProcessCommand command) {
         if (command == null || command.eventId() == null) {
             throw new BizException("Graph material event process command is required");

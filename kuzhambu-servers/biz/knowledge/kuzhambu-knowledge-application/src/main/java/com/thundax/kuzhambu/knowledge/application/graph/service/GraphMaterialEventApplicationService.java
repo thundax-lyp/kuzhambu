@@ -18,4 +18,6 @@ public interface GraphMaterialEventApplicationService {
     GraphMaterialEvent retryEvent(GraphMaterialEventRetryCommand command);
 
     GraphMaterialEvent processEvent(GraphMaterialEventProcessCommand command);
+
+    GraphMaterialEvent processScheduledEvent(GraphMaterialEventId eventId, long lockVersion);
 }

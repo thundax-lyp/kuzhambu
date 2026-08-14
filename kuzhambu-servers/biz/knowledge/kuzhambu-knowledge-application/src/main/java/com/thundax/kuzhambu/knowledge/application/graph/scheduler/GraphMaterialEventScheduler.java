@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.knowledge.application.graph.scheduler;
 
-import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEventProcessCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialEventApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEvent;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialEventStatus;
@@ -30,8 +29,7 @@ public class GraphMaterialEventScheduler {
     public void processScheduledEvents() {
         for (GraphMaterialEvent event : eventRepository.listByStatus(GraphMaterialEventStatus.SCHEDULED, BATCH_SIZE)) {
             try {
-                eventApplicationService.processEvent(
-                        new GraphMaterialEventProcessCommand(event.getId(), event.getLockVersion()));
+                eventApplicationService.processScheduledEvent(event.getId(), event.getLockVersion());
             } catch (RuntimeException ex) {
                 LOGGER.warn("Graph material event processing failed, eventId={}", event.getId(), ex);
             }
