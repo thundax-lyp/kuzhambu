@@ -16,6 +16,7 @@
 
   <modules>
     <module>kuzhambu-system-domain</module>
+    <module>kuzhambu-system-facade</module>
     <module>kuzhambu-system-application</module>
     <module>kuzhambu-system-interface</module>
     <module>kuzhambu-system-infra</module>

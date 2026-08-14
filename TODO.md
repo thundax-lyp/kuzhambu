@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `12 system audit facade 契约`：建立知识域可依赖的系统审计门面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/00-governance/SERVERS-ARCHITECTURE.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-facade/pom.xml`、`SystemAuditFacade.java`、`SystemAuditFacadeRequest.java`、`SystemAuditFacadeResponse.java`、`kuzhambu-servers/biz/system/pom.xml`（5 个文件）
-    - 处理动作：新增 system facade 模块并将其加入 system reactor。
-    - 验收点：facade 仅声明 `record()` 与 `get()` 所需协议；模块可由 knowledge application 依赖；不暴露 System domain 或 infra 类型。
-    - 重要度：10/10
-
 - [ ] `13 system audit facade 实现`：实现系统审计门面的记录与查询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
