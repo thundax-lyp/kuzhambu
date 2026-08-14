@@ -1,19 +1,65 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler;
 
+import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedEdgeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublishedResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphWorkbenchResponses;
 
 /** 管理端图谱 HTTP 协议转换。 */
 public final class GraphInterfaceAssembler {
     private GraphInterfaceAssembler() {}
+
+    public static ContentRef toContentRef(GraphMaterialRequests.ContentRefRequest request) {
+        return new ContentRef(request.getContentType(), Long.valueOf(request.getContentRefId()));
+    }
+
+    public static GraphMaterialQuery toQuery(GraphMaterialRequests.ContentRefRequest request) {
+        return new GraphMaterialQuery(toContentRef(request));
+    }
+
+    public static GraphMaterialListQuery toQuery(GraphMaterialRequests.MaterialPageRequest request) {
+        return new GraphMaterialListQuery(
+                request.getKeyword(),
+                request.getStatus() == null
+                        ? null
+                        : com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus.valueOf(
+                                request.getStatus()));
+    }
+
+    public static GraphMaterialResponses.ContentRefData toContentRefData(ContentRef value) {
+        return value == null
+                ? null
+                : new GraphMaterialResponses.ContentRefData(
+                        value.getContentType(), String.valueOf(value.getContentId()));
+    }
+
+    public static GraphMaterialResponses.MaterialData toMaterialData(
+            com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial value) {
+        return new GraphMaterialResponses.MaterialData(
+                value.getContentRef() == null
+                        ? null
+                        : String.valueOf(value.getContentRef().getContentId()),
+                toContentRefData(value.getContentRef()),
+                value.getContentTitleSnapshot(),
+                value.getStatus().name(),
+                String.valueOf(value.getLockVersion()),
+                value.getPublishedAt() == null
+                        ? null
+                        : String.valueOf(value.getPublishedAt().toEpochMilli()),
+                null,
+                null);
+    }
 
     public static GraphIncidentEdgesQuery toQuery(GraphWorkbenchRequests.IncidentEdgesListRequest request) {
         return new GraphIncidentEdgesQuery(

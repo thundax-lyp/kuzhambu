@@ -6,9 +6,12 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler.GraphInterfaceAssembler;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphWorkbenchResponses;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -20,9 +23,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class GraphController {
     private final GraphWorkbenchApplicationService workbenchService;
+    private final GraphMaterialApplicationService materialService;
 
-    public GraphController(GraphWorkbenchApplicationService workbenchService) {
+    public GraphController(
+            GraphWorkbenchApplicationService workbenchService, GraphMaterialApplicationService materialService) {
         this.workbenchService = workbenchService;
+        this.materialService = materialService;
     }
 
     @HasPermission("knowledge:graph:view")
@@ -93,5 +99,32 @@ public class GraphController {
     private PageQuery pageQuery(String pageNo, String pageSize) {
         return PageInterfaceAssembler.toPageQuery(
                 pageNo == null ? null : Integer.valueOf(pageNo), pageSize == null ? null : Integer.valueOf(pageSize));
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("material/page")
+    public PageResponse<GraphMaterialResponses.MaterialData> materialPage(
+            @Valid @RequestBody GraphMaterialRequests.MaterialPageRequest request) {
+        var result = materialService.pageMaterials(
+                GraphInterfaceAssembler.toQuery(request), pageQuery(request.getPageNo(), request.getPageSize()));
+        return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toMaterialData);
+    }
+
+    @HasPermission("knowledge:graph:view")
+    @PostMapping("material/get")
+    public GraphMaterialResponses.DetailData materialGet(
+            @Valid @RequestBody GraphMaterialRequests.ContentRefRequest request) {
+        var result = materialService.getMaterialGraph(GraphInterfaceAssembler.toQuery(request));
+        return new GraphMaterialResponses.DetailData(
+                GraphInterfaceAssembler.toMaterialData(result.material()), List.of(), List.of(), List.of());
+    }
+
+    @HasPermission("knowledge:graph:edit")
+    @PostMapping("material/export")
+    public GraphMaterialResponses.ExportData materialExport(
+            @Valid @RequestBody GraphMaterialRequests.ContentRefRequest request) {
+        return new GraphMaterialResponses.ExportData(
+                "graph.json",
+                java.util.Map.of("graphJson", materialService.exportGraph(GraphInterfaceAssembler.toQuery(request))));
     }
 }
