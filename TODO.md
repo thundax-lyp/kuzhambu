@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `07 graph 删除变更领域存储`：建立删除变更的乐观锁模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`kuzhambu-knowledge-domain/.../GraphMaterialDeletionChange.java`、其状态/决策 enum、value object、repository，`kuzhambu-knowledge-infra/.../GraphMaterialDeletionChangeDO.java`、Mapper、PersistenceAssembler、RepositoryImpl，及存储测试（10 个文件）
-    - 处理动作：建立 deletion change 的领域、持久化和以 `lockVersion` 更新的仓储边界。
-    - 验收点：entity、DO、mapper 均使用 `lockVersion`；版本不一致返回 `GRAPH_LOCK_CONFLICT`；mapper 不跨表编排。
-    - 重要度：10/10
-
 - [ ] `08 graph 删除任务领域存储`：建立删除任务的幂等与乐观锁模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`

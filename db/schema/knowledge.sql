@@ -351,6 +351,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material_deletion_change` (
     `material_snapshot_json` json NOT NULL,
     `decision` varchar(32) DEFAULT NULL,
     `status` varchar(32) NOT NULL,
+    `lock_version` bigint NOT NULL DEFAULT 0,
     `result_summary_json` json DEFAULT NULL,
     `requested_at` BIGINT NOT NULL,
     `completed_at` BIGINT DEFAULT NULL,
