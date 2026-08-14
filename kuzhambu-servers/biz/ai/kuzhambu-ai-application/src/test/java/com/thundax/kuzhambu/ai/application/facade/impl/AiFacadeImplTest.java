@@ -206,6 +206,28 @@ class AiFacadeImplTest {
     }
 
     @Test
+    void getLatestCandidateByBatchShouldReturnTheLatestCandidate() {
+        AiInvocationRepository invocationRepository = mock(AiInvocationRepository.class);
+        AiCandidate latestCandidate = candidate();
+        latestCandidate.setId(AiCandidateIdCodec.toDomain(902L));
+        latestCandidate.setBatchId(AiBatchJobIdCodec.toDomain(88L));
+        when(invocationRepository.listCandidatesByBatch(AiBatchJobIdCodec.toDomain(88L)))
+                .thenReturn(List.of(latestCandidate));
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
+                invocationRepository,
+                mock(AiCandidateApplicationService.class));
+
+        var response = facade.getLatestCandidateByBatch(88L);
+
+        assertEquals(902L, response.getCandidateId());
+        assertEquals(88L, response.getBatchId());
+    }
+
+    @Test
     void understandDiscoveryQueryShouldMapRequestAndResponse() {
         DiscoveryAiApplicationService discoveryAiApplicationService = mock(DiscoveryAiApplicationService.class);
         when(discoveryAiApplicationService.understandQuery(any())).thenAnswer(invocation -> {

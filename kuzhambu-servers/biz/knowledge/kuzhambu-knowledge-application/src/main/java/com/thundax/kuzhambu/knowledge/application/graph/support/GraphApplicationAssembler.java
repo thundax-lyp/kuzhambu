@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.application.graph.support;
 
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
@@ -118,13 +119,15 @@ public final class GraphApplicationAssembler {
                 issues);
     }
 
-    public static GraphExtractionResult toExtractionResult(AiBatchJobFacadeResponse response) {
+    public static GraphExtractionResult toExtractionResult(
+            AiBatchJobFacadeResponse response, AiCandidateFacadeDto candidate) {
         if (response == null) {
             return null;
         }
         return new GraphExtractionResult(
                 ContentRefCodec.toDomain(response.getContentType(), response.getContentId()),
                 response.getBatchId(),
+                candidate == null ? null : candidate.getCandidateId(),
                 response.getStatus(),
                 response.getTotalCount(),
                 response.getSuccessCount(),

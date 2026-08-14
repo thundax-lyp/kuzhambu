@@ -37,6 +37,7 @@ import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -220,6 +221,17 @@ public class AiFacadeImpl implements AiFacade {
             return null;
         }
         return toFacadeDto(aiInvocationRepository.getByCallId(AiCallIdCodec.toDomain(request.getCallId())));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AiCandidateFacadeDto getLatestCandidateByBatch(Long batchId) {
+        if (batchId == null) {
+            return null;
+        }
+        List<AiCandidate> candidates =
+                aiInvocationRepository.listCandidatesByBatch(AiBatchJobIdCodec.toDomain(batchId));
+        return candidates == null || candidates.isEmpty() ? null : toFacadeDto(candidates.get(0));
     }
 
     @Override

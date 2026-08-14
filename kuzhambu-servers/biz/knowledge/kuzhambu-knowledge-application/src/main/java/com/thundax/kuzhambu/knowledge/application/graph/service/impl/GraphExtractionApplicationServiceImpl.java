@@ -86,7 +86,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         rejectRunningJob(materialRef);
         AiBatchJobActionFacadeResponse action = aiFacade.submitKnowledgeGraphExtraction(
                 extractionRequest(materialRef, snapshot, command == null ? null : command.requestedBy()));
-        return GraphApplicationAssembler.toExtractionResult(aiFacade.getBatchJob(action.getBatchId()));
+        return toExtractionResult(aiFacade.getBatchJob(action.getBatchId()));
     }
 
     @Override
@@ -105,12 +105,12 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         rejectRunningJob(materialRef);
         AiBatchJobActionFacadeResponse action = aiFacade.submitKnowledgeGraphExtraction(
                 extractionRequest(materialRef, snapshot, command.requestedBy()));
-        return GraphApplicationAssembler.toExtractionResult(aiFacade.getBatchJob(action.getBatchId()));
+        return toExtractionResult(aiFacade.getBatchJob(action.getBatchId()));
     }
 
     @Override
     public GraphExtractionResult getCurrentExtraction(GraphExtractionQuery query) {
-        return GraphApplicationAssembler.toExtractionResult(aiFacade.getLatestBatchJob(
+        return toExtractionResult(aiFacade.getLatestBatchJob(
                 queryRequest(requireMaterialRef(query == null ? null : query.materialRef()), STATUS_RUNNING, null)));
     }
 
@@ -124,9 +124,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 page.getPageNo(),
                 page.getPageSize(),
                 page.getTotalCount(),
-                page.getRecords().stream()
-                        .map(GraphApplicationAssembler::toExtractionResult)
-                        .toList());
+                page.getRecords().stream().map(this::toExtractionResult).toList());
     }
 
     @Override
@@ -174,6 +172,11 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 .contentSnapshotJson(snapshotJson(snapshot))
                 .requestedBy(requestedBy)
                 .build();
+    }
+
+    private GraphExtractionResult toExtractionResult(AiBatchJobFacadeResponse batchJob) {
+        return GraphApplicationAssembler.toExtractionResult(
+                batchJob, batchJob == null ? null : aiFacade.getLatestCandidateByBatch(batchJob.getBatchId()));
     }
 
     private AiBatchJobQueryFacadeRequest queryRequest(ContentRef materialRef, String status, PageQuery pageQuery) {
