@@ -8,7 +8,10 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionDecisionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionPrecheckCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionTaskProcessCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionTaskRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionChangeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialDeletionApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialDeletionChange;
@@ -17,6 +20,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEd
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNodeMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionDecision;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialDeletionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialDeletionChangeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialDeletionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialRepository;
@@ -115,6 +119,73 @@ public class GraphMaterialDeletionApplicationServiceImpl implements GraphMateria
                 query == null ? null : query.status(), effectivePage.getPageNo(), effectivePage.getPageSize());
     }
 
+    @Override
+    public PageResult<GraphMaterialDeletionTask> pageTasks(GraphMaterialDeletionTaskQuery query, PageQuery pageQuery) {
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        return taskRepository.page(
+                query == null ? null : query.status(), effectivePage.getPageNo(), effectivePage.getPageSize());
+    }
+
+    @Override
+    public GraphMaterialDeletionTask getTask(GraphMaterialDeletionTaskId taskId) {
+        if (taskId == null) {
+            throw new BizException("Graph material deletion task id is required");
+        }
+        return taskRepository.getById(taskId);
+    }
+
+    @Override
+    @Transactional
+    public GraphMaterialDeletionTask retry(GraphMaterialDeletionTaskRetryCommand command) {
+        if (command == null || command.taskId() == null) {
+            throw new BizException("Graph material deletion retry command is required");
+        }
+        GraphMaterialDeletionTask task = requireTask(command.taskId());
+        if (task.getLockVersion() != command.lockVersion()) {
+            throw lockConflict();
+        }
+        task.retry();
+        return taskRepository.updateIfLockVersion(task, command.lockVersion());
+    }
+
+    @Override
+    @Transactional
+    public List<GraphMaterialDeletionTask> processPendingTasks(GraphMaterialDeletionTaskProcessCommand command) {
+        int limit = command == null ? 0 : command.limit();
+        int effectiveLimit = limit <= 0 ? 20 : limit;
+        return taskRepository.listByStatus(GraphMaterialDeletionStatus.PENDING, effectiveLimit).stream()
+                .map(GraphMaterialDeletionTask::getId)
+                .map(this::processTask)
+                .toList();
+    }
+
+    private GraphMaterialDeletionTask processTask(GraphMaterialDeletionTaskId taskId) {
+        GraphMaterialDeletionTask task = requireTask(taskId);
+        if (task.getStatus() != GraphMaterialDeletionStatus.PENDING) {
+            return task;
+        }
+        long pendingLockVersion = task.getLockVersion();
+        task.startRunning();
+        GraphMaterialDeletionTask running = taskRepository.updateIfLockVersion(task, pendingLockVersion);
+        try {
+            GraphMaterialDeletionChange change = changeRepository.getById(running.getDeletionChangeId());
+            if (change == null || change.getDecision() == null) {
+                throw new BizException("Graph material deletion change is not ready");
+            }
+            if (change.getDecision() == GraphMaterialDeletionDecision.PRESERVE_CONTRIBUTION) {
+                preserveContribution(change.getMaterialRef());
+            } else {
+                withdrawAssociations(change.getMaterialRef());
+            }
+            running.succeed("{\"deleted\":true}", Instant.now(clock));
+            return taskRepository.updateIfLockVersion(running, running.getLockVersion());
+        } catch (RuntimeException exception) {
+            running.fail(exception.getMessage(), Instant.now(clock));
+            return taskRepository.updateIfLockVersion(running, running.getLockVersion());
+        }
+    }
+
     private void preserveContribution(ContentRef materialRef) {
         nodeMaterialRepository.listByMaterial(materialRef);
         edgeMaterialRepository.listByMaterial(materialRef);
@@ -148,6 +219,14 @@ public class GraphMaterialDeletionApplicationServiceImpl implements GraphMateria
             throw new BizException("Graph material ref is required");
         }
         return materialRef;
+    }
+
+    private GraphMaterialDeletionTask requireTask(GraphMaterialDeletionTaskId taskId) {
+        GraphMaterialDeletionTask task = taskRepository.getById(taskId);
+        if (task == null) {
+            throw new BizException("Graph material deletion task does not exist");
+        }
+        return task;
     }
 
     private String snapshotJson(

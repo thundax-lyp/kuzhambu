@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `11 graph 删除任务执行与重试`：实现删除后台任务闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`kuzhambu-knowledge-application/.../GraphMaterialDeletionApplicationServiceImpl.java`、task page/get/retry query-command、任务 processor、service test（6 个文件）
-    - 处理动作：实现幂等投递、执行前重读状态、任务查询、失败恢复和重试。
-    - 验收点：重复投递不新增任务；任务逐项重读状态；失败后可恢复；保留贡献与撤回关联的五项服务测试通过；提交后按 RUNBOOK 回复并 resolve PR #248 的 deletion thread。
-    - 重要度：10/10
-
 - [ ] `12 system audit facade 契约`：建立知识域可依赖的系统审计门面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/00-governance/SERVERS-ARCHITECTURE.md`
