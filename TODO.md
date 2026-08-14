@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `14 graph 治理审计存储`：保存治理理由、快照与审计引用
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`GraphGovernanceOperation.java`、`GraphManualSource.java`、两个 repository、两个 DO、两个 mapper、审计持久化测试（9 个文件）
-    - 处理动作：建立治理操作和人工来源的审计引用持久化，属性统一为 `auditLogId`。
-    - 验收点：仅保存 `auditLogId`，不复制操作者字段；两个 mapper 不跨表编排；持久化测试覆盖理由、前后快照和审计引用。
-    - 重要度：10/10
-
 - [ ] `15 graph 治理审计写入`：在发布空间变更中记录审计操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
