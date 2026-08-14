@@ -10,6 +10,15 @@ const fulfill = async (route: Route, data: unknown) =>
 
 export const mockGraphShell = async (page: Page) => {
     const unexpectedBackendRequests: string[] = [];
+    const unexpectedConsoleErrors: string[] = [];
+    page.on("console", (message) => {
+        if (message.type() === "error") {
+            unexpectedConsoleErrors.push(message.text());
+        }
+    });
+    page.on("pageerror", (error) => {
+        unexpectedConsoleErrors.push(error.message);
+    });
     await page.addInitScript(() => {
         localStorage.setItem("kuzhambu.admin.accessToken", "mock-token");
         localStorage.setItem("kuzhambu.admin.refreshToken", "mock-refresh");
@@ -62,5 +71,5 @@ export const mockGraphShell = async (page: Page) => {
     await page.route("**/kuzhambu-admin-api/api/auth/session/pre-auth-session/request", (route) =>
         fulfill(route, { loginToken: "mock-login-token", publicKey: "04mock-public-key" })
     );
-    return { unexpectedBackendRequests };
+    return { unexpectedBackendRequests, unexpectedConsoleErrors };
 };
