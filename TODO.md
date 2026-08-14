@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `04` `admin-web graph material library`：实现素材库与状态展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-material/graph-material-page.tsx`、`graph-material-types.ts`、`graph-material-page.test.tsx`（3 个文件）
-    - 处理动作：实现素材状态、抽取任务入口、空态和失败态的 Mock 列表。
-    - 验收点：五种状态有可见标签；`FAILED` 显示 `failureReason`；`PUBLISHING` 与 `WITHDRAWING` 不显示草稿写操作。
-    - 重要度：9/10
-
 - [ ] `05` `admin-web graph batch publication`：实现批量发布结果
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
