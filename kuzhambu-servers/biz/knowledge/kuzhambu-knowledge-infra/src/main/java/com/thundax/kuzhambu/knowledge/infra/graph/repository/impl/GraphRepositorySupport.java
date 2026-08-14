@@ -21,4 +21,14 @@ abstract class GraphRepositorySupport {
         GraphMaterialDO material = materialMapper.selectOne(wrapper);
         return material == null ? null : material.getId();
     }
+
+    protected ContentRef materialRef(Long materialId) {
+        if (materialId == null) {
+            return null;
+        }
+        GraphMaterialDO material = materialMapper.selectById(materialId);
+        return material == null
+                ? null
+                : ContentRefCodec.toDomain(material.getContentType(), material.getContentRefId());
+    }
 }
