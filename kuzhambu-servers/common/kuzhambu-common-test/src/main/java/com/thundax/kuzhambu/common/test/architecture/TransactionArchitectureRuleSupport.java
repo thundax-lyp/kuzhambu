@@ -30,14 +30,14 @@ public final class TransactionArchitectureRuleSupport {
 
         for (JavaClass javaClass : classes) {
             if (javaClass.isAnnotatedWith(TRANSACTIONAL_ANNOTATION)
-                    && !isApplicationServiceClass(javaClass, basePackage)) {
+                    && !isApplicationTransactionalClass(javaClass, basePackage)) {
                 violations.add(javaClass.getName());
             }
             for (JavaMethod method : javaClass.getMethods()) {
                 if (!method.isAnnotatedWith(TRANSACTIONAL_ANNOTATION)) {
                     continue;
                 }
-                if (!isApplicationServiceClass(javaClass, basePackage)
+                if (!isApplicationTransactionalClass(javaClass, basePackage)
                         || !method.getModifiers().contains(JavaModifier.PUBLIC)) {
                     violations.add(method.getFullName());
                 }
@@ -45,7 +45,7 @@ public final class TransactionArchitectureRuleSupport {
         }
 
         assertTrue(
-                "@Transactional must stay on application service/facade classes or public use-case methods: "
+                "@Transactional must stay on application service/facade classes or public operator methods: "
                         + violations,
                 violations.isEmpty());
     }
@@ -63,12 +63,12 @@ public final class TransactionArchitectureRuleSupport {
         }
 
         assertTrue(
-                "@Transactional must stay on application service/facade classes or public use-case methods: "
+                "@Transactional must stay on application service/facade classes or public operator methods: "
                         + violations,
                 violations.isEmpty());
     }
 
-    private static boolean isApplicationServiceClass(JavaClass javaClass, String basePackage) {
+    private static boolean isApplicationTransactionalClass(JavaClass javaClass, String basePackage) {
         String packageName = javaClass.getPackageName();
         String simpleName = javaClass.getSimpleName();
         if (!packageName.startsWith(basePackage + ".application.")) {
@@ -76,7 +76,8 @@ public final class TransactionArchitectureRuleSupport {
         }
         boolean applicationService = packageName.endsWith(".impl") && simpleName.endsWith("ApplicationServiceImpl");
         boolean facade = packageName.contains(".facade.impl") && simpleName.endsWith("FacadeImpl");
-        return applicationService || facade;
+        boolean operator = packageName.endsWith(".operator") || packageName.contains(".operator.");
+        return applicationService || facade || operator;
     }
 
     private static void collectSourceViolations(Path repositoryRoot, Path path, List<String> violations) {
@@ -88,7 +89,7 @@ public final class TransactionArchitectureRuleSupport {
 
         String packageName = packageName(source);
         String simpleName = typeName(source);
-        boolean allowedType = isApplicationServiceOrFacade(packageName, simpleName);
+        boolean allowedType = isApplicationServiceOrFacadeOrOperator(packageName, simpleName);
         do {
             if (!allowedType) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(repositoryRoot, path));
@@ -107,12 +108,14 @@ public final class TransactionArchitectureRuleSupport {
         return matcher.find() ? matcher.group(1) : "";
     }
 
-    private static boolean isApplicationServiceOrFacade(String packageName, String simpleName) {
+    private static boolean isApplicationServiceOrFacadeOrOperator(String packageName, String simpleName) {
         if (!packageName.matches(
                 "com\\.thundax\\.kuzhambu\\.(?:ai|classics|discovery|knowledge|operations|storage|system)\\.application(?:\\..*)?")) {
             return false;
         }
-        return simpleName.endsWith("ApplicationServiceImpl") || simpleName.endsWith("FacadeImpl");
+        boolean applicationService = simpleName.endsWith("ApplicationServiceImpl") || simpleName.endsWith("FacadeImpl");
+        boolean operator = packageName.endsWith(".operator") || packageName.contains(".operator.");
+        return applicationService || operator;
     }
 
     private static boolean isProductionJavaSource(Path path) {
