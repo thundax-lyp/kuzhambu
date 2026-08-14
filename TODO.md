@@ -10,110 +10,198 @@
 
 ## 当前任务项
 
-- [ ] `admin-web graph mock / router / menu`：建立图谱 Mock 基础与入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-*/__mocks__/graph-mock-data.ts`（5 个页面域）、`kuzhambu-apps/admin-web/src/router/index.tsx`、`db/data-source/system.json`（7 个文件）
-    - 处理动作：建立五种素材状态、发布冲突、批量部分失败、孤立节点和删除失败任务的无 HTTP Mock 数据，并注册五个新图谱路由与菜单。
-    - 验收点：五个路由和菜单均可解析；Mock 数据覆盖 `DRAFT`、`PUBLISHING`、`PUBLISHED`、`WITHDRAWING`、`FAILED` 及 `failureReason`；不新增 service、`postJson` 或网络等待逻辑。
-    - 重要度：10/10
-
-- [ ] `admin-web graph workbench overview`：实现工作台指标与筛选
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-workbench/graph-workbench-page.tsx`、`graph-workbench-types.ts`、`graph-workbench-page.test.tsx`（3 个文件）
-    - 处理动作：实现工作台指标卡、关键字搜索和门类筛选的 Mock 页面状态。
-    - 验收点：测试覆盖标题、指标、搜索筛选、空态、无权限态和失败态；页面不加载全图。
-    - 重要度：9/10
-
-- [ ] `admin-web graph workbench canvas`：实现工作台渐进局部画布
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-workbench/graph-workbench-canvas.tsx`、`graph-workbench-page.tsx`、`graph-workbench-page.test.tsx`、`graph-workbench-detail-drawer.tsx`（4 个文件）
-    - 处理动作：使用 `KuzhambuGraph` 实现种子淡化、分批补边、孤立节点移除和右侧详情抽屉。
-    - 验收点：测试断言首批边到达前种子淡化、每批追加节点和边、结束后孤立节点移除、详情可跳转治理或素材；最终最多渲染 200 个节点。
-    - 重要度：10/10
-
-- [ ] `admin-web graph material library`：实现素材库与状态展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-page.tsx`、`graph-material-types.ts`、`graph-material-page.test.tsx`（3 个文件）
-    - 处理动作：实现素材状态、抽取任务入口、空态和失败态的 Mock 列表。
-    - 验收点：五种素材状态都有明确可见标签；`FAILED` 显示失败原因；`PUBLISHING` 与 `WITHDRAWING` 不显示草稿写操作。
-    - 重要度：9/10
-
-- [ ] `admin-web graph batch publication`：实现批量发布结果面板
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-batch-publication-panel.tsx`、`graph-batch-publication-panel.test.tsx`、`graph-material-page.tsx`（3 个文件）
-    - 处理动作：按用户选择顺序展示每份素材的 Mock 预览、确认和成功或失败结果。
-    - 验收点：一份素材失败时其余素材结果仍保留且顺序不变；不引入真实批量发布请求。
-    - 重要度：9/10
-
-- [ ] `admin-web graph material editor`：实现单素材草稿画布
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-detail-page.tsx`、`graph-material-draft-canvas.tsx`、`graph-material-detail-page.test.tsx`、`graph-material-object-drawer.tsx`（4 个文件）
-    - 处理动作：实现正文摘要、草稿节点边 CRUD/抽取/导入入口、画布和对象详情的 Mock 交互。
-    - 验收点：`DRAFT` 可显示草稿写操作；`PUBLISHED` 仅显示发布结果和撤回入口；测试覆盖无权限、空态和失败态。
-    - 重要度：10/10
-
-- [ ] `admin-web graph publication preview`：实现单素材画布内发布预览
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-publication-preview.tsx`、`graph-publication-preview.test.tsx`、`graph-material-detail-page.tsx`（3 个文件）
-    - 处理动作：在当前草稿画布内实现四色发布预览、冲突定位和确认禁用状态。
-    - 验收点：绿/橙/红/蓝四类对象均可见；未决红色冲突时确认发布不可用；不创建独立发布预览路由。
-    - 重要度：10/10
-
-- [ ] `admin-web graph governance browse`：实现整体治理浏览
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-governance/graph-governance-page.tsx`、`graph-governance-table.tsx`、`graph-governance-detail-drawer.tsx`、`graph-governance-page.test.tsx`（4 个文件）
-    - 处理动作：实现发布节点关系表、局部画布、来源和审计详情的 Mock 浏览。
-    - 验收点：节点与关系选择能联动画布和详情；测试覆盖标题、空态、无权限态和失败态；本项不实现高风险写操作。
-    - 重要度：9/10
-
-- [ ] `admin-web graph governance confirmation`：实现治理影响预览与二次确认
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-governance/graph-governance-impact-drawer.tsx`、`graph-governance-impact-drawer.test.tsx`、`graph-governance-page.tsx`、`graph-governance-mapping-assignment.tsx`（4 个文件）
-    - 处理动作：实现创建、编辑、删除、合并和拆分的 Mock 影响抽屉、映射分配和二次确认。
-    - 验收点：高风险动作必须先展示节点、边、映射和 issue；确认前操作不可执行；合并和拆分不以表格替代映射分配。
-    - 重要度：10/10
-
-- [ ] `admin-web graph deletion changes`：实现删除变更列表
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-deletion-change/graph-deletion-change-page.tsx`、`graph-deletion-change-decision-panel.tsx`、`graph-deletion-change-page.test.tsx`（3 个文件）
-    - 处理动作：实现删除影响、`PRESERVE_CONTRIBUTION` 和 `WITHDRAW_ASSOCIATIONS` 两个 Mock 决策入口。
-    - 验收点：两个决策按钮分别显示不可逆影响；测试覆盖空态、无权限态和决策失败态。
-    - 重要度：9/10
-
-- [ ] `admin-web graph deletion tasks`：实现删除任务列表
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-deletion-task/graph-deletion-task-page.tsx`、`graph-deletion-task-detail-drawer.tsx`、`graph-deletion-task-page.test.tsx`（3 个文件）
-    - 处理动作：实现删除任务状态、失败原因和重试入口的 Mock 列表。
-    - 验收点：失败任务显示原因和重试操作；测试覆盖任务详情、重试后的 Mock 状态变化和空态。
-    - 重要度：9/10
-
-- [ ] `admin-web graph mock e2e`：覆盖图谱 Mock 端到端冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/knowledge/graph/graph-mock.spec.ts`、`graph-mock.fixture.ts`（2 个文件）
-    - 处理动作：以 Mock provider 固定覆盖抽取到撤回、治理合并拆分、删除预检到重试和工作台截断流程。
-    - 验收点：E2E 不访问后端端口；完整流程通过；失败分支包含发布部分失败和删除任务失败重试。
-    - 重要度：10/10
-
-- [ ] `graph admin-web closure`：清理前端任务现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`（2 个文件）
-    - 处理动作：在全部前端 TODO 真正完成并记录验证结果后，删除本组 TODO 和已完成 RUNBOOK。
-    - 验收点：不保留完成任务、完成历史或失效 RUNBOOK；保留已交付的 Mock 路由、provider、页面单测和 Mock E2E；工作区无本任务临时文件。
-    - 重要度：10/10
-
 ## 待审阅任务项
+
+- [ ] `01 graph admin 接口请求 DTO`：定义管理端图谱请求模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/controller/request/GraphWorkbenchRequests.java`、`GraphMaterialRequests.java`、`GraphPublicationRequests.java`、`GraphPublishedRequests.java`、`GraphDeletionRequests.java`，及对应 request 单测（6 个文件）
+    - 处理动作：按唯一 HTTP 契约定义五组 Admin request，所有 ID、版本和游标保持字符串协议。
+    - 验收点：所有 Admin URL 的 body 均有唯一 DTO；请求体不含操作者字段；DTO 单测覆盖必填字段与非法枚举拒绝。
+    - 重要度：10/10
+
+- [ ] `02 graph admin 接口响应 DTO`：定义管理端图谱响应模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/controller/response/GraphWorkbenchResponses.java`、`GraphMaterialResponses.java`、`GraphPublicationResponses.java`、`GraphPublishedResponses.java`、`GraphDeletionResponses.java`，及对应 response 序列化单测（6 个文件）
+    - 处理动作：按唯一 HTTP 契约定义五组 Admin response，固定可空字段和字符串 ID 序列化。
+    - 验收点：素材非 `FAILED` 时失败字段显式为 `null`；分页、审计、预览和任务结构与接口文档一致；序列化单测通过。
+    - 重要度：10/10
+
+- [ ] `03 graph admin controller 装配`：暴露管理端图谱 HTTP 入口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/GraphController.java`、`assembler/GraphInterfaceAssembler.java`，及 controller integration test（3 个文件）
+    - 处理动作：将所有 Admin URL 映射到既有 application service，并在 assembler 完成 request/response 转换。
+    - 验收点：读接口校验 `knowledge:graph:view`、写接口校验 `knowledge:graph:edit`；成功和业务错误码映射受集成测试覆盖；controller 不直接调用 repository。
+    - 重要度：10/10
+
+- [ ] `04 graph portal 素材查询接口`：暴露门户已发布素材查询
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/graph/GraphPortalController.java`、`assembler/GraphPortalInterfaceAssembler.java`、`controller/request/GraphPortalMaterialRequest.java`、`controller/response/GraphPortalMaterialResponse.java`，及 controller integration test（5 个文件）
+    - 处理动作：实现唯一 Portal URL，并仅调用 `GraphPortalApplicationService`。
+    - 验收点：未发布、不可见和不存在均返回 HTTP 200 的 `visible:false` 与空数组；响应不泄漏草稿、映射、人工来源或治理记录。
+    - 重要度：9/10
+
+- [ ] `05 graph 素材状态领域模型`：收敛为五态素材状态机
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`kuzhambu-knowledge-domain/.../GraphMaterialStatus.java`、`GraphMaterial.java`、`GraphMaterialGraph.java`、`kuzhambu-knowledge-application/.../GraphPublicationExecutor.java`、`GraphPublicationApplicationServiceImpl.java`，及状态机单测（6 个文件）
+    - 处理动作：删除 `READY` 并实现发布、撤回、失败重试和失败字段清空的五态转换。
+    - 验收点：仅 `DRAFT` 可编辑或抽取；成功与失败转换符合 RUNBOOK；`READY` 被拒绝；五个状态均有持久化值测试。
+    - 重要度：10/10
+
+- [ ] `06 graph 素材状态迁移 DDL`：落地状态字段与 READY 数据迁移
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`db/schema/knowledge.sql`、`scripts/migrate-graph-material-status.sql`，及迁移脚本测试（3 个文件）
+    - 处理动作：为素材表增加失败字段，并以固定 SQL 将历史 `READY` 迁移为 `DRAFT`。
+    - 验收点：字段顺序、类型和迁移 SQL 与 RUNBOOK 完全一致；不修改 Schema JSON；脚本测试验证 `READY→DRAFT`。
+    - 重要度：10/10
+
+- [ ] `07 graph 删除变更领域存储`：建立删除变更的乐观锁模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`kuzhambu-knowledge-domain/.../GraphMaterialDeletionChange.java`、其状态/决策 enum、value object、repository，`kuzhambu-knowledge-infra/.../GraphMaterialDeletionChangeDO.java`、Mapper、PersistenceAssembler、RepositoryImpl，及存储测试（10 个文件）
+    - 处理动作：建立 deletion change 的领域、持久化和以 `lockVersion` 更新的仓储边界。
+    - 验收点：entity、DO、mapper 均使用 `lockVersion`；版本不一致返回 `GRAPH_LOCK_CONFLICT`；mapper 不跨表编排。
+    - 重要度：10/10
+
+- [ ] `08 graph 删除任务领域存储`：建立删除任务的幂等与乐观锁模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`kuzhambu-knowledge-domain/.../GraphMaterialDeletionTask.java`、其状态 enum、value object、repository，`kuzhambu-knowledge-infra/.../GraphMaterialDeletionTaskDO.java`、Mapper、PersistenceAssembler、RepositoryImpl，及存储测试（10 个文件）
+    - 处理动作：建立 deletion task 的领域、持久化、幂等键和以 `lockVersion` 更新的仓储边界。
+    - 验收点：`idempotency_key` 唯一；重试和状态更新均做版本校验；版本不一致返回 `GRAPH_LOCK_CONFLICT`。
+    - 重要度：10/10
+
+- [ ] `09 graph 删除表重建 DDL`：安全重建删除变更和任务表
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`db/schema/knowledge.sql`、删除表重建迁移脚本、迁移前置检查测试（3 个文件）
+    - 处理动作：按零行数前置检查、固定 drop 顺序和新 DDL 重建两张删除表。
+    - 验收点：任一旧表非零行即停止；新表含 `lock_version bigint NOT NULL DEFAULT 0`；不执行存量删除数据迁移。
+    - 重要度：10/10
+
+- [ ] `10 graph 删除预检与决策`：实现素材删除影响确认
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`kuzhambu-knowledge-application/.../GraphMaterialDeletionApplicationService.java`、其 impl、precheck/decision command、change query、service test（6 个文件）
+    - 处理动作：实现预检、保留贡献或撤回关联的决策，并通过 change 乐观锁提交。
+    - 验收点：先写 `source_snapshot_json` 再清空草稿引用；撤回只改变当前素材 ACTIVE mapping；决策冲突返回 `GRAPH_LOCK_CONFLICT`。
+    - 重要度：10/10
+
+- [ ] `11 graph 删除任务执行与重试`：实现删除后台任务闭环
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`kuzhambu-knowledge-application/.../GraphMaterialDeletionApplicationServiceImpl.java`、task page/get/retry query-command、任务 processor、service test（6 个文件）
+    - 处理动作：实现幂等投递、执行前重读状态、任务查询、失败恢复和重试。
+    - 验收点：重复投递不新增任务；任务逐项重读状态；失败后可恢复；保留贡献与撤回关联的五项服务测试通过；提交后按 RUNBOOK 回复并 resolve PR #248 的 deletion thread。
+    - 重要度：10/10
+
+- [ ] `12 system audit facade 契约`：建立知识域可依赖的系统审计门面
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/00-governance/SERVERS-ARCHITECTURE.md`
+    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-facade/pom.xml`、`SystemAuditFacade.java`、`SystemAuditFacadeRequest.java`、`SystemAuditFacadeResponse.java`、`kuzhambu-servers/biz/system/pom.xml`（5 个文件）
+    - 处理动作：新增 system facade 模块并将其加入 system reactor。
+    - 验收点：facade 仅声明 `record()` 与 `get()` 所需协议；模块可由 knowledge application 依赖；不暴露 System domain 或 infra 类型。
+    - 重要度：10/10
+
+- [ ] `13 system audit facade 实现`：实现系统审计门面的记录与查询
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`kuzhambu-system-application/.../SystemAuditFacadeImpl.java`、其单测、`kuzhambu-knowledge-application/pom.xml`（3 个文件）
+    - 处理动作：实现 facade 的 `record()` 和 `get()`，并把 knowledge application 改为仅依赖该 facade。
+    - 验收点：`get(auditLogId)` 返回操作者与发生时间；knowledge application 无 System application/domain/infra 导入；模块测试通过。
+    - 重要度：10/10
+
+- [ ] `14 graph 治理审计存储`：保存治理理由、快照与审计引用
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`GraphGovernanceOperation.java`、`GraphManualSource.java`、两个 repository、两个 DO、两个 mapper、审计持久化测试（9 个文件）
+    - 处理动作：建立治理操作和人工来源的审计引用持久化，属性统一为 `auditLogId`。
+    - 验收点：仅保存 `auditLogId`，不复制操作者字段；两个 mapper 不跨表编排；持久化测试覆盖理由、前后快照和审计引用。
+    - 重要度：10/10
+
+- [ ] `15 graph 治理审计写入`：在发布空间变更中记录审计操作
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`GraphPublishedApplicationServiceImpl.java`、`GraphPublishedNodeDetailResult.java`、`GraphPublishedEdgeDetailResult.java`、application assembler、service test（5 个文件）
+    - 处理动作：在发布节点和边的 create、update、delete、merge、split 中记录审计并经 facade 填充详情。
+    - 验收点：每次治理操作都有理由、前后快照和 `auditLogId`；详情由 facade 查询操作者；测试覆盖五种写入动作。
+    - 重要度：10/10
+
+- [ ] `16 graph 治理审计 DDL`：重建审计引用字段与索引
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`db/schema/knowledge.sql`、审计表迁移脚本、DDL 结构测试（3 个文件）
+    - 处理动作：在 governance operation 和 manual source 表加入非空 `audit_log_id` 与固定索引。
+    - 验收点：字段位置、非空约束与索引名符合 RUNBOOK；不在 knowledge 表增加操作者 ID。
+    - 重要度：9/10
+
+- [ ] `17 graph 发布预览令牌存储`：持久化预览快照与原子消费条件
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`GraphPublicationPreviewToken.java`、Repository、`GraphPublicationPreviewTokenDO.java`、Mapper、PersistenceAssembler、RepositoryImpl、`db/schema/knowledge.sql`、token repository test（8 个文件）
+    - 处理动作：保存素材版本、发布对象 ID/版本、过期时间和消费状态的完整发布预览快照。
+    - 验收点：`snapshot_json` 含所有受影响对象的 ID、`lockVersion` 和关联集合；过期或已消费返回 `GRAPH_PREVIEW_STALE`；消费更新原子化。
+    - 重要度：10/10
+
+- [ ] `18 graph 发布确认冲突决策`：绑定单素材决策并校验版本
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`GraphPublicationCommand.java`、`GraphPublicationConflictDecision.java`、`GraphPublicationExecutor.java`、`GraphPublicationApplicationServiceImpl.java`、`GraphPublicationResult.java`、service test（6 个文件）
+    - 处理动作：将每对象冲突决策绑定未过期 preview token，并在确认时校验全部版本。
+    - 验收点：仅 `CONFLICT` 对象可有对应决策；决策与 token 不符或任一版本变化均返回 `GRAPH_PREVIEW_STALE`；写入 `conflict_decisions_json` 后消费 token；提交并验证后按 RUNBOOK 回复并 resolve PR #248/#249 的三个 publication thread。
+    - 重要度：10/10
+
+- [ ] `19 graph 批量发布独立执行`：保持批量预览、确认和结果输入顺序
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`GraphBatchPublicationPreviewQuery.java`、`GraphBatchPublicationCommand.java`、batch preview/result 模型、`GraphPublicationApplicationServiceImpl.java`、batch service test（6 个文件）
+    - 处理动作：按请求顺序独立预览和确认每份素材，不建立跨素材事务。
+    - 验收点：结果严格按输入顺序；单项失败不短路或回滚其他素材；测试覆盖部分失败和每份素材独立 token。
+    - 重要度：10/10
+
+- [ ] `20 graph 治理影响令牌存储`：持久化治理预览影响快照
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
+    - 范围对象：`GraphGovernanceImpactToken.java`、Repository、`GraphGovernanceImpactTokenDO.java`、Mapper、PersistenceAssembler、RepositoryImpl、`db/schema/knowledge.sql`、token repository test（8 个文件）
+    - 处理动作：保存删除、合并、拆分预览所涉节点、边、mapping 和对象版本的完整快照。
+    - 验收点：token 过期或已消费返回 `GRAPH_PREVIEW_STALE`；快照不是 hash 或仅 ID；DDL 类型与索引不变。
+    - 重要度：10/10
+
+- [ ] `21 graph 治理确认令牌校验`：拒绝预览后变化的删除、合并和拆分
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：四个 GraphPublished * Delete/Merge/Split command、`GraphPublishedApplicationServiceImpl.java`、`GraphGovernanceImpactResult.java`、service test（7 个文件）
+    - 处理动作：为四个确认 command 加入 `impactToken`，确认前逐项比对 token 快照。
+    - 验收点：节点级联删除只删 preview 中的边；预览后新增 incident edge 时返回 `GRAPH_PREVIEW_STALE` 且不写数据；合并和拆分映射完整性受测试覆盖；提交并验证后按 RUNBOOK 回复并 resolve PR #248 的 impact-token thread。
+    - 重要度：10/10
+
+- [ ] `22 graph 工作台活动读模型`：补齐近期活动与待处理冲突统计
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 范围对象：`GraphWorkbenchOverviewResult.java`、`GraphWorkbenchRepository.java`、`GraphWorkbenchRepositoryImpl.java`、`GraphWorkbenchMapper.java`、repository test（5 个文件）
+    - 处理动作：由 repository 提供 `recentActivities` 与 `pendingConflictCount` 的 read model 和 SQL。
+    - 验收点：controller 不拼装或伪造字段；统计与活动查询受测试覆盖；结果匹配工作台接口结构。
+    - 重要度：8/10
+
+- [ ] `23 graph 旧写入口下线与迁移核对`：阻断旧接口写入并验证迁移完整性
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`、`docs/00-governance/TODO-RULES.md`
+    - 范围对象：旧 `graph-extraction`、graph version、`refinement` 写入口（最多 6 个文件）、`scripts/verify-graph-migration.sh`、迁移脚本测试（8 个文件）
+    - 处理动作：停止旧接口对正式图谱的写入，并以固定脚本按 `SANCAI_ENTRY` 核对迁移前后数量。
+    - 验收点：旧表仅可读迁移；新旧接口不同时写正式图谱；未定义映射时脚本非零退出且不自动发布；脚本遵守 Prepare/Execute/Assert/Restore。
+    - 重要度：10/10
+
+- [ ] `24 graph backend 现场清理`：清理已完成任务、RUNBOOK 与临时执行痕迹
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/00-governance/TODO-RULES.md`、`docs/00-governance/DOCUMENT-RULES.md`
+    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`，以及本任务创建的临时迁移验证文件（2–10 个文件）
+    - 处理动作：在全部交付、迁移核对和 PR 验证记录完成后删除本组 TODO、已完成 RUNBOOK 与临时文件。
+    - 验收点：`TODO.md` 不保留完成任务或历史；RUNBOOK 及残留引用已删除；PR 描述已记录接口、迁移和验证结果；工作区无本任务临时文件。
+    - 重要度：10/10
 
 ## 待讨论项
