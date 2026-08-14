@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNod
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeSplitCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationConflictDecision;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedEdgeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedEdgeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeCommand;
@@ -359,7 +360,22 @@ public final class GraphInterfaceAssembler {
     public static GraphPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.PublicationConfirmRequest request) {
         Objects.requireNonNull(request, "request");
-        return new GraphPublicationCommand(toContentRef(request), Long.valueOf(request.getMaterialLockVersion()), null);
+        return new GraphPublicationCommand(
+                toContentRef(request),
+                Long.valueOf(request.getMaterialLockVersion()),
+                null,
+                request.getPreviewToken(),
+                request.getConflictDecisions() == null
+                        ? List.of()
+                        : request.getConflictDecisions().stream()
+                                .map(decision -> new GraphPublicationConflictDecision(
+                                        decision.getObjectType(),
+                                        Long.valueOf(decision.getMaterialObjectId()),
+                                        decision.getAction(),
+                                        decision.getMatchedObjectId() == null
+                                                ? null
+                                                : Long.valueOf(decision.getMatchedObjectId())))
+                                .toList());
     }
 
     @NonNull
@@ -381,13 +397,13 @@ public final class GraphInterfaceAssembler {
     public static GraphPublicationResponses.PreviewData toPreviewData(@NonNull GraphPublicationPreviewResult value) {
         Objects.requireNonNull(value, "value");
         return new GraphPublicationResponses.PreviewData(
-                null,
+                value.previewToken(),
                 toNullableContentRefData(value.materialRef()),
                 String.valueOf(value.materialLockVersion()),
                 value.nodes().stream()
                         .map(node -> new GraphPublicationResponses.MatchData(
                                 String.valueOf(node.materialNode().getId().value()),
-                                node.matchedNode() == null ? "CREATE" : "REUSE",
+                                node.matchedNode() == null ? "CREATE" : "CONFLICT",
                                 node.matchedNode() == null
                                         ? null
                                         : String.valueOf(
@@ -402,7 +418,7 @@ public final class GraphInterfaceAssembler {
                 value.edges().stream()
                         .map(edge -> new GraphPublicationResponses.MatchData(
                                 String.valueOf(edge.materialEdge().getId().value()),
-                                edge.matchedEdge() == null ? "CREATE" : "REUSE",
+                                edge.matchedEdge() == null ? "CREATE" : "CONFLICT",
                                 edge.matchedEdge() == null
                                         ? null
                                         : String.valueOf(

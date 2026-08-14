@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
 
+import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ public class GraphPublicationPreviewToken {
     public static final String STALE_CODE = "GRAPH_PREVIEW_STALE";
 
     private String token;
-    private Long materialId;
+    private ContentRef materialRef;
     private long materialLockVersion;
     private String snapshotJson;
     private Instant expiresAt;

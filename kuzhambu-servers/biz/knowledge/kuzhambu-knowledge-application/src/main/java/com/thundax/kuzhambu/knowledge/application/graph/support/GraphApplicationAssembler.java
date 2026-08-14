@@ -77,6 +77,7 @@ public final class GraphApplicationAssembler {
         Map<GraphMaterialEdgeId, GraphPublishedEdge> matchedEdges =
                 safeMap(publication.context().matchedEdgesByMaterialEdgeId());
         return new GraphPublicationPreviewResult(
+                null,
                 graph.material().getContentRef(),
                 graph.material().getLockVersion(),
                 graph.nodes().stream()

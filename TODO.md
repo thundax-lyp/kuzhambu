@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `18 graph 发布确认冲突决策`：绑定单素材决策并校验版本
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`GraphPublicationCommand.java`、`GraphPublicationConflictDecision.java`、`GraphPublicationExecutor.java`、`GraphPublicationApplicationServiceImpl.java`、`GraphPublicationResult.java`、service test（6 个文件）
-    - 处理动作：将每对象冲突决策绑定未过期 preview token，并在确认时校验全部版本。
-    - 验收点：仅 `CONFLICT` 对象可有对应决策；决策与 token 不符或任一版本变化均返回 `GRAPH_PREVIEW_STALE`；写入 `conflict_decisions_json` 后消费 token；提交并验证后按 RUNBOOK 回复并 resolve PR #248/#249 的三个 publication thread。
-    - 重要度：10/10
-
 - [ ] `19 graph 批量发布独立执行`：保持批量预览、确认和结果输入顺序
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
