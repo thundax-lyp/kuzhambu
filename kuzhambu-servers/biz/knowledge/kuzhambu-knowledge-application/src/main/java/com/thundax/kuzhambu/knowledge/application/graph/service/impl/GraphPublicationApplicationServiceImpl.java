@@ -12,6 +12,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphPublicatio
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
@@ -86,10 +88,10 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     }
 
     @Override
-    public List<GraphPublicationPreviewResult> previewBatchPublication(GraphBatchPublicationPreviewQuery query) {
-        return safeRefs(query == null ? null : query.materialRefs()).stream()
+    public GraphBatchPublicationPreviewResult previewBatchPublication(GraphBatchPublicationPreviewQuery query) {
+        return new GraphBatchPublicationPreviewResult(safeRefs(query == null ? null : query.materialRefs()).stream()
                 .map(this::previewPublication)
-                .toList();
+                .toList());
     }
 
     @Override
@@ -98,10 +100,10 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     }
 
     @Override
-    public List<GraphPublicationResult> publishBatch(GraphBatchPublicationCommand command) {
-        return safeCommands(command == null ? null : command.materials()).stream()
+    public GraphBatchPublicationResult publishBatch(GraphBatchPublicationCommand command) {
+        return new GraphBatchPublicationResult(safeCommands(command == null ? null : command.materials()).stream()
                 .map(this::publishOneSafely)
-                .toList();
+                .toList());
     }
 
     @Override

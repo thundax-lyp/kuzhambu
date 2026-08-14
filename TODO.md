@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `19 graph 批量发布独立执行`：保持批量预览、确认和结果输入顺序
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`GraphBatchPublicationPreviewQuery.java`、`GraphBatchPublicationCommand.java`、batch preview/result 模型、`GraphPublicationApplicationServiceImpl.java`、batch service test（6 个文件）
-    - 处理动作：按请求顺序独立预览和确认每份素材，不建立跨素材事务。
-    - 验收点：结果严格按输入顺序；单项失败不短路或回滚其他素材；测试覆盖部分失败和每份素材独立 token。
-    - 重要度：10/10
-
 - [ ] `20 graph 治理影响令牌存储`：持久化治理预览影响快照
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`

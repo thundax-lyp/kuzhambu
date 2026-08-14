@@ -39,6 +39,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNode
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
@@ -455,22 +457,23 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphPublicationResponses.BatchPreviewData toBatchPreviewData(
-            @NonNull List<GraphPublicationPreviewResult> values) {
-        Objects.requireNonNull(values, "values");
-        return new GraphPublicationResponses.BatchPreviewData(
-                values.stream().map(GraphInterfaceAssembler::toPreviewData).toList());
+            @NonNull GraphBatchPublicationPreviewResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphPublicationResponses.BatchPreviewData(value.materials().stream()
+                .map(GraphInterfaceAssembler::toPreviewData)
+                .toList());
     }
 
     @NonNull
-    public static GraphPublicationResponses.BatchData toBatchData(@NonNull List<GraphPublicationResult> values) {
-        Objects.requireNonNull(values, "values");
-        return new GraphPublicationResponses.BatchData(values.stream()
-                .map(value -> new GraphPublicationResponses.BatchItemData(
-                        toNullableContentRefData(value.materialRef()),
-                        value.success(),
-                        value.success() ? toPublicationData(value) : null,
-                        value.success() ? null : "GRAPH_PUBLICATION_FAILED",
-                        value.failureMessage()))
+    public static GraphPublicationResponses.BatchData toBatchData(@NonNull GraphBatchPublicationResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphPublicationResponses.BatchData(value.materials().stream()
+                .map(item -> new GraphPublicationResponses.BatchItemData(
+                        toNullableContentRefData(item.materialRef()),
+                        item.success(),
+                        item.success() ? toPublicationData(item) : null,
+                        item.success() ? null : "GRAPH_PUBLICATION_FAILED",
+                        item.failureMessage()))
                 .toList());
     }
 
