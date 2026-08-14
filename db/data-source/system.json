@@ -130,12 +130,11 @@
         "仪表盘",
         "知识治理",
         "知识治理/知识图谱",
-        "知识治理/知识图谱/知识抽取",
-        "知识治理/知识图谱/知识抽取/抽取任务编辑",
-        "知识治理/知识图谱/知识抽取/抽取候选应用",
-        "知识治理/知识图谱/图谱工作台",
-        "知识治理/知识图谱/图谱结果",
-        "知识治理/知识图谱/质量报告",
+        "知识治理/知识图谱/工作台",
+        "知识治理/知识图谱/整体治理",
+        "知识治理/知识图谱/素材空间",
+        "知识治理/知识图谱/素材空间/删除变更",
+        "知识治理/知识图谱/素材空间/删除任务",
         "知识治理/世系图",
         "运营运维",
         "运营运维/健康检查",
@@ -192,10 +191,11 @@
         "古籍管理/发布任务",
         "知识治理",
         "知识治理/知识图谱",
-        "知识治理/知识图谱/知识抽取",
-        "知识治理/知识图谱/图谱工作台",
-        "知识治理/知识图谱/图谱结果",
-        "知识治理/知识图谱/质量报告",
+        "知识治理/知识图谱/工作台",
+        "知识治理/知识图谱/整体治理",
+        "知识治理/知识图谱/素材空间",
+        "知识治理/知识图谱/素材空间/删除变更",
+        "知识治理/知识图谱/素材空间/删除任务",
         "知识治理/世系图",
         "知识治理/标签配置",
         "知识库",
@@ -747,62 +747,51 @@
           "remarks": "知识图谱治理分组",
           "children": [
             {
-              "id": 46,
-              "name": "知识抽取",
+              "id": 41,
+              "name": "工作台",
               "perms": ["knowledge:graph:view"],
               "priority": 83,
               "icon": "submissions",
-              "url": "/knowledge/graph-extraction",
-              "remarks": "知识图谱抽取任务查看",
-              "children": [
-                {
-                  "id": 47,
-                  "name": "抽取任务编辑",
-                  "perms": ["knowledge:graph:edit"],
-                  "priority": 82,
-                  "visibility": "HIDDEN",
-                  "icon": "submissions",
-                  "url": "/knowledge/graph-extraction",
-                  "remarks": "知识图谱抽取任务创建和重生成权限"
-                },
-                {
-                  "id": 48,
-                  "name": "抽取候选应用",
-                  "perms": ["knowledge:graph:apply"],
-                  "priority": 81,
-                  "visibility": "HIDDEN",
-                  "icon": "submissions",
-                  "url": "/knowledge/graph-extraction",
-                  "remarks": "知识图谱抽取候选应用权限"
-                }
-              ]
-            },
-            {
-              "id": 41,
-              "name": "图谱工作台",
-              "perms": ["knowledge:refinement:view", "knowledge:refinement:edit"],
-              "priority": 82,
-              "icon": "submissions",
-              "url": "/knowledge/refinement",
-              "remarks": "知识图谱工作台"
+              "url": "/knowledge/graph-workbench",
+              "remarks": "双空间图谱工作台"
             },
             {
               "id": 42,
-              "name": "图谱结果",
+              "name": "整体治理",
+              "perms": ["knowledge:graph:view"],
+              "priority": 82,
+              "icon": "book",
+              "url": "/knowledge/graph-governance",
+              "remarks": "发布空间节点、关系与治理操作"
+            },
+            {
+              "id": 46,
+              "name": "素材空间",
               "perms": ["knowledge:graph:view"],
               "priority": 81,
               "icon": "book",
-              "url": "/knowledge/graph-results",
-              "remarks": "知识图谱结果浏览"
-            },
-            {
-              "id": 16,
-              "name": "质量报告",
-              "perms": ["knowledge:quality-report:view", "knowledge:quality-report:generate"],
-              "priority": 78,
-              "icon": "logs",
-              "url": "/knowledge/quality-report",
-              "remarks": "Knowledge 质量报告生成和展示"
+              "url": "/knowledge/graph-materials",
+              "remarks": "素材草稿、发布和删除任务入口",
+              "children": [
+                {
+                  "id": 47,
+                  "name": "删除变更",
+                  "perms": ["knowledge:graph:view"],
+                  "priority": 80,
+                  "icon": "logs",
+                  "url": "/knowledge/graph-deletion-changes",
+                  "remarks": "素材删除前的变更与决策"
+                },
+                {
+                  "id": 48,
+                  "name": "删除任务",
+                  "perms": ["knowledge:graph:view"],
+                  "priority": 79,
+                  "icon": "submissions",
+                  "url": "/knowledge/graph-deletion-tasks",
+                  "remarks": "素材删除任务与失败重试"
+                }
+              ]
             }
           ]
         },

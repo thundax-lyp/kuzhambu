@@ -67,6 +67,19 @@ describe("check-page-boundaries", () => {
         }
     });
 
+    it("allows a mock-only domain before its page entry is implemented", () => {
+        const fixtureRoot = createFixture();
+        try {
+            const mockPath = join(fixtureRoot, "knowledge", "graph-workbench", "__mocks__");
+            mkdirSync(mockPath, { recursive: true });
+            writeFileSync(join(mockPath, "graph-mock-data.ts"), "export {};\n");
+
+            expect(runGate(fixtureRoot)).toEqual({ exitCode: 0, output: "" });
+        } finally {
+            rmSync(fixtureRoot, { recursive: true, force: true });
+        }
+    });
+
     it("allows an explicitly registered singular domain ending in s", () => {
         const fixtureRoot = createFixture();
         try {
