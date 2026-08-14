@@ -134,6 +134,22 @@ const fitGraphView = async (graph: Graph) => {
     );
 };
 
+const renderGraphSafely = async (graph: Graph, isMounted: () => boolean) => {
+    if (!isMounted()) {
+        return;
+    }
+
+    try {
+        await graph.render();
+        if (isMounted()) {
+            await fitGraphView(graph);
+        }
+    } catch {
+        // G6 can reject a render when an unmount races with its internal draw cycle.
+        // The graph no longer has a consumer in that case, so the rejection is ignored.
+    }
+};
+
 export interface KuzhambuGraphProps {
     spoList: KuzhambuGraphSpoItem[];
     className?: string;
@@ -146,6 +162,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
         const graphRef = useRef<Graph | null>(null);
         const initialGraphDataRef = useRef<GraphData | null>(null);
         const dataRef = useRef<GraphData>({ nodes: [], edges: [] });
+        const isMountedRef = useRef(false);
         const graphData = useMemo(() => buildKuzhambuGraphData(spoList), [spoList]);
         const classNames = ["kuzhambu-graph", className].filter(Boolean).join(" ");
         const hasSpoItems = spoList.length > 0;
@@ -169,8 +186,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
 
                     graph.setData(nextData);
                     graph.setLayout(createForceLayout(nextData));
-                    await graph.render();
-                    await fitGraphView(graph);
+                    await renderGraphSafely(graph, () => isMountedRef.current);
                 }
             }),
             []
@@ -183,6 +199,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
             }
 
             const initialGraphData = initialGraphDataRef.current ?? { nodes: [], edges: [] };
+            isMountedRef.current = true;
             const graph = new Graph({
                 container,
                 autoFit: "view",
@@ -257,23 +274,28 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
             });
 
             const rerunForceLayout = async () => {
+                if (!isMountedRef.current) {
+                    return;
+                }
                 graph.setLayout(createForceLayout(dataRef.current));
-                await graph.render();
-                await fitGraphView(graph);
+                await renderGraphSafely(graph, () => isMountedRef.current);
             };
 
             graph.on(NodeEvent.DRAG_END, rerunForceLayout);
             graphRef.current = graph;
             dataRef.current = initialGraphData;
 
-            void graph.render().then(() => fitGraphView(graph));
+            void renderGraphSafely(graph, () => isMountedRef.current);
 
             const resizeObserver = new ResizeObserver(() => {
-                graph.resize();
+                if (isMountedRef.current) {
+                    graph.resize();
+                }
             });
             resizeObserver.observe(container);
 
             return () => {
+                isMountedRef.current = false;
                 resizeObserver.disconnect();
                 graph.off(NodeEvent.DRAG_END, rerunForceLayout);
                 graph.destroy();
@@ -290,7 +312,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
 
             graph.setData(graphData);
             graph.setLayout(createForceLayout(graphData));
-            void graph.render().then(() => fitGraphView(graph));
+            void renderGraphSafely(graph, () => isMountedRef.current);
         }, [graphData]);
 
         return (
