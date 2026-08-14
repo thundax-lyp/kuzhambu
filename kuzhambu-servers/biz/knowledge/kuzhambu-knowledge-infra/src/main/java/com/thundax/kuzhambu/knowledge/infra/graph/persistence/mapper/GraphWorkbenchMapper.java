@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper;
 
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphCoreRelationPolicy;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,16 +56,19 @@ public interface GraphWorkbenchMapper {
               <if test="nodeType != null">
                 and n.node_type = #{nodeType}
               </if>
-              and not exists (
-                  select 1
-                  from knowledge_graph_published_edge e
-                  where e.status = 'ACTIVE'
-                    and e.relation_type in ('RELATED_TO', 'PART_OF', 'LOCATED_IN')
-                    and (e.source_published_node_id = n.id or e.target_published_node_id = n.id)
+              and (
+                <foreach collection="policies" item="policy" separator=" or ">
+                  (n.node_type = #{policy.nodeType} and not exists (
+                    select 1 from knowledge_graph_published_edge e
+                    where e.status = 'ACTIVE'
+                      and e.relation_type in <foreach collection="policy.relationTypes" item="relationType" open="(" separator="," close=")">#{relationType}</foreach>
+                      and (e.source_published_node_id = n.id or e.target_published_node_id = n.id)))
+                </foreach>
               )
             </script>
             """)
-    long countMissingCoreRelationNodes(@Param("nodeType") String nodeType);
+    long countMissingCoreRelationNodes(
+            @Param("nodeType") String nodeType, @Param("policies") List<GraphCoreRelationPolicy> policies);
 
     @Select(
             """
@@ -97,19 +101,24 @@ public interface GraphWorkbenchMapper {
               <if test="nodeType != null">
                 and n.node_type = #{nodeType}
               </if>
-              and not exists (
-                  select 1
-                  from knowledge_graph_published_edge e
-                  where e.status = 'ACTIVE'
-                    and e.relation_type in ('RELATED_TO', 'PART_OF', 'LOCATED_IN')
-                    and (e.source_published_node_id = n.id or e.target_published_node_id = n.id)
+              and (
+                <foreach collection="policies" item="policy" separator=" or ">
+                  (n.node_type = #{policy.nodeType} and not exists (
+                    select 1 from knowledge_graph_published_edge e
+                    where e.status = 'ACTIVE'
+                      and e.relation_type in <foreach collection="policy.relationTypes" item="relationType" open="(" separator="," close=")">#{relationType}</foreach>
+                      and (e.source_published_node_id = n.id or e.target_published_node_id = n.id)))
+                </foreach>
               )
             order by n.modified_at desc, n.id desc
             limit #{limit}
             </script>
             """)
     List<com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphPublishedNodeDO>
-            listMissingCoreRelationNodes(@Param("nodeType") String nodeType, @Param("limit") int limit);
+            listMissingCoreRelationNodes(
+                    @Param("nodeType") String nodeType,
+                    @Param("limit") int limit,
+                    @Param("policies") List<GraphCoreRelationPolicy> policies);
 
     @Select(
             """

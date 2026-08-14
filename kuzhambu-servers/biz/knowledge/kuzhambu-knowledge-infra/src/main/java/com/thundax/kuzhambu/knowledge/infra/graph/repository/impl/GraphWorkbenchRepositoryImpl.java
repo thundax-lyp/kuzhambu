@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphCoreRelationPolicy;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishedSearchHit;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphQualitySnapshot;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchMetrics;
@@ -38,13 +39,14 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
     }
 
     @Override
-    public GraphWorkbenchMetrics getByOverview() {
+    public GraphWorkbenchMetrics getByOverview(List<GraphCoreRelationPolicy> coreRelationPolicies) {
+        List<GraphCoreRelationPolicy> policies = coreRelationPolicies == null ? List.of() : coreRelationPolicies;
         return new GraphWorkbenchMetrics(
                 mapper.countActiveNodes(),
                 mapper.countActiveEdges(),
                 mapper.countCoveredMaterials(),
                 mapper.countIsolatedNodes(null),
-                mapper.countMissingCoreRelationNodes(null));
+                policies.isEmpty() ? 0 : mapper.countMissingCoreRelationNodes(null, policies));
     }
 
     @Override
@@ -64,22 +66,32 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
     }
 
     @Override
-    public GraphQualitySnapshot getByQuality(String issueType, GraphNodeType nodeType, int sampleLimit) {
+    public GraphQualitySnapshot getByQuality(
+            String issueType,
+            GraphNodeType nodeType,
+            int sampleLimit,
+            List<GraphCoreRelationPolicy> coreRelationPolicies) {
         int effectiveLimit = sampleLimit <= 0 ? 20 : sampleLimit;
         String nodeTypeValue = nodeType == null ? null : nodeType.value();
         long isolatedNodeCount = mapper.countIsolatedNodes(nodeTypeValue);
-        long missingCoreRelationNodeCount = mapper.countMissingCoreRelationNodes(nodeTypeValue);
+        List<GraphCoreRelationPolicy> policies = coreRelationPolicies == null ? List.of() : coreRelationPolicies;
+        long missingCoreRelationNodeCount =
+                policies.isEmpty() ? 0 : mapper.countMissingCoreRelationNodes(nodeTypeValue, policies);
         List<GraphPublishedNode> isolatedNodes = shouldIncludeIssue(issueType, ISSUE_TYPE_ISOLATED)
                 ? mapper.listIsolatedNodes(nodeTypeValue, effectiveLimit).stream()
                         .map(GraphPersistenceAssembler::toDomain)
                         .toList()
                 : List.of();
-        List<GraphPublishedNode> missingCoreRelationNodes =
-                shouldIncludeIssue(issueType, ISSUE_TYPE_MISSING_CORE_RELATION)
-                        ? mapper.listMissingCoreRelationNodes(nodeTypeValue, effectiveLimit).stream()
-                                .map(GraphPersistenceAssembler::toDomain)
-                                .toList()
-                        : List.of();
+        List<GraphPublishedNode> missingCoreRelationNodes = shouldIncludeIssue(
+                        issueType, ISSUE_TYPE_MISSING_CORE_RELATION)
+                ? (policies.isEmpty()
+                                ? List
+                                        .<com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject
+                                                        .GraphPublishedNodeDO>
+                                                of()
+                                : mapper.listMissingCoreRelationNodes(nodeTypeValue, effectiveLimit, policies))
+                        .stream().map(GraphPersistenceAssembler::toDomain).toList()
+                : List.of();
         return new GraphQualitySnapshot(
                 isolatedNodeCount, missingCoreRelationNodeCount, isolatedNodes, missingCoreRelationNodes);
     }

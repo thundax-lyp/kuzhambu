@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
@@ -38,19 +39,22 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
     private final GraphWorkbenchRepository workbenchRepository;
     private final GraphPublishedNodeRepository nodeRepository;
     private final GraphPublishedEdgeRepository edgeRepository;
+    private final GraphSchemaResolver schemaResolver;
 
     public GraphWorkbenchApplicationServiceImpl(
             GraphWorkbenchRepository workbenchRepository,
             GraphPublishedNodeRepository nodeRepository,
-            GraphPublishedEdgeRepository edgeRepository) {
+            GraphPublishedEdgeRepository edgeRepository,
+            GraphSchemaResolver schemaResolver) {
         this.workbenchRepository = workbenchRepository;
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
+        this.schemaResolver = schemaResolver;
     }
 
     @Override
     public GraphWorkbenchOverviewResult getOverview() {
-        GraphWorkbenchMetrics metrics = workbenchRepository.getByOverview();
+        GraphWorkbenchMetrics metrics = workbenchRepository.getByOverview(schemaResolver.coreRelationPolicies());
         return new GraphWorkbenchOverviewResult(
                 metrics.publishedNodeCount(),
                 metrics.publishedEdgeCount(),
@@ -105,7 +109,10 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
             throw new BizException("Unsupported graph quality issue type");
         }
         GraphQualitySnapshot snapshot = workbenchRepository.getByQuality(
-                issueType, query == null ? null : query.nodeType(), QUALITY_SAMPLE_LIMIT);
+                issueType,
+                query == null ? null : query.nodeType(),
+                QUALITY_SAMPLE_LIMIT,
+                schemaResolver.coreRelationPolicies());
         return new GraphQualityResult(
                 snapshot.isolatedNodeCount(),
                 snapshot.missingCoreRelationNodeCount(),
