@@ -6,6 +6,7 @@ import java.time.Instant;
 public record GraphExtractionResult(
         ContentRef materialRef,
         Long batchJobId,
+        Long candidateId,
         String status,
         int totalCount,
         int successCount,
