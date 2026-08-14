@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `10` `admin-web graph deletion changes`：实现删除变更列表
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-deletion-change/graph-deletion-change-page.tsx`、`graph-deletion-change-types.ts`、`graph-deletion-change-page.test.tsx`、`deletion-decision-panel/`（4–5 个文件）
-    - 处理动作：实现删除影响及两个不可逆决策入口。
-    - 验收点：`PRESERVE_CONTRIBUTION` 与 `WITHDRAW_ASSOCIATIONS` 分别展示影响；测试覆盖空态、无权限态和决策失败态。
-    - 重要度：9/10
-
 - [ ] `11` `admin-web graph deletion tasks`：实现删除任务列表
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
