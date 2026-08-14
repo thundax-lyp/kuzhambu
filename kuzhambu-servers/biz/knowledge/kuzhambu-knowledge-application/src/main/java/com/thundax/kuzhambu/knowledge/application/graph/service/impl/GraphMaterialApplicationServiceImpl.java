@@ -331,7 +331,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
     }
 
     private void refreshNodeKey(GraphMaterialNode node) {
-        node.refreshNodeKey(schemaSupport.identityQualifier(node.getPropertiesJson()));
+        node.refreshNodeKeyFromFields(schemaSupport.nodeKeyFields(node.getNodeType(), node.getPropertiesJson()));
     }
 
     private void refreshEdgeKey(GraphMaterialGraph graph, GraphMaterialEdge edge) {

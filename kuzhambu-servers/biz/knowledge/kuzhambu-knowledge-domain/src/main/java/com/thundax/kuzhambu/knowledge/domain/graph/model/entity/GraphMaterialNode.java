@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialNodeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphNodeKey;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,8 +39,12 @@ public class GraphMaterialNode {
     }
 
     public void refreshNodeKey(String identityQualifier) {
+        refreshNodeKeyFromFields(Map.of("identityQualifier", identityQualifier == null ? "" : identityQualifier));
+    }
+
+    public void refreshNodeKeyFromFields(Map<String, String> keyFields) {
         validateRequiredFields();
-        nodeKey = GraphKeyHelper.generateNodeKey(nodeType, name, identityQualifier);
+        nodeKey = GraphKeyHelper.generateNodeKey(nodeType, name, keyFields);
     }
 
     public boolean sameBusinessKey(GraphMaterialNode other) {

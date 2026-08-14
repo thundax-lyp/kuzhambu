@@ -25,4 +25,22 @@ class GraphKeyHelperTest {
         assertThat(GraphEdgeKeyCodec.toDomain(first, second, "ASSOCIATED_WITH", false, Map.of("role", "友人")))
                 .isEqualTo(GraphEdgeKeyCodec.toDomain(second, first, "ASSOCIATED_WITH", false, Map.of("role", "友人")));
     }
+
+    @Test
+    void shouldKeepWhitespaceWordBoundariesAndQualifierBoundariesDistinct() {
+        GraphNodeKey newYork = GraphNodeKeyCodec.toDomain(GraphNodeType.PLACE, "New York", null);
+        GraphNodeKey newYorkWithoutSpace = GraphNodeKeyCodec.toDomain(GraphNodeType.PLACE, "NewYork", null);
+
+        assertThat(newYork).isNotEqualTo(newYorkWithoutSpace);
+        assertThat(GraphEdgeKeyCodec.toDomain(
+                        newYork, newYorkWithoutSpace, "ASSOCIATED_WITH", true, Map.of("role", "a&time=b")))
+                .isNotEqualTo(GraphEdgeKeyCodec.toDomain(
+                        newYork, newYorkWithoutSpace, "ASSOCIATED_WITH", true, Map.of("role", "a", "time", "b")));
+    }
+
+    @Test
+    void shouldIncludeSchemaKeyFieldsInNodeKey() {
+        assertThat(GraphKeyHelper.generateNodeKey(GraphNodeType.PLACE, "长安", Map.of("placeKind", "CITY")))
+                .isNotEqualTo(GraphKeyHelper.generateNodeKey(GraphNodeType.PLACE, "长安", Map.of("placeKind", "COUNTY")));
+    }
 }

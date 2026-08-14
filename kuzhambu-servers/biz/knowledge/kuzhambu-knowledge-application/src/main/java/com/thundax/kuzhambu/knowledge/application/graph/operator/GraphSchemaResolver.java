@@ -7,6 +7,7 @@ import com.networknt.schema.Error;
 import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentDto;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,6 +35,16 @@ public class GraphSchemaResolver {
             identityQualifier = value.get("properties").get("identityQualifier");
         }
         return identityQualifier == null || identityQualifier.isNull() ? null : identityQualifier.asText();
+    }
+
+    public Map<String, String> nodeKeyFields(GraphNodeType nodeType, String propertiesJson) {
+        JsonNode values = readOptionalJson(propertiesJson);
+        Map<String, String> result = new LinkedHashMap<>();
+        putText(result, values, "identityQualifier");
+        JsonNode nodeSchema = nodeType == null ? null : rawNodeTypeSchema(nodeType);
+        addKeyFields(result, values, nodeSchema, "keyFields", true);
+        addKeyFields(result, values, nodeSchema, "keyFieldsWhenPresent", false);
+        return result;
     }
 
     public boolean directed(String relationType) {
@@ -117,6 +128,28 @@ public class GraphSchemaResolver {
         }
         JsonNode relationTypes = schemaProvider.rawSchema().get("relationTypes");
         return relationTypes == null ? null : relationTypes.get(relationType);
+    }
+
+    private JsonNode rawNodeTypeSchema(GraphNodeType nodeType) {
+        JsonNode nodeTypes = schemaProvider.rawSchema().get("nodeTypes");
+        return nodeTypes == null ? null : nodeTypes.get(nodeType.value());
+    }
+
+    private void addKeyFields(
+            Map<String, String> result, JsonNode values, JsonNode nodeSchema, String fieldGroup, boolean required) {
+        JsonNode fieldNames = nodeSchema == null ? null : nodeSchema.get(fieldGroup);
+        if (fieldNames == null || !fieldNames.isArray()) {
+            return;
+        }
+        fieldNames.forEach(fieldName -> {
+            String key = fieldName.asText();
+            JsonNode value = values == null ? null : values.get(key);
+            if (value != null && !value.isNull() && !value.asText().isBlank()) {
+                result.put(key, value.asText());
+            } else if (required) {
+                result.put(key, "");
+            }
+        });
     }
 
     private GraphValidationIssueResult toIssue(Error error) {

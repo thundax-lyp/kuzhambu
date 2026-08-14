@@ -130,8 +130,8 @@ public class GraphMaterialGraph {
         Set<GraphMaterialNodeId> nodeIds = new HashSet<>();
         for (GraphMaterialNode node : nodes) {
             requireNode(node);
-            if (node.getId() != null) {
-                nodeIds.add(node.getId());
+            if (node.getId() != null && !nodeIds.add(node.getId())) {
+                throw new DomainException("Graph material node id is duplicated");
             }
             if (node.getNodeKey() != null && !nodeKeys.add(node.getNodeKey())) {
                 throw new DomainException("Graph material node key is duplicated");
