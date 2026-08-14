@@ -6,6 +6,7 @@ import {
     KuzhambuTag
 } from "@/components";
 import type { GraphMaterialDraftObject, GraphMaterialRecord } from "../graph-material-types";
+import { PublicationPreview } from "../publication-preview";
 
 interface MaterialDraftCanvasProps {
     material: GraphMaterialRecord;
@@ -67,6 +68,7 @@ export const MaterialDraftCanvas = ({
                         </KuzhambuButton>
                     </KuzhambuSpace>
                 ) : null}
+                <PublicationPreview />
                 <KuzhambuButton
                     testId="knowledge-graph-material-close-draft-canvas-button"
                     onClick={onClose}

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `07` `admin-web graph publication preview`：实现画布内发布预览
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`
-    - 范围对象：`src/pages/knowledge/graph-material/graph-material-page.tsx`、`graph-material-page.test.tsx`、`publication-preview/`（4–5 个文件）
-    - 处理动作：实现四色预览、冲突定位、发布冻结和撤回状态。
-    - 验收点：绿、橙、红、蓝对象均可见；红色冲突未决时发布不可用；不新增发布预览路由。
-    - 重要度：10/10
-
 - [ ] `08` `admin-web graph governance browse`：实现整体治理浏览
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-ADMIN-WEB.md`

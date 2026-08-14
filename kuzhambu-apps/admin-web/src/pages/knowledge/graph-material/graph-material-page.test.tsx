@@ -91,4 +91,25 @@ describe("GraphMaterialPage", () => {
         expect(screen.queryByRole("button", { name: "新增对象" })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "撤回素材" })).toBeInTheDocument();
     });
+
+    it("keeps publication disabled until red conflicts are resolved, then freezes and withdraws", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        render(<GraphMaterialPage />);
+        const user = userEvent.setup();
+        await user.click(screen.getByTestId("knowledge-graph-material-open-material-draft-button"));
+
+        expect(screen.getByText("green")).toBeInTheDocument();
+        expect(screen.getByText("orange")).toBeInTheDocument();
+        expect(screen.getByText("red")).toBeInTheDocument();
+        expect(screen.getByText("blue")).toBeInTheDocument();
+        expect(
+            screen.getByTestId("knowledge-graph-material-publish-preview-button")
+        ).toBeDisabled();
+
+        await user.click(screen.getByRole("button", { name: "标记冲突已解决" }));
+        await user.click(screen.getByTestId("knowledge-graph-material-publish-preview-button"));
+        expect(screen.getByText("发布已冻结")).toBeInTheDocument();
+        await user.click(screen.getByTestId("knowledge-graph-material-withdraw-preview-button"));
+        expect(screen.getByText("素材已撤回")).toBeInTheDocument();
+    });
 });
