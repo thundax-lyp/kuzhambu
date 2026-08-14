@@ -12,18 +12,23 @@ interface WorkbenchCanvasProps {
     onSelectNode: (node: GraphWorkbenchNodeRecord) => void;
 }
 
+const MAX_VISIBLE_NODES = 200;
+
 const toSpoItems = (
-    seedNodes: readonly GraphWorkbenchNodeRecord[],
+    visibleNodes: readonly GraphWorkbenchNodeRecord[],
     edges: readonly GraphWorkbenchEdgeRecord[]
 ): KuzhambuGraphSpoItem[] => {
-    const nodeLabels = new Map(seedNodes.map((node) => [node.id, node.label]));
-    return edges.map((edge) => ({
-        subject: nodeLabels.get(edge.source) ?? edge.source,
-        predicate: edge.predicate,
-        object: nodeLabels.get(edge.target) ?? edge.target,
-        subjectGroup: "图谱节点",
-        objectGroup: "图谱节点"
-    }));
+    const nodeLabels = new Map(visibleNodes.map((node) => [node.id, node.label]));
+    const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
+    return edges
+        .filter((edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target))
+        .map((edge) => ({
+            subject: nodeLabels.get(edge.source) ?? edge.source,
+            predicate: edge.predicate,
+            object: nodeLabels.get(edge.target) ?? edge.target,
+            subjectGroup: "图谱节点",
+            objectGroup: "图谱节点"
+        }));
 };
 
 export const WorkbenchCanvas = ({ edgeBatches, seedNodes, onSelectNode }: WorkbenchCanvasProps) => {
@@ -53,10 +58,22 @@ export const WorkbenchCanvas = ({ edgeBatches, seedNodes, onSelectNode }: Workbe
         () => new Set(loadedEdges.flatMap((edge) => [edge.source, edge.target])),
         [loadedEdges]
     );
-    const visibleNodes = seedNodes.filter(
-        (node) => !isComplete || !node.isOrphan || loadedNodeIds.has(node.id)
+    const loadedNodes = useMemo(
+        () => edgeBatches.slice(0, loadedBatchCount).flatMap((batch) => batch.nodes),
+        [edgeBatches, loadedBatchCount]
     );
-    const spoItems = useMemo(() => toSpoItems(seedNodes, loadedEdges), [seedNodes, loadedEdges]);
+    const allNodes = useMemo(() => {
+        const nodes = new Map<string, GraphWorkbenchNodeRecord>();
+        [...seedNodes, ...loadedNodes].forEach((node) => nodes.set(node.id, node));
+        return Array.from(nodes.values());
+    }, [loadedNodes, seedNodes]);
+    const visibleNodes = allNodes
+        .filter((node) => !isComplete || !node.isOrphan || loadedNodeIds.has(node.id))
+        .slice(0, MAX_VISIBLE_NODES);
+    const spoItems = useMemo(
+        () => toSpoItems(visibleNodes, loadedEdges),
+        [visibleNodes, loadedEdges]
+    );
 
     return (
         <KuzhambuCard

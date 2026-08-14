@@ -43,13 +43,18 @@ describe("GraphWorkbenchPage", () => {
         );
         expect(screen.getByText("2 条关系")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "查看节点 孤立节点" })).not.toBeInTheDocument();
-        expect(screen.getByText("当前节点 2 / 最多 200")).toBeInTheDocument();
+        expect(screen.getByText("当前节点 4 / 最多 200")).toBeInTheDocument();
 
         await userEvent.click(screen.getByRole("button", { name: "查看节点 李白" }));
         expect(screen.getByText("图谱节点详情")).toBeInTheDocument();
         expect(screen.getByText("唐诗素材-001")).toBeInTheDocument();
 
         await user.type(screen.getByRole("textbox", { name: "搜索图谱种子" }), "不存在");
+        expect(screen.getByText("没有匹配的图谱种子")).toBeInTheDocument();
+
+        await user.clear(screen.getByRole("textbox", { name: "搜索图谱种子" }));
+        await user.click(screen.getByRole("combobox", { name: "筛选图谱门类" }));
+        await user.click(screen.getByText("作品", { selector: ".ant-select-item-option-content" }));
         expect(screen.getByText("没有匹配的图谱种子")).toBeInTheDocument();
     });
 

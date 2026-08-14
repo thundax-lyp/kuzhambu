@@ -10,6 +10,7 @@ export const graphWorkbenchMockData = {
         {
             id: "node-li-bai",
             label: "李白",
+            categoryCode: "person",
             isFaded: true,
             sourceName: "唐诗素材-001",
             qualityTodo: "补充生平关系"
@@ -17,6 +18,7 @@ export const graphWorkbenchMockData = {
         {
             id: "node-du-fu",
             label: "杜甫",
+            categoryCode: "person",
             isFaded: true,
             sourceName: "唐诗素材-002",
             qualityTodo: "确认人物别名"
@@ -24,6 +26,7 @@ export const graphWorkbenchMockData = {
         {
             id: "node-orphan",
             label: "孤立节点",
+            categoryCode: "person",
             isFaded: true,
             isOrphan: true,
             sourceName: "唐诗素材-003",
@@ -32,7 +35,9 @@ export const graphWorkbenchMockData = {
     ],
     edgeBatches: [
         {
-            nodes: [{ id: "node-tang-poetry", label: "唐诗", isFaded: false }],
+            nodes: [
+                { id: "node-tang-poetry", label: "唐诗", categoryCode: "work", isFaded: false }
+            ],
             edges: [
                 {
                     id: "edge-li-bai-tang-poetry",
@@ -43,7 +48,7 @@ export const graphWorkbenchMockData = {
             ]
         },
         {
-            nodes: [{ id: "node-shi-xian", label: "诗仙", isFaded: false }],
+            nodes: [{ id: "node-shi-xian", label: "诗仙", categoryCode: "person", isFaded: false }],
             edges: [
                 {
                     id: "edge-li-bai-shi-xian",

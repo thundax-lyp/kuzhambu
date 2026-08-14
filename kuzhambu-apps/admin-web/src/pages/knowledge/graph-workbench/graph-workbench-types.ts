@@ -10,6 +10,7 @@ export interface GraphWorkbenchCategoryRecord {
 }
 
 export interface GraphWorkbenchNodeRecord {
+    categoryCode: string;
     id: string;
     label: string;
     isFaded: boolean;

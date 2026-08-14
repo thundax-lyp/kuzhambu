@@ -50,12 +50,14 @@ export const GraphWorkbenchPage = () => {
     const metrics = useMemo(() => createMetrics(), []);
     const visibleSeeds = useMemo(
         () =>
-            graphWorkbenchMockData.seedNodes.filter((node) =>
-                node.label
-                    .toLocaleLowerCase("zh-CN")
-                    .includes(searchText.toLocaleLowerCase("zh-CN"))
+            graphWorkbenchMockData.seedNodes.filter(
+                (node) =>
+                    (categoryCode === "all" || node.categoryCode === categoryCode) &&
+                    node.label
+                        .toLocaleLowerCase("zh-CN")
+                        .includes(searchText.toLocaleLowerCase("zh-CN"))
             ),
-        [searchText]
+        [categoryCode, searchText]
     );
     const selectedNode = graphWorkbenchMockData.seedNodes.find(
         (node) => node.id === selectedNodeId
