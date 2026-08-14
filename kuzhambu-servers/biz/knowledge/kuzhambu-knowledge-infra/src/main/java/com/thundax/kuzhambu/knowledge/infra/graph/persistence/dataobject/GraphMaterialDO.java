@@ -21,5 +21,7 @@ public class GraphMaterialDO {
     private String contentTitleSnapshot;
     private String status;
     private Instant publishedAt;
+    private String failureReason;
+    private String failedOperation;
     private Long lockVersion;
 }

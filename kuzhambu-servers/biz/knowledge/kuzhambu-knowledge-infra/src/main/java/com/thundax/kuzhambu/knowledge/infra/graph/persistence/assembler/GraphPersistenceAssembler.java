@@ -56,6 +56,8 @@ public final class GraphPersistenceAssembler {
                 entity.getContentTitleSnapshot(),
                 entity.getStatus() == null ? null : entity.getStatus().value(),
                 entity.getPublishedAt(),
+                entity.getFailureReason(),
+                entity.getFailedOperation(),
                 entity.getLockVersion());
     }
 
@@ -68,6 +70,8 @@ public final class GraphPersistenceAssembler {
                 dataObject.getContentTitleSnapshot(),
                 GraphMaterialStatus.from(dataObject.getStatus()),
                 dataObject.getPublishedAt(),
+                dataObject.getFailureReason(),
+                dataObject.getFailedOperation(),
                 dataObject.getLockVersion());
     }
 

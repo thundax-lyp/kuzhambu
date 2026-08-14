@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `06 graph 素材状态迁移 DDL`：落地状态字段与 READY 数据迁移
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`db/schema/knowledge.sql`、`scripts/migrate-graph-material-status.sql`，及迁移脚本测试（3 个文件）
-    - 处理动作：为素材表增加失败字段，并以固定 SQL 将历史 `READY` 迁移为 `DRAFT`。
-    - 验收点：字段顺序、类型和迁移 SQL 与 RUNBOOK 完全一致；不修改 Schema JSON；脚本测试验证 `READY→DRAFT`。
-    - 重要度：10/10
-
 - [ ] `07 graph 删除变更领域存储`：建立删除变更的乐观锁模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
