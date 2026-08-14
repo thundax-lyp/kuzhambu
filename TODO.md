@@ -12,14 +12,6 @@
 
 ## 待审阅任务项
 
-- [ ] `13 system audit facade 实现`：实现系统审计门面的记录与查询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`
-    - 范围对象：`kuzhambu-system-application/.../SystemAuditFacadeImpl.java`、其单测、`kuzhambu-knowledge-application/pom.xml`（3 个文件）
-    - 处理动作：实现 facade 的 `record()` 和 `get()`，并把 knowledge application 改为仅依赖该 facade。
-    - 验收点：`get(auditLogId)` 返回操作者与发生时间；knowledge application 无 System application/domain/infra 导入；模块测试通过。
-    - 重要度：10/10
-
 - [ ] `14 graph 治理审计存储`：保存治理理由、快照与审计引用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-BACKEND.md`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
