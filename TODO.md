@@ -19,14 +19,6 @@
     - 验收点：路由单测通过，且 `rg` 确认新素材/任务组件不 import 旧 `graph-result` 或 `refinement` service。
     - 重要度：8/10
 
-- [ ] `AW/graph-extraction mock`：建立图谱提取任务 Mock adapter 与 fixture
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/__mocks__/graph-extraction-service-mock.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/__mocks__/graph-mock-data.ts`
-    - 处理动作：实现与提取任务 HTTP service 同签名的 Mock adapter 和任务 fixture。
-    - 验收点：Mock 覆盖失败、运行中、成功待审、已处置、候选不可用和版本冲突任务数据。
-    - 重要度：9/10
-
 - [ ] `AW/graph-material page query`：素材页接入 service 查询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
