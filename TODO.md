@@ -19,14 +19,6 @@
     - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
     - 重要度：9/10
 
-- [ ] `AW/graph-extraction candidate panel`：实现候选预览段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/task-candidate-panel/`
-    - 处理动作：展示候选节点、边、告警和 diff 预览。
-    - 验收点：测试覆盖 `ADD`、`UPDATE`、`REMOVE`、`CONFLICT` 和 `candidate:null` 候选不可用空态。
-    - 重要度：9/10
-
 - [ ] `AW/graph-extraction disposition panel`：实现候选处置动作段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
