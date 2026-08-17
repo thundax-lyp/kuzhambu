@@ -1,3 +1,12 @@
+.graph-workbench-page,
 .knowledge-graph-workbench-page {
     min-width: 0;
+}
+
+.graph-workbench-filter-input {
+    width: 180px;
+}
+
+.graph-workbench-filter-select {
+    width: 132px;
 }

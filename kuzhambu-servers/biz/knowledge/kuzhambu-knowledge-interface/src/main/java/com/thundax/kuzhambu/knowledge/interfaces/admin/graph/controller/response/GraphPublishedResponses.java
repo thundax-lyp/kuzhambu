@@ -23,6 +23,9 @@ public final class GraphPublishedResponses {
             String lockVersion) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record AdjacencyData(NodeData subject, EdgeData relation, NodeData object, boolean isolated) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public record SourceRefData(GraphMaterialResponses.ContentRefData contentRef, String auditLogId) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)

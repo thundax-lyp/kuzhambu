@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishedAdjacency;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphNodeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import java.util.List;
@@ -23,6 +24,22 @@ public interface GraphPublishedNodeRepository {
             GraphNodeType nodeType,
             GraphPublishedStatus status,
             GraphSourceType source,
+            int pageNo,
+            int pageSize);
+
+    PageResult<GraphPublishedAdjacency> page(
+            String subjectKeyword,
+            GraphNodeType subjectType,
+            GraphPublishedStatus subjectStatus,
+            GraphSourceType subjectSource,
+            String relationType,
+            GraphPublishedStatus relationStatus,
+            GraphSourceType relationSource,
+            String objectKeyword,
+            GraphNodeType objectType,
+            GraphPublishedStatus objectStatus,
+            GraphSourceType objectSource,
+            boolean includeIsolated,
             int pageNo,
             int pageSize);
 
