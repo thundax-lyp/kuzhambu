@@ -17,13 +17,18 @@ vi.mock("./graph-material-service", () => ({
     pageMaterials: vi.fn()
 }));
 
-const toPage = (records: GraphMaterialListRecord[]): Page<GraphMaterialListRecord> => ({
+const toPage = (
+    records: GraphMaterialListRecord[],
+    pageNo = 1,
+    pageSize = 20,
+    totalCount = records.length
+): Page<GraphMaterialListRecord> => ({
     count: records.length,
-    pageNo: 1,
-    pageSize: 20,
+    pageNo,
+    pageSize,
     records,
-    totalCount: records.length,
-    totalPage: 1
+    totalCount,
+    totalPage: Math.max(1, Math.ceil(totalCount / pageSize))
 });
 
 const renderPage = () => {
@@ -49,7 +54,7 @@ describe("GraphMaterialPage", () => {
         vi.mocked(service.pageMaterials).mockReturnValue(new Promise(() => undefined));
         const { container } = renderPage();
 
-        expect(service.pageMaterials).toHaveBeenCalledTimes(1);
+        expect(service.pageMaterials).toHaveBeenCalledWith({ pageNo: 1, pageSize: 20 });
         expect(screen.getByText("素材列表")).toBeInTheDocument();
         await waitFor(() => {
             expect(container.querySelector(".ant-spin-spinning")).toBeInTheDocument();
@@ -63,6 +68,45 @@ describe("GraphMaterialPage", () => {
 
         expect(await screen.findByText("暂无图谱素材")).toBeInTheDocument();
         expect(screen.getByText("完成素材接入后可在这里发起图谱抽取。")).toBeInTheDocument();
+    });
+
+    it("queries pageMaterials with material filter values", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        renderPage();
+        const user = userEvent.setup();
+
+        await screen.findByText("三才图会 人物一");
+        await user.type(screen.getByLabelText("关键字"), "人物");
+        await user.type(screen.getByLabelText("分类"), "person");
+        await user.type(screen.getByLabelText("卷目"), "volume-2");
+        await user.click(screen.getByTestId("knowledge-graph-material-filter-submit-button"));
+
+        await waitFor(() => {
+            expect(service.pageMaterials).toHaveBeenLastCalledWith({
+                categoryCode: "person",
+                keyword: "人物",
+                pageNo: 1,
+                pageSize: 20,
+                volumeCode: "volume-2"
+            });
+        });
+    });
+
+    it("queries pageMaterials with pagination values", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        vi.mocked(service.pageMaterials).mockImplementation(async (query) =>
+            toPage(graphMaterialMockListRecords, query?.pageNo ?? 1, query?.pageSize ?? 20, 50)
+        );
+        renderPage();
+        const user = userEvent.setup();
+
+        await screen.findByText("三才图会 人物一");
+        await user.click(screen.getByRole("listitem", { name: "2" }));
+
+        await waitFor(() => {
+            expect(service.pageMaterials).toHaveBeenLastCalledWith({ pageNo: 2, pageSize: 20 });
+        });
     });
 
     it("recovers from pageMaterials error by retrying the query", async () => {
