@@ -161,12 +161,10 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `content_ref_id` bigint NOT NULL,
     `content_snapshot_json` json NOT NULL,
     `pipeline_version` varchar(64) NOT NULL,
-    `status` varchar(32) NOT NULL,
     `current_stage` varchar(64) DEFAULT NULL,
     `progress` int NOT NULL DEFAULT 0,
     `result_summary_json` json DEFAULT NULL,
     `failure_reason` varchar(1024) DEFAULT NULL,
-    `retry_from_task_id` bigint DEFAULT NULL,
     `model_snapshot_json` json DEFAULT NULL,
     `prompt_snapshot_json` json DEFAULT NULL,
     `execution_status` varchar(32) NOT NULL DEFAULT 'PENDING',
@@ -187,7 +185,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
         CASE WHEN `execution_status` IN ('PENDING', 'RUNNING') THEN `material_id` ELSE NULL END
     ) STORED,
     PRIMARY KEY (`id`),
-    KEY `idx_knowledge_graph_extraction_task_material_status` (`material_id`, `status`, `requested_at`),
     KEY `idx_knowledge_graph_extraction_task_material_execution` (`material_id`, `execution_status`, `requested_at`),
     KEY `idx_knowledge_graph_extraction_task_content` (`content_type`, `content_ref_id`),
     KEY `idx_knowledge_graph_extraction_task_source` (`source_content_type`, `source_content_id`),
@@ -197,25 +194,6 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     KEY `idx_knowledge_graph_extraction_task_idempotency` (`idempotency_key`),
     UNIQUE KEY `uk_knowledge_graph_extraction_task_active_material` (`active_task_material_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道任务';
-
-CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_stage` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `extraction_task_id` bigint NOT NULL,
-    `stage_name` varchar(64) NOT NULL,
-    `stage_order` int NOT NULL,
-    `status` varchar(32) NOT NULL,
-    `input_snapshot_json` json DEFAULT NULL,
-    `input_summary_json` json DEFAULT NULL,
-    `output_summary_json` json DEFAULT NULL,
-    `progress` int NOT NULL DEFAULT 0,
-    `ai_call_id` bigint DEFAULT NULL,
-    `failure_reason` varchar(1024) DEFAULT NULL,
-    `started_at` BIGINT DEFAULT NULL,
-    `completed_at` BIGINT DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_extraction_stage_order` (`extraction_task_id`, `stage_order`),
-    KEY `idx_knowledge_graph_extraction_stage_task_status` (`extraction_task_id`, `status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道阶段';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,

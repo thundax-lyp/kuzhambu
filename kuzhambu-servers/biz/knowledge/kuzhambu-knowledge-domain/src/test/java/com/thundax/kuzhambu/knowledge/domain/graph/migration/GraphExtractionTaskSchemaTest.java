@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.migration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -28,6 +29,9 @@ class GraphExtractionTaskSchemaTest {
         assertTrue(schema.contains("`attempt_no` int NOT NULL DEFAULT 0,"));
         assertTrue(schema.contains("`lock_version` bigint NOT NULL DEFAULT 0,"));
         assertTrue(schema.contains("`purge_after` BIGINT DEFAULT NULL,"));
+        assertThat(schema).doesNotContain("`retry_from_task_id` bigint DEFAULT NULL,");
+        assertThat(schema).doesNotContain("KEY `idx_knowledge_graph_extraction_task_material_status`");
+        assertThat(schema).doesNotContain("CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_stage`");
     }
 
     @Test

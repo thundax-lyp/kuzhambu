@@ -1,11 +1,7 @@
 package com.thundax.kuzhambu.knowledge.application.graph.support;
 
-import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
-import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
-import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphEdgePublicationPreviewResult;
-import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphIncidentEdgesResult;
@@ -147,26 +143,6 @@ public final class GraphApplicationAssembler {
                 publication == null ? 0 : publication.createdEdgeCount(),
                 publication == null ? 0 : publication.reusedEdgeCount(),
                 issues);
-    }
-
-    public static GraphExtractionResult toExtractionResult(
-            AiBatchJobFacadeResponse response, AiCandidateFacadeDto candidate) {
-        if (response == null) {
-            return null;
-        }
-        return new GraphExtractionResult(
-                ContentRefCodec.toDomain(response.getContentType(), response.getContentId()),
-                response.getBatchId(),
-                candidate == null ? null : candidate.getCandidateId(),
-                response.getStatus(),
-                response.getTotalCount(),
-                response.getSuccessCount(),
-                response.getFailedCount(),
-                null,
-                response.getFailureSummaryJson(),
-                response.getFailureSummaryJson(),
-                response.getRequestedAt(),
-                response.getCompletedAt());
     }
 
     public static GraphSearchResult toSearchResult(GraphPublishedSearchHit hit) {

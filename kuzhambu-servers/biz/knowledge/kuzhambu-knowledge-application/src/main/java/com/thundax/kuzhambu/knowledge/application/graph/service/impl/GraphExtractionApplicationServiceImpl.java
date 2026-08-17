@@ -13,7 +13,6 @@ import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCancelCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateApplyCommand;
@@ -32,11 +31,9 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialSt
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphTaskCandidateResolver;
-import com.thundax.kuzhambu.knowledge.application.graph.query.GraphExtractionQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskPageQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
-import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
@@ -342,61 +339,6 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         return toTaskResult(nextTask);
     }
 
-    @Override
-    public GraphExtractionResult startExtraction(GraphExtractionCommand command) {
-        return toLegacyResult(createExtraction(command));
-    }
-
-    @Override
-    public GraphExtractionResult retryExtraction(GraphExtractionRetryCommand command) {
-        return toLegacyResult(retryTask(command));
-    }
-
-    @Override
-    public GraphExtractionResult getCurrentExtraction(GraphExtractionQuery query) {
-        PageResult<GraphExtractionTaskResult> page = pageTasks(
-                new GraphTaskPageQuery(
-                        null,
-                        null,
-                        null,
-                        null,
-                        List.of(requireMaterialRef(query == null ? null : query.materialRef())),
-                        null,
-                        GraphExtractionExecutionStatus.RUNNING.value(),
-                        null,
-                        "NONE"),
-                new PageQuery(1, 1));
-        return page.getRecords().isEmpty()
-                ? null
-                : toLegacyResult(page.getRecords().get(0));
-    }
-
-    @Override
-    public PageResult<GraphExtractionResult> pageExtractionHistory(GraphExtractionQuery query, PageQuery pageQuery) {
-        PageResult<GraphExtractionTaskResult> page = pageTasks(
-                new GraphTaskPageQuery(
-                        null,
-                        null,
-                        null,
-                        null,
-                        List.of(requireMaterialRef(query == null ? null : query.materialRef())),
-                        null,
-                        null,
-                        null,
-                        "NONE"),
-                pageQuery);
-        return PageResult.of(
-                page.getPageNo(),
-                page.getPageSize(),
-                page.getTotalCount(),
-                page.getRecords().stream().map(this::toLegacyResult).toList());
-    }
-
-    @Override
-    public GraphMaterialResult applyExtractionResult(GraphExtractionApplyCommand command) {
-        throw new BizException("Legacy graph extraction candidate application requires a task id");
-    }
-
     private GraphMaterial materialForExtraction(ContentRef materialRef, String title) {
         graphLoader.getOrCreate(materialRef, title);
         GraphMaterial material = materialRepository.getByContentRef(materialRef);
@@ -582,25 +524,6 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 task.getCompletedAt(),
                 task.getDisposedAt(),
                 task.getPurgeAfter());
-    }
-
-    private GraphExtractionResult toLegacyResult(GraphExtractionTaskResult task) {
-        if (task == null) {
-            return null;
-        }
-        return new GraphExtractionResult(
-                task.contentRef(),
-                task.taskId(),
-                task.candidateId(),
-                task.executionStatus(),
-                1,
-                "SUCCEEDED".equals(task.executionStatus()) ? 1 : 0,
-                "FAILED".equals(task.executionStatus()) ? 1 : 0,
-                null,
-                null,
-                null,
-                task.requestedAt(),
-                task.completedAt());
     }
 
     private String snapshotJson(GraphMaterialContentSnapshotDto snapshot) {
