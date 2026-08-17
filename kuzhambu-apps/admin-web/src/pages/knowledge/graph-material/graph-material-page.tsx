@@ -1,55 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
 import {
     KuzhambuAlert,
     KuzhambuButton,
     KuzhambuCard,
-    KuzhambuList,
-    KuzhambuListItem,
-    KuzhambuListMeta,
     KuzhambuPage,
-    KuzhambuSpace,
-    KuzhambuTag
+    KuzhambuSpace
 } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { graphMaterialMockData } from "./__mocks__/graph-mock-data";
 import { BatchPublicationPanel } from "./batch-publication-panel";
 import { MaterialFilters } from "./material-filters";
+import { MaterialTable } from "./material-table";
 import { MaterialDraftCanvas } from "./material-draft-canvas";
 import { MaterialObjectDrawer } from "./material-object-drawer";
 import * as service from "./graph-material-service";
 import type { GraphMaterialPageQuery } from "./graph-material-service";
-import type {
-    GraphMaterialListRecord,
-    GraphMaterialRecord,
-    GraphMaterialStatus
-} from "./graph-material-types";
+import type { GraphMaterialListRecord, GraphMaterialRecord } from "./graph-material-types";
 import "./graph-material-page.css";
-
-const STATUS_LABELS: Record<GraphMaterialStatus, string> = {
-    DRAFT: "草稿",
-    PUBLISHING: "发布中",
-    PUBLISHED: "已发布",
-    WITHDRAWING: "撤回中",
-    FAILED: "失败"
-};
-
-const STATUS_TYPES: Record<
-    GraphMaterialStatus,
-    "neutral" | "info" | "success" | "warning" | "danger"
-> = {
-    DRAFT: "neutral",
-    PUBLISHING: "info",
-    PUBLISHED: "success",
-    WITHDRAWING: "warning",
-    FAILED: "danger"
-};
-
-const canEditDraft = (status: GraphMaterialStatus) => status === "DRAFT" || status === "FAILED";
-
-const materialListRecordKey = (record: GraphMaterialListRecord) =>
-    `${record.source.contentRef.contentType}:${record.source.contentRef.contentRefId}`;
 
 const toMaterialRecord = (record: GraphMaterialListRecord) => record.material ?? null;
 
@@ -57,6 +27,7 @@ const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "请稍后重试。";
 
 export const GraphMaterialPage = () => {
+    const navigate = useNavigate();
     const canViewGraph = hasPermission("knowledge:graph:view");
     const canEditGraph = hasPermission("knowledge:graph:edit");
     const canApplyGraph = hasPermission("knowledge:graph:apply");
@@ -138,27 +109,13 @@ export const GraphMaterialPage = () => {
                 ) : null}
                 {!isInitialError ? (
                     <KuzhambuCard title="素材列表">
-                        <KuzhambuList
-                            ariaLabel="图谱素材列表"
-                            bordered
+                        <MaterialTable
+                            canOpenMaterial={canViewGraph}
+                            canViewTasks={canViewGraph}
                             dataSource={records}
-                            empty={
-                                <KuzhambuAlert
-                                    title="暂无图谱素材"
-                                    description="完成素材接入后可在这里发起图谱抽取。"
-                                    type="info"
-                                    showIcon
-                                />
-                            }
-                            itemKey={materialListRecordKey}
                             loading={materialPageQuery.isLoading}
-                            renderItem={(record) => (
-                                <GraphMaterialListItem
-                                    canEditGraph={canEditGraph}
-                                    record={record}
-                                    onOpen={(material) => setActiveMaterial(material)}
-                                />
-                            )}
+                            onOpenMaterial={setActiveMaterial}
+                            onViewTasks={navigate}
                         />
                     </KuzhambuCard>
                 ) : null}
@@ -217,66 +174,5 @@ export const GraphMaterialPage = () => {
                 open={activeObjectId !== null}
             />
         </KuzhambuPage>
-    );
-};
-
-interface GraphMaterialListItemProps {
-    canEditGraph: boolean;
-    onOpen: (material: GraphMaterialRecord) => void;
-    record: GraphMaterialListRecord;
-}
-
-const GraphMaterialListItem = ({ canEditGraph, onOpen, record }: GraphMaterialListItemProps) => {
-    const material = record.material ?? null;
-    const itemId = material?.id ?? `uninitialized-${record.source.contentRef.contentRefId}`;
-    const canExtractMaterial = canEditGraph && (material === null || canEditDraft(material.status));
-
-    return (
-        <KuzhambuListItem
-            extra={
-                <KuzhambuSpace>
-                    {material ? (
-                        <KuzhambuTag type={STATUS_TYPES[material.status]}>
-                            {STATUS_LABELS[material.status]}
-                        </KuzhambuTag>
-                    ) : (
-                        <KuzhambuTag type="neutral">未初始化/未抽取</KuzhambuTag>
-                    )}
-                    {canExtractMaterial ? (
-                        <KuzhambuButton
-                            testId={`knowledge-graph-material-extract-${itemId}-button`}
-                            size="small"
-                        >
-                            发起抽取任务
-                        </KuzhambuButton>
-                    ) : null}
-                    {material ? (
-                        <KuzhambuButton
-                            testId={`knowledge-graph-material-open-${material.id}-button`}
-                            size="small"
-                            onClick={() => onOpen(material)}
-                        >
-                            打开素材
-                        </KuzhambuButton>
-                    ) : null}
-                </KuzhambuSpace>
-            }
-        >
-            <KuzhambuListMeta
-                title={record.source.title}
-                description={
-                    material?.failureReason ? (
-                        <KuzhambuAlert
-                            title={material.failureReason}
-                            type="error"
-                            showIcon
-                            closable={false}
-                        />
-                    ) : (
-                        `状态：${material ? STATUS_LABELS[material.status] : "未初始化/未抽取"}`
-                    )
-                }
-            />
-        </KuzhambuListItem>
     );
 };

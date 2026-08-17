@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
 import type { Page } from "@/types/page";
 import { graphMaterialMockListRecords } from "./__mocks__/graph-mock-data";
@@ -36,9 +37,11 @@ const renderPage = () => {
         defaultOptions: { queries: { retry: false } }
     });
     return render(
-        <QueryClientProvider client={queryClient}>
-            <GraphMaterialPage />
-        </QueryClientProvider>
+        <MemoryRouter>
+            <QueryClientProvider client={queryClient}>
+                <GraphMaterialPage />
+            </QueryClientProvider>
+        </MemoryRouter>
     );
 };
 
@@ -61,13 +64,13 @@ describe("GraphMaterialPage", () => {
         });
     });
 
-    it("shows empty state when pageMaterials returns no records", async () => {
+    it("shows table empty state when pageMaterials returns no records", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         vi.mocked(service.pageMaterials).mockResolvedValue(toPage([]));
         renderPage();
 
         expect(await screen.findByText("暂无图谱素材")).toBeInTheDocument();
-        expect(screen.getByText("完成素材接入后可在这里发起图谱抽取。")).toBeInTheDocument();
+        expect(screen.getByLabelText("图谱素材复合表格")).toBeInTheDocument();
     });
 
     it("queries pageMaterials with material filter values", async () => {
@@ -126,16 +129,15 @@ describe("GraphMaterialPage", () => {
         expect(service.pageMaterials).toHaveBeenCalledTimes(2);
     });
 
-    it("shows uninitialized material rows and still allows extraction", async () => {
+    it("shows uninitialized material rows in the composite table", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
         renderPage();
 
         expect(await screen.findByText("三才图会 天文一")).toBeInTheDocument();
         expect(screen.getAllByText("未初始化/未抽取").length).toBeGreaterThan(0);
-        expect(
-            screen.getByTestId("knowledge-graph-material-extract-uninitialized-1001-button")
-        ).toBeInTheDocument();
+        expect(screen.getAllByRole("columnheader")).toHaveLength(10);
+        expect(screen.getByRole("button", { name: /打开素材 三才图会 天文一/u })).toBeDisabled();
     });
 
     it("keeps selected order for initialized materials", async () => {
