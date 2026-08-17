@@ -12,6 +12,7 @@ const serviceMocks = vi.hoisted(() => ({
     addTask: vi.fn(async () => ({ taskId: "9001", taskType: "GRAPH", status: "REQUESTED" })),
     applyTaskCandidate: vi.fn(async () => ({ taskId: "9001", status: "APPLIED" })),
     cancelBatchTask: vi.fn(async () => ({ batchJobId: "1001", status: "CANCELLED" })),
+    createBatchExtraction: vi.fn(async () => ({ batchId: "batch-001", materials: [] })),
     getTaskDetail: vi.fn(async (request: { taskId: string }) =>
         request.taskId === "9001"
             ? {
@@ -419,6 +420,55 @@ describe("GraphExtractionPage", () => {
         expect(await screen.findByText("任务 8008")).toBeInTheDocument();
         expect(screen.queryByText("素材：SANCAI_ENTRY / 1001")).not.toBeInTheDocument();
         expect(screen.queryByText("三才稿件")).not.toBeInTheDocument();
+    });
+
+    it("creates batch extraction tasks from selected materials and whole volume", async () => {
+        renderPage();
+
+        await selectManuscriptTreeNode("人物");
+        await selectManuscriptTreeNode("卷一");
+        expect(await screen.findByText("批量创建任务")).toBeInTheDocument();
+
+        const manuscriptTitleElements = await screen.findAllByText("三才稿件");
+        const tableTitleElement = manuscriptTitleElements.find((element) =>
+            element.closest(".ant-table")
+        );
+        expect(tableTitleElement).toBeDefined();
+        if (!tableTitleElement) {
+            return;
+        }
+        const row = tableTitleElement.closest("tr") as HTMLElement;
+        fireEvent.click(within(row).getByRole("checkbox"));
+        fireEvent.click(
+            screen.getByTestId("knowledge-graph-extraction-batch-create-selected-button")
+        );
+
+        await waitFor(() => {
+            expect(serviceMocks.createBatchExtraction).toHaveBeenCalledWith({
+                contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
+            });
+        });
+        const batchCreateCalls = serviceMocks.createBatchExtraction.mock.calls as unknown as Array<
+            [Record<string, unknown>]
+        >;
+        expect(batchCreateCalls[0]?.[0]).not.toHaveProperty("volumeCode");
+        expect(workbenchServiceMocks.extractManuscript).not.toHaveBeenCalled();
+
+        const volumeBatchButton = screen.getByTestId(
+            "knowledge-graph-extraction-batch-create-volume-button"
+        );
+        await waitFor(() => {
+            expect(volumeBatchButton).toBeEnabled();
+        });
+        fireEvent.click(volumeBatchButton);
+
+        await waitFor(() => {
+            expect(serviceMocks.createBatchExtraction).toHaveBeenCalledTimes(2);
+            expect(serviceMocks.createBatchExtraction).toHaveBeenCalledWith({
+                volumeCode: "10"
+            });
+        });
+        expect(batchCreateCalls[1]?.[0]).not.toHaveProperty("contentRefs");
     });
 
     it("runs manuscript workbench flow with automatic extraction and candidate apply", async () => {

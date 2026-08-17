@@ -1,4 +1,4 @@
-import { RobotOutlined, UnorderedListOutlined } from "@ant-design/icons";
+import { UnorderedListOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Splitter, Tag } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -21,6 +21,7 @@ import { GraphExtractionManuscriptTree } from "./graph-extraction-manuscript-tre
 import { GraphExtractionTaskDetail } from "./graph-extraction-task-detail";
 import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
 import * as service from "./graph-extraction-service";
+import { TaskBatchCreatePanel } from "./task-batch-create-panel";
 import { TaskFilters } from "./task-filters";
 import type {
     GraphExtractionRegenerateCommand,
@@ -254,11 +255,6 @@ type ExtractManuscriptVariables = {
     taskType: GraphExtractionTaskType;
 };
 
-type BatchExtractManuscriptVariables = {
-    nodes: GraphWorkbenchManuscriptNode[];
-    taskType: GraphExtractionTaskType;
-};
-
 export const GraphExtractionPage = () => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -389,6 +385,20 @@ export const GraphExtractionPage = () => {
         () => volumeManuscripts.filter((node) => selectedManuscriptKeys.includes(node.nodeKey)),
         [selectedManuscriptKeys, volumeManuscripts]
     );
+    const selectedVolumeContentRefs = useMemo(
+        () =>
+            selectedVolumeManuscripts.flatMap((node) =>
+                node.sourceContentType && node.sourceContentId
+                    ? [
+                          {
+                              contentRefId: node.sourceContentId,
+                              contentType: node.sourceContentType
+                          }
+                      ]
+                    : []
+            ),
+        [selectedVolumeManuscripts]
+    );
 
     const loadManuscriptChildren = useCallback(async (nodeKey: string) => {
         if (
@@ -441,38 +451,6 @@ export const GraphExtractionPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "稿件图谱抽取失败");
-        }
-    });
-    const batchExtractManuscriptMutation = useMutation({
-        mutationFn: async ({ nodes, taskType }: BatchExtractManuscriptVariables) => {
-            await Promise.all(
-                nodes.map((node) =>
-                    workbenchService.extractManuscript({
-                        sourceContentType:
-                            node.sourceContentType as GraphWorkbenchSourceContentType,
-                        sourceContentId: node.sourceContentId || "",
-                        taskType
-                    })
-                )
-            );
-        },
-        onSuccess: async (_result, variables) => {
-            loadedManuscriptNodeKeysRef.current.clear();
-            loadingManuscriptNodeKeysRef.current.clear();
-            setManuscriptChildrenByNodeKey({});
-            setSelectedManuscriptKeys([]);
-            await Promise.all([
-                queryClient.invalidateQueries({
-                    queryKey: ["knowledge", "graph-extraction", "tasks"]
-                }),
-                queryClient.invalidateQueries({
-                    queryKey: ["knowledge", "graph-workbench"]
-                })
-            ]);
-            messageApi.success(`已创建 ${variables.nodes.length} 个稿件图谱抽取任务`);
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "批量稿件图谱抽取失败");
         }
     });
     const applyWorkbenchCandidateMutation = useMutation({
@@ -635,16 +613,6 @@ export const GraphExtractionPage = () => {
         setCandidateModalOpen(true);
     };
 
-    const extractSelectedVolumeManuscripts = () => {
-        if (!selectedVolumeManuscripts.length) {
-            return;
-        }
-        batchExtractManuscriptMutation.mutate({
-            nodes: selectedVolumeManuscripts,
-            taskType: "GRAPH"
-        });
-    };
-
     return (
         <KuzhambuPage
             actions={
@@ -711,91 +679,99 @@ export const GraphExtractionPage = () => {
                         </Splitter.Panel>
                         <Splitter.Panel className="knowledge-graph-extraction-detail-panel">
                             {selectedVolume ? (
-                                <KuzhambuTable<GraphWorkbenchManuscriptNode>
-                                    ariaLabel="卷目稿件列表"
-                                    rowKey="nodeKey"
-                                    className="graph-extraction-manuscript-table"
-                                    dataSource={volumeManuscripts}
-                                    loading={volumeManuscriptsQuery.isLoading}
-                                    pagination={{
-                                        defaultPageSize: DEFAULT_PAGE_SIZE,
-                                        showSizeChanger: true
-                                    }}
-                                    toolbar={{
-                                        leading: (
-                                            <span>
-                                                当前页已选 {selectedManuscriptKeys.length} 条
-                                            </span>
-                                        ),
-                                        actions: [
-                                            {
-                                                testId: "knowledge-graph-extraction-manuscript-batch-extract-button",
-                                                title: (
-                                                    <KuzhambuSpace size={6}>
-                                                        <RobotOutlined />
-                                                        抽取
-                                                    </KuzhambuSpace>
-                                                ),
-                                                type: "primary",
-                                                disabled:
-                                                    !canEditGraph ||
-                                                    !selectedVolumeManuscripts.length,
-                                                loading: batchExtractManuscriptMutation.isPending,
-                                                action: extractSelectedVolumeManuscripts
-                                            }
-                                        ]
-                                    }}
-                                    rowSelection={{
-                                        selectedRowKeys: selectedManuscriptKeys,
-                                        onChange: (keys) =>
-                                            setSelectedManuscriptKeys(keys.map(String))
-                                    }}
-                                    size="small"
-                                    columns={[
-                                        {
-                                            title: "稿件",
-                                            dataIndex: "title",
-                                            key: "title"
-                                        },
-                                        {
-                                            title: "图谱状态",
-                                            dataIndex: "graphStatus",
-                                            key: "graphStatus",
-                                            width: 120,
-                                            render: (status?: GraphWorkbenchStatus | null) => (
-                                                <Tag color={statusColor(status)}>
-                                                    {statusLabel(status)}
-                                                </Tag>
+                                <KuzhambuSpace orientation="vertical" size={12}>
+                                    <TaskBatchCreatePanel
+                                        canCreate={canEditGraph}
+                                        contentRefs={selectedVolumeContentRefs}
+                                        volumeCode={selectedVolume.sourceContentId || undefined}
+                                        volumeTitle={selectedVolume.title}
+                                        onCreated={async () => {
+                                            loadedManuscriptNodeKeysRef.current.clear();
+                                            loadingManuscriptNodeKeysRef.current.clear();
+                                            setManuscriptChildrenByNodeKey({});
+                                            setSelectedManuscriptKeys([]);
+                                            await Promise.all([
+                                                queryClient.invalidateQueries({
+                                                    queryKey: [
+                                                        "knowledge",
+                                                        "graph-extraction",
+                                                        "tasks"
+                                                    ]
+                                                }),
+                                                queryClient.invalidateQueries({
+                                                    queryKey: ["knowledge", "graph-workbench"]
+                                                })
+                                            ]);
+                                        }}
+                                    />
+                                    <KuzhambuTable<GraphWorkbenchManuscriptNode>
+                                        ariaLabel="卷目稿件列表"
+                                        rowKey="nodeKey"
+                                        className="graph-extraction-manuscript-table"
+                                        dataSource={volumeManuscripts}
+                                        loading={volumeManuscriptsQuery.isLoading}
+                                        pagination={{
+                                            defaultPageSize: DEFAULT_PAGE_SIZE,
+                                            showSizeChanger: true
+                                        }}
+                                        toolbar={{
+                                            leading: (
+                                                <span>
+                                                    当前页已选 {selectedManuscriptKeys.length} 条
+                                                </span>
                                             )
-                                        },
-                                        {
-                                            key: "actions",
-                                            options: (record) => [
-                                                {
-                                                    key: "view",
-                                                    text: "查看",
-                                                    testId: "knowledge-graph-extraction-manuscript-view-button",
-                                                    onClick: openManuscriptDetail
-                                                },
-                                                {
-                                                    key: "extract",
-                                                    text: "抽取",
-                                                    testId: "knowledge-graph-extraction-manuscript-table-extract-button",
-                                                    disabled:
-                                                        !canEditGraph ||
-                                                        extractManuscriptMutation.isPending ||
-                                                        batchExtractManuscriptMutation.isPending,
-                                                    onClick: () => openCandidateModal(record)
-                                                }
-                                            ]
-                                        }
-                                    ]}
-                                    locale={{
-                                        emptyText: selectedVolume
-                                            ? "当前卷目下没有稿件"
-                                            : "请选择左侧卷目"
-                                    }}
-                                />
+                                        }}
+                                        rowSelection={{
+                                            selectedRowKeys: selectedManuscriptKeys,
+                                            onChange: (keys) =>
+                                                setSelectedManuscriptKeys(keys.map(String))
+                                        }}
+                                        size="small"
+                                        columns={[
+                                            {
+                                                title: "稿件",
+                                                dataIndex: "title",
+                                                key: "title"
+                                            },
+                                            {
+                                                title: "图谱状态",
+                                                dataIndex: "graphStatus",
+                                                key: "graphStatus",
+                                                width: 120,
+                                                render: (status?: GraphWorkbenchStatus | null) => (
+                                                    <Tag color={statusColor(status)}>
+                                                        {statusLabel(status)}
+                                                    </Tag>
+                                                )
+                                            },
+                                            {
+                                                key: "actions",
+                                                options: (record) => [
+                                                    {
+                                                        key: "view",
+                                                        text: "查看",
+                                                        testId: "knowledge-graph-extraction-manuscript-view-button",
+                                                        onClick: openManuscriptDetail
+                                                    },
+                                                    {
+                                                        key: "extract",
+                                                        text: "抽取",
+                                                        testId: "knowledge-graph-extraction-manuscript-table-extract-button",
+                                                        disabled:
+                                                            !canEditGraph ||
+                                                            extractManuscriptMutation.isPending,
+                                                        onClick: () => openCandidateModal(record)
+                                                    }
+                                                ]
+                                            }
+                                        ]}
+                                        locale={{
+                                            emptyText: selectedVolume
+                                                ? "当前卷目下没有稿件"
+                                                : "请选择左侧卷目"
+                                        }}
+                                    />
+                                </KuzhambuSpace>
                             ) : (
                                 <Empty
                                     description="请选择左侧卷目查看稿件"
