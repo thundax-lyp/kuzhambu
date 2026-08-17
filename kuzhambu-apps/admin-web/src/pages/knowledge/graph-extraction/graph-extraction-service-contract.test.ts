@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as service from "./graph-extraction-service";
-import type { GraphExtractionCreateCommand } from "./graph-extraction-service";
 
 interface CapturedCall {
     body: unknown;
@@ -10,7 +9,6 @@ interface CapturedCall {
 
 const API_PREFIX = "http://localhost:20010";
 const DEV_PROXY_PREFIX = "/kuzhambu-admin-api/api";
-
 const capturedCalls: CapturedCall[] = [];
 
 const readFetchUrl = (input: RequestInfo | URL) => {
@@ -30,7 +28,7 @@ const readFetchBody = (body: BodyInit | null | undefined) => {
     return JSON.parse(String(body));
 };
 
-const installFetchRecorder = () => {
+const installFetchRecorder = (data: unknown = { id: "7001" }) => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
         const url = readFetchUrl(input);
         capturedCalls.push({
@@ -42,12 +40,8 @@ const installFetchRecorder = () => {
         return new Response(
             JSON.stringify({
                 code: "COMMON-00000",
-                message: "success",
-                data: {
-                    taskId: "9001",
-                    taskType: "GRAPH",
-                    status: "PENDING"
-                }
+                data,
+                message: "success"
             }),
             {
                 headers: {
@@ -75,7 +69,7 @@ describe("knowledge graph extraction service request contracts", () => {
             "kuzhambu.admin.accessTokenExpireAt",
             String(Date.now() + 3600 * 1000)
         );
-        installFetchRecorder();
+        vi.spyOn(crypto, "randomUUID").mockReturnValue("00000000-0000-4000-8000-000000000002");
     });
 
     afterEach(() => {
@@ -83,106 +77,137 @@ describe("knowledge graph extraction service request contracts", () => {
         localStorage.clear();
     });
 
-    it("sends create requests for all graph extraction task types", async () => {
-        const baseCommand = {
-            scopeType: "CLASSICS_ENTRY",
-            scopeJson: '{"entryId":1001}',
-            sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: "1001",
-            requestedBy: "2001",
-            serviceId: "3001",
-            serviceRole: "KNOWLEDGE_GRAPH",
-            modelId: "4001",
-            modelName: "gpt-5.5",
-            promptVersionId: "5001",
-            requestId: "req-graph-001",
-            traceId: "trace-graph-001",
-            promptMessagesJson: '[{"role":"system","content":"extract"}]',
-            promptVariablesJson: '{"locale":"zh-CN"}',
-            promptHash: "prompt-hash",
-            inputPayloadJson: '{"content":"test"}',
-            outputSchemaJson: '{"type":"object"}',
-            forceJson: true,
-            locale: "zh-CN"
-        };
+    it("sends task page and detail requests to Knowledge graph endpoints", async () => {
+        installFetchRecorder({
+            pageNo: "1",
+            pageSize: "20",
+            records: [],
+            totalCount: "0",
+            totalPage: "1"
+        });
 
-        const relationCommand: GraphExtractionCreateCommand = {
-            taskType: "RELATION",
-            ...baseCommand
-        };
-        await service.addTask(relationCommand);
-        expectLastCall("POST", "/knowledge/graph-extraction/task/add", relationCommand);
+        await service.pageTasks({
+            batchId: "batch-001",
+            contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }],
+            executionStatus: "RUNNING",
+            groupBy: "MATERIAL",
+            pageNo: 1,
+            pageSize: 20
+        });
+        expectLastCall("POST", "/knowledge/graph/task/page", {
+            batchId: "batch-001",
+            contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }],
+            executionStatus: "RUNNING",
+            groupBy: "MATERIAL",
+            pageNo: 1,
+            pageSize: 20
+        });
 
-        const graphCommand: GraphExtractionCreateCommand = {
-            taskType: "GRAPH",
-            triggerSource: "QUALITY_REPORT",
-            ...baseCommand
-        };
-        await service.addTask(graphCommand);
-        expectLastCall("POST", "/knowledge/graph-extraction/task/add", graphCommand);
-
-        const lineageCommand: GraphExtractionCreateCommand = {
-            taskType: "LINEAGE",
-            ...baseCommand
-        };
-        await service.addTask(lineageCommand);
-        expectLastCall("POST", "/knowledge/graph-extraction/task/add", lineageCommand);
+        await service.getTask({ taskId: "7001" });
+        expectLastCall("POST", "/knowledge/graph/task/get", {
+            taskId: "7001"
+        });
     });
 
-    it("sends task query and task action requests", async () => {
-        await service.pageTasks({
-            pageNo: 1,
-            pageSize: 20,
-            batchJobId: "1001",
-            triggerSource: "QUALITY_REPORT",
-            taskType: "GRAPH",
-            status: "PENDING",
-            sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: "1001"
-        });
-        expectLastCall("POST", "/knowledge/graph-extraction/task/page", {
-            pageNo: 1,
-            pageSize: 20,
-            batchJobId: "1001",
-            triggerSource: "QUALITY_REPORT",
-            taskType: "GRAPH",
-            status: "PENDING",
-            sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: "1001"
+    it("adds idempotency key, lock version and expected states to task mutations", async () => {
+        installFetchRecorder({
+            attemptNo: "1",
+            currentStage: "CANDIDATE_READY",
+            disposition: "PENDING",
+            executionStatus: "SUCCEEDED",
+            id: "7001",
+            lockVersion: "5",
+            materialRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" },
+            progress: 100
         });
 
-        await service.getTaskDetail({ taskId: "9001" });
-        expectLastCall("POST", "/knowledge/graph-extraction/task/get", {
-            taskId: "9001"
+        await service.retryTask({
+            expectedExecutionStatus: "FAILED",
+            taskId: "7003",
+            taskLockVersion: "3"
+        });
+        expectLastCall("POST", "/knowledge/graph/task/retry", {
+            expectedExecutionStatus: "FAILED",
+            idempotencyKey: "00000000-0000-4000-8000-000000000002",
+            taskId: "7003",
+            taskLockVersion: "3"
         });
 
-        await service.applyTaskCandidate({ taskId: "9001" });
-        expectLastCall("POST", "/knowledge/graph-extraction/task/apply", {
-            taskId: "9001"
+        await service.cancelTask({
+            expectedExecutionStatus: "RUNNING",
+            taskId: "7002",
+            taskLockVersion: "2"
+        });
+        expectLastCall("POST", "/knowledge/graph/task/cancel", {
+            expectedExecutionStatus: "RUNNING",
+            idempotencyKey: "00000000-0000-4000-8000-000000000002",
+            taskId: "7002",
+            taskLockVersion: "2"
+        });
+
+        await service.applyCandidate({
+            applyMode: "MERGE",
+            expectedDisposition: "PENDING",
+            expectedExecutionStatus: "SUCCEEDED",
+            materialLockVersion: "4",
+            taskId: "7001",
+            taskLockVersion: "5"
+        });
+        expectLastCall("POST", "/knowledge/graph/task/candidate/apply", {
+            applyMode: "MERGE",
+            expectedDisposition: "PENDING",
+            expectedExecutionStatus: "SUCCEEDED",
+            idempotencyKey: "00000000-0000-4000-8000-000000000002",
+            materialLockVersion: "4",
+            taskId: "7001",
+            taskLockVersion: "5"
+        });
+
+        await service.discardCandidate({
+            expectedDisposition: "PENDING",
+            expectedExecutionStatus: "SUCCEEDED",
+            reason: "人工判断不采用",
+            taskId: "7001",
+            taskLockVersion: "5"
+        });
+        expectLastCall("POST", "/knowledge/graph/task/candidate/discard", {
+            expectedDisposition: "PENDING",
+            expectedExecutionStatus: "SUCCEEDED",
+            idempotencyKey: "00000000-0000-4000-8000-000000000002",
+            reason: "人工判断不采用",
+            taskId: "7001",
+            taskLockVersion: "5"
+        });
+    });
+
+    it("sends regenerate and batch create requests", async () => {
+        installFetchRecorder({
+            batchId: "batch-001",
+            materials: []
         });
 
         await service.regenerateTask({
-            taskType: "GRAPH",
-            sourceTaskId: "9001",
-            selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-            replaceUnconfirmedOnly: true,
-            requestedBy: "2001"
+            expectedDisposition: "PENDING",
+            expectedExecutionStatus: "SUCCEEDED",
+            taskId: "7001",
+            taskLockVersion: "5"
         });
-        expectLastCall("POST", "/knowledge/graph-extraction/task/regenerate", {
-            taskType: "GRAPH",
-            sourceTaskId: "9001",
-            selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-            replaceUnconfirmedOnly: true,
-            requestedBy: "2001"
+        expectLastCall("POST", "/knowledge/graph/task/candidate/regenerate", {
+            expectedDisposition: "PENDING",
+            expectedExecutionStatus: "SUCCEEDED",
+            idempotencyKey: "00000000-0000-4000-8000-000000000002",
+            taskId: "7001",
+            taskLockVersion: "5"
         });
 
-        await service.cancelBatchTask({
-            batchJobId: "1001",
-            requestedBy: "2001"
+        await service.createBatchExtraction({
+            contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
         });
-        expectLastCall("POST", "/knowledge/graph-extraction/task/cancel", {
-            batchJobId: "1001",
-            requestedBy: "2001"
+        expectLastCall("POST", "/knowledge/graph/task/batch/create", {
+            idempotencyKey: "00000000-0000-4000-8000-000000000002",
+            selection: {
+                contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
+            }
         });
     });
 });

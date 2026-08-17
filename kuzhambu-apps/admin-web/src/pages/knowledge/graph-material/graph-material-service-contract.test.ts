@@ -69,7 +69,7 @@ describe("knowledge graph material service request contracts", () => {
             "kuzhambu.admin.accessTokenExpireAt",
             String(Date.now() + 3600 * 1000)
         );
-        vi.spyOn(crypto, "randomUUID").mockReturnValue("idem-material-001");
+        vi.spyOn(crypto, "randomUUID").mockReturnValue("00000000-0000-4000-8000-000000000001");
     });
 
     afterEach(() => {
@@ -134,14 +134,14 @@ describe("knowledge graph material service request contracts", () => {
         });
         expectLastCall("POST", "/knowledge/graph/material/extraction/create", {
             contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" },
-            idempotencyKey: "idem-material-001"
+            idempotencyKey: "00000000-0000-4000-8000-000000000001"
         });
 
         await service.createBatchExtraction({
             contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
         });
         expectLastCall("POST", "/knowledge/graph/task/batch/create", {
-            idempotencyKey: "idem-material-001",
+            idempotencyKey: "00000000-0000-4000-8000-000000000001",
             selection: {
                 contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
             }
@@ -169,7 +169,7 @@ describe("knowledge graph material service request contracts", () => {
             ]
         });
         expectLastCall("POST", "/knowledge/graph/publication/batch/withdrawal/withdraw", {
-            idempotencyKey: "idem-material-001",
+            idempotencyKey: "00000000-0000-4000-8000-000000000001",
             materials: [
                 {
                     contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },

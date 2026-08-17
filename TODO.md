@@ -19,14 +19,6 @@
     - 验收点：路由单测通过，且 `rg` 确认新素材/任务组件不 import 旧 `graph-result` 或 `refinement` service。
     - 重要度：8/10
 
-- [ ] `AW/graph-extraction service`：建立图谱提取任务 HTTP service 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-service-contract.test.ts`
-    - 处理动作：实现任务分页、详情、重试、取消、候选采用、丢弃和重生成 service 方法。
-    - 验收点：contract test 断言 URL、body、`idempotencyKey`、任务 `lockVersion`、预期状态和正式业务码映射。
-    - 重要度：10/10
-
 - [ ] `AW/graph-extraction mock`：建立图谱提取任务 Mock adapter 与 fixture
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
