@@ -20,6 +20,7 @@ public class GraphExtractionTaskDO {
     private String contentType;
     private Long contentRefId;
     private String contentSnapshotJson;
+    private String pipelineVersion;
     private String modelSnapshotJson;
     private String promptSnapshotJson;
     private String outputSchemaJson;

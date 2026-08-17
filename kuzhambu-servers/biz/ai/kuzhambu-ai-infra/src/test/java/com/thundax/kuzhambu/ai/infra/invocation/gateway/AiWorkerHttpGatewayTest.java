@@ -91,6 +91,7 @@ class AiWorkerHttpGatewayTest {
                 captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
         assertTrue(capturedBody.get().contains("\"capability\":\"summary\""));
         assertTrue(capturedBody.get().contains("\"contentType\":\"entry\""));
+        assertTrue(capturedBody.get().contains("\"locale\":\"zh-CN\""));
     }
 
     @Test

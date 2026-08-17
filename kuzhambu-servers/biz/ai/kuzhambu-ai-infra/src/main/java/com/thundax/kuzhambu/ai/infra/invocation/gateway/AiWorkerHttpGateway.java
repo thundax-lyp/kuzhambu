@@ -35,10 +35,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AiWorkerHttpGateway implements AiWorkerGateway {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiWorkerHttpGateway.class);
 
     private static final String CALLER_DOMAIN = "AI";
     private static final String INVOKE_PATH = "/internal/ai/invoke";
@@ -48,6 +52,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     private static final String ERROR_WORKER_PROTOCOL_FAILURE = "WORKER_PROTOCOL_FAILURE";
     private static final String ERROR_WORKER_TIMEOUT = "WORKER_TIMEOUT";
     private static final String ERROR_WORKER_UNAVAILABLE = "WORKER_UNAVAILABLE";
+    private static final String DEFAULT_LOCALE = "zh-CN";
 
     private final AiWorkerGatewayProperties properties;
     private final AiWorkerRequestSigner requestSigner;
@@ -280,7 +285,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         AiWorkerHttpPayloads.Options options = new AiWorkerHttpPayloads.Options();
         options.setStream(stream);
         options.setForceJson(command.options().forceJson());
-        options.setLocale(command.options().locale());
+        options.setLocale(defaultString(command.options().locale(), DEFAULT_LOCALE));
         return options;
     }
 
@@ -460,6 +465,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     }
 
     private AiInvokeResult httpFailure(AiInvokeCommand command, int statusCode, String body) {
+        LOGGER.warn("AI worker request failed, statusCode={}, responseBody={}", statusCode, body);
         AiWorkerHttpPayloads.InvokeResponse response = readWorkerResponse(body);
         if (response != null
                 && response.getError() != null

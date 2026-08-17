@@ -63,6 +63,17 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     @Test
+    void resolveShouldUsePromptOutputSchemaWhenCommandSchemaIsEmptyObject() {
+        AiBusinessInvokeConfigResolver resolver =
+                newResolver(promptRepository(List.of(variable("contentType", true), variable("sourceText", true))));
+        AiInvokeCommand command = commandWithOutputSchema("{}");
+
+        AiBusinessInvokeConfigResolver.ResolvedBusinessInvokeConfig resolved = resolver.resolveConfig(command);
+
+        assertThat(resolved.outputSchemaJson()).isEqualTo("{\"type\":\"text\"}");
+    }
+
+    @Test
     void resolveShouldRejectMissingRequiredBusinessVariable() {
         AiBusinessInvokeConfigResolver resolver =
                 newResolver(promptRepository(List.of(variable("contentType", true), variable("missingText", true))));
@@ -146,6 +157,14 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     private static AiInvokeCommand command(PromptVersionId promptVersionId) {
+        return command(promptVersionId, null);
+    }
+
+    private static AiInvokeCommand commandWithOutputSchema(String outputSchemaJson) {
+        return command(null, outputSchemaJson);
+    }
+
+    private static AiInvokeCommand command(PromptVersionId promptVersionId, String outputSchemaJson) {
         return new AiInvokeCommand(
                 new AiInvokeContext(null, "classics", AiBusinessCapability.CLASSICS_SUMMARY),
                 new AiInvokeWorkerRoute(null, null, null),
@@ -156,7 +175,7 @@ class AiBusinessInvokeConfigResolverTest {
                 new AiInvokeModelConfig(null, null, null, null),
                 new AiInvokeTrace(null, null),
                 new AiInvokePrompt(promptVersionId, null, null, null),
-                new AiInvokePayload("{\"sourceText\":\"天地玄黄\"}", null),
+                new AiInvokePayload("{\"sourceText\":\"天地玄黄\"}", outputSchemaJson),
                 new AiInvokeOptions(false, false, null, false, true));
     }
 

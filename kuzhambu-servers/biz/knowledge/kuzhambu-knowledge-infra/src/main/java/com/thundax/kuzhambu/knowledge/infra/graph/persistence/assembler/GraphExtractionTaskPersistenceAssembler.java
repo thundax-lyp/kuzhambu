@@ -8,6 +8,8 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionEx
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
 
 public final class GraphExtractionTaskPersistenceAssembler {
+    private static final String CURRENT_PIPELINE_VERSION = "graph-extraction-v1";
+
     private GraphExtractionTaskPersistenceAssembler() {}
 
     public static GraphExtractionTaskDO toObject(GraphExtractionTask entity) {
@@ -20,6 +22,7 @@ public final class GraphExtractionTaskPersistenceAssembler {
                 ContentRefCodec.toContentType(entity.getContentRef()),
                 ContentRefCodec.toValue(entity.getContentRef()),
                 entity.getContentSnapshotJson(),
+                CURRENT_PIPELINE_VERSION,
                 entity.getModelSnapshotJson(),
                 entity.getPromptSnapshotJson(),
                 entity.getOutputSchemaJson(),
