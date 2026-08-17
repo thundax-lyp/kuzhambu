@@ -11,7 +11,6 @@ import {
     KuzhambuSpace
 } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { graphMaterialMockData } from "./__mocks__/graph-mock-data";
 import { MaterialBatchActions } from "./material-batch-actions";
 import { MaterialDetailDrawer } from "./material-detail-drawer";
 import { MaterialFilters } from "./material-filters";
@@ -20,6 +19,7 @@ import * as service from "./graph-material-service";
 import type { GraphMaterialPageQuery } from "./graph-material-service";
 import type {
     GraphContentRefRecord,
+    GraphMaterialBatchPublicationResult,
     GraphMaterialDrawerSection,
     GraphMaterialListRecord,
     GraphMaterialRecord
@@ -105,14 +105,22 @@ export const GraphMaterialPage = () => {
     const publishSelectedMaterials = async (targetRecords: GraphMaterialListRecord[]) => {
         setIsBatchPublishing(true);
         try {
-            const selectedMaterialIds = new Set(
-                targetRecords
-                    .map((record) => record.material?.id)
-                    .filter((id): id is string => Boolean(id))
-            );
-            return graphMaterialMockData.batchPublicationResults.filter((result) =>
-                selectedMaterialIds.has(result.materialId)
-            );
+            return targetRecords.flatMap((record): GraphMaterialBatchPublicationResult[] => {
+                if (!record.material) {
+                    return [];
+                }
+                return [
+                    {
+                        failureReason:
+                            record.material.failedOperation === "PUBLISH"
+                                ? (record.material.failureReason ?? "发布预检未通过。")
+                                : undefined,
+                        materialId: record.material.id,
+                        status:
+                            record.material.failedOperation === "PUBLISH" ? "FAILED" : "PUBLISHED"
+                    }
+                ];
+            });
         } finally {
             setIsBatchPublishing(false);
         }

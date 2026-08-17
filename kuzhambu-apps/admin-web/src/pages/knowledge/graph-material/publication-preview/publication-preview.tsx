@@ -7,7 +7,6 @@ import {
     KuzhambuSpace,
     KuzhambuTag
 } from "@/components";
-import { graphMaterialMockData } from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
 import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material/graph-material-types";
 
 const PREVIEW_TYPE_LABELS = {
@@ -23,6 +22,13 @@ const PREVIEW_TAG_TYPES = {
     red: "danger",
     blue: "info"
 } as const;
+
+const PUBLICATION_PREVIEW_ITEMS = [
+    { color: "green", id: "preview-create" },
+    { color: "orange", id: "preview-link" },
+    { color: "red", id: "preview-conflict" },
+    { color: "blue", id: "preview-published" }
+] as const;
 
 interface PublicationPreviewProps {
     canApplyGraph: boolean;
@@ -73,7 +79,7 @@ export const PublicationPreview = ({ canApplyGraph, detail }: PublicationPreview
                         size="small"
                         bordered
                     />
-                    {graphMaterialMockData.publicationPreview.map((item) => (
+                    {PUBLICATION_PREVIEW_ITEMS.map((item) => (
                         <KuzhambuSpace key={item.id}>
                             <KuzhambuTag type={PREVIEW_TAG_TYPES[item.color]}>
                                 {item.color}

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW knowledge graph service switch`：切换真实 Knowledge HTTP service
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-service.ts`
-    - 处理动作：保持领域类型和组件不变，将 adapter 入口从 Mock 切换到 `postJson`。
-    - 验收点：contract tests 仍通过，且错误处理通过业务码映射而不是字符串 message。
-    - 重要度：8/10
-
 - [ ] `AW knowledge graph e2e`：补充素材任务端到端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
