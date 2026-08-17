@@ -19,14 +19,6 @@
     - 验收点：测试证明仅清理指定候选，失败可由调用方重试，Knowledge 无 AI 表访问。
     - 重要度：9/10
 
-- [ ] `knowledge graph material task HTTP`：暴露素材任务 HTTP 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S5a、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/**/interfaces/admin/graph/GraphController.java`、`GraphMaterialRequests.java`、`GraphExtractionRequests.java`、`GraphMaterialResponses.java`、`GraphExtractionResponses.java`、`GraphInterfaceAssembler.java`
-    - 处理动作：实现素材、提取任务和候选处置资源的 HTTP 转换与权限控制。
-    - 验收点：Web 测试覆盖权限、字符串序列化、状态/版本冲突、候选不可用和批量部分失败。
-    - 重要度：10/10
-
 - [ ] `knowledge graph batch withdrawal HTTP`：暴露批量撤回 HTTP 接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S5b、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`

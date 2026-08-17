@@ -9,15 +9,18 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler.GraphInterfaceAssembler;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublishedRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublicationResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublishedResponses;
@@ -39,16 +42,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class GraphController {
     private final GraphWorkbenchApplicationService workbenchService;
     private final GraphMaterialApplicationService materialService;
+    private final GraphExtractionApplicationService extractionService;
     private final GraphPublicationApplicationService publicationService;
     private final GraphPublishedApplicationService publishedService;
 
     public GraphController(
             GraphWorkbenchApplicationService workbenchService,
             GraphMaterialApplicationService materialService,
+            GraphExtractionApplicationService extractionService,
             GraphPublicationApplicationService publicationService,
             GraphPublishedApplicationService publishedService) {
         this.workbenchService = workbenchService;
         this.materialService = materialService;
+        this.extractionService = extractionService;
         this.publicationService = publicationService;
         this.publishedService = publishedService;
     }
@@ -170,6 +176,18 @@ public class GraphController {
                 pageNo == null ? null : Integer.valueOf(pageNo), pageSize == null ? null : Integer.valueOf(pageSize));
     }
 
+    private Long currentSubjectLong() {
+        String subjectId = KuzhambuContextHolder.currentSubjectId();
+        if (subjectId == null || subjectId.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(subjectId);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
+
     @Operation(summary = "分页查询图谱素材", description = "knowledge:graph:view")
     @ApiImplicitParams({
         @ApiImplicitParam(
@@ -181,12 +199,12 @@ public class GraphController {
     @HasPermission("knowledge:graph:view")
     @SysLogger(value = "图谱素材分页")
     @PostMapping("material/page")
-    public PageResponse<GraphMaterialResponses.MaterialData> materialPage(
+    public PageResponse<GraphMaterialResponses.MaterialPageData> materialPage(
             @Valid @RequestBody GraphMaterialRequests.MaterialPageRequest request) {
         var result = materialService.pageMaterials(
                 GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId()),
                 pageQuery(request.getPageNo(), request.getPageSize()));
-        return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toMaterialData);
+        return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toMaterialPageData);
     }
 
     @Operation(summary = "获取图谱素材画布", description = "knowledge:graph:view")
@@ -205,6 +223,162 @@ public class GraphController {
         var result = materialService.getMaterialGraph(
                 GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId()));
         return GraphInterfaceAssembler.toDetailData(result, List.of());
+    }
+
+    @Operation(summary = "创建图谱素材提取任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱提取创建")
+    @PostMapping("material/extraction/create")
+    public GraphExtractionResponses.TaskData extractionCreate(
+            @Valid @RequestBody GraphExtractionRequests.ExtractionCreateRequest request) {
+        return GraphInterfaceAssembler.toTaskData(
+                extractionService.createExtraction(GraphInterfaceAssembler.toCommand(request, currentSubjectLong())));
+    }
+
+    @Operation(summary = "批量创建图谱提取任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱批量提取创建")
+    @PostMapping("task/batch/create")
+    public GraphExtractionResponses.BatchResultData taskBatchCreate(
+            @Valid @RequestBody GraphExtractionRequests.BatchCreateRequest request) {
+        return GraphInterfaceAssembler.toBatchData(extractionService.createBatchExtraction(
+                GraphInterfaceAssembler.toCommand(request, currentSubjectLong())));
+    }
+
+    @Operation(summary = "分页查询图谱提取任务", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "图谱提取任务分页")
+    @PostMapping("task/page")
+    public PageResponse<GraphExtractionResponses.TaskData> taskPage(
+            @Valid @RequestBody GraphExtractionRequests.TaskPageRequest request) {
+        return PageResponseHelper.fromPageResult(
+                extractionService.pageTasks(
+                        GraphInterfaceAssembler.toQuery(request),
+                        pageQuery(request.getPageNo(), request.getPageSize())),
+                GraphInterfaceAssembler::toTaskData);
+    }
+
+    @Operation(summary = "获取图谱提取任务详情", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "图谱提取任务详情")
+    @PostMapping("task/get")
+    public GraphExtractionResponses.TaskDetailData taskGet(
+            @Valid @RequestBody GraphExtractionRequests.TaskGetRequest request) {
+        return GraphInterfaceAssembler.toTaskDetailData(
+                extractionService.getTask(GraphInterfaceAssembler.toQuery(request)));
+    }
+
+    @Operation(summary = "重试图谱提取任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱提取任务重试")
+    @PostMapping("task/retry")
+    public GraphExtractionResponses.TaskData taskRetry(
+            @Valid @RequestBody GraphExtractionRequests.TaskActionRequest request) {
+        return GraphInterfaceAssembler.toTaskData(
+                extractionService.retryTask(GraphInterfaceAssembler.toRetryCommand(request)));
+    }
+
+    @Operation(summary = "取消图谱提取任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱提取任务取消")
+    @PostMapping("task/cancel")
+    public GraphExtractionResponses.TaskData taskCancel(
+            @Valid @RequestBody GraphExtractionRequests.TaskActionRequest request) {
+        return GraphInterfaceAssembler.toTaskData(
+                extractionService.cancelTask(GraphInterfaceAssembler.toCancelCommand(request)));
+    }
+
+    @Operation(summary = "采用图谱提取候选", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱提取候选采用")
+    @PostMapping("task/candidate/apply")
+    public GraphExtractionResponses.CandidateApplyData candidateApply(
+            @Valid @RequestBody GraphExtractionRequests.CandidateApplyRequest request) {
+        return GraphInterfaceAssembler.toCandidateApplyData(
+                extractionService.applyCandidate(GraphInterfaceAssembler.toCommand(request)));
+    }
+
+    @Operation(summary = "丢弃图谱提取候选", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱提取候选丢弃")
+    @PostMapping("task/candidate/discard")
+    public GraphExtractionResponses.TaskData candidateDiscard(
+            @Valid @RequestBody GraphExtractionRequests.CandidateDiscardRequest request) {
+        return GraphInterfaceAssembler.toTaskData(
+                extractionService.discardCandidate(GraphInterfaceAssembler.toCommand(request)));
+    }
+
+    @Operation(summary = "重新生成图谱提取候选", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱提取候选重新生成")
+    @PostMapping("task/candidate/regenerate")
+    public GraphExtractionResponses.TaskData candidateRegenerate(
+            @Valid @RequestBody GraphExtractionRequests.CandidateRegenerateRequest request) {
+        return GraphInterfaceAssembler.toTaskData(
+                extractionService.regenerateTask(GraphInterfaceAssembler.toCommand(request, currentSubjectLong())));
     }
 
     @Operation(summary = "创建图谱素材节点", description = "knowledge:graph:edit")

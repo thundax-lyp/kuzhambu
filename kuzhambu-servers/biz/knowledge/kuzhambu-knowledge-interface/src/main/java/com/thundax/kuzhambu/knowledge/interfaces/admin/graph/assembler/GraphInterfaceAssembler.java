@@ -5,6 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionBatchCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCancelCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateApplyCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateDiscardCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialApplyMode;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEdgeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEdgeDeleteCommand;
@@ -38,9 +45,16 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNode
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskPageQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionCandidatePreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionStageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
@@ -61,6 +75,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodeIdCod
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodePropertyIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNode;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialStats;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdgeProperty;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
@@ -69,14 +84,17 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchActivity;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublishedRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublicationResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublishedResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphWorkbenchResponses;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -171,6 +189,55 @@ public final class GraphInterfaceAssembler {
         return value == null || value.material() == null ? null : toMaterialData(value.material());
     }
 
+    public static GraphMaterialResponses.SourceData toSourceData(GraphMaterialPageResult value) {
+        return value == null ? null : toSourceData(value.source());
+    }
+
+    public static GraphMaterialResponses.SourceData toSourceData(
+            com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialSourceResult value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphMaterialResponses.SourceData(
+                toNullableContentRefData(value.contentRef()),
+                value.title(),
+                value.summary(),
+                value.contentType(),
+                value.categoryCode(),
+                value.categoryName(),
+                value.volumeCode(),
+                value.volumeName(),
+                value.graphable());
+    }
+
+    public static GraphMaterialResponses.MaterialStatsData toMaterialStatsData(GraphMaterialStats value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphMaterialResponses.MaterialStatsData(
+                string(value.getMaterialId()),
+                String.valueOf(value.getDraftNodeCount()),
+                String.valueOf(value.getDraftEdgeCount()),
+                String.valueOf(value.getPublishedNodeCount()),
+                String.valueOf(value.getPublishedEdgeCount()),
+                String.valueOf(value.getActiveTaskCount()),
+                String.valueOf(value.getPendingReviewTaskCount()),
+                String.valueOf(value.getFailedTaskCount()),
+                String.valueOf(value.getStatsRevision()),
+                instant(value.getCalculatedAt()));
+    }
+
+    public static GraphMaterialResponses.MaterialPageData toMaterialPageData(GraphMaterialPageResult value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphMaterialResponses.MaterialPageData(
+                toSourceData(value.source()),
+                value.material() == null ? null : toMaterialData(value.material()),
+                toMaterialStatsData(value.materialStats()),
+                toTaskData(value.latestTask()));
+    }
+
     @NonNull
     public static GraphMaterialResponses.NodeData toMaterialNodeData(@NonNull GraphMaterialNode value) {
         Objects.requireNonNull(value, "value");
@@ -200,13 +267,16 @@ public final class GraphInterfaceAssembler {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(extractionTasks, "extractionTasks");
         return new GraphMaterialResponses.DetailData(
+                toSourceData(value.source()),
                 value.material() == null ? null : toMaterialData(value.material()),
+                toMaterialStatsData(value.materialStats()),
                 value.nodes().stream()
                         .map(GraphInterfaceAssembler::toMaterialNodeData)
                         .toList(),
                 value.edges().stream()
                         .map(GraphInterfaceAssembler::toMaterialEdgeData)
                         .toList(),
+                toTaskData(value.taskSummary()),
                 extractionTasks);
     }
 
@@ -221,6 +291,188 @@ public final class GraphInterfaceAssembler {
                 value.edges().stream()
                         .map(GraphInterfaceAssembler::toMaterialEdgeData)
                         .toList());
+    }
+
+    @NonNull
+    public static GraphExtractionCommand toCommand(
+            @NonNull GraphExtractionRequests.ExtractionCreateRequest request, Long requestedBy) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionCommand(toContentRef(request), request.getIdempotencyKey(), requestedBy);
+    }
+
+    @NonNull
+    public static GraphExtractionBatchCommand toCommand(
+            @NonNull GraphExtractionRequests.BatchCreateRequest request, Long requestedBy) {
+        Objects.requireNonNull(request, "request");
+        List<ContentRef> materialRefs =
+                request.getSelection() == null || request.getSelection().getContentRefs() == null
+                        ? List.of()
+                        : request.getSelection().getContentRefs().stream()
+                                .map(GraphInterfaceAssembler::toContentRef)
+                                .toList();
+        return new GraphExtractionBatchCommand(materialRefs, request.getIdempotencyKey(), requestedBy);
+    }
+
+    @NonNull
+    public static GraphTaskPageQuery toQuery(@NonNull GraphExtractionRequests.TaskPageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphTaskPageQuery(
+                request.getKeyword(),
+                request.getContentType(),
+                request.getCategoryCode(),
+                request.getVolumeCode(),
+                request.getContentRefs() == null
+                        ? List.of()
+                        : request.getContentRefs().stream()
+                                .map(GraphInterfaceAssembler::toContentRef)
+                                .toList(),
+                request.getBatchId(),
+                request.getExecutionStatus(),
+                request.getDisposition(),
+                request.getGroupBy());
+    }
+
+    @NonNull
+    public static GraphTaskDetailQuery toQuery(@NonNull GraphExtractionRequests.TaskGetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphTaskDetailQuery(Long.valueOf(request.getTaskId()));
+    }
+
+    @NonNull
+    public static GraphExtractionRetryCommand toRetryCommand(
+            @NonNull GraphExtractionRequests.TaskActionRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionRetryCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getIdempotencyKey());
+    }
+
+    @NonNull
+    public static GraphExtractionCancelCommand toCancelCommand(
+            @NonNull GraphExtractionRequests.TaskActionRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionCancelCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getIdempotencyKey());
+    }
+
+    @NonNull
+    public static GraphExtractionCandidateApplyCommand toCommand(
+            @NonNull GraphExtractionRequests.CandidateApplyRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionCandidateApplyCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getExpectedDisposition(),
+                Long.parseLong(request.getMaterialLockVersion()),
+                GraphMaterialApplyMode.valueOf(request.getApplyMode()),
+                request.getIdempotencyKey());
+    }
+
+    @NonNull
+    public static GraphExtractionCandidateDiscardCommand toCommand(
+            @NonNull GraphExtractionRequests.CandidateDiscardRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionCandidateDiscardCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getExpectedDisposition(),
+                request.getReason(),
+                request.getIdempotencyKey());
+    }
+
+    @NonNull
+    public static GraphExtractionRegenerateCommand toCommand(
+            @NonNull GraphExtractionRequests.CandidateRegenerateRequest request, Long requestedBy) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionRegenerateCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getExpectedDisposition(),
+                request.getIdempotencyKey(),
+                requestedBy);
+    }
+
+    public static GraphExtractionResponses.TaskData toTaskData(GraphExtractionTaskResult value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphExtractionResponses.TaskData(
+                string(value.taskId()),
+                toNullableContentRefData(value.contentRef()),
+                String.valueOf(value.lockVersion()),
+                value.executionStatus(),
+                value.disposition(),
+                String.valueOf(value.attemptNo()),
+                String.valueOf(value.progress()),
+                value.currentStage(),
+                string(value.candidateId()),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                instant(value.requestedAt()),
+                instant(value.completedAt()),
+                instant(value.disposedAt()),
+                instant(value.purgeAfter()));
+    }
+
+    public static GraphExtractionResponses.BatchResultData toBatchData(GraphExtractionBatchResult value) {
+        return new GraphExtractionResponses.BatchResultData(
+                value.idempotencyKey(),
+                value.tasks().stream().map(GraphInterfaceAssembler::toTaskData).toList());
+    }
+
+    public static GraphExtractionResponses.StageData toStageData(GraphExtractionStageResult value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphExtractionResponses.StageData(
+                String.valueOf(value.stageOrder()),
+                value.stageName(),
+                value.status(),
+                String.valueOf(value.progress()),
+                value.inputSummaryJson(),
+                value.outputSummaryJson(),
+                value.failureReason(),
+                instant(value.startedAt()),
+                instant(value.completedAt()));
+    }
+
+    public static GraphExtractionResponses.CandidatePreviewData toCandidateData(
+            GraphExtractionCandidatePreviewResult value) {
+        return value == null
+                ? null
+                : new GraphExtractionResponses.CandidatePreviewData(
+                        string(value.candidateId()), value.resultFormat(), value.resultSummaryJson());
+    }
+
+    public static GraphExtractionResponses.TaskDetailData toTaskDetailData(GraphExtractionTaskDetailResult value) {
+        return new GraphExtractionResponses.TaskDetailData(
+                toTaskData(value.task()),
+                null,
+                null,
+                value.stages().stream()
+                        .map(GraphInterfaceAssembler::toStageData)
+                        .toList(),
+                value.relatedTasks().stream()
+                        .map(GraphInterfaceAssembler::toTaskData)
+                        .toList(),
+                toCandidateData(value.candidate()));
+    }
+
+    public static GraphExtractionResponses.CandidateApplyData toCandidateApplyData(GraphMaterialResult value) {
+        return new GraphExtractionResponses.CandidateApplyData(
+                toTaskData(value.taskSummary()), toDetailData(value, List.of()));
     }
 
     @NonNull
@@ -1008,5 +1260,13 @@ public final class GraphInterfaceAssembler {
             throw new ApiException(
                     "GRAPH-API-00001", "knowledge.graph.invalid-json-payload", "图谱 JSON 协议对象无效", exception);
         }
+    }
+
+    private static String string(Long value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private static String instant(Instant value) {
+        return value == null ? null : String.valueOf(value.toEpochMilli());
     }
 }

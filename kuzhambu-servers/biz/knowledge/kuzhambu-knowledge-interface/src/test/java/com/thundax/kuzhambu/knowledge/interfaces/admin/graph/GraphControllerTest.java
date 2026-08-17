@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
@@ -32,6 +33,10 @@ class GraphControllerTest {
         assertThat(permission("materialPage")).isEqualTo("knowledge:graph:view");
         assertThat(permission("materialGet")).isEqualTo("knowledge:graph:view");
         assertThat(permission("materialNodeCreate")).isEqualTo("knowledge:graph:edit");
+        assertThat(permission("taskPage")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("taskGet")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("extractionCreate")).isEqualTo("knowledge:graph:edit");
+        assertThat(permission("candidateApply")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publicationPublish")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publishedNodeDelete")).isEqualTo("knowledge:graph:edit");
     }
@@ -86,6 +91,7 @@ class GraphControllerTest {
         return new GraphController(
                 mock(GraphWorkbenchApplicationService.class),
                 materialService,
+                mock(GraphExtractionApplicationService.class),
                 mock(GraphPublicationApplicationService.class),
                 mock(GraphPublishedApplicationService.class));
     }
