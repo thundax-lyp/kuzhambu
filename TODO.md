@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web knowledge routes`：冻结图谱素材与任务页面边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/layouts/admin-layout.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-workbench/`
-    - 处理动作：保留素材管理和提取任务入口，并移除新流程到旧 `graph-result`、`refinement` 的跳转依赖。
-    - 验收点：路由单测通过，且 `rg` 确认新素材/任务组件不 import 旧 `graph-result` 或 `refinement` service。
-    - 重要度：8/10
-
 - [ ] `AW/graph-material page query`：素材页接入 service 查询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`

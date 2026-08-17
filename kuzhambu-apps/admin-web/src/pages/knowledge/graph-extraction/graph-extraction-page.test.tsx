@@ -177,36 +177,12 @@ const workbenchServiceMocks = vi.hoisted(() => ({
     })
 }));
 
-const graphResultServiceMocks = vi.hoisted(() => ({
-    pageRelations: vi.fn(async () => ({
-        pageNo: 1,
-        pageSize: 200,
-        totalCount: 1,
-        totalPage: 1,
-        count: 1,
-        records: [
-            {
-                relationId: "5001",
-                sourceName: "黄帝",
-                relationType: "建立",
-                targetName: "制度",
-                confirmationStatus: "CONFIRMED",
-                latestVersionId: "8001"
-            }
-        ]
-    }))
-}));
-
 vi.mock("./graph-extraction-service", () => ({
     ...serviceMocks
 }));
 
 vi.mock("./graph-workbench-service", () => ({
     ...workbenchServiceMocks
-}));
-
-vi.mock("@/pages/knowledge/graph-result/graph-result-service", () => ({
-    ...graphResultServiceMocks
 }));
 
 const createTestQueryClient = () =>
@@ -318,19 +294,10 @@ describe("GraphExtractionPage", () => {
                 taskType: "GRAPH"
             });
         });
-        await waitFor(() => {
-            expect(graphResultServiceMocks.pageRelations).toHaveBeenCalledWith({
-                pageNo: 1,
-                pageSize: 200,
-                versionId: "8001"
-            });
-        });
         expect(await screen.findByText("当前图谱 #8001")).toBeInTheDocument();
-        expect(screen.getByRole("table", { name: "当前图谱 SPO 列表" })).toBeInTheDocument();
-        expect(screen.getAllByText("黄帝").length).toBeGreaterThan(0);
-        expect(screen.getAllByText("建立").length).toBeGreaterThan(0);
-        expect(screen.getAllByText("制度").length).toBeGreaterThan(0);
-        expect(screen.getByRole("img", { name: "当前图谱关系图" })).toBeInTheDocument();
+        expect(screen.getByText("暂无当前图谱")).toBeInTheDocument();
+        expect(screen.queryByRole("table", { name: "当前图谱 SPO 列表" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("img", { name: "当前图谱关系图" })).not.toBeInTheDocument();
         expect(screen.queryByText("7001")).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: "抽取图谱" }));

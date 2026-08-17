@@ -20,7 +20,6 @@ import { GraphExtractionManuscriptTree } from "./graph-extraction-manuscript-tre
 import { GraphExtractionTaskDetail } from "./graph-extraction-task-detail";
 import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
 import * as service from "./graph-extraction-service";
-import * as graphResultService from "@/pages/knowledge/graph-result/graph-result-service";
 import type {
     GraphExtractionRegenerateCommand,
     GraphExtractionTaskPageQuery
@@ -258,19 +257,6 @@ export const GraphExtractionPage = () => {
             Boolean(selectedManuscript?.sourceContentType && selectedManuscript.sourceContentId),
         retry: false
     });
-    const latestGraphVersionId = manuscriptDetailQuery.data?.latestGraphVersion?.versionId;
-    const currentGraphRelationsQuery = useQuery({
-        queryKey: ["knowledge", "graph-results", "relations", latestGraphVersionId],
-        queryFn: () =>
-            graphResultService.pageRelations({
-                pageNo: DEFAULT_PAGE_NO,
-                pageSize: 200,
-                versionId: latestGraphVersionId || ""
-            }),
-        enabled: manuscriptDetailDrawerOpen && Boolean(latestGraphVersionId),
-        retry: false
-    });
-
     const visibleManuscriptTreeNodes = useMemo(
         () => mergeLoadedNodeChildren(manuscriptTreeQuery.data || [], manuscriptChildrenByNodeKey),
         [manuscriptChildrenByNodeKey, manuscriptTreeQuery.data]
@@ -703,8 +689,8 @@ export const GraphExtractionPage = () => {
                 >
                     <GraphExtractionManuscriptDetail
                         canEdit={canEditGraph}
-                        currentGraphLoading={currentGraphRelationsQuery.isLoading}
-                        currentGraphRelations={currentGraphRelationsQuery.data?.records || []}
+                        currentGraphLoading={false}
+                        currentGraphRelations={[]}
                         detail={manuscriptDetailQuery.data || null}
                         selectedNode={selectedManuscript}
                         onOpenExtractionDialog={() => openCandidateModal()}
