@@ -103,6 +103,8 @@ const canApplyTask = (task: GraphExtractionTaskRecord) =>
     readTaskExecutionStatus(task) === "SUCCEEDED" &&
     task.disposition === "PENDING";
 
+const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId || task.id);
+
 export const GraphExtractionTaskTable = ({
     applyingTaskId,
     cancellingBatchId = null,
@@ -122,7 +124,7 @@ export const GraphExtractionTaskTable = ({
             render: (_, task) => (
                 <KuzhambuSpace orientation="vertical" size={2}>
                     <Text strong>{readMaterialLabel(task)}</Text>
-                    <Text type="secondary">任务 {normalizeId(task.taskId || task.id) || "-"}</Text>
+                    <Text type="secondary">任务 {readTaskId(task) || "-"}</Text>
                 </KuzhambuSpace>
             ),
             title: "任务素材"
@@ -198,7 +200,7 @@ export const GraphExtractionTaskTable = ({
         {
             key: "actions",
             options: (task) => {
-                const taskId = normalizeId(task.taskId || task.id);
+                const taskId = readTaskId(task);
                 const actions: KuzhambuTableRowActionOption<GraphExtractionTaskRecord>[] = [
                     {
                         key: "view",
@@ -215,7 +217,7 @@ export const GraphExtractionTaskTable = ({
                         text: "重试",
                         ariaLabel: `重试任务 ${taskId}`,
                         testId: "knowledge-graph-extraction-graph-extraction-task-retry-button",
-                        disabled: !canEdit || regeneratingTaskId === task.taskId,
+                        disabled: !canEdit || regeneratingTaskId === taskId,
                         onClick: () => onRegenerate(task)
                     });
                 }
@@ -238,7 +240,7 @@ export const GraphExtractionTaskTable = ({
                         text: "应用",
                         ariaLabel: `应用任务 ${taskId}`,
                         testId: "knowledge-graph-extraction-graph-extraction-task-apply-button",
-                        disabled: !canApply || applyingTaskId === task.taskId,
+                        disabled: !canApply || applyingTaskId === taskId,
                         onClick: () => onApply(task)
                     });
                 }
@@ -255,7 +257,7 @@ export const GraphExtractionTaskTable = ({
             dataSource={tasks}
             loading={loading}
             pagination={false}
-            rowKey={(task) => normalizeId(task.taskId)}
+            rowKey={readTaskId}
         />
     );
 };

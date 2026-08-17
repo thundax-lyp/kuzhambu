@@ -35,7 +35,18 @@ const serviceMocks = vi.hoisted(() => ({
             issues: [],
             nodes: []
         },
-        materialStats: null,
+        materialStats: {
+            activeTaskCount: "0",
+            calculatedAt: "1723852820000",
+            draftEdgeCount: "18",
+            draftNodeCount: "12",
+            failedTaskCount: "0",
+            pendingReviewTaskCount: "1",
+            publicationContributionCount: "0",
+            publishedEdgeCount: "0",
+            publishedNodeCount: "0",
+            statsRevision: "4"
+        },
         relatedTasks: [],
         source: {
             contentRef: {
@@ -65,6 +76,36 @@ const serviceMocks = vi.hoisted(() => ({
             taskId: request.taskId,
             taskType: "GRAPH",
             triggerSource: "QUALITY_REPORT"
+        }
+    })),
+    getMaterial: vi.fn(async () => ({
+        edges: [],
+        material: {
+            contentRef: {
+                contentRefId: "1001",
+                contentType: "SANCAI_ENTRY"
+            },
+            contentType: "SANCAI_ENTRY",
+            id: "2001",
+            lockVersion: "4",
+            status: "DRAFT",
+            title: "三才稿件"
+        },
+        materialStats: null,
+        nodes: [],
+        source: {
+            contentRef: {
+                contentRefId: "1001",
+                contentType: "SANCAI_ENTRY"
+            },
+            contentType: "SANCAI_ENTRY",
+            title: "三才稿件"
+        },
+        taskSummary: {
+            activeTaskCount: "0",
+            failedTaskCount: "0",
+            latestTask: null,
+            pendingReviewTaskCount: "0"
         }
     })),
     pageTasks: vi.fn(async (query?: { groupBy?: string }) => ({
@@ -245,12 +286,15 @@ describe("GraphExtractionPage", () => {
         fireEvent.click(await screen.findByRole("button", { name: "合并" }));
 
         await waitFor(() => {
+            expect(serviceMocks.getMaterial).toHaveBeenCalledWith({
+                contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
+            });
             expect(serviceMocks.applyCandidate).toHaveBeenCalledWith(
                 expect.objectContaining({
                     applyMode: "MERGE",
                     expectedDisposition: "PENDING",
                     expectedExecutionStatus: "SUCCEEDED",
-                    materialLockVersion: "1",
+                    materialLockVersion: "4",
                     taskId: "8008",
                     taskLockVersion: "1"
                 })
@@ -314,6 +358,15 @@ describe("GraphExtractionPage", () => {
 
     it("does not load task data without graph queue permission", async () => {
         clearPermissions();
+
+        renderPage();
+
+        expect(await screen.findByText("无权查看知识抽取任务")).toBeInTheDocument();
+        expect(serviceMocks.pageTasks).not.toHaveBeenCalled();
+    });
+
+    it("does not load task data with edit permission but without view permission", async () => {
+        replacePermissions(["knowledge:graph:edit"]);
 
         renderPage();
 

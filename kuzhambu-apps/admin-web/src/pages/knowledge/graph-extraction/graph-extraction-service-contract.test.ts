@@ -107,6 +107,13 @@ describe("knowledge graph extraction service request contracts", () => {
         expectLastCall("POST", "/knowledge/graph/task/get", {
             taskId: "7001"
         });
+
+        await service.getMaterial({
+            contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
+        });
+        expectLastCall("POST", "/knowledge/graph/material/get", {
+            contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
+        });
     });
 
     it("adds idempotency key, lock version and expected states to task mutations", async () => {

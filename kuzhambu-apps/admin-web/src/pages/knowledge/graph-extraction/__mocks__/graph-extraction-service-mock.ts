@@ -1,3 +1,4 @@
+/* eslint-disable local/page-component-no-external-page -- Shared Knowledge graph test fixtures span material and extraction pages. */
 import { ApiError } from "@/api/http";
 import type { GraphExtractionService } from "@/pages/knowledge/graph-extraction/graph-extraction-service";
 import {
@@ -24,6 +25,36 @@ export const mockGraphExtractionService: GraphExtractionService = {
             throw new ApiError("GRAPH_TASK_NOT_FOUND", "任务不存在");
         }
         return detail;
+    },
+    getMaterial: async (command) => {
+        const detail = graphExtractionMockTaskDetails.find(
+            (record) =>
+                record.task.materialRef.contentType === command.contentRef.contentType &&
+                record.task.materialRef.contentRefId === command.contentRef.contentRefId
+        );
+        if (!detail) {
+            throw new ApiError("GRAPH_MATERIAL_NOT_FOUND", "素材不存在或不可见");
+        }
+        return {
+            edges: [],
+            material: {
+                contentRef: command.contentRef,
+                contentType: command.contentRef.contentType,
+                id: command.contentRef.contentRefId,
+                lockVersion: "4",
+                status: "DRAFT",
+                title: command.contentRef.contentRefId
+            },
+            materialStats: detail.materialStats,
+            nodes: [],
+            source: detail.source,
+            taskSummary: {
+                activeTaskCount: "0",
+                failedTaskCount: "0",
+                latestTask: null,
+                pendingReviewTaskCount: detail.task.disposition === "PENDING" ? "1" : "0"
+            }
+        };
     },
     retryTask: async (command) => {
         const task = findTask(command.taskId ?? "");

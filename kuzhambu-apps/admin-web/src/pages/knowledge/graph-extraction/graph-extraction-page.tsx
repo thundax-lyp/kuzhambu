@@ -41,6 +41,7 @@ type TaskActionKind = "retry" | "cancel" | "merge" | "replace" | "discard" | "re
 
 interface TaskActionVariables {
     kind: TaskActionKind;
+    materialLockVersion?: string;
     task: GraphExtractionTaskRecord;
 }
 
@@ -172,6 +173,8 @@ const createTaskStateCommand = (
     triggerSource: task.triggerSource
 });
 
+const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId || task.id).trim();
+
 export const GraphExtractionPage = () => {
     const { message } = App.useApp();
     const queryClient = useQueryClient();
@@ -186,7 +189,7 @@ export const GraphExtractionPage = () => {
     const [activeTaskDetailSection, setActiveTaskDetailSection] =
         useState<GraphExtractionTaskDrawerSection>("OVERVIEW");
     const handoffRegenerateCommand = useMemo(() => readHandoffRegenerateCommand(), []);
-    const canUseTaskQueue = canViewGraph || canEditGraph;
+    const canUseTaskQueue = canViewGraph;
 
     const taskPageQuery = useQuery({
         enabled: canUseTaskQueue,
@@ -214,7 +217,7 @@ export const GraphExtractionPage = () => {
         ]);
     };
     const taskActionMutation = useMutation({
-        mutationFn: ({ kind, task }: TaskActionVariables) => {
+        mutationFn: ({ kind, materialLockVersion, task }: TaskActionVariables) => {
             switch (kind) {
                 case "retry":
                     return service.retryTask(createTaskStateCommand(task, "FAILED"));
@@ -223,16 +226,22 @@ export const GraphExtractionPage = () => {
                         createTaskStateCommand(task, task.executionStatus || "RUNNING")
                     );
                 case "merge":
+                    if (!materialLockVersion) {
+                        throw new Error("素材缺少锁版本，请刷新任务详情后重试。");
+                    }
                     return service.applyCandidate({
                         ...createTaskStateCommand(task, "SUCCEEDED", "PENDING"),
                         applyMode: "MERGE",
-                        materialLockVersion: task.lockVersion
+                        materialLockVersion
                     });
                 case "replace":
+                    if (!materialLockVersion) {
+                        throw new Error("素材缺少锁版本，请刷新任务详情后重试。");
+                    }
                     return service.applyCandidate({
                         ...createTaskStateCommand(task, "SUCCEEDED", "PENDING"),
                         applyMode: "REPLACE",
-                        materialLockVersion: task.lockVersion
+                        materialLockVersion
                     });
                 case "discard":
                     return service.discardCandidate(
@@ -286,7 +295,7 @@ export const GraphExtractionPage = () => {
         }));
     };
     const openTaskDetailDrawer = (task: GraphExtractionTaskRecord) => {
-        const taskId = normalizeId(task.taskId || task.id).trim();
+        const taskId = readTaskId(task);
         if (!taskId) {
             return;
         }
@@ -294,15 +303,43 @@ export const GraphExtractionPage = () => {
         setDetailTaskId(taskId);
         setTaskDetailDrawerOpen(true);
     };
+    const loadMaterialLockVersion = async (task: GraphExtractionTaskRecord) => {
+        const materialDetail = await service.getMaterial({ contentRef: task.materialRef });
+        const materialLockVersion = materialDetail.material?.lockVersion;
+        if (!materialLockVersion) {
+            throw new Error("素材缺少锁版本，请刷新素材后重试。");
+        }
+        return materialLockVersion;
+    };
+    const mutateCandidateApplyTask = (
+        kind: "merge" | "replace",
+        task: GraphExtractionTaskRecord
+    ) => {
+        const taskId = readTaskId(task);
+        if (!taskId) {
+            return;
+        }
+        void loadMaterialLockVersion(task)
+            .then((materialLockVersion) => {
+                taskActionMutation.mutate({
+                    kind,
+                    materialLockVersion,
+                    task
+                });
+            })
+            .catch((error) => {
+                message.error(error instanceof Error ? error.message : "素材锁版本加载失败");
+            });
+    };
     const applyTask = (task: GraphExtractionTaskRecord) => {
-        taskActionMutation.mutate({ kind: "merge", task });
+        mutateCandidateApplyTask("merge", task);
     };
 
     if (!canUseTaskQueue) {
         return (
             <KuzhambuPage
                 className="graph-extraction-page knowledge-graph-extraction-page"
-                description="需要知识图谱查看或编辑权限。"
+                description="需要知识图谱查看权限。"
                 title="知识抽取"
             >
                 <KuzhambuAlert title="无权查看知识抽取任务" type="warning" showIcon />
@@ -336,12 +373,20 @@ export const GraphExtractionPage = () => {
             />
             {tasks.length > 0 ? (
                 <GraphExtractionTaskTable
-                    applyingTaskId={taskActionMutation.variables?.task.taskId || null}
+                    applyingTaskId={
+                        taskActionMutation.variables
+                            ? readTaskId(taskActionMutation.variables.task)
+                            : null
+                    }
                     canApply={canEditGraph}
                     canEdit={canEditGraph}
                     cancellingBatchId={null}
                     loading={taskPageQuery.isLoading}
-                    regeneratingTaskId={taskActionMutation.variables?.task.taskId || null}
+                    regeneratingTaskId={
+                        taskActionMutation.variables
+                            ? readTaskId(taskActionMutation.variables.task)
+                            : null
+                    }
                     tasks={tasks}
                     onApply={applyTask}
                     onCancelBatch={(task) => taskActionMutation.mutate({ kind: "cancel", task })}
@@ -431,9 +476,9 @@ export const GraphExtractionPage = () => {
                 onCancel={(task) => taskActionMutation.mutate({ kind: "cancel", task })}
                 onClose={() => setTaskDetailDrawerOpen(false)}
                 onDiscard={(task) => taskActionMutation.mutate({ kind: "discard", task })}
-                onMerge={(task) => taskActionMutation.mutate({ kind: "merge", task })}
+                onMerge={(task) => mutateCandidateApplyTask("merge", task)}
                 onRegenerate={(task) => taskActionMutation.mutate({ kind: "regenerate", task })}
-                onReplace={(task) => taskActionMutation.mutate({ kind: "replace", task })}
+                onReplace={(task) => mutateCandidateApplyTask("replace", task)}
                 onRetry={(task) => taskActionMutation.mutate({ kind: "retry", task })}
                 onSectionChange={setActiveTaskDetailSection}
             />

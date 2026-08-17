@@ -1,4 +1,4 @@
-import { Descriptions, Empty, Spin, Typography } from "antd";
+import { Descriptions, Spin, Typography } from "antd";
 import { KuzhambuSegmentedDrawer, KuzhambuSpace } from "@/components";
 import type { KuzhambuSegmentedDrawerSection } from "@/components";
 import type {
@@ -41,10 +41,6 @@ const formatReplaceUnconfirmedOnly = (value?: boolean | null) => {
     }
     return value ? "是" : "否";
 };
-
-const TaskDetailPlaceholder = ({ children, testId }: { children: string; testId: string }) => (
-    <Empty data-testid={testId} description={children} />
-);
 
 export const TaskDetailDrawer = ({
     activeSection,

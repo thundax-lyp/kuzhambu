@@ -15,6 +15,7 @@ import type {
     GraphTaskDisposition,
     GraphTaskExecutionStatus
 } from "./graph-extraction-types";
+import type { GraphMaterialDetailRecord } from "../graph-material/graph-material-types";
 
 const TASK_PAGE_PATH = "/knowledge/graph/task/page";
 const TASK_GET_PATH = "/knowledge/graph/task/get";
@@ -24,16 +25,9 @@ const TASK_CANDIDATE_APPLY_PATH = "/knowledge/graph/task/candidate/apply";
 const TASK_CANDIDATE_DISCARD_PATH = "/knowledge/graph/task/candidate/discard";
 const TASK_CANDIDATE_REGENERATE_PATH = "/knowledge/graph/task/candidate/regenerate";
 const TASK_BATCH_CREATE_PATH = "/knowledge/graph/task/batch/create";
+const MATERIAL_GET_PATH = "/knowledge/graph/material/get";
 
-interface GraphApiPage<TRecord> {
-    pageNo: string;
-    pageSize: string;
-    totalCount: string;
-    totalPage: string;
-    records: TRecord[];
-}
-
-interface GraphTaskPageRequest {
+interface GraphTaskPageQuery {
     batchId?: string;
     categoryCode?: string;
     contentRefs?: GraphContentRefRecord[];
@@ -47,27 +41,31 @@ interface GraphTaskPageRequest {
     volumeCode?: string;
 }
 
-interface GraphTaskIdRequest {
+interface GraphTaskIdCommand {
     taskId: string;
 }
 
-interface GraphTaskStateRequest extends GraphTaskIdRequest {
+interface GraphMaterialContentRefCommand {
+    contentRef: GraphContentRefRecord;
+}
+
+interface GraphTaskStatePayloadCommand extends GraphTaskIdCommand {
     expectedDisposition?: GraphTaskDisposition;
     expectedExecutionStatus: GraphTaskExecutionStatus;
     idempotencyKey: string;
     taskLockVersion: string;
 }
 
-interface GraphCandidateApplyRequest extends GraphTaskStateRequest {
+interface GraphCandidateApplyCommand extends GraphTaskStatePayloadCommand {
     applyMode: GraphCandidateApplyMode;
     materialLockVersion: string;
 }
 
-interface GraphCandidateDiscardRequest extends GraphTaskStateRequest {
+interface GraphCandidateDiscardCommand extends GraphTaskStatePayloadCommand {
     reason?: string;
 }
 
-interface GraphBatchCreateRequest {
+interface GraphBatchCreatePayloadCommand {
     idempotencyKey: string;
     selection: {
         contentRefs?: GraphContentRefRecord[];
@@ -126,7 +124,7 @@ export interface GraphExtractionBatchCreateCommand {
     volumeCode?: string;
 }
 
-export interface GraphExtractionRegenerateCommand extends GraphExtractionTaskStateCommand {}
+export type GraphExtractionRegenerateCommand = GraphExtractionTaskStateCommand;
 
 export interface GraphExtractionService {
     applyCandidate: (
@@ -142,6 +140,7 @@ export interface GraphExtractionService {
         command: GraphExtractionDiscardCandidateCommand
     ) => Promise<GraphExtractionTaskActionResultRecord>;
     getTask: (command: GraphExtractionTaskIdCommand) => Promise<GraphExtractionTaskDetailRecord>;
+    getMaterial: (command: GraphMaterialContentRefCommand) => Promise<GraphMaterialDetailRecord>;
     pageTasks: (query?: GraphExtractionTaskPageQuery) => Promise<Page<GraphExtractionTaskRecord>>;
     regenerateTask: (
         command: GraphExtractionTaskStateCommand
@@ -158,7 +157,13 @@ const createIdempotencyKey = () => {
     return `idem-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
 
-const toPage = <TRecord>(page: GraphApiPage<TRecord>): Page<TRecord> => ({
+const toPage = <TRecord>(page: {
+    pageNo: string;
+    pageSize: string;
+    records: TRecord[];
+    totalCount: string;
+    totalPage: string;
+}): Page<TRecord> => ({
     count: Number(page.totalCount),
     pageNo: Number(page.pageNo),
     pageSize: Number(page.pageSize),
@@ -173,7 +178,9 @@ const toActionResult = (
     task
 });
 
-const toStateRequest = (command: GraphExtractionTaskStateCommand): GraphTaskStateRequest => ({
+const toStateRequest = (
+    command: GraphExtractionTaskStateCommand
+): GraphTaskStatePayloadCommand => ({
     expectedDisposition: command.expectedDisposition,
     expectedExecutionStatus: command.expectedExecutionStatus ?? "SUCCEEDED",
     idempotencyKey: createIdempotencyKey(),
@@ -191,23 +198,33 @@ const assertBatchSelection = (command: GraphExtractionBatchCreateCommand) => {
 
 export const httpGraphExtractionService: GraphExtractionService = {
     pageTasks: async (query = {}) => {
-        const page = await postJson<GraphApiPage<GraphExtractionTaskRecord>, GraphTaskPageRequest>(
-            TASK_PAGE_PATH,
+        const page = await postJson<
             {
-                body: {
-                    ...query,
-                    groupBy: query.groupBy ?? "NONE"
-                }
+                pageNo: string;
+                pageSize: string;
+                records: GraphExtractionTaskRecord[];
+                totalCount: string;
+                totalPage: string;
+            },
+            GraphTaskPageQuery
+        >(TASK_PAGE_PATH, {
+            body: {
+                ...query,
+                groupBy: query.groupBy ?? "NONE"
             }
-        );
+        });
         return toPage(page);
     },
     getTask: (command) =>
-        postJson<GraphExtractionTaskDetailRecord, GraphTaskIdRequest>(TASK_GET_PATH, {
+        postJson<GraphExtractionTaskDetailRecord, GraphTaskIdCommand>(TASK_GET_PATH, {
+            body: command
+        }),
+    getMaterial: (command) =>
+        postJson<GraphMaterialDetailRecord, GraphMaterialContentRefCommand>(MATERIAL_GET_PATH, {
             body: command
         }),
     retryTask: async (command) => {
-        const task = await postJson<GraphExtractionTaskRecord, GraphTaskStateRequest>(
+        const task = await postJson<GraphExtractionTaskRecord, GraphTaskStatePayloadCommand>(
             TASK_RETRY_PATH,
             {
                 body: toStateRequest(command)
@@ -216,7 +233,7 @@ export const httpGraphExtractionService: GraphExtractionService = {
         return toActionResult(task);
     },
     cancelTask: async (command) => {
-        const task = await postJson<GraphExtractionTaskRecord, GraphTaskStateRequest>(
+        const task = await postJson<GraphExtractionTaskRecord, GraphTaskStatePayloadCommand>(
             TASK_CANCEL_PATH,
             {
                 body: toStateRequest(command)
@@ -225,7 +242,7 @@ export const httpGraphExtractionService: GraphExtractionService = {
         return toActionResult(task);
     },
     applyCandidate: async (command) => {
-        const task = await postJson<GraphExtractionTaskRecord, GraphCandidateApplyRequest>(
+        const task = await postJson<GraphExtractionTaskRecord, GraphCandidateApplyCommand>(
             TASK_CANDIDATE_APPLY_PATH,
             {
                 body: {
@@ -238,7 +255,7 @@ export const httpGraphExtractionService: GraphExtractionService = {
         return toActionResult(task);
     },
     discardCandidate: async (command) => {
-        const task = await postJson<GraphExtractionTaskRecord, GraphCandidateDiscardRequest>(
+        const task = await postJson<GraphExtractionTaskRecord, GraphCandidateDiscardCommand>(
             TASK_CANDIDATE_DISCARD_PATH,
             {
                 body: {
@@ -250,7 +267,7 @@ export const httpGraphExtractionService: GraphExtractionService = {
         return toActionResult(task);
     },
     regenerateTask: async (command) => {
-        const task = await postJson<GraphExtractionTaskRecord, GraphTaskStateRequest>(
+        const task = await postJson<GraphExtractionTaskRecord, GraphTaskStatePayloadCommand>(
             TASK_CANDIDATE_REGENERATE_PATH,
             {
                 body: toStateRequest(command)
@@ -260,7 +277,7 @@ export const httpGraphExtractionService: GraphExtractionService = {
     },
     createBatchExtraction: (command) => {
         assertBatchSelection(command);
-        return postJson<GraphBatchExtractionResultRecord, GraphBatchCreateRequest>(
+        return postJson<GraphBatchExtractionResultRecord, GraphBatchCreatePayloadCommand>(
             TASK_BATCH_CREATE_PATH,
             {
                 body: {
@@ -277,6 +294,7 @@ export const httpGraphExtractionService: GraphExtractionService = {
 
 export const pageTasks = httpGraphExtractionService.pageTasks;
 export const getTask = httpGraphExtractionService.getTask;
+export const getMaterial = httpGraphExtractionService.getMaterial;
 export const retryTask = httpGraphExtractionService.retryTask;
 export const cancelTask = httpGraphExtractionService.cancelTask;
 export const applyCandidate = httpGraphExtractionService.applyCandidate;

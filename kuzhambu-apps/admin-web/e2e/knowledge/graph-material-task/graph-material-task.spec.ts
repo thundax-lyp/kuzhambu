@@ -4,7 +4,7 @@ import type { Page, Route } from "@playwright/test";
 type ApiPayload = Record<string, unknown>;
 
 const ADMIN_PERMISSIONS = ["knowledge:graph:view", "knowledge:graph:edit", "knowledge:graph:apply"];
-const TASK_PERMISSIONS = ["knowledge:graph:edit", "knowledge:graph:apply"];
+const TASK_PERMISSIONS = ["knowledge:graph:view", "knowledge:graph:edit"];
 
 const SANCAI_REF = {
     contentRefId: "1001",
@@ -349,7 +349,18 @@ const taskDetail = (taskId: string) => {
                       ]
                   }
                 : null,
-        materialStats: materialListRecords[0].materialStats,
+        materialStats: {
+            activeTaskCount: "0",
+            calculatedAt: "1723852820000",
+            draftEdgeCount: "18",
+            draftNodeCount: "12",
+            failedTaskCount: "0",
+            pendingReviewTaskCount: "1",
+            publicationContributionCount: "0",
+            publishedEdgeCount: "0",
+            publishedNodeCount: "0",
+            statsRevision: "4"
+        },
         relatedTasks: [],
         source: materialListRecords[0].source,
         stages: [
@@ -449,6 +460,25 @@ const createTaskHandlers = async (page: Page) => {
     await page.route("**/kuzhambu-admin-api/api/knowledge/graph/task/get", async (route) => {
         taskGetPayload = readRequestBody(route.request().postData());
         await fulfillSuccess(route, taskDetail(String(taskGetPayload.taskId)));
+    });
+    await page.route("**/kuzhambu-admin-api/api/knowledge/graph/material/get", async (route) => {
+        const payload = readRequestBody(route.request().postData());
+        await fulfillSuccess(route, {
+            ...materialDetail,
+            material: {
+                contentRef: payload.contentRef,
+                contentType: "SANCAI_ENTRY",
+                id: "2001",
+                lockVersion: "4",
+                status: "DRAFT",
+                title: "三才图会 天文一"
+            },
+            source: {
+                contentRef: payload.contentRef,
+                contentType: "SANCAI_ENTRY",
+                title: "三才图会 天文一"
+            }
+        });
     });
     await page.route(
         "**/kuzhambu-admin-api/api/knowledge/graph/task/candidate/apply",
@@ -604,7 +634,7 @@ test.describe("admin knowledge graph material and task flow", () => {
                 applyMode: "MERGE",
                 expectedDisposition: "PENDING",
                 expectedExecutionStatus: "SUCCEEDED",
-                materialLockVersion: "5",
+                materialLockVersion: "4",
                 taskId: "7001",
                 taskLockVersion: "5"
             });

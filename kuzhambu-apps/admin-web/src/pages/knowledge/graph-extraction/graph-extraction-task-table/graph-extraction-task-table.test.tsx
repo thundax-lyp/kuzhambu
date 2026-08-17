@@ -144,4 +144,32 @@ describe("GraphExtractionTaskTable", () => {
         expect(onCancelBatch).toHaveBeenCalledWith(RUNNING_TASK);
         expect(onRegenerate).toHaveBeenCalledWith(FAILED_TASK);
     });
+
+    it("uses id when taskId is absent from Knowledge task records", () => {
+        const onApply = vi.fn();
+        const onCancelBatch = vi.fn();
+        const onOpenDetail = vi.fn();
+        const onRegenerate = vi.fn();
+        const taskWithoutLegacyTaskId = {
+            ...TASK,
+            taskId: null
+        };
+
+        render(
+            <GraphExtractionTaskTable
+                canApply
+                canEdit
+                applyingTaskId="8008"
+                tasks={[taskWithoutLegacyTaskId]}
+                onApply={onApply}
+                onCancelBatch={onCancelBatch}
+                onOpenDetail={onOpenDetail}
+                onRegenerate={onRegenerate}
+            />
+        );
+
+        expect(screen.getByText("任务 8008")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "查看任务 8008" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "应用任务 8008" })).toBeDisabled();
+    });
 });
