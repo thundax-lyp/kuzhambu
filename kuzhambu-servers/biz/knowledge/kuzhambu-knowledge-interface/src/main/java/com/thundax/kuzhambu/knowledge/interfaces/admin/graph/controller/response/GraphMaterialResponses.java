@@ -23,6 +23,39 @@ public final class GraphMaterialResponses {
             String failedOperation) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record SourceData(
+            ContentRefData contentRef,
+            String title,
+            String summary,
+            String contentType,
+            String categoryCode,
+            String categoryName,
+            String volumeCode,
+            String volumeName,
+            boolean graphable) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record MaterialStatsData(
+            String materialId,
+            String draftNodeCount,
+            String draftEdgeCount,
+            String publishedNodeCount,
+            String publishedEdgeCount,
+            String activeTaskCount,
+            String pendingReviewTaskCount,
+            String failedTaskCount,
+            String statsRevision,
+            String calculatedAt) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record MaterialPageData(
+            SourceData source,
+            MaterialData material,
+            MaterialStatsData materialStats,
+            com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses.TaskData
+                    latestTask) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public record NodeData(String id, String nodeType, String name, Map<String, Object> properties, String source) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
@@ -55,7 +88,14 @@ public final class GraphMaterialResponses {
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record DetailData(
-            MaterialData material, List<NodeData> nodes, List<EdgeData> edges, List<TaskData> extractionTasks) {}
+            SourceData source,
+            MaterialData material,
+            MaterialStatsData materialStats,
+            List<NodeData> nodes,
+            List<EdgeData> edges,
+            com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses.TaskData
+                    taskSummary,
+            List<TaskData> extractionTasks) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record ChangeImpactData(

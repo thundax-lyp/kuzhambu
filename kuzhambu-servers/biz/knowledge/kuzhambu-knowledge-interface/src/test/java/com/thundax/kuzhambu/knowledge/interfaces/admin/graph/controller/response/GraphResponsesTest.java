@@ -64,11 +64,14 @@ class GraphResponsesTest {
                 Map.of("name", "张三"),
                 "1720000000000",
                 null));
+        JsonNode deletionTask = OBJECT_MAPPER.valueToTree(new GraphDeletionResponses.TaskData(
+                "9201", "FAILED", "5", "0", "9101", null, "timeout", null, "1720000000000", null));
 
         assertThat(overview.path("pendingConflictCount").asText()).isEqualTo("3");
         assertThat(impact.path("impactToken").asText()).isEqualTo("impact-token");
         assertThat(deletion.path("lockVersion").asText()).isEqualTo("4");
         assertThat(deletion.get("decision").isNull()).isTrue();
         assertThat(deletion.path("sourceSnapshot").path("name").asText()).isEqualTo("张三");
+        assertThat(deletionTask.path("lockVersion").asText()).isEqualTo("5");
     }
 }

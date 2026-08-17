@@ -121,6 +121,25 @@ class SourceHardRuleArchitectureRuleSupportTest {
                 () -> SourceHardRuleArchitectureRuleSupport.assertBusinessLayersUseBoundedExceptionTypes(sourceRoot));
     }
 
+    @Test
+    void jacksonRuleShouldIgnoreLargeStringLiteralWithoutOverflowing() throws IOException {
+        Path sourceRoot = sourceRoot();
+        String escapedValue = "\\\"value\\\"".repeat(10_000);
+        writeSource(
+                sourceRoot,
+                "com/thundax/kuzhambu/knowledge/application/SchemaSource.java",
+                """
+                package com.thundax.kuzhambu.knowledge.application;
+                class SchemaSource {
+                    String schema = "%scom.google.gson.";
+                }
+                """
+                        .formatted(escapedValue));
+
+        assertDoesNotThrow(
+                () -> SourceHardRuleArchitectureRuleSupport.assertProductionSourcesUseJacksonJsonOnly(sourceRoot));
+    }
+
     private Path sourceRoot() {
         return tempDir.resolve("kuzhambu-servers");
     }

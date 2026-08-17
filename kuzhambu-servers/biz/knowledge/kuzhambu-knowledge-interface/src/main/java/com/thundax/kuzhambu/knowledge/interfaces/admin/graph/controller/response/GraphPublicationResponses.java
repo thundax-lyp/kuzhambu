@@ -58,4 +58,25 @@ public final class GraphPublicationResponses {
             int edgeMappingCount,
             List<GraphPublishedResponses.NodeData> governedNodes,
             List<GraphPublishedResponses.EdgeData> governedEdges) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record BatchWithdrawalPreviewItemData(
+            GraphMaterialResponses.ContentRefData contentRef,
+            WithdrawalPreviewData preview,
+            String failureCode,
+            String failureMessage) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record BatchWithdrawalPreviewData(List<BatchWithdrawalPreviewItemData> materials) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record WithdrawalResultData(
+            GraphMaterialResponses.ContentRefData contentRef,
+            boolean success,
+            GraphMaterialResponses.MaterialData result,
+            String failureCode,
+            String failureMessage) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record BatchWithdrawalData(String batchId, List<WithdrawalResultData> materials) {}
 }

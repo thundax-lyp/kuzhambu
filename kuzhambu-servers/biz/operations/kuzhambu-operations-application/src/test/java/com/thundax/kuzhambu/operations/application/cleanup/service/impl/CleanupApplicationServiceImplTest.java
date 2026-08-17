@@ -11,12 +11,16 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacade
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupExecutionFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupTargetsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnapshotFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -482,6 +486,18 @@ class CleanupApplicationServiceImplTest {
                     .supported(true)
                     .itemResults(new ArrayList<>(executionResults))
                     .build();
+        }
+
+        @Override
+        public KnowledgeGraphMaterialPageFacadeResponse pageKnowledgeGraphMaterials(
+                KnowledgeGraphMaterialPageFacadeRequest request) {
+            return KnowledgeGraphMaterialPageFacadeResponse.builder().build();
+        }
+
+        @Override
+        public KnowledgeGraphMaterialSnapshotFacadeResponse getKnowledgeGraphMaterialSnapshot(
+                KnowledgeGraphMaterialSnapshotFacadeRequest request) {
+            return KnowledgeGraphMaterialSnapshotFacadeResponse.builder().build();
         }
     }
 

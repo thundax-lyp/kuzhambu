@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
@@ -34,6 +35,7 @@ import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobPageFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
+import com.thundax.kuzhambu.ai.facade.response.CleanupKnowledgeGraphCandidateFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -272,6 +274,20 @@ public class AiFacadeImpl implements AiFacade {
         }
         return aiFacadeAssembler.toFacadeDto(
                 aiCandidateApplicationService.reject(aiFacadeAssembler.toRejectCandidateCommand(request)));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CleanupKnowledgeGraphCandidateFacadeResponse cleanupKnowledgeGraphCandidate(
+            CleanupKnowledgeGraphCandidateFacadeRequest request) {
+        if (request == null || request.getCandidateId() == null) {
+            return null;
+        }
+        aiCandidateApplicationService.cleanup(AiCandidateIdCodec.toDomain(request.getCandidateId()));
+        return CleanupKnowledgeGraphCandidateFacadeResponse.builder()
+                .candidateId(request.getCandidateId())
+                .cleaned(true)
+                .build();
     }
 
     private AiInvocationLogFacadeDto toFacadeDto(AiInvocationLog invocationLog) {

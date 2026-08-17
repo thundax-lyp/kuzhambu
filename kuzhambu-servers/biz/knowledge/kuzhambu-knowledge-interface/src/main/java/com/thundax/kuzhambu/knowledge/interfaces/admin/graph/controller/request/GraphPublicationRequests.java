@@ -79,6 +79,34 @@ public final class GraphPublicationRequests {
 
     @Getter
     @Setter
+    @Schema(description = "图谱素材批量撤回预览请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BatchWithdrawalPreviewRequest {
+
+        @NotEmpty
+        @Valid
+        private List<GraphMaterialRequests.ContentRefRequest> contentRefs;
+    }
+
+    @Getter
+    @Setter
+    @Schema(description = "图谱素材批量撤回请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BatchWithdrawalRequest {
+
+        @NotEmpty
+        @Valid
+        private List<WithdrawalRequest> materials;
+
+        @NotBlank
+        @Pattern(regexp = "^[A-Za-z0-9_-]{1,128}$")
+        private String idempotencyKey;
+    }
+
+    @Getter
+    @Setter
     @Schema(description = "图谱素材发布冲突处理决策")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

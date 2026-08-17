@@ -27,7 +27,7 @@ public final class GraphPortalInterfaceAssembler {
     public static GraphMaterialQuery toQuery(@NonNull GraphPortalMaterialRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphMaterialQuery(
-                new ContentRef(request.getContentType(), Long.valueOf(request.getContentRefId())));
+                null, new ContentRef(request.getContentType(), Long.valueOf(request.getContentRefId())));
     }
 
     @NonNull

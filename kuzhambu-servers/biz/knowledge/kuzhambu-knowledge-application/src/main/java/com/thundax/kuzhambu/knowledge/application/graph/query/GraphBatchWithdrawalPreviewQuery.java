@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.application.graph.query;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import java.util.List;
 
-public record GraphExtractionQuery(ContentRef materialRef) {}
+public record GraphBatchWithdrawalPreviewQuery(List<ContentRef> contentRefs) {}

@@ -50,11 +50,13 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapsh
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -565,6 +567,60 @@ class AiFacadeImplTest {
     }
 
     @Test
+    void submitKnowledgeGraphExtractionShouldPreserveFrozenRuntimeSnapshot() {
+        KnowledgeGraphExtractionTaskApplicationService graphExtractionTaskApplicationService =
+                mock(KnowledgeGraphExtractionTaskApplicationService.class);
+        when(graphExtractionTaskApplicationService.submitGraph(any())).thenReturn(new AiBatchJobId(901L));
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
+                graphExtractionTaskApplicationService,
+                mock(AiInvocationRepository.class),
+                mock(AiCandidateApplicationService.class));
+
+        var response = facade.submitKnowledgeGraphExtraction(KnowledgeGraphExtractionJobFacadeRequest.builder()
+                .scope("MANUSCRIPT")
+                .contentType("CLASSICS_CONTENT")
+                .contentId(1001L)
+                .contentTitle("史料")
+                .contentSnapshotJson("{\"title\":\"史料\",\"segments\":[{\"text\":\"正文\"}]}")
+                .requestedBy(2001L)
+                .serviceId(3001L)
+                .serviceRole("KNOWLEDGE")
+                .modelId(4001L)
+                .modelName("gpt-5")
+                .promptVersionId(5001L)
+                .requestId("req-graph")
+                .traceId("trace-graph")
+                .promptMessagesJson("[\"graph-prompt\"]")
+                .promptVariablesJson("{\"maxNodes\":10}")
+                .promptHash("graph-hash")
+                .outputSchemaJson("{\"type\":\"object\",\"required\":[\"nodes\"]}")
+                .forceJson(true)
+                .locale("zh-CN")
+                .build());
+
+        ArgumentCaptor<KnowledgeAiExtractionCommand> captor =
+                ArgumentCaptor.forClass(KnowledgeAiExtractionCommand.class);
+        verify(graphExtractionTaskApplicationService).submitGraph(captor.capture());
+        KnowledgeAiExtractionCommand command = captor.getValue();
+        assertEquals(new AiModelId(4001L), command.modelId());
+        assertEquals(AiModelName.of("gpt-5"), command.modelName());
+        assertEquals(new PromptVersionId(5001L), command.promptVersionId());
+        assertEquals(RequestIdCodec.toDomain("req-graph"), command.requestId());
+        assertEquals(TraceIdCodec.toDomain("trace-graph"), command.traceId());
+        assertEquals("[\"graph-prompt\"]", command.promptMessagesJson());
+        assertEquals("{\"maxNodes\":10}", command.promptVariablesJson());
+        assertEquals("graph-hash", command.promptHash());
+        assertEquals("{\"type\":\"object\",\"required\":[\"nodes\"]}", command.outputSchemaJson());
+        assertTrue(command.forceJson());
+        assertEquals("zh-CN", command.locale());
+        assertEquals(901L, response.getBatchId());
+    }
+
+    @Test
     void getInvocationLogShouldMapUsageSnapshot() {
         AiInvocationRepository aiInvocationRepository = mock(AiInvocationRepository.class);
         when(aiInvocationRepository.getByCallId(AiCallIdCodec.toDomain(301L))).thenReturn(invocationLog());
@@ -697,6 +753,26 @@ class AiFacadeImplTest {
                         && new AiCandidateId(901L).equals(command.candidateId())
                         && "USER_REJECTED".equals(command.errorType())
                         && "not useful".equals(command.errorMessage())));
+    }
+
+    @Test
+    void cleanupKnowledgeGraphCandidateShouldDeleteOnlyRequestedCandidate() {
+        AiCandidateApplicationService candidateService = mock(AiCandidateApplicationService.class);
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
+                mock(AiInvocationRepository.class),
+                candidateService);
+
+        var response = facade.cleanupKnowledgeGraphCandidate(CleanupKnowledgeGraphCandidateFacadeRequest.builder()
+                .candidateId(901L)
+                .build());
+
+        verify(candidateService).cleanup(new AiCandidateId(901L));
+        assertEquals(901L, response.getCandidateId());
+        assertTrue(response.isCleaned());
     }
 
     private static AiFacadeImpl newFacade(

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -25,13 +26,24 @@ public final class GraphMaterialRequests {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContentRefRequest {
 
-        @NotBlank
+        @Valid
+        private ContentRefRequest contentRef;
+
         @Size(max = 64)
         private String contentType;
 
-        @NotBlank
         @Pattern(regexp = "^\\d+$")
         private String contentRefId;
+
+        @AssertTrue(message = "content reference is required")
+        public boolean isContentRefPresent() {
+            ContentRefRequest effective = contentRef == null ? this : contentRef;
+            return hasText(effective.contentType) && hasText(effective.contentRefId);
+        }
+
+        private boolean hasText(String value) {
+            return value != null && !value.isBlank();
+        }
     }
 
     @Getter
@@ -46,6 +58,21 @@ public final class GraphMaterialRequests {
 
         @Pattern(regexp = "DRAFT|PUBLISHING|PUBLISHED|WITHDRAWING|FAILED")
         private String status;
+
+        @Size(max = 32)
+        private String contentType;
+
+        @Size(max = 64)
+        private String categoryCode;
+
+        @Size(max = 64)
+        private String volumeCode;
+
+        @Pattern(regexp = "PENDING|RUNNING|SUCCEEDED|FAILED|CANCELLED")
+        private String taskExecutionStatus;
+
+        @Pattern(regexp = "PENDING|ADOPTED_MERGE|ADOPTED_REPLACE|DISCARDED|SUPERSEDED")
+        private String taskDisposition;
 
         @Pattern(regexp = "^\\d+$")
         private String pageNo;

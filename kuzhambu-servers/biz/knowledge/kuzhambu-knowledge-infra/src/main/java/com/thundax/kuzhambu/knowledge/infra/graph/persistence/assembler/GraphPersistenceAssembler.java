@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler;
 import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphEdgeKeyCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphGovernanceOperationIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphManualSourceIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialDeletionChangeIdCodec;
@@ -123,7 +124,7 @@ public final class GraphPersistenceAssembler {
             return null;
         }
         return new GraphMaterialDO(
-                null,
+                entity.getId(),
                 ContentRefCodec.toContentType(entity.getContentRef()),
                 ContentRefCodec.toValue(entity.getContentRef()),
                 entity.getContentTitleSnapshot(),
@@ -131,6 +132,7 @@ public final class GraphPersistenceAssembler {
                 entity.getPublishedAt(),
                 entity.getFailureReason(),
                 entity.getFailedOperation(),
+                GraphExtractionTaskIdCodec.toValue(entity.getCurrentExtractionTaskId()),
                 entity.getLockVersion());
     }
 
@@ -139,12 +141,14 @@ public final class GraphPersistenceAssembler {
             return null;
         }
         return new GraphMaterial(
+                dataObject.getId(),
                 ContentRefCodec.toDomain(dataObject.getContentType(), dataObject.getContentRefId()),
                 dataObject.getContentTitleSnapshot(),
                 GraphMaterialStatus.from(dataObject.getStatus()),
                 dataObject.getPublishedAt(),
                 dataObject.getFailureReason(),
                 dataObject.getFailedOperation(),
+                GraphExtractionTaskIdCodec.toDomain(dataObject.getCurrentExtractionTaskId()),
                 dataObject.getLockVersion());
     }
 

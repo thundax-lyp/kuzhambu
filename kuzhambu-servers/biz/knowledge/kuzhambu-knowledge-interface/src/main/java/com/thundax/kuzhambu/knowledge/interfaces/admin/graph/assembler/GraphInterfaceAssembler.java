@@ -5,7 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionBatchCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCancelCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateApplyCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateDiscardCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialApplyMode;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionDecisionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionPrecheckCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionTaskRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEdgeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEdgeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialImportCommand;
@@ -23,7 +34,10 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeSplitCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionChangeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
@@ -39,13 +53,23 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNode
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionCandidatePreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionStageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
@@ -54,30 +78,42 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdg
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalPreviewResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialDeletionChangeIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialDeletionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialEdgeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialNodeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedEdgeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedEdgePropertyIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodePropertyIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialDeletionChange;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialDeletionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNode;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialStats;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdgeProperty;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNodeProperty;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionDecision;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchActivity;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphDeletionRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublishedRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphDeletionResponses;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublicationResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublishedResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphWorkbenchResponses;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -92,24 +128,53 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static ContentRef toContentRef(@NonNull GraphMaterialRequests.ContentRefRequest request) {
         Objects.requireNonNull(request, "request");
-        return new ContentRef(request.getContentType(), Long.valueOf(request.getContentRefId()));
+        GraphMaterialRequests.ContentRefRequest effective =
+                request.getContentRef() == null ? request : request.getContentRef();
+        if (effective.getContentType() == null
+                || effective.getContentType().isBlank()
+                || effective.getContentRefId() == null
+                || effective.getContentRefId().isBlank()) {
+            throw new ApiException("GRAPH_CONTENT_REF_REQUIRED");
+        }
+        return new ContentRef(effective.getContentType(), Long.valueOf(effective.getContentRefId()));
     }
 
     @NonNull
     public static GraphMaterialQuery toQuery(@NonNull GraphMaterialRequests.ContentRefRequest request) {
         Objects.requireNonNull(request, "request");
-        return new GraphMaterialQuery(toContentRef(request));
+        return toQueryInternal(request, null);
     }
 
     @NonNull
-    public static GraphMaterialListQuery toQuery(@NonNull GraphMaterialRequests.MaterialPageRequest request) {
+    public static GraphMaterialQuery toQuery(
+            @NonNull GraphMaterialRequests.ContentRefRequest request, @NonNull String subjectId) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(subjectId, "subjectId");
+        return toQueryInternal(request, subjectId);
+    }
+
+    private static GraphMaterialQuery toQueryInternal(
+            GraphMaterialRequests.ContentRefRequest request, String subjectId) {
+        return new GraphMaterialQuery(subjectId, toContentRef(request));
+    }
+
+    @NonNull
+    public static GraphMaterialListQuery toQuery(
+            @NonNull GraphMaterialRequests.MaterialPageRequest request, @NonNull String subjectId) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(subjectId, "subjectId");
         return new GraphMaterialListQuery(
+                subjectId,
                 request.getKeyword(),
                 request.getStatus() == null
                         ? null
                         : com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus.valueOf(
-                                request.getStatus()));
+                                request.getStatus()),
+                request.getContentType(),
+                request.getCategoryCode(),
+                request.getVolumeCode(),
+                request.getTaskExecutionStatus(),
+                request.getTaskDisposition());
     }
 
     @NonNull
@@ -158,6 +223,64 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphMaterialResponses.MaterialData toMaterialData(@NonNull GraphMaterialPageResult value) {
+        Objects.requireNonNull(value, "value");
+        return toMaterialData(Objects.requireNonNull(value.material(), "material"));
+    }
+
+    private static GraphMaterialResponses.MaterialData toNullableMaterialData(GraphMaterialPageResult value) {
+        return value == null || value.material() == null ? null : toMaterialData(value.material());
+    }
+
+    private static GraphMaterialResponses.SourceData toNullableSourceData(GraphMaterialPageResult value) {
+        return value == null ? null : toNullableSourceData(value.source());
+    }
+
+    private static GraphMaterialResponses.SourceData toNullableSourceData(
+            com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialSourceResult value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphMaterialResponses.SourceData(
+                toNullableContentRefData(value.contentRef()),
+                value.title(),
+                value.summary(),
+                value.contentType(),
+                value.categoryCode(),
+                value.categoryName(),
+                value.volumeCode(),
+                value.volumeName(),
+                value.graphable());
+    }
+
+    private static GraphMaterialResponses.MaterialStatsData toNullableMaterialStatsData(GraphMaterialStats value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphMaterialResponses.MaterialStatsData(
+                string(value.getMaterialId()),
+                String.valueOf(value.getDraftNodeCount()),
+                String.valueOf(value.getDraftEdgeCount()),
+                String.valueOf(value.getPublishedNodeCount()),
+                String.valueOf(value.getPublishedEdgeCount()),
+                String.valueOf(value.getActiveTaskCount()),
+                String.valueOf(value.getPendingReviewTaskCount()),
+                String.valueOf(value.getFailedTaskCount()),
+                String.valueOf(value.getStatsRevision()),
+                instant(value.getCalculatedAt()));
+    }
+
+    @NonNull
+    public static GraphMaterialResponses.MaterialPageData toMaterialPageData(@NonNull GraphMaterialPageResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphMaterialResponses.MaterialPageData(
+                toNullableSourceData(value.source()),
+                toNullableMaterialData(value),
+                toNullableMaterialStatsData(value.materialStats()),
+                toNullableTaskData(value.latestTask()));
+    }
+
+    @NonNull
     public static GraphMaterialResponses.NodeData toMaterialNodeData(@NonNull GraphMaterialNode value) {
         Objects.requireNonNull(value, "value");
         return new GraphMaterialResponses.NodeData(
@@ -186,13 +309,16 @@ public final class GraphInterfaceAssembler {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(extractionTasks, "extractionTasks");
         return new GraphMaterialResponses.DetailData(
-                toMaterialData(value.material()),
+                toNullableSourceData(value.source()),
+                value.material() == null ? null : toMaterialData(value.material()),
+                toNullableMaterialStatsData(value.materialStats()),
                 value.nodes().stream()
                         .map(GraphInterfaceAssembler::toMaterialNodeData)
                         .toList(),
                 value.edges().stream()
                         .map(GraphInterfaceAssembler::toMaterialEdgeData)
                         .toList(),
+                toNullableTaskData(value.taskSummary()),
                 extractionTasks);
     }
 
@@ -200,13 +326,298 @@ public final class GraphInterfaceAssembler {
     public static GraphMaterialResponses.GraphData toGraphData(@NonNull GraphMaterialResult value) {
         Objects.requireNonNull(value, "value");
         return new GraphMaterialResponses.GraphData(
-                toMaterialData(value.material()),
+                value.material() == null ? null : toMaterialData(value.material()),
                 value.nodes().stream()
                         .map(GraphInterfaceAssembler::toMaterialNodeData)
                         .toList(),
                 value.edges().stream()
                         .map(GraphInterfaceAssembler::toMaterialEdgeData)
                         .toList());
+    }
+
+    @NonNull
+    public static GraphExtractionCommand toCommand(
+            @NonNull GraphExtractionRequests.ExtractionCreateRequest request, @NonNull Long requestedBy) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
+        return new GraphExtractionCommand(toContentRef(request), request.getIdempotencyKey(), requestedBy);
+    }
+
+    @NonNull
+    public static GraphExtractionBatchCommand toCommand(
+            @NonNull GraphExtractionRequests.BatchCreateRequest request, @NonNull Long requestedBy) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
+        List<ContentRef> materialRefs =
+                request.getSelection() == null || request.getSelection().getContentRefs() == null
+                        ? List.of()
+                        : request.getSelection().getContentRefs().stream()
+                                .map(GraphInterfaceAssembler::toContentRef)
+                                .toList();
+        return new GraphExtractionBatchCommand(
+                materialRefs,
+                request.getSelection() == null ? null : request.getSelection().getVolumeCode(),
+                request.getIdempotencyKey(),
+                requestedBy);
+    }
+
+    @NonNull
+    public static GraphTaskQuery toQuery(@NonNull GraphExtractionRequests.TaskPageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphTaskQuery(
+                request.getKeyword(),
+                request.getContentType(),
+                request.getCategoryCode(),
+                request.getVolumeCode(),
+                request.getContentRefs() == null
+                        ? List.of()
+                        : request.getContentRefs().stream()
+                                .map(GraphInterfaceAssembler::toContentRef)
+                                .toList(),
+                request.getBatchId(),
+                request.getExecutionStatus(),
+                request.getDisposition(),
+                request.getGroupBy());
+    }
+
+    @NonNull
+    public static GraphTaskDetailQuery toQuery(@NonNull GraphExtractionRequests.TaskGetRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphTaskDetailQuery(Long.valueOf(request.getTaskId()));
+    }
+
+    @NonNull
+    public static GraphExtractionRetryCommand toRetryCommand(
+            @NonNull GraphExtractionRequests.TaskActionRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionRetryCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getIdempotencyKey());
+    }
+
+    @NonNull
+    public static GraphExtractionCancelCommand toCancelCommand(
+            @NonNull GraphExtractionRequests.TaskActionRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionCancelCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getIdempotencyKey());
+    }
+
+    @NonNull
+    public static GraphExtractionCandidateApplyCommand toCommand(
+            @NonNull GraphExtractionRequests.CandidateApplyRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionCandidateApplyCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getExpectedDisposition(),
+                Long.parseLong(request.getMaterialLockVersion()),
+                GraphMaterialApplyMode.valueOf(request.getApplyMode()),
+                request.getIdempotencyKey());
+    }
+
+    @NonNull
+    public static GraphExtractionCandidateDiscardCommand toCommand(
+            @NonNull GraphExtractionRequests.CandidateDiscardRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphExtractionCandidateDiscardCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getExpectedDisposition(),
+                request.getReason(),
+                request.getIdempotencyKey());
+    }
+
+    @NonNull
+    public static GraphExtractionRegenerateCommand toCommand(
+            @NonNull GraphExtractionRequests.CandidateRegenerateRequest request, @NonNull Long requestedBy) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
+        return new GraphExtractionRegenerateCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getExpectedDisposition(),
+                request.getIdempotencyKey(),
+                requestedBy);
+    }
+
+    @NonNull
+    public static GraphExtractionResponses.TaskData toTaskData(@NonNull GraphExtractionTaskResult value) {
+        Objects.requireNonNull(value, "value");
+        return toTaskDataInternal(value);
+    }
+
+    private static GraphExtractionResponses.TaskData toNullableTaskData(GraphExtractionTaskResult value) {
+        if (value == null) {
+            return null;
+        }
+        return toTaskDataInternal(value);
+    }
+
+    private static GraphExtractionResponses.TaskData toTaskDataInternal(GraphExtractionTaskResult value) {
+        return new GraphExtractionResponses.TaskData(
+                string(value.taskId()),
+                toNullableContentRefData(value.contentRef()),
+                String.valueOf(value.lockVersion()),
+                value.executionStatus(),
+                value.disposition(),
+                String.valueOf(value.attemptNo()),
+                String.valueOf(value.progress()),
+                value.currentStage(),
+                string(value.candidateId()),
+                null,
+                null,
+                value.batchId(),
+                null,
+                null,
+                null,
+                instant(value.requestedAt()),
+                instant(value.completedAt()),
+                instant(value.disposedAt()),
+                instant(value.purgeAfter()));
+    }
+
+    @NonNull
+    public static GraphExtractionResponses.BatchResultData toBatchData(@NonNull GraphExtractionBatchResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphExtractionResponses.BatchResultData(
+                value.idempotencyKey(),
+                value.tasks().stream().map(GraphInterfaceAssembler::toTaskData).toList());
+    }
+
+    @NonNull
+    public static GraphExtractionResponses.StageData toStageData(@NonNull GraphExtractionStageResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphExtractionResponses.StageData(
+                String.valueOf(value.stageOrder()),
+                value.stageName(),
+                value.status(),
+                String.valueOf(value.progress()),
+                value.inputSummaryJson(),
+                value.outputSummaryJson(),
+                value.failureReason(),
+                instant(value.startedAt()),
+                instant(value.completedAt()));
+    }
+
+    private static GraphExtractionResponses.CandidatePreviewData toNullableCandidateData(
+            GraphExtractionCandidatePreviewResult value) {
+        return value == null
+                ? null
+                : new GraphExtractionResponses.CandidatePreviewData(
+                        string(value.candidateId()), value.resultFormat(), value.resultSummaryJson());
+    }
+
+    @NonNull
+    public static GraphExtractionResponses.TaskDetailData toTaskDetailData(
+            @NonNull GraphExtractionTaskDetailResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphExtractionResponses.TaskDetailData(
+                toTaskData(value.task()),
+                null,
+                null,
+                value.stages().stream()
+                        .map(GraphInterfaceAssembler::toStageData)
+                        .toList(),
+                value.relatedTasks().stream()
+                        .map(GraphInterfaceAssembler::toTaskData)
+                        .toList(),
+                toNullableCandidateData(value.candidate()));
+    }
+
+    @NonNull
+    public static GraphExtractionResponses.CandidateApplyData toCandidateApplyData(@NonNull GraphMaterialResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphExtractionResponses.CandidateApplyData(
+                toNullableTaskData(value.taskSummary()), toDetailData(value, List.of()));
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionPrecheckCommand toDeletionPrecheckCommand(
+            @NonNull GraphMaterialRequests.ContentRefRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionPrecheckCommand(toContentRef(request));
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionChangeQuery toQuery(
+            @NonNull GraphDeletionRequests.DeletionChangePageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionChangeQuery(null);
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionDecisionCommand toCommand(
+            @NonNull GraphDeletionRequests.DeletionDecisionRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionDecisionCommand(
+                GraphMaterialDeletionChangeIdCodec.toDomain(Long.valueOf(request.getChangeId())),
+                GraphMaterialDeletionDecision.valueOf(request.getDecision()),
+                Long.parseLong(request.getLockVersion()));
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionTaskQuery toQuery(
+            @NonNull GraphDeletionRequests.DeletionTaskPageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionTaskQuery(
+                request.getStatus() == null ? null : GraphMaterialDeletionStatus.valueOf(request.getStatus()));
+    }
+
+    @NonNull
+    public static com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialDeletionTaskId
+            toDeletionTaskId(@NonNull GraphDeletionRequests.DeletionTaskIdRequest request) {
+        Objects.requireNonNull(request, "request");
+        return GraphMaterialDeletionTaskIdCodec.toDomain(Long.valueOf(request.getTaskId()));
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionTaskRetryCommand toCommand(
+            @NonNull GraphDeletionRequests.DeletionTaskRetryRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionTaskRetryCommand(
+                GraphMaterialDeletionTaskIdCodec.toDomain(Long.valueOf(request.getTaskId())),
+                Long.parseLong(request.getLockVersion()));
+    }
+
+    @NonNull
+    public static GraphDeletionResponses.ChangeData toDeletionChangeData(@NonNull GraphMaterialDeletionChange value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphDeletionResponses.ChangeData(
+                value.getId() == null ? null : String.valueOf(value.getId().value()),
+                toNullableContentRefData(value.getMaterialRef()),
+                value.getStatus() == null ? null : value.getStatus().name(),
+                value.getDecision() == null ? null : value.getDecision().name(),
+                String.valueOf(value.getLockVersion()),
+                fromJsonObject(value.getMaterialSnapshotJson()),
+                instant(value.getRequestedAt()),
+                instant(value.getCompletedAt()));
+    }
+
+    @NonNull
+    public static GraphDeletionResponses.TaskData toDeletionTaskData(@NonNull GraphMaterialDeletionTask value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphDeletionResponses.TaskData(
+                value.getId() == null ? null : String.valueOf(value.getId().value()),
+                value.getStatus() == null ? null : value.getStatus().name(),
+                String.valueOf(value.getLockVersion()),
+                String.valueOf(value.getProgress()),
+                value.getDeletionChangeId() == null
+                        ? null
+                        : String.valueOf(value.getDeletionChangeId().value()),
+                value.getResultSummaryJson(),
+                value.getFailureReason(),
+                null,
+                instant(value.getRequestedAt()),
+                instant(value.getCompletedAt()));
     }
 
     @NonNull
@@ -374,6 +785,15 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphBatchWithdrawalPreviewQuery toQuery(
+            @NonNull GraphPublicationRequests.BatchWithdrawalPreviewRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphBatchWithdrawalPreviewQuery(request.getContentRefs().stream()
+                .map(GraphInterfaceAssembler::toContentRef)
+                .toList());
+    }
+
+    @NonNull
     public static GraphPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.PublicationConfirmRequest request) {
         Objects.requireNonNull(request, "request");
@@ -408,6 +828,17 @@ public final class GraphInterfaceAssembler {
     public static GraphWithdrawalCommand toCommand(@NonNull GraphPublicationRequests.WithdrawalRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphWithdrawalCommand(toContentRef(request), Long.valueOf(request.getMaterialLockVersion()));
+    }
+
+    @NonNull
+    public static GraphBatchWithdrawalCommand toCommand(
+            @NonNull GraphPublicationRequests.BatchWithdrawalRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphBatchWithdrawalCommand(
+                request.getMaterials().stream()
+                        .map(GraphInterfaceAssembler::toCommand)
+                        .toList(),
+                request.getIdempotencyKey());
     }
 
     @NonNull
@@ -505,6 +936,35 @@ public final class GraphInterfaceAssembler {
                         .toList(),
                 value.governedEdges().stream()
                         .map(GraphInterfaceAssembler::toEdgeData)
+                        .toList());
+    }
+
+    @NonNull
+    public static GraphPublicationResponses.BatchWithdrawalPreviewData toBatchWithdrawalPreviewData(
+            @NonNull GraphBatchWithdrawalPreviewResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphPublicationResponses.BatchWithdrawalPreviewData(value.materials().stream()
+                .map(item -> new GraphPublicationResponses.BatchWithdrawalPreviewItemData(
+                        toNullableContentRefData(item.contentRef()),
+                        item.preview() == null ? null : toWithdrawalPreviewData(item.preview()),
+                        item.failureCode(),
+                        item.failureMessage()))
+                .toList());
+    }
+
+    @NonNull
+    public static GraphPublicationResponses.BatchWithdrawalData toBatchWithdrawalData(
+            @NonNull GraphBatchWithdrawalResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphPublicationResponses.BatchWithdrawalData(
+                value.batchId(),
+                value.materials().stream()
+                        .map(item -> new GraphPublicationResponses.WithdrawalResultData(
+                                toNullableContentRefData(item.contentRef()),
+                                item.success(),
+                                item.result() == null ? null : toMaterialData(item.result()),
+                                item.failureCode(),
+                                item.failureMessage()))
                         .toList());
     }
 
@@ -1023,5 +1483,13 @@ public final class GraphInterfaceAssembler {
             throw new ApiException(
                     "GRAPH-API-00001", "knowledge.graph.invalid-json-payload", "图谱 JSON 协议对象无效", exception);
         }
+    }
+
+    private static String string(Long value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private static String instant(Instant value) {
+        return value == null ? null : String.valueOf(value.toEpochMilli());
     }
 }

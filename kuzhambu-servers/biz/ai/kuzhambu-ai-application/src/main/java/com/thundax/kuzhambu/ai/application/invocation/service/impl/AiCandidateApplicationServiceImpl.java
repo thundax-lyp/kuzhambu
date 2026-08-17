@@ -50,6 +50,15 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
         return candidate;
     }
 
+    @Override
+    public void cleanup(AiCandidateId candidateId) {
+        getRequired(candidateId);
+        if (repository.deleteByCandidateId(candidateId) != 1) {
+            throw new BizException(
+                    "AI-INVOCATION-409", "ai.candidate.cleanup-failed", "AI candidate cleanup failed: " + candidateId);
+        }
+    }
+
     private AiCandidate getRequired(AiCandidateId candidateId) {
         AiCandidate candidate = repository.getByCandidateId(candidateId);
         if (candidate == null) {

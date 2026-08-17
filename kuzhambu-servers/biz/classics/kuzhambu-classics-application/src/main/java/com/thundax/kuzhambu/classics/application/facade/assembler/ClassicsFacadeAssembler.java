@@ -23,6 +23,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacade
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -64,6 +65,22 @@ public class ClassicsFacadeAssembler {
         Objects.requireNonNull(content, "content");
         return ClassicsPublicContentFacadeResponse.builder()
                 .content(toPublicContentFacadeDto(content))
+                .build();
+    }
+
+    @NonNull
+    public KnowledgeGraphMaterialPageFacadeResponse.Source toKnowledgeGraphMaterialSource(
+            @NonNull ClassicsSearchSourceContent content) {
+        Objects.requireNonNull(content, "content");
+        return KnowledgeGraphMaterialPageFacadeResponse.Source.builder()
+                .contentType(content.getContentType())
+                .contentId(content.getContentId())
+                .title(content.getTitle())
+                .categoryCode(content.getCategoryCode())
+                .categoryName(content.getCategoryName())
+                .volumeCode(content.getVolumeCode())
+                .volumeName(content.getVolumeName())
+                .graphable(true)
                 .build();
     }
 

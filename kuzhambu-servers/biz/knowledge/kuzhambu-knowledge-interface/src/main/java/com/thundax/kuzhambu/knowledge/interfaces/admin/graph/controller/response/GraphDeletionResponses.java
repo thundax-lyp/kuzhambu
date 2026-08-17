@@ -23,6 +23,7 @@ public final class GraphDeletionResponses {
     public record TaskData(
             String id,
             String status,
+            String lockVersion,
             String progress,
             String inputSnapshotVersion,
             String resultSummary,

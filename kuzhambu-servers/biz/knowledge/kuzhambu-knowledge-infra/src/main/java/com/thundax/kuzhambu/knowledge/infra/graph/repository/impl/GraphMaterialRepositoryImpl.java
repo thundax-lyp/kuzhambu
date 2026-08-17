@@ -33,6 +33,51 @@ public class GraphMaterialRepositoryImpl implements GraphMaterialRepository {
     }
 
     @Override
+    public List<GraphMaterial> listByContentRefs(List<ContentRef> contentRefs) {
+        if (contentRefs == null || contentRefs.isEmpty()) {
+            return List.of();
+        }
+        List<GraphMaterialDO> refs = contentRefs.stream()
+                .map(ref -> new GraphMaterialDO(
+                        null,
+                        ContentRefCodec.toContentType(ref),
+                        ContentRefCodec.toValue(ref),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null))
+                .toList();
+        return mapper.selectByRefs(refs).stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<ContentRef> listContentRefsByStatus(GraphMaterialStatus status) {
+        if (status == null) {
+            return List.of();
+        }
+        return mapper.selectRefsByStatus(status.value()).stream()
+                .map(row -> ContentRefCodec.toDomain(row.getContentType(), row.getContentRefId()))
+                .toList();
+    }
+
+    @Override
+    public List<ContentRef> listContentRefsByStatuses(List<GraphMaterialStatus> statuses) {
+        if (statuses == null || statuses.isEmpty()) {
+            return List.of();
+        }
+        List<String> statusValues =
+                statuses.stream().map(GraphMaterialStatus::value).toList();
+        return mapper.selectRefsByStatuses(statusValues).stream()
+                .map(row -> ContentRefCodec.toDomain(row.getContentType(), row.getContentRefId()))
+                .toList();
+    }
+
+    @Override
     public PageResult<GraphMaterial> page(String keyword, GraphMaterialStatus status, int pageNo, int pageSize) {
         int effectivePageNo = pageNo <= 0 ? 1 : pageNo;
         int effectivePageSize = pageSize <= 0 ? 10 : pageSize;

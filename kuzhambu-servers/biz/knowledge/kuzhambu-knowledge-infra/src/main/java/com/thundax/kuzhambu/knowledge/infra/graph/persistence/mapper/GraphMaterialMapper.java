@@ -43,6 +43,42 @@ public interface GraphMaterialMapper extends BaseMapper<GraphMaterialDO> {
             """)
     long countMaterials(@Param("keyword") String keyword, @Param("status") String status);
 
+    @Select(
+            """
+            <script>
+            select *
+            from knowledge_graph_material
+            where (content_type, content_ref_id) in
+            <foreach collection="refs" item="ref" open="(" separator="," close=")">
+              (#{ref.contentType}, #{ref.contentRefId})
+            </foreach>
+            </script>
+            """)
+    List<GraphMaterialDO> selectByRefs(@Param("refs") List<GraphMaterialDO> refs);
+
+    @Select(
+            """
+            select content_type, content_ref_id
+            from knowledge_graph_material
+            where status = #{status}
+            order by id asc
+            """)
+    List<GraphMaterialDO> selectRefsByStatus(@Param("status") String status);
+
+    @Select(
+            """
+            <script>
+            select content_type, content_ref_id
+            from knowledge_graph_material
+            where status in
+            <foreach collection="statuses" item="status" open="(" separator="," close=")">
+              #{status}
+            </foreach>
+            order by id asc
+            </script>
+            """)
+    List<GraphMaterialDO> selectRefsByStatuses(@Param("statuses") List<String> statuses);
+
     @Update(
             """
             update knowledge_graph_material
@@ -51,6 +87,7 @@ public interface GraphMaterialMapper extends BaseMapper<GraphMaterialDO> {
                 published_at = #{row.publishedAt},
                 failure_reason = #{row.failureReason},
                 failed_operation = #{row.failedOperation},
+                current_extraction_task_id = #{row.currentExtractionTaskId},
                 lock_version = lock_version + 1
             where content_type = #{row.contentType}
               and content_ref_id = #{row.contentRefId}
