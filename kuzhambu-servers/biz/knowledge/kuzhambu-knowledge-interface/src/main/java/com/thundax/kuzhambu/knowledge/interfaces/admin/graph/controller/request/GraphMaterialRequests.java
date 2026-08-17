@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -33,6 +34,16 @@ public final class GraphMaterialRequests {
 
         @Pattern(regexp = "^\\d+$")
         private String contentRefId;
+
+        @AssertTrue(message = "content reference is required")
+        public boolean isContentRefPresent() {
+            ContentRefRequest effective = contentRef == null ? this : contentRef;
+            return hasText(effective.contentType) && hasText(effective.contentRefId);
+        }
+
+        private boolean hasText(String value) {
+            return value != null && !value.isBlank();
+        }
     }
 
     @Getter
