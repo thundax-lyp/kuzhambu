@@ -320,7 +320,6 @@ describe("GraphExtractionPage", () => {
         replacePermissions([
             "knowledge:graph:view",
             "knowledge:graph:edit",
-            "knowledge:graph:apply",
             "knowledge:refinement:edit"
         ]);
     });
@@ -544,7 +543,7 @@ describe("GraphExtractionPage", () => {
         expect(screen.queryByRole("link", { name: "进入精修" })).not.toBeInTheDocument();
     });
 
-    it("disables workbench write actions without edit and apply permissions", async () => {
+    it("disables workbench write actions without edit permission", async () => {
         replacePermissions(["knowledge:graph:view"]);
 
         renderPage();

@@ -51,14 +51,6 @@
     - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
     - 重要度：9/10
 
-- [ ] `AW/graph-extraction permission cleanup`：移除旧任务权限依赖
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/`、`kuzhambu-apps/admin-web/src/layouts/admin-layout.tsx`
-    - 处理动作：删除对 `knowledge:graph:apply` 的依赖并改用既有 `knowledge:graph:edit`。
-    - 验收点：`rg` 确认新提取任务页面不再引用 `knowledge:graph:apply`。
-    - 重要度：9/10
-
 - [ ] `AW/graph-extraction drawer shell`：建立任务分段详情抽屉
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
