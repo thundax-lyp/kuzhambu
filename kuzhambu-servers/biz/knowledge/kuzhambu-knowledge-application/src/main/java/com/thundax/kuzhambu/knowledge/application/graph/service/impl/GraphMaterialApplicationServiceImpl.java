@@ -119,8 +119,8 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                 .contentType(query == null ? null : query.contentType())
                 .categoryCode(query == null ? null : query.categoryCode())
                 .volumeCode(query == null ? null : query.volumeCode())
-                .pageNo(effectivePage.getPageNo())
-                .pageSize(effectivePage.getPageSize())
+                .pageNo(hasKnowledgeMaterialFilters(query) ? 1 : effectivePage.getPageNo())
+                .pageSize(hasKnowledgeMaterialFilters(query) ? Integer.MAX_VALUE : effectivePage.getPageSize())
                 .build());
         List<KnowledgeGraphMaterialPageFacadeResponse.Source> sources =
                 page.getRecords() == null ? List.of() : page.getRecords();
@@ -139,29 +139,51 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         Map<Long, GraphExtractionTask> latestTaskByMaterialId =
                 extractionTaskRepository.listLatestByMaterialIds(materialIds).stream()
                         .collect(Collectors.toMap(GraphExtractionTask::getMaterialId, Function.identity()));
+        List<GraphMaterialPageResult> records = sources.stream()
+                .map(source -> {
+                    ContentRef contentRef = toContentRef(source);
+                    GraphMaterial material = materialByRef.get(contentRef);
+                    Long materialId = material == null ? null : material.getId();
+                    return new GraphMaterialPageResult(
+                            toSourceResult(source),
+                            material,
+                            materialId == null ? null : statsByMaterialId.get(materialId),
+                            materialId == null
+                                    ? null
+                                    : GraphApplicationAssembler.toExtractionTaskResult(
+                                            latestTaskByMaterialId.get(materialId)));
+                })
+                .filter(item -> matchesMaterialStatus(item.material(), query == null ? null : query.status()))
+                .filter(item -> matchesTaskFilters(
+                        item.latestTask(),
+                        query == null ? null : query.taskExecutionStatus(),
+                        query == null ? null : query.taskDisposition()))
+                .toList();
+        if (!hasKnowledgeMaterialFilters(query)) {
+            return PageResult.of(page.getPageNo(), page.getPageSize(), page.getTotalCount(), records);
+        }
+        int fromIndex = Math.min((effectivePage.getPageNo() - 1) * effectivePage.getPageSize(), records.size());
+        int toIndex = Math.min(fromIndex + effectivePage.getPageSize(), records.size());
         return PageResult.of(
-                page.getPageNo(),
-                page.getPageSize(),
-                page.getTotalCount(),
-                sources.stream()
-                        .map(source -> {
-                            ContentRef contentRef = toContentRef(source);
-                            GraphMaterial material = materialByRef.get(contentRef);
-                            Long materialId = material == null ? null : material.getId();
-                            return new GraphMaterialPageResult(
-                                    toSourceResult(source),
-                                    material,
-                                    materialId == null ? null : statsByMaterialId.get(materialId),
-                                    materialId == null
-                                            ? null
-                                            : GraphApplicationAssembler.toExtractionTaskResult(
-                                                    latestTaskByMaterialId.get(materialId)));
-                        })
-                        .filter(item -> matchesTaskFilters(
-                                item.latestTask(),
-                                query == null ? null : query.taskExecutionStatus(),
-                                query == null ? null : query.taskDisposition()))
-                        .toList());
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize(),
+                records.size(),
+                records.subList(fromIndex, toIndex));
+    }
+
+    private boolean hasKnowledgeMaterialFilters(GraphMaterialListQuery query) {
+        return query != null
+                && (query.status() != null
+                        || query.taskExecutionStatus() != null
+                                && !query.taskExecutionStatus().isBlank()
+                        || query.taskDisposition() != null
+                                && !query.taskDisposition().isBlank());
+    }
+
+    private boolean matchesMaterialStatus(GraphMaterial material, GraphMaterialStatus status) {
+        return status == null
+                || status == GraphMaterialStatus.DRAFT && material == null
+                || material != null && status == material.getStatus();
     }
 
     private boolean matchesTaskFilters(

@@ -128,7 +128,39 @@ class GraphMaterialApplicationServiceImplTest {
                 new PageQuery(1, 2));
 
         assertThat(result.getRecords()).hasSize(1);
+        assertThat(result.getTotalCount()).isEqualTo(1);
         assertThat(result.getRecords().get(0).source().contentRef()).isEqualTo(firstRef);
+    }
+
+    @Test
+    void shouldFilterMaterialPageByStatusBeforeReturningPageTotals() {
+        ContentRef firstRef = new ContentRef("SANCAI_ENTRY", 1001L);
+        ContentRef secondRef = new ContentRef("SANCAI_ENTRY", 1002L);
+        ContentRef thirdRef = new ContentRef("SANCAI_ENTRY", 1003L);
+        GraphMaterial publishedMaterial =
+                new GraphMaterial(11L, firstRef, "素材一", GraphMaterialStatus.PUBLISHED, null, null, null, null, 3L);
+        GraphMaterial draftMaterial =
+                new GraphMaterial(12L, secondRef, "素材二", GraphMaterialStatus.DRAFT, null, null, null, null, 3L);
+        when(classicsFacade.pageKnowledgeGraphMaterials(any()))
+                .thenReturn(KnowledgeGraphMaterialPageFacadeResponse.builder()
+                        .pageNo(1)
+                        .pageSize(Integer.MAX_VALUE)
+                        .totalCount(3)
+                        .records(List.of(source("1001", "素材一"), source("1002", "素材二"), source("1003", "素材三")))
+                        .build());
+        when(materialRepository.listByContentRefs(List.of(firstRef, secondRef, thirdRef)))
+                .thenReturn(List.of(publishedMaterial, draftMaterial));
+        when(statsRepository.listByMaterialIds(List.of(11L, 12L))).thenReturn(List.of());
+        when(taskRepository.listLatestByMaterialIds(List.of(11L, 12L))).thenReturn(List.of());
+
+        var result = service.pageMaterials(
+                new GraphMaterialListQuery(
+                        "user-1", "素材", GraphMaterialStatus.DRAFT, "SANCAI_ENTRY", null, null, null, null),
+                new PageQuery(1, 1));
+
+        assertThat(result.getTotalCount()).isEqualTo(2);
+        assertThat(result.getRecords()).hasSize(1);
+        assertThat(result.getRecords().get(0).source().contentRef()).isEqualTo(secondRef);
     }
 
     @Test
