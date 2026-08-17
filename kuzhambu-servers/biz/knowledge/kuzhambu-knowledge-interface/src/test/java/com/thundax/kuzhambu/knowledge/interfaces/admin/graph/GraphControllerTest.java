@@ -10,6 +10,9 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
+import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionDecisionCommand;
@@ -37,10 +40,27 @@ import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class GraphControllerTest {
+
+    @BeforeEach
+    void setUpSubject() {
+        KuzhambuContextHolder.setSubject(new KuzhambuSubject(
+                "900001",
+                KuzhambuSubjectType.ADMIN_USER,
+                "graph-admin",
+                "test-token",
+                List.of("knowledge:graph:edit")));
+    }
+
+    @AfterEach
+    void tearDownSubject() {
+        KuzhambuContextHolder.clear();
+    }
 
     @Test
     void shouldKeepReadAndWritePermissionsOnAdminEndpoints() throws Exception {

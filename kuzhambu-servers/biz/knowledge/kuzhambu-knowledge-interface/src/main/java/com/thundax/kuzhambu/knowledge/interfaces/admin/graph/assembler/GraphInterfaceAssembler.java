@@ -133,20 +133,28 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphMaterialQuery toQuery(@NonNull GraphMaterialRequests.ContentRefRequest request) {
-        return toQuery(request, null);
+        Objects.requireNonNull(request, "request");
+        return toQueryInternal(request, null);
     }
 
     @NonNull
     public static GraphMaterialQuery toQuery(
-            @NonNull GraphMaterialRequests.ContentRefRequest request, String subjectId) {
+            @NonNull GraphMaterialRequests.ContentRefRequest request, @NonNull String subjectId) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(subjectId, "subjectId");
+        return toQueryInternal(request, subjectId);
+    }
+
+    private static GraphMaterialQuery toQueryInternal(
+            GraphMaterialRequests.ContentRefRequest request, String subjectId) {
         return new GraphMaterialQuery(subjectId, toContentRef(request));
     }
 
     @NonNull
     public static GraphMaterialListQuery toQuery(
-            @NonNull GraphMaterialRequests.MaterialPageRequest request, String subjectId) {
+            @NonNull GraphMaterialRequests.MaterialPageRequest request, @NonNull String subjectId) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(subjectId, "subjectId");
         return new GraphMaterialListQuery(
                 subjectId,
                 request.getKeyword(),
@@ -206,15 +214,21 @@ public final class GraphInterfaceAssembler {
                         : null);
     }
 
-    public static GraphMaterialResponses.MaterialData toMaterialData(GraphMaterialPageResult value) {
+    @NonNull
+    public static GraphMaterialResponses.MaterialData toMaterialData(@NonNull GraphMaterialPageResult value) {
+        Objects.requireNonNull(value, "value");
+        return toMaterialData(Objects.requireNonNull(value.material(), "material"));
+    }
+
+    private static GraphMaterialResponses.MaterialData toNullableMaterialData(GraphMaterialPageResult value) {
         return value == null || value.material() == null ? null : toMaterialData(value.material());
     }
 
-    public static GraphMaterialResponses.SourceData toSourceData(GraphMaterialPageResult value) {
-        return value == null ? null : toSourceData(value.source());
+    private static GraphMaterialResponses.SourceData toNullableSourceData(GraphMaterialPageResult value) {
+        return value == null ? null : toNullableSourceData(value.source());
     }
 
-    public static GraphMaterialResponses.SourceData toSourceData(
+    private static GraphMaterialResponses.SourceData toNullableSourceData(
             com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialSourceResult value) {
         if (value == null) {
             return null;
@@ -231,7 +245,7 @@ public final class GraphInterfaceAssembler {
                 value.graphable());
     }
 
-    public static GraphMaterialResponses.MaterialStatsData toMaterialStatsData(GraphMaterialStats value) {
+    private static GraphMaterialResponses.MaterialStatsData toNullableMaterialStatsData(GraphMaterialStats value) {
         if (value == null) {
             return null;
         }
@@ -248,15 +262,14 @@ public final class GraphInterfaceAssembler {
                 instant(value.getCalculatedAt()));
     }
 
-    public static GraphMaterialResponses.MaterialPageData toMaterialPageData(GraphMaterialPageResult value) {
-        if (value == null) {
-            return null;
-        }
+    @NonNull
+    public static GraphMaterialResponses.MaterialPageData toMaterialPageData(@NonNull GraphMaterialPageResult value) {
+        Objects.requireNonNull(value, "value");
         return new GraphMaterialResponses.MaterialPageData(
-                toSourceData(value.source()),
-                value.material() == null ? null : toMaterialData(value.material()),
-                toMaterialStatsData(value.materialStats()),
-                toTaskData(value.latestTask()));
+                toNullableSourceData(value.source()),
+                toNullableMaterialData(value),
+                toNullableMaterialStatsData(value.materialStats()),
+                toNullableTaskData(value.latestTask()));
     }
 
     @NonNull
@@ -288,16 +301,16 @@ public final class GraphInterfaceAssembler {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(extractionTasks, "extractionTasks");
         return new GraphMaterialResponses.DetailData(
-                toSourceData(value.source()),
+                toNullableSourceData(value.source()),
                 value.material() == null ? null : toMaterialData(value.material()),
-                toMaterialStatsData(value.materialStats()),
+                toNullableMaterialStatsData(value.materialStats()),
                 value.nodes().stream()
                         .map(GraphInterfaceAssembler::toMaterialNodeData)
                         .toList(),
                 value.edges().stream()
                         .map(GraphInterfaceAssembler::toMaterialEdgeData)
                         .toList(),
-                toTaskData(value.taskSummary()),
+                toNullableTaskData(value.taskSummary()),
                 extractionTasks);
     }
 
@@ -316,15 +329,17 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphExtractionCommand toCommand(
-            @NonNull GraphExtractionRequests.ExtractionCreateRequest request, Long requestedBy) {
+            @NonNull GraphExtractionRequests.ExtractionCreateRequest request, @NonNull Long requestedBy) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
         return new GraphExtractionCommand(toContentRef(request), request.getIdempotencyKey(), requestedBy);
     }
 
     @NonNull
     public static GraphExtractionBatchCommand toCommand(
-            @NonNull GraphExtractionRequests.BatchCreateRequest request, Long requestedBy) {
+            @NonNull GraphExtractionRequests.BatchCreateRequest request, @NonNull Long requestedBy) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
         List<ContentRef> materialRefs =
                 request.getSelection() == null || request.getSelection().getContentRefs() == null
                         ? List.of()
@@ -410,8 +425,9 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphExtractionRegenerateCommand toCommand(
-            @NonNull GraphExtractionRequests.CandidateRegenerateRequest request, Long requestedBy) {
+            @NonNull GraphExtractionRequests.CandidateRegenerateRequest request, @NonNull Long requestedBy) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
         return new GraphExtractionRegenerateCommand(
                 Long.valueOf(request.getTaskId()),
                 Long.parseLong(request.getTaskLockVersion()),
@@ -421,10 +437,20 @@ public final class GraphInterfaceAssembler {
                 requestedBy);
     }
 
-    public static GraphExtractionResponses.TaskData toTaskData(GraphExtractionTaskResult value) {
+    @NonNull
+    public static GraphExtractionResponses.TaskData toTaskData(@NonNull GraphExtractionTaskResult value) {
+        Objects.requireNonNull(value, "value");
+        return toTaskDataInternal(value);
+    }
+
+    private static GraphExtractionResponses.TaskData toNullableTaskData(GraphExtractionTaskResult value) {
         if (value == null) {
             return null;
         }
+        return toTaskDataInternal(value);
+    }
+
+    private static GraphExtractionResponses.TaskData toTaskDataInternal(GraphExtractionTaskResult value) {
         return new GraphExtractionResponses.TaskData(
                 string(value.taskId()),
                 toNullableContentRefData(value.contentRef()),
@@ -447,16 +473,17 @@ public final class GraphInterfaceAssembler {
                 instant(value.purgeAfter()));
     }
 
-    public static GraphExtractionResponses.BatchResultData toBatchData(GraphExtractionBatchResult value) {
+    @NonNull
+    public static GraphExtractionResponses.BatchResultData toBatchData(@NonNull GraphExtractionBatchResult value) {
+        Objects.requireNonNull(value, "value");
         return new GraphExtractionResponses.BatchResultData(
                 value.idempotencyKey(),
                 value.tasks().stream().map(GraphInterfaceAssembler::toTaskData).toList());
     }
 
-    public static GraphExtractionResponses.StageData toStageData(GraphExtractionStageResult value) {
-        if (value == null) {
-            return null;
-        }
+    @NonNull
+    public static GraphExtractionResponses.StageData toStageData(@NonNull GraphExtractionStageResult value) {
+        Objects.requireNonNull(value, "value");
         return new GraphExtractionResponses.StageData(
                 String.valueOf(value.stageOrder()),
                 value.stageName(),
@@ -469,7 +496,7 @@ public final class GraphInterfaceAssembler {
                 instant(value.completedAt()));
     }
 
-    public static GraphExtractionResponses.CandidatePreviewData toCandidateData(
+    private static GraphExtractionResponses.CandidatePreviewData toNullableCandidateData(
             GraphExtractionCandidatePreviewResult value) {
         return value == null
                 ? null
@@ -477,7 +504,10 @@ public final class GraphInterfaceAssembler {
                         string(value.candidateId()), value.resultFormat(), value.resultSummaryJson());
     }
 
-    public static GraphExtractionResponses.TaskDetailData toTaskDetailData(GraphExtractionTaskDetailResult value) {
+    @NonNull
+    public static GraphExtractionResponses.TaskDetailData toTaskDetailData(
+            @NonNull GraphExtractionTaskDetailResult value) {
+        Objects.requireNonNull(value, "value");
         return new GraphExtractionResponses.TaskDetailData(
                 toTaskData(value.task()),
                 null,
@@ -488,10 +518,12 @@ public final class GraphInterfaceAssembler {
                 value.relatedTasks().stream()
                         .map(GraphInterfaceAssembler::toTaskData)
                         .toList(),
-                toCandidateData(value.candidate()));
+                toNullableCandidateData(value.candidate()));
     }
 
-    public static GraphExtractionResponses.CandidateApplyData toCandidateApplyData(GraphMaterialResult value) {
+    @NonNull
+    public static GraphExtractionResponses.CandidateApplyData toCandidateApplyData(@NonNull GraphMaterialResult value) {
+        Objects.requireNonNull(value, "value");
         return new GraphExtractionResponses.CandidateApplyData(
                 toTaskData(value.taskSummary()), toDetailData(value, List.of()));
     }
@@ -499,6 +531,7 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphMaterialDeletionPrecheckCommand toDeletionPrecheckCommand(
             @NonNull GraphMaterialRequests.ContentRefRequest request) {
+        Objects.requireNonNull(request, "request");
         return new GraphMaterialDeletionPrecheckCommand(toContentRef(request));
     }
 
@@ -543,10 +576,9 @@ public final class GraphInterfaceAssembler {
                 Long.parseLong(request.getLockVersion()));
     }
 
-    public static GraphDeletionResponses.ChangeData toDeletionChangeData(GraphMaterialDeletionChange value) {
-        if (value == null) {
-            return null;
-        }
+    @NonNull
+    public static GraphDeletionResponses.ChangeData toDeletionChangeData(@NonNull GraphMaterialDeletionChange value) {
+        Objects.requireNonNull(value, "value");
         return new GraphDeletionResponses.ChangeData(
                 value.getId() == null ? null : String.valueOf(value.getId().value()),
                 toNullableContentRefData(value.getMaterialRef()),
@@ -558,10 +590,9 @@ public final class GraphInterfaceAssembler {
                 instant(value.getCompletedAt()));
     }
 
-    public static GraphDeletionResponses.TaskData toDeletionTaskData(GraphMaterialDeletionTask value) {
-        if (value == null) {
-            return null;
-        }
+    @NonNull
+    public static GraphDeletionResponses.TaskData toDeletionTaskData(@NonNull GraphMaterialDeletionTask value) {
+        Objects.requireNonNull(value, "value");
         return new GraphDeletionResponses.TaskData(
                 value.getId() == null ? null : String.valueOf(value.getId().value()),
                 value.getStatus() == null ? null : value.getStatus().name(),

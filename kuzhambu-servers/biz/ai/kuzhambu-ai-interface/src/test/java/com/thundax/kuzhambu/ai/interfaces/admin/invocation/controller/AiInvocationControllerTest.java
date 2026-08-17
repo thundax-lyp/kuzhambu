@@ -369,6 +369,12 @@ class AiInvocationControllerTest {
                 throw new UnsupportedOperationException(
                         "candidate application service should not be called in this test");
             }
+
+            @Override
+            public void cleanup(AiCandidateId candidateId) {
+                throw new UnsupportedOperationException(
+                        "candidate application service should not be called in this test");
+            }
         };
     }
 
@@ -390,6 +396,11 @@ class AiInvocationControllerTest {
                 assertEquals("TIMEOUT", command.errorType());
                 assertEquals("执行超时", command.errorMessage());
                 return rejectedCandidate();
+            }
+
+            @Override
+            public void cleanup(AiCandidateId candidateId) {
+                throw new UnsupportedOperationException("cleanup should not be called in this test");
             }
         };
     }
@@ -413,6 +424,11 @@ class AiInvocationControllerTest {
             @Override
             public AiCandidate reject(RejectAiCandidateCommand command) {
                 throw new UnsupportedOperationException("reject should not be called in this test");
+            }
+
+            @Override
+            public void cleanup(AiCandidateId candidateId) {
+                throw new UnsupportedOperationException("cleanup should not be called in this test");
             }
         };
     }
