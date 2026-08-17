@@ -8,6 +8,8 @@ import java.util.List;
 public interface GraphExtractionTaskRepository {
     GraphExtractionTask getById(GraphExtractionTaskId id);
 
+    GraphExtractionTask getByIdempotencyKey(String idempotencyKey);
+
     List<GraphExtractionTask> listByMaterialId(Long materialId);
 
     List<GraphExtractionTask> listByBatchId(String batchId);

@@ -26,6 +26,11 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
+    public GraphExtractionTask getByIdempotencyKey(String idempotencyKey) {
+        return GraphExtractionTaskPersistenceAssembler.toDomain(mapper.selectByIdempotencyKey(idempotencyKey));
+    }
+
+    @Override
     public List<GraphExtractionTask> listByMaterialId(Long materialId) {
         return mapper.selectByMaterialId(materialId).stream()
                 .map(GraphExtractionTaskPersistenceAssembler::toDomain)

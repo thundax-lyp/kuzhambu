@@ -11,13 +11,13 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph task state machine`：实现提取任务状态机
+- [ ] `ai graph candidate cleanup facade`：清理到期图谱候选
     - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S2
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/**/graph/`、`kuzhambu-knowledge-application/src/main/java/**/graph/command/`、`result/`
-    - 处理动作：实现重试、取消、候选处置、重生成和幂等状态转换。
-    - 验收点：领域测试覆盖合法/非法转换、版本冲突、重复请求和候选重复应用。
-    - 重要度：10/10
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S3b2
+    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/`、`kuzhambu-ai-application/`、`kuzhambu-ai-infra/`、`kuzhambu-ai-facade/`
+    - 处理动作：提供按候选 ID 清理到期图谱候选的 AI Facade 协作。
+    - 验收点：测试证明仅清理指定候选，失败可由调用方重试，Knowledge 无 AI 表访问。
+    - 重要度：9/10
 
 - [ ] `knowledge graph material composite query`：实现素材复合查询
     - 任务类型：执行任务

@@ -13,6 +13,10 @@ import org.apache.ibatis.annotations.Update;
 public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTaskDO> {
 
     @Select(
+            "select * from knowledge_graph_extraction_task where idempotency_key = #{idempotencyKey} order by id asc limit 1")
+    GraphExtractionTaskDO selectByIdempotencyKey(@Param("idempotencyKey") String idempotencyKey);
+
+    @Select(
             """
             select * from knowledge_graph_extraction_task
             where material_id = #{materialId}
