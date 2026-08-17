@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph migration verification`：提交迁移结果对比证据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S6c
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-GRAPH-MATERIAL-TASK-BASELINE.md`
-    - 处理动作：补充迁移后统计、差异结论和验证命令结果。
-    - 验收点：文档可核对迁移前后统计，且包含已执行验证的结果。
-    - 重要度：9/10
-
 - [ ] `knowledge graph legacy extraction cleanup`：删除旧图谱提取写路径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S6d
