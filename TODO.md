@@ -19,14 +19,6 @@
     - 验收点：路由单测通过，且 `rg` 确认新素材/任务组件不 import 旧 `graph-result` 或 `refinement` service。
     - 重要度：8/10
 
-- [ ] `AW/graph-material service`：建立图谱素材 HTTP service 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-service-contract.test.ts`
-    - 处理动作：实现素材分页、详情、单项提取、批量提取、批量撤回预览和批量撤回 service 方法。
-    - 验收点：contract test 断言 URL、body、`idempotencyKey`、`ApiResponse` 解包和正式业务码映射。
-    - 重要度：10/10
-
 - [ ] `AW/graph-material mock`：建立图谱素材 Mock adapter 与 fixture
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
