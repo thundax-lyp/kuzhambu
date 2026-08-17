@@ -75,6 +75,7 @@ describe("TaskDetailDrawer", () => {
         expect(
             screen.getByTestId("knowledge-graph-extraction-task-detail-candidate-section")
         ).toBeInTheDocument();
+        expect(screen.getByText("候选不可用")).toBeInTheDocument();
 
         await user.click(screen.getByText("候选处置"));
         expect(
