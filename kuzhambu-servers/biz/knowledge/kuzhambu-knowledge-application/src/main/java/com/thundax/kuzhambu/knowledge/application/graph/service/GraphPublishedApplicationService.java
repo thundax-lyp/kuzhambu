@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeSplitCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedAdjacencyQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeDeleteQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeDeleteQuery;
@@ -15,6 +16,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNode
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceImpactResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
@@ -27,6 +29,8 @@ public interface GraphPublishedApplicationService {
     PageResult<GraphPublishedNode> pageNodes(GraphPublishedNodeQuery query, PageQuery pageQuery);
 
     PageResult<GraphPublishedEdge> pageEdges(GraphPublishedEdgeQuery query, PageQuery pageQuery);
+
+    PageResult<GraphPublishedAdjacencyResult> pageAdjacency(GraphPublishedAdjacencyQuery query, PageQuery pageQuery);
 
     GraphPublishedNodeDetailResult getNodeDetail(GraphPublishedNodeId nodeId);
 

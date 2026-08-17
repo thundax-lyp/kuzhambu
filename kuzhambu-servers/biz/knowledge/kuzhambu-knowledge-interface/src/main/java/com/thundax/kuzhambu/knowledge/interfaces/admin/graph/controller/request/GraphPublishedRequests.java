@@ -72,6 +72,55 @@ public final class GraphPublishedRequests {
 
     @Getter
     @Setter
+    @Schema(description = "图谱发布空间单跳邻接分页查询请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PublishedAdjacencyPageRequest {
+
+        @Size(max = 128)
+        private String subjectKeyword;
+
+        @Size(max = 64)
+        private String subjectType;
+
+        @Pattern(regexp = "ACTIVE|DELETED")
+        private String subjectStatus;
+
+        @Pattern(regexp = "MATERIAL|MANUAL")
+        private String subjectSource;
+
+        @Size(max = 64)
+        private String relationType;
+
+        @Pattern(regexp = "ACTIVE|DELETED")
+        private String relationStatus;
+
+        @Pattern(regexp = "MATERIAL|MANUAL")
+        private String relationSource;
+
+        @Size(max = 128)
+        private String objectKeyword;
+
+        @Size(max = 64)
+        private String objectType;
+
+        @Pattern(regexp = "ACTIVE|DELETED")
+        private String objectStatus;
+
+        @Pattern(regexp = "MATERIAL|MANUAL")
+        private String objectSource;
+
+        private Boolean includeIsolated;
+
+        @Pattern(regexp = "^\\d+$")
+        private String pageNo;
+
+        @Pattern(regexp = "^\\d+$")
+        private String pageSize;
+    }
+
+    @Getter
+    @Setter
     @Schema(description = "图谱发布节点标识请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

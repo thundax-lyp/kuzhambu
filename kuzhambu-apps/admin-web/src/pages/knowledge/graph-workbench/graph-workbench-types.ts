@@ -25,3 +25,29 @@ export interface GraphWorkbenchEdgeRecord {
     target: string;
     predicate: string;
 }
+
+export interface GraphPublishedNodeRecord {
+    id: string;
+    nodeType?: string | null;
+    name?: string | null;
+    source?: string | null;
+    status?: string | null;
+    lockVersion?: string | null;
+}
+
+export interface GraphPublishedEdgeRecord {
+    id: string;
+    sourceNodeId?: string | null;
+    targetNodeId?: string | null;
+    relationType?: string | null;
+    source?: string | null;
+    status?: string | null;
+    lockVersion?: string | null;
+}
+
+export interface GraphPublishedAdjacencyRecord {
+    subject: GraphPublishedNodeRecord;
+    relation?: GraphPublishedEdgeRecord | null;
+    object?: GraphPublishedNodeRecord | null;
+    isolated: boolean;
+}
