@@ -82,6 +82,20 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_material` (
     KEY `idx_knowledge_graph_material_status_published` (`status`, `published_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识图谱素材空间';
 
+CREATE TABLE IF NOT EXISTS `knowledge_graph_material_stats` (
+    `material_id` bigint NOT NULL,
+    `draft_node_count` bigint NOT NULL DEFAULT 0,
+    `draft_edge_count` bigint NOT NULL DEFAULT 0,
+    `published_node_count` bigint NOT NULL DEFAULT 0,
+    `published_edge_count` bigint NOT NULL DEFAULT 0,
+    `active_task_count` bigint NOT NULL DEFAULT 0,
+    `pending_review_task_count` bigint NOT NULL DEFAULT 0,
+    `failed_task_count` bigint NOT NULL DEFAULT 0,
+    `stats_revision` bigint NOT NULL DEFAULT 0,
+    `calculated_at` BIGINT NOT NULL,
+    PRIMARY KEY (`material_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱素材统计快照';
+
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_node` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `material_id` bigint NOT NULL,
@@ -153,13 +167,35 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `result_summary_json` json DEFAULT NULL,
     `failure_reason` varchar(1024) DEFAULT NULL,
     `retry_from_task_id` bigint DEFAULT NULL,
+    `model_snapshot_json` json DEFAULT NULL,
+    `prompt_snapshot_json` json DEFAULT NULL,
+    `execution_status` varchar(32) NOT NULL DEFAULT 'PENDING',
+    `disposition` varchar(32) DEFAULT NULL,
+    `attempt_no` int NOT NULL DEFAULT 0,
+    `lock_version` bigint NOT NULL DEFAULT 0,
+    `batch_id` varchar(64) DEFAULT NULL,
+    `candidate_id` bigint DEFAULT NULL,
+    `idempotency_key` varchar(128) DEFAULT NULL,
+    `regenerated_from_task_id` bigint DEFAULT NULL,
+    `superseded_by_task_id` bigint DEFAULT NULL,
+    `triggered_by_task_id` bigint DEFAULT NULL,
     `requested_at` BIGINT NOT NULL,
     `completed_at` BIGINT DEFAULT NULL,
+    `disposed_at` BIGINT DEFAULT NULL,
+    `purge_after` BIGINT DEFAULT NULL,
+    `active_task_material_id` bigint GENERATED ALWAYS AS (
+        CASE WHEN `execution_status` IN ('PENDING', 'RUNNING') THEN `material_id` ELSE NULL END
+    ) STORED,
     PRIMARY KEY (`id`),
     KEY `idx_knowledge_graph_extraction_task_material_status` (`material_id`, `status`, `requested_at`),
+    KEY `idx_knowledge_graph_extraction_task_material_execution` (`material_id`, `execution_status`, `requested_at`),
     KEY `idx_knowledge_graph_extraction_task_content` (`content_type`, `content_ref_id`),
     KEY `idx_knowledge_graph_extraction_task_source` (`source_content_type`, `source_content_id`),
-    KEY `idx_knowledge_graph_extraction_task_call_candidate` (`ai_call_id`, `ai_candidate_id`)
+    KEY `idx_knowledge_graph_extraction_task_call_candidate` (`ai_call_id`, `ai_candidate_id`),
+    KEY `idx_knowledge_graph_extraction_task_batch` (`batch_id`),
+    KEY `idx_knowledge_graph_extraction_task_purge_after` (`purge_after`),
+    KEY `idx_knowledge_graph_extraction_task_idempotency` (`idempotency_key`),
+    UNIQUE KEY `uk_knowledge_graph_extraction_task_active_material` (`active_task_material_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道任务';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_stage` (
@@ -169,7 +205,9 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_stage` (
     `stage_order` int NOT NULL,
     `status` varchar(32) NOT NULL,
     `input_snapshot_json` json DEFAULT NULL,
+    `input_summary_json` json DEFAULT NULL,
     `output_summary_json` json DEFAULT NULL,
+    `progress` int NOT NULL DEFAULT 0,
     `ai_call_id` bigint DEFAULT NULL,
     `failure_reason` varchar(1024) DEFAULT NULL,
     `started_at` BIGINT DEFAULT NULL,

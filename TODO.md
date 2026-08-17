@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph task schema`：扩展图谱提取任务表结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S1a
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/test/java/**/graph/migration/`
-    - 处理动作：新增统计表、任务字段、索引和数据库级活动任务互斥保护。
-    - 验收点：schema 导入及 DDL 测试覆盖表、字段、唯一约束和索引。
-    - 重要度：10/10
-
 - [ ] `knowledge graph task persistence`：实现图谱提取任务持久化
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S1b
