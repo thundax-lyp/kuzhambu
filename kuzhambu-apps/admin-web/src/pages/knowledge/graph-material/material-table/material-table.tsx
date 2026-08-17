@@ -1,3 +1,4 @@
+import type { Key } from "react";
 import { Typography } from "antd";
 import {
     KuzhambuButton,
@@ -85,7 +86,9 @@ interface MaterialTableProps {
     dataSource: GraphMaterialListRecord[];
     loading?: boolean;
     onOpenMaterial: (material: GraphMaterialRecord) => void;
+    onSelectionChange?: (selectedRowKeys: Key[]) => void;
     onViewTasks: (url: string) => void;
+    selectedRowKeys?: Key[];
 }
 
 const formatContentRef = (contentRef: GraphContentRefRecord) =>
@@ -129,7 +132,9 @@ export const MaterialTable = ({
     dataSource,
     loading = false,
     onOpenMaterial,
-    onViewTasks
+    onSelectionChange,
+    onViewTasks,
+    selectedRowKeys
 }: MaterialTableProps) => {
     const columns: KuzhambuTableProps<GraphMaterialListRecord>["columns"] = [
         {
@@ -317,6 +322,14 @@ export const MaterialTable = ({
             loading={loading}
             pagination={false}
             rowKey={readRecordKey}
+            rowSelection={
+                selectedRowKeys && onSelectionChange
+                    ? {
+                          selectedRowKeys,
+                          onChange: onSelectionChange
+                      }
+                    : undefined
+            }
             scroll={{ x: 1380 }}
             locale={{
                 emptyText: loading ? "图谱素材加载中..." : "暂无图谱素材"
