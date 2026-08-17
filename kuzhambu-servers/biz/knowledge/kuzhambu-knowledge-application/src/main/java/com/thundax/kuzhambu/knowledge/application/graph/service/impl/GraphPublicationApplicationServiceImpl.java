@@ -5,19 +5,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphPublicationExecutor;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalPreviewItemResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
@@ -123,8 +129,24 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     }
 
     @Override
+    public GraphBatchWithdrawalPreviewResult previewBatchWithdrawal(GraphBatchWithdrawalPreviewQuery query) {
+        return new GraphBatchWithdrawalPreviewResult(safeRefs(query == null ? null : query.contentRefs()).stream()
+                .map(this::previewWithdrawalSafely)
+                .toList());
+    }
+
+    @Override
     public GraphMaterial withdraw(GraphWithdrawalCommand command) {
         return publicationExecutor.withdrawOne(command);
+    }
+
+    @Override
+    public GraphBatchWithdrawalResult withdrawBatch(GraphBatchWithdrawalCommand command) {
+        return new GraphBatchWithdrawalResult(
+                command == null ? null : command.idempotencyKey(),
+                safeWithdrawalCommands(command == null ? null : command.materials()).stream()
+                        .map(this::withdrawOneSafely)
+                        .toList());
     }
 
     private GraphPublicationPreviewResult previewPublication(ContentRef materialRef) {
@@ -243,6 +265,30 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
         }
     }
 
+    private GraphBatchWithdrawalPreviewItemResult previewWithdrawalSafely(ContentRef materialRef) {
+        try {
+            return new GraphBatchWithdrawalPreviewItemResult(
+                    materialRef, previewWithdrawal(new GraphWithdrawalPreviewQuery(materialRef)), null, null);
+        } catch (RuntimeException ex) {
+            return new GraphBatchWithdrawalPreviewItemResult(materialRef, null, failureCode(ex), ex.getMessage());
+        }
+    }
+
+    private GraphWithdrawalResult withdrawOneSafely(GraphWithdrawalCommand command) {
+        ContentRef materialRef = command == null ? null : command.materialRef();
+        try {
+            return new GraphWithdrawalResult(materialRef, true, publicationExecutor.withdrawOne(command), null, null);
+        } catch (RuntimeException ex) {
+            return new GraphWithdrawalResult(materialRef, false, null, failureCode(ex), ex.getMessage());
+        }
+    }
+
+    private String failureCode(RuntimeException ex) {
+        return ex instanceof BizException bizException && bizException.getCode() != null
+                ? bizException.getCode()
+                : "GRAPH_WITHDRAWAL_FAILED";
+    }
+
     private GraphMaterialStatus materialStatus(ContentRef materialRef) {
         GraphMaterialStatus status = null;
         if (materialRef == null) {
@@ -268,6 +314,10 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     }
 
     private List<GraphPublicationCommand> safeCommands(List<GraphPublicationCommand> commands) {
+        return commands == null ? List.of() : commands;
+    }
+
+    private List<GraphWithdrawalCommand> safeWithdrawalCommands(List<GraphWithdrawalCommand> commands) {
         return commands == null ? List.of() : commands;
     }
 

@@ -1,13 +1,17 @@
 package com.thundax.kuzhambu.knowledge.application.graph.service;
 
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalPreviewResult;
@@ -25,5 +29,9 @@ public interface GraphPublicationApplicationService {
 
     GraphWithdrawalPreviewResult previewWithdrawal(GraphWithdrawalPreviewQuery query);
 
+    GraphBatchWithdrawalPreviewResult previewBatchWithdrawal(GraphBatchWithdrawalPreviewQuery query);
+
     GraphMaterial withdraw(GraphWithdrawalCommand command);
+
+    GraphBatchWithdrawalResult withdrawBatch(GraphBatchWithdrawalCommand command);
 }

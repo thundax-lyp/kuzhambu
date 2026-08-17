@@ -19,14 +19,6 @@
     - 验收点：测试证明仅清理指定候选，失败可由调用方重试，Knowledge 无 AI 表访问。
     - 重要度：9/10
 
-- [ ] `knowledge graph batch withdrawal application`：实现图谱批量撤回
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S4c
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/**/graph/GraphPublication*`、`GraphBatchWithdrawal*`
-    - 处理动作：实现多素材独立的撤回预览与执行编排。
-    - 验收点：应用测试证明无跨素材事务、逐项版本校验和稳定的部分成功结果。
-    - 重要度：8/10
-
 - [ ] `knowledge graph material task HTTP`：暴露素材任务 HTTP 接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S5a、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`

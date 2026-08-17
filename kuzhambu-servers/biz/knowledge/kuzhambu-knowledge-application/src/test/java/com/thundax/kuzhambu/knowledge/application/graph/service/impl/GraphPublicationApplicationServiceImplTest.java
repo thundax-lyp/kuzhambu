@@ -7,12 +7,17 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphPublicationExecutor;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublicationPreviewToken;
@@ -79,6 +84,53 @@ class GraphPublicationApplicationServiceImplTest {
         verify(fixture.executor).publishOne(third);
     }
 
+    @Test
+    void batchWithdrawalPreviewShouldReturnFailuresInPlace() {
+        Fixture fixture = new Fixture();
+        ContentRef firstRef = new ContentRef("SANCAI_ENTRY", 1001L);
+        ContentRef secondRef = new ContentRef("SANCAI_ENTRY", 1002L);
+        when(fixture.nodeMaterialRepository.listByMaterial(firstRef)).thenReturn(List.of());
+        when(fixture.edgeMaterialRepository.listByMaterial(firstRef)).thenReturn(List.of());
+        when(fixture.nodeMaterialRepository.listByMaterial(secondRef))
+                .thenThrow(new BizException("GRAPH_LOCK_CONFLICT", "graph.lock.conflict", "lock conflict"));
+
+        var result = fixture.service.previewBatchWithdrawal(
+                new GraphBatchWithdrawalPreviewQuery(List.of(firstRef, secondRef)));
+
+        assertThat(result.materials()).extracting(item -> item.contentRef()).containsExactly(firstRef, secondRef);
+        assertThat(result.materials().get(0).preview()).isNotNull();
+        assertThat(result.materials().get(1).preview()).isNull();
+        assertThat(result.materials().get(1).failureCode()).isEqualTo("GRAPH_LOCK_CONFLICT");
+    }
+
+    @Test
+    void batchWithdrawShouldPreserveOrderAndContinueAfterFailure() {
+        Fixture fixture = new Fixture();
+        ContentRef firstRef = new ContentRef("SANCAI_ENTRY", 1001L);
+        ContentRef secondRef = new ContentRef("SANCAI_ENTRY", 1002L);
+        ContentRef thirdRef = new ContentRef("SANCAI_ENTRY", 1003L);
+        GraphWithdrawalCommand first = new GraphWithdrawalCommand(firstRef, 7L);
+        GraphWithdrawalCommand second = new GraphWithdrawalCommand(secondRef, 8L);
+        GraphWithdrawalCommand third = new GraphWithdrawalCommand(thirdRef, 9L);
+        when(fixture.executor.withdrawOne(first)).thenReturn(material(firstRef, GraphMaterialStatus.DRAFT, 9L));
+        when(fixture.executor.withdrawOne(second))
+                .thenThrow(new BizException("GRAPH_LOCK_CONFLICT", "graph.lock.conflict", "lock conflict"));
+        when(fixture.executor.withdrawOne(third)).thenReturn(material(thirdRef, GraphMaterialStatus.DRAFT, 10L));
+
+        var result = fixture.service.withdrawBatch(
+                new GraphBatchWithdrawalCommand(List.of(first, second, third), "batch-001"));
+
+        assertThat(result.batchId()).isEqualTo("batch-001");
+        assertThat(result.materials())
+                .extracting(GraphWithdrawalResult::contentRef)
+                .containsExactly(firstRef, secondRef, thirdRef);
+        assertThat(result.materials())
+                .extracting(GraphWithdrawalResult::success)
+                .containsExactly(true, false, true);
+        assertThat(result.materials().get(1).failureCode()).isEqualTo("GRAPH_LOCK_CONFLICT");
+        verify(fixture.executor).withdrawOne(third);
+    }
+
     private static GraphPublicationCommand command(ContentRef ref) {
         return new GraphPublicationCommand(ref, 4L, 9001L, "token-" + ref.getContentId(), List.of());
     }
@@ -90,6 +142,10 @@ class GraphPublicationApplicationServiceImplTest {
     private static GraphMaterialGraph graph(ContentRef ref, String title, long lockVersion) {
         return GraphMaterialGraph.of(
                 new GraphMaterial(ref, title, GraphMaterialStatus.DRAFT, null, lockVersion), List.of(), List.of());
+    }
+
+    private static GraphMaterial material(ContentRef ref, GraphMaterialStatus status, long lockVersion) {
+        return new GraphMaterial(ref, "素材-" + ref.getContentId(), status, null, lockVersion);
     }
 
     private static final class Fixture {
