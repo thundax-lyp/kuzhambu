@@ -59,14 +59,6 @@
     - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
     - 重要度：9/10
 
-- [ ] `AW/graph-extraction batch create`：实现批量创建面板
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/task-batch-create-panel/`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.tsx`
-    - 处理动作：实现已选素材或整卷批量创建任务入口。
-    - 验收点：测试覆盖 `contentRefs` 和 `volumeCode` 输入互斥，且面板只调用 `createBatchExtraction`。
-    - 重要度：8/10
-
 - [ ] `AW/graph-extraction permission cleanup`：移除旧任务权限依赖
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
