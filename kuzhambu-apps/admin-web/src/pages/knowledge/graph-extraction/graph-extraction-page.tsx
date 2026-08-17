@@ -21,13 +21,17 @@ import { GraphExtractionManuscriptTree } from "./graph-extraction-manuscript-tre
 import { GraphExtractionTaskDetail } from "./graph-extraction-task-detail";
 import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
 import * as service from "./graph-extraction-service";
+import { TaskFilters } from "./task-filters";
 import type {
     GraphExtractionRegenerateCommand,
     GraphExtractionTaskPageQuery
 } from "./graph-extraction-service";
 import type {
+    GraphContentRefRecord,
     GraphExtractionTaskListMode,
     GraphExtractionTaskType,
+    GraphTaskDisposition,
+    GraphTaskExecutionStatus,
     GraphWorkbenchManuscriptNode,
     GraphExtractionTriggerSource,
     GraphExtractionTaskRecord,
@@ -55,6 +59,122 @@ const readBooleanSearchParam = (value: string | null, fallback: boolean) => {
         return fallback;
     }
     return value === "true" || value === "1";
+};
+
+const readPositiveIntegerSearchParam = (value: string | null, fallback: number) => {
+    const numberValue = Number(value);
+    if (!Number.isInteger(numberValue) || numberValue <= 0) {
+        return fallback;
+    }
+    return numberValue;
+};
+
+const normalizeSearchParam = (value: string | null) => {
+    const text = value?.trim();
+    return text || undefined;
+};
+
+const compactTaskQuery = (query: GraphExtractionTaskPageQuery): GraphExtractionTaskPageQuery =>
+    Object.fromEntries(
+        Object.entries(query).filter(([, value]) => value !== undefined)
+    ) as GraphExtractionTaskPageQuery;
+
+const EXECUTION_STATUS_VALUES: GraphTaskExecutionStatus[] = [
+    "PENDING",
+    "RUNNING",
+    "SUCCEEDED",
+    "FAILED",
+    "CANCELLED"
+];
+
+const DISPOSITION_VALUES: GraphTaskDisposition[] = [
+    "PENDING",
+    "ADOPTED_MERGE",
+    "ADOPTED_REPLACE",
+    "DISCARDED",
+    "SUPERSEDED"
+];
+
+const readEnumSearchParam = <TValue extends string>(
+    value: string | null,
+    allowedValues: readonly TValue[]
+): TValue | undefined => {
+    const text = normalizeSearchParam(value);
+    return allowedValues.includes(text as TValue) ? (text as TValue) : undefined;
+};
+
+const parseContentRefsJson = (value: string | null): GraphContentRefRecord[] | undefined => {
+    if (!value) {
+        return undefined;
+    }
+    try {
+        const parsedValue: unknown = JSON.parse(value);
+        if (!Array.isArray(parsedValue)) {
+            return undefined;
+        }
+        const contentRefs = parsedValue.flatMap((item) => {
+            if (typeof item !== "object" || item === null) {
+                return [];
+            }
+            const record = item as Partial<GraphContentRefRecord>;
+            const contentType = record.contentType?.trim();
+            const contentRefId = record.contentRefId?.trim();
+            return contentType && contentRefId ? [{ contentType, contentRefId }] : [];
+        });
+        return contentRefs.length ? contentRefs : undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+const readContentRefsFromSearch = (
+    params: URLSearchParams
+): GraphContentRefRecord[] | undefined => {
+    const jsonContentRefs = parseContentRefsJson(params.get("contentRefs"));
+    if (jsonContentRefs) {
+        return jsonContentRefs;
+    }
+
+    const contentType = normalizeSearchParam(
+        params.get("contentType") ?? params.get("sourceContentType")
+    );
+    const contentRefId = normalizeSearchParam(
+        params.get("contentRefId") ?? params.get("sourceContentId")
+    );
+    if (!contentType || !contentRefId) {
+        return undefined;
+    }
+    return [{ contentType, contentRefId }];
+};
+
+const readTaskQueryFromSearch = (): GraphExtractionTaskPageQuery => {
+    const defaultQuery: GraphExtractionTaskPageQuery = {
+        groupBy: "NONE",
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize: DEFAULT_PAGE_SIZE
+    };
+    if (typeof window === "undefined") {
+        return defaultQuery;
+    }
+    const params = new URLSearchParams(window.location.search);
+    return compactTaskQuery({
+        ...defaultQuery,
+        batchId: normalizeSearchParam(params.get("batchId")),
+        categoryCode: normalizeSearchParam(params.get("categoryCode")),
+        contentRefs: readContentRefsFromSearch(params),
+        contentType: normalizeSearchParam(
+            params.get("contentType") ?? params.get("sourceContentType")
+        ),
+        disposition: readEnumSearchParam(params.get("disposition"), DISPOSITION_VALUES),
+        executionStatus: readEnumSearchParam(
+            params.get("executionStatus"),
+            EXECUTION_STATUS_VALUES
+        ),
+        keyword: normalizeSearchParam(params.get("keyword")),
+        pageNo: readPositiveIntegerSearchParam(params.get("pageNo"), DEFAULT_PAGE_NO),
+        pageSize: readPositiveIntegerSearchParam(params.get("pageSize"), DEFAULT_PAGE_SIZE),
+        volumeCode: normalizeSearchParam(params.get("volumeCode"))
+    });
 };
 
 const readRegenerateCommandFromSearch = (): GraphExtractionRegenerateCommand | null => {
@@ -148,11 +268,8 @@ export const GraphExtractionPage = () => {
     const [handoffRegenerateCommand] = useState<GraphExtractionRegenerateCommand | null>(() =>
         readRegenerateCommandFromSearch()
     );
-    const [taskQuery, setTaskQuery] = useState<GraphExtractionTaskPageQuery>({
-        groupBy: "NONE",
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
+    const [taskQuery, setTaskQuery] =
+        useState<GraphExtractionTaskPageQuery>(readTaskQueryFromSearch);
     const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
     const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
     const [taskListDrawerOpen, setTaskListDrawerOpen] = useState(false);
@@ -776,6 +893,12 @@ export const GraphExtractionPage = () => {
                             ]}
                             value={taskListMode}
                             onChange={changeTaskListMode}
+                        />
+                        <TaskFilters
+                            loading={taskPageQuery.isLoading}
+                            query={taskQuery}
+                            total={taskTotalCount}
+                            onChange={setTaskQuery}
                         />
                         {tasks.length > 0 ? (
                             <GraphExtractionTaskTable
