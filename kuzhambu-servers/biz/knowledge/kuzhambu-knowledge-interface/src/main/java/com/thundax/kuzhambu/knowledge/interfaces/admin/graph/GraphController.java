@@ -11,15 +11,18 @@ import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialDeletionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler.GraphInterfaceAssembler;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphDeletionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublishedRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphDeletionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublicationResponses;
@@ -45,18 +48,21 @@ public class GraphController {
     private final GraphExtractionApplicationService extractionService;
     private final GraphPublicationApplicationService publicationService;
     private final GraphPublishedApplicationService publishedService;
+    private final GraphMaterialDeletionApplicationService deletionService;
 
     public GraphController(
             GraphWorkbenchApplicationService workbenchService,
             GraphMaterialApplicationService materialService,
             GraphExtractionApplicationService extractionService,
             GraphPublicationApplicationService publicationService,
-            GraphPublishedApplicationService publishedService) {
+            GraphPublishedApplicationService publishedService,
+            GraphMaterialDeletionApplicationService deletionService) {
         this.workbenchService = workbenchService;
         this.materialService = materialService;
         this.extractionService = extractionService;
         this.publicationService = publicationService;
         this.publishedService = publishedService;
+        this.deletionService = deletionService;
     }
 
     @Operation(summary = "获取图谱工作台统计", description = "knowledge:graph:view")
@@ -755,6 +761,114 @@ public class GraphController {
             @Valid @RequestBody GraphPublicationRequests.BatchWithdrawalRequest request) {
         return GraphInterfaceAssembler.toBatchWithdrawalData(
                 publicationService.withdrawBatch(GraphInterfaceAssembler.toCommand(request)));
+    }
+
+    @Operation(summary = "预检图谱素材删除变更", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱删除变更预检")
+    @PostMapping("deletion-change/precheck")
+    public GraphDeletionResponses.ChangeData deletionChangePrecheck(
+            @Valid @RequestBody GraphMaterialRequests.ContentRefRequest request) {
+        return GraphInterfaceAssembler.toDeletionChangeData(
+                deletionService.precheck(GraphInterfaceAssembler.toDeletionPrecheckCommand(request)));
+    }
+
+    @Operation(summary = "分页查询图谱素材删除变更", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "图谱删除变更分页")
+    @PostMapping("deletion-change/page")
+    public PageResponse<GraphDeletionResponses.ChangeData> deletionChangePage(
+            @Valid @RequestBody GraphDeletionRequests.DeletionChangePageRequest request) {
+        return PageResponseHelper.fromPageResult(
+                deletionService.pageChanges(
+                        GraphInterfaceAssembler.toQuery(request),
+                        pageQuery(request.getPageNo(), request.getPageSize())),
+                GraphInterfaceAssembler::toDeletionChangeData);
+    }
+
+    @Operation(summary = "决策图谱素材删除变更", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱删除变更决策")
+    @PostMapping("deletion-change/decision")
+    public GraphDeletionResponses.TaskData deletionChangeDecision(
+            @Valid @RequestBody GraphDeletionRequests.DeletionDecisionRequest request) {
+        return GraphInterfaceAssembler.toDeletionTaskData(
+                deletionService.decide(GraphInterfaceAssembler.toCommand(request)));
+    }
+
+    @Operation(summary = "分页查询图谱素材删除任务", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "图谱删除任务分页")
+    @PostMapping("deletion-task/page")
+    public PageResponse<GraphDeletionResponses.TaskData> deletionTaskPage(
+            @Valid @RequestBody GraphDeletionRequests.DeletionTaskPageRequest request) {
+        return PageResponseHelper.fromPageResult(
+                deletionService.pageTasks(
+                        GraphInterfaceAssembler.toQuery(request),
+                        pageQuery(request.getPageNo(), request.getPageSize())),
+                GraphInterfaceAssembler::toDeletionTaskData);
+    }
+
+    @Operation(summary = "获取图谱素材删除任务详情", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "图谱删除任务详情")
+    @PostMapping("deletion-task/get")
+    public GraphDeletionResponses.TaskData deletionTaskGet(
+            @Valid @RequestBody GraphDeletionRequests.DeletionTaskIdRequest request) {
+        return GraphInterfaceAssembler.toDeletionTaskData(
+                deletionService.getTask(GraphInterfaceAssembler.toDeletionTaskId(request)));
+    }
+
+    @Operation(summary = "重试图谱素材删除任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱删除任务重试")
+    @PostMapping("deletion-task/retry")
+    public GraphDeletionResponses.TaskData deletionTaskRetry(
+            @Valid @RequestBody GraphDeletionRequests.DeletionTaskRetryRequest request) {
+        return GraphInterfaceAssembler.toDeletionTaskData(
+                deletionService.retry(GraphInterfaceAssembler.toCommand(request)));
     }
 
     @Operation(summary = "分页查询发布节点", description = "knowledge:graph:view")

@@ -11,20 +11,28 @@ import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionDecisionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialDeletionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialDeletionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialDeletionChangeId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialDeletionTaskId;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphDeletionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -44,6 +52,9 @@ class GraphControllerTest {
         assertThat(permission("publicationPublish")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("withdrawalBatchPreview")).isEqualTo("knowledge:graph:view");
         assertThat(permission("withdrawalBatch")).isEqualTo("knowledge:graph:edit");
+        assertThat(permission("deletionChangePage")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("deletionChangeDecision")).isEqualTo("knowledge:graph:edit");
+        assertThat(permission("deletionTaskRetry")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publishedNodeDelete")).isEqualTo("knowledge:graph:edit");
     }
 
@@ -117,6 +128,39 @@ class GraphControllerTest {
                 .containsExactly("1001");
     }
 
+    @Test
+    void shouldMapDeletionDecisionThroughAssemblerAndApplicationService() {
+        GraphMaterialDeletionApplicationService deletionService = mock(GraphMaterialDeletionApplicationService.class);
+        GraphController controller = controller(deletionService);
+        GraphDeletionRequests.DeletionDecisionRequest request = new GraphDeletionRequests.DeletionDecisionRequest();
+        request.setChangeId("9101");
+        request.setDecision("WITHDRAW_ASSOCIATIONS");
+        request.setLockVersion("4");
+        when(deletionService.decide(any()))
+                .thenReturn(new GraphMaterialDeletionTask(
+                        new GraphMaterialDeletionTaskId(9201L),
+                        new GraphMaterialDeletionChangeId(9101L),
+                        "graph-material-deletion:9101",
+                        GraphMaterialDeletionStatus.PENDING,
+                        5L,
+                        0,
+                        null,
+                        null,
+                        Instant.parse("2026-08-17T00:00:00Z"),
+                        null));
+
+        var response = controller.deletionChangeDecision(request);
+
+        ArgumentCaptor<GraphMaterialDeletionDecisionCommand> captor =
+                ArgumentCaptor.forClass(GraphMaterialDeletionDecisionCommand.class);
+        verify(deletionService).decide(captor.capture());
+        assertThat(captor.getValue().changeId().value()).isEqualTo(9101L);
+        assertThat(captor.getValue().decision().name()).isEqualTo("WITHDRAW_ASSOCIATIONS");
+        assertThat(captor.getValue().lockVersion()).isEqualTo(4L);
+        assertThat(response.id()).isEqualTo("9201");
+        assertThat(response.lockVersion()).isEqualTo("5");
+    }
+
     private static String permission(String methodName) {
         for (Method method : GraphController.class.getDeclaredMethods()) {
             if (method.getName().equals(methodName)) {
@@ -132,7 +176,8 @@ class GraphControllerTest {
                 materialService,
                 mock(GraphExtractionApplicationService.class),
                 mock(GraphPublicationApplicationService.class),
-                mock(GraphPublishedApplicationService.class));
+                mock(GraphPublishedApplicationService.class),
+                mock(GraphMaterialDeletionApplicationService.class));
     }
 
     private static GraphController controller(GraphPublicationApplicationService publicationService) {
@@ -141,7 +186,18 @@ class GraphControllerTest {
                 mock(GraphMaterialApplicationService.class),
                 mock(GraphExtractionApplicationService.class),
                 publicationService,
-                mock(GraphPublishedApplicationService.class));
+                mock(GraphPublishedApplicationService.class),
+                mock(GraphMaterialDeletionApplicationService.class));
+    }
+
+    private static GraphController controller(GraphMaterialDeletionApplicationService deletionService) {
+        return new GraphController(
+                mock(GraphWorkbenchApplicationService.class),
+                mock(GraphMaterialApplicationService.class),
+                mock(GraphExtractionApplicationService.class),
+                mock(GraphPublicationApplicationService.class),
+                mock(GraphPublishedApplicationService.class),
+                deletionService);
     }
 
     private static GraphMaterialRequests.MaterialObjectRequest materialNodeRequest() {

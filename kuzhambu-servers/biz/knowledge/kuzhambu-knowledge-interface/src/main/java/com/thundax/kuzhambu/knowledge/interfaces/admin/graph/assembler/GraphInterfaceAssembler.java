@@ -14,6 +14,9 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionC
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialApplyMode;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionDecisionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionPrecheckCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionTaskRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEdgeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialEdgeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialImportCommand;
@@ -33,6 +36,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalC
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionChangeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
@@ -73,12 +78,16 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdg
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalPreviewResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialDeletionChangeIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialDeletionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialEdgeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphMaterialNodeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedEdgeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedEdgePropertyIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodeIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphPublishedNodePropertyIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialDeletionChange;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialDeletionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialStats;
@@ -86,15 +95,19 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEd
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdgeProperty;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNodeProperty;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionDecision;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialDeletionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchActivity;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphDeletionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublishedRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphDeletionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphMaterialResponses;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphPublicationResponses;
@@ -479,6 +492,87 @@ public final class GraphInterfaceAssembler {
     public static GraphExtractionResponses.CandidateApplyData toCandidateApplyData(GraphMaterialResult value) {
         return new GraphExtractionResponses.CandidateApplyData(
                 toTaskData(value.taskSummary()), toDetailData(value, List.of()));
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionPrecheckCommand toDeletionPrecheckCommand(
+            @NonNull GraphMaterialRequests.ContentRefRequest request) {
+        return new GraphMaterialDeletionPrecheckCommand(toContentRef(request));
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionChangeQuery toQuery(
+            @NonNull GraphDeletionRequests.DeletionChangePageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionChangeQuery(null);
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionDecisionCommand toCommand(
+            @NonNull GraphDeletionRequests.DeletionDecisionRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionDecisionCommand(
+                GraphMaterialDeletionChangeIdCodec.toDomain(Long.valueOf(request.getChangeId())),
+                GraphMaterialDeletionDecision.valueOf(request.getDecision()),
+                Long.parseLong(request.getLockVersion()));
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionTaskQuery toQuery(
+            @NonNull GraphDeletionRequests.DeletionTaskPageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionTaskQuery(
+                request.getStatus() == null ? null : GraphMaterialDeletionStatus.valueOf(request.getStatus()));
+    }
+
+    @NonNull
+    public static com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialDeletionTaskId
+            toDeletionTaskId(@NonNull GraphDeletionRequests.DeletionTaskIdRequest request) {
+        Objects.requireNonNull(request, "request");
+        return GraphMaterialDeletionTaskIdCodec.toDomain(Long.valueOf(request.getTaskId()));
+    }
+
+    @NonNull
+    public static GraphMaterialDeletionTaskRetryCommand toCommand(
+            @NonNull GraphDeletionRequests.DeletionTaskRetryRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialDeletionTaskRetryCommand(
+                GraphMaterialDeletionTaskIdCodec.toDomain(Long.valueOf(request.getTaskId())),
+                Long.parseLong(request.getLockVersion()));
+    }
+
+    public static GraphDeletionResponses.ChangeData toDeletionChangeData(GraphMaterialDeletionChange value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphDeletionResponses.ChangeData(
+                value.getId() == null ? null : String.valueOf(value.getId().value()),
+                toNullableContentRefData(value.getMaterialRef()),
+                value.getStatus() == null ? null : value.getStatus().name(),
+                value.getDecision() == null ? null : value.getDecision().name(),
+                String.valueOf(value.getLockVersion()),
+                fromJsonObject(value.getMaterialSnapshotJson()),
+                instant(value.getRequestedAt()),
+                instant(value.getCompletedAt()));
+    }
+
+    public static GraphDeletionResponses.TaskData toDeletionTaskData(GraphMaterialDeletionTask value) {
+        if (value == null) {
+            return null;
+        }
+        return new GraphDeletionResponses.TaskData(
+                value.getId() == null ? null : String.valueOf(value.getId().value()),
+                value.getStatus() == null ? null : value.getStatus().name(),
+                String.valueOf(value.getLockVersion()),
+                String.valueOf(value.getProgress()),
+                value.getDeletionChangeId() == null
+                        ? null
+                        : String.valueOf(value.getDeletionChangeId().value()),
+                value.getResultSummaryJson(),
+                value.getFailureReason(),
+                null,
+                instant(value.getRequestedAt()),
+                instant(value.getCompletedAt()));
     }
 
     @NonNull
