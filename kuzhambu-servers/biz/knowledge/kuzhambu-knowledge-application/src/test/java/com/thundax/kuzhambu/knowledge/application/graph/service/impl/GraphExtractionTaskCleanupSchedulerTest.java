@@ -98,6 +98,7 @@ class GraphExtractionTaskCleanupSchedulerTest {
                 1,
                 3,
                 null,
+                null,
                 candidateId,
                 "DONE",
                 100,

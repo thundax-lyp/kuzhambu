@@ -57,6 +57,7 @@ public final class GraphApplicationAssembler {
                 task.getDisposition() == null ? null : task.getDisposition().value(),
                 task.getAttemptNo(),
                 task.getLockVersion(),
+                task.getBatchId(),
                 task.getCandidateId(),
                 task.getCurrentStage(),
                 task.getProgress(),

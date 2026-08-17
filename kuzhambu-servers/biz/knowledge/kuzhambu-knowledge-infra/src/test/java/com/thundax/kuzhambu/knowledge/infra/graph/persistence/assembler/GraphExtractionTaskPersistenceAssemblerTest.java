@@ -28,6 +28,7 @@ class GraphExtractionTaskPersistenceAssemblerTest {
                 2,
                 3L,
                 "batch-1",
+                501L,
                 401L,
                 "REVIEW",
                 80,
@@ -49,6 +50,7 @@ class GraphExtractionTaskPersistenceAssemblerTest {
         assertEquals(source.getPromptSnapshotJson(), restored.getPromptSnapshotJson());
         assertEquals(source.getExecutionStatus(), restored.getExecutionStatus());
         assertEquals(source.getDisposition(), restored.getDisposition());
+        assertEquals(source.getAiBatchId(), restored.getAiBatchId());
         assertEquals(source.getRegeneratedFromTaskId(), restored.getRegeneratedFromTaskId());
         assertEquals(source.getSupersededByTaskId(), restored.getSupersededByTaskId());
         assertEquals(source.getTriggeredByTaskId(), restored.getTriggeredByTaskId());

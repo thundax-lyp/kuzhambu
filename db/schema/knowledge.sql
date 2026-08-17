@@ -172,6 +172,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `attempt_no` int NOT NULL DEFAULT 0,
     `lock_version` bigint NOT NULL DEFAULT 0,
     `batch_id` varchar(64) DEFAULT NULL,
+    `ai_batch_id` bigint DEFAULT NULL,
     `candidate_id` bigint DEFAULT NULL,
     `idempotency_key` varchar(128) DEFAULT NULL,
     `regenerated_from_task_id` bigint DEFAULT NULL,
@@ -190,6 +191,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     KEY `idx_knowledge_graph_extraction_task_source` (`source_content_type`, `source_content_id`),
     KEY `idx_knowledge_graph_extraction_task_call_candidate` (`ai_call_id`, `ai_candidate_id`),
     KEY `idx_knowledge_graph_extraction_task_batch` (`batch_id`),
+    KEY `idx_knowledge_graph_extraction_task_ai_batch` (`ai_batch_id`),
     KEY `idx_knowledge_graph_extraction_task_purge_after` (`purge_after`),
     KEY `idx_knowledge_graph_extraction_task_idempotency` (`idempotency_key`),
     UNIQUE KEY `uk_knowledge_graph_extraction_task_active_material` (`active_task_material_id`)

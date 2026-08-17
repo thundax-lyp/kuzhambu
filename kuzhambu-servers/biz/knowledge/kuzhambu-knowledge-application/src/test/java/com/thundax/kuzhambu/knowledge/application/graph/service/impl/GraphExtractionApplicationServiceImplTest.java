@@ -10,7 +10,9 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
+import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionBatchCommand;
@@ -75,6 +77,7 @@ class GraphExtractionApplicationServiceImplTest {
         when(materialRepository.getByContentRef(ref)).thenReturn(material(11L, ref, null));
         when(taskRepository.listByMaterialId(11L)).thenReturn(List.of());
         when(taskRepository.insert(any())).thenReturn(new GraphExtractionTaskId(7001L));
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(aiFacade.submitKnowledgeGraphExtraction(any()))
                 .thenReturn(
@@ -105,6 +108,7 @@ class GraphExtractionApplicationServiceImplTest {
                 .thenReturn(material(12L, second, new GraphExtractionTaskId(8001L)));
         when(taskRepository.listByMaterialId(11L)).thenReturn(List.of());
         when(taskRepository.insert(any())).thenReturn(new GraphExtractionTaskId(7001L));
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(aiFacade.submitKnowledgeGraphExtraction(any()))
                 .thenReturn(
@@ -139,6 +143,40 @@ class GraphExtractionApplicationServiceImplTest {
         verify(taskRepository, never()).listByBatchId(any());
     }
 
+    @Test
+    void shouldSyncPendingTaskFromCompletedAiBatch() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setAiBatchId(9001L);
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(9101L)
+                .batchId(9001L)
+                .capability("KNOWLEDGE_GRAPH_EXTRACT")
+                .contentType("SANCAI_ENTRY")
+                .contentId(1001L)
+                .resultFormat("json")
+                .resultPayload("{}")
+                .build();
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(taskRepository.listByMaterialId(11L)).thenReturn(List.of(task));
+        when(aiFacade.getBatchJob(9001L))
+                .thenReturn(AiBatchJobFacadeResponse.builder()
+                        .batchId(9001L)
+                        .status("SUCCEEDED")
+                        .completedAt(NOW)
+                        .build());
+        when(aiFacade.getLatestCandidateByBatch(9001L)).thenReturn(candidate);
+        when(aiFacade.getCandidate(any())).thenReturn(candidate);
+
+        var result = service.getTask(new GraphTaskDetailQuery(7001L));
+
+        assertThat(result.task().executionStatus()).isEqualTo("SUCCEEDED");
+        assertThat(result.task().disposition()).isEqualTo("PENDING");
+        assertThat(result.task().candidateId()).isEqualTo(9101L);
+        verify(taskRepository).updateIfLockVersion(any(GraphExtractionTask.class), any(Long.class));
+    }
+
     private static ContentRef ref(Long id) {
         return new ContentRef("SANCAI_ENTRY", id);
     }
@@ -166,6 +204,7 @@ class GraphExtractionApplicationServiceImplTest {
                 null,
                 1,
                 3,
+                null,
                 null,
                 null,
                 "QUEUED",

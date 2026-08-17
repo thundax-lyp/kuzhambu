@@ -128,7 +128,15 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static ContentRef toContentRef(@NonNull GraphMaterialRequests.ContentRefRequest request) {
         Objects.requireNonNull(request, "request");
-        return new ContentRef(request.getContentType(), Long.valueOf(request.getContentRefId()));
+        GraphMaterialRequests.ContentRefRequest effective =
+                request.getContentRef() == null ? request : request.getContentRef();
+        if (effective.getContentType() == null
+                || effective.getContentType().isBlank()
+                || effective.getContentRefId() == null
+                || effective.getContentRefId().isBlank()) {
+            throw new ApiException("GRAPH_CONTENT_REF_REQUIRED");
+        }
+        return new ContentRef(effective.getContentType(), Long.valueOf(effective.getContentRefId()));
     }
 
     @NonNull
@@ -346,7 +354,11 @@ public final class GraphInterfaceAssembler {
                         : request.getSelection().getContentRefs().stream()
                                 .map(GraphInterfaceAssembler::toContentRef)
                                 .toList();
-        return new GraphExtractionBatchCommand(materialRefs, request.getIdempotencyKey(), requestedBy);
+        return new GraphExtractionBatchCommand(
+                materialRefs,
+                request.getSelection() == null ? null : request.getSelection().getVolumeCode(),
+                request.getIdempotencyKey(),
+                requestedBy);
     }
 
     @NonNull
@@ -463,7 +475,7 @@ public final class GraphInterfaceAssembler {
                 string(value.candidateId()),
                 null,
                 null,
-                null,
+                value.batchId(),
                 null,
                 null,
                 null,
@@ -525,7 +537,7 @@ public final class GraphInterfaceAssembler {
     public static GraphExtractionResponses.CandidateApplyData toCandidateApplyData(@NonNull GraphMaterialResult value) {
         Objects.requireNonNull(value, "value");
         return new GraphExtractionResponses.CandidateApplyData(
-                toTaskData(value.taskSummary()), toDetailData(value, List.of()));
+                toNullableTaskData(value.taskSummary()), toDetailData(value, List.of()));
     }
 
     @NonNull

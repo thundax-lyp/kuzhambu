@@ -8,6 +8,8 @@ import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeR
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
+import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -126,13 +128,19 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphMaterialContentSnapshotDto snapshot = contentResolver.resolveWorkbench(materialRef);
         GraphMaterial material = materialForExtraction(materialRef, snapshot.title());
         rejectActiveTask(material);
-        GraphExtractionTask task = newTask(material, snapshot, command.idempotencyKey(), null, command.requestedBy());
+        GraphExtractionTask task =
+                newTask(material, snapshot, command.idempotencyKey(), command.batchId(), command.requestedBy());
         GraphExtractionTaskId taskId = taskRepository.insert(task);
         task.setId(taskId);
         material.setCurrentExtractionTaskId(taskId);
         updateMaterial(material);
         statsRefresher.refresh(material);
-        aiFacade.submitKnowledgeGraphExtraction(extractionRequest(materialRef, snapshot, command.requestedBy()));
+        AiBatchJobActionFacadeResponse aiBatch = aiFacade.submitKnowledgeGraphExtraction(
+                extractionRequest(materialRef, snapshot, command.requestedBy()));
+        if (aiBatch != null && aiBatch.getBatchId() != null) {
+            task.setAiBatchId(aiBatch.getBatchId());
+            updateTask(task, task.getLockVersion());
+        }
         return toTaskResult(task);
     }
 
@@ -140,6 +148,15 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     public GraphExtractionBatchResult createBatchExtraction(GraphExtractionBatchCommand command) {
         List<ContentRef> materialRefs =
                 command == null || command.materialRefs() == null ? List.of() : command.materialRefs();
+        if (materialRefs.isEmpty()
+                && command != null
+                && command.volumeCode() != null
+                && !command.volumeCode().isBlank()) {
+            throw new BizException(
+                    "GRAPH_TASK_VOLUME_SELECTION_UNSUPPORTED",
+                    "graph.task.volume-selection-unsupported",
+                    "Graph extraction volume selection is not supported by the server yet");
+        }
         String batchId = command == null
                         || command.idempotencyKey() == null
                         || command.idempotencyKey().isBlank()
@@ -150,7 +167,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             ContentRef materialRef = materialRefs.get(index);
             try {
                 results.add(createExtraction(new GraphExtractionCommand(
-                        materialRef, batchId + ":" + index, command == null ? null : command.requestedBy())));
+                        materialRef, batchId + ":" + index, batchId, command == null ? null : command.requestedBy())));
             } catch (BizException ex) {
                 results.add(new GraphExtractionTaskResult(
                         null,
@@ -159,6 +176,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                         null,
                         0,
                         0,
+                        batchId,
                         null,
                         null,
                         0,
@@ -186,12 +204,15 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 page.getPageNo(),
                 page.getPageSize(),
                 page.getTotalCount(),
-                page.getRecords().stream().map(this::toTaskResult).toList());
+                page.getRecords().stream()
+                        .map(this::syncTaskFromAi)
+                        .map(this::toTaskResult)
+                        .toList());
     }
 
     @Override
     public GraphExtractionTaskDetailResult getTask(GraphTaskDetailQuery query) {
-        GraphExtractionTask task = requireTask(query == null ? null : query.taskId());
+        GraphExtractionTask task = syncTaskFromAi(requireTask(query == null ? null : query.taskId()));
         return new GraphExtractionTaskDetailResult(
                 toTaskResult(task),
                 List.of(),
@@ -306,8 +327,12 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         material.setCurrentExtractionTaskId(nextTaskId);
         updateMaterial(material);
         statsRefresher.refresh(material);
-        aiFacade.submitKnowledgeGraphExtraction(
+        AiBatchJobActionFacadeResponse aiBatch = aiFacade.submitKnowledgeGraphExtraction(
                 extractionRequest(previous.getContentRef(), snapshot, command.requestedBy()));
+        if (aiBatch != null && aiBatch.getBatchId() != null) {
+            nextTask.setAiBatchId(aiBatch.getBatchId());
+            updateTask(nextTask, nextTask.getLockVersion());
+        }
         return toTaskResult(nextTask);
     }
 
@@ -340,6 +365,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 1,
                 0,
                 batchId,
+                null,
                 null,
                 "QUEUED",
                 0,
@@ -489,6 +515,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 task.getDisposition() == null ? null : task.getDisposition().value(),
                 task.getAttemptNo(),
                 task.getLockVersion(),
+                task.getBatchId(),
                 task.getCandidateId(),
                 task.getCurrentStage(),
                 task.getProgress(),
@@ -496,6 +523,63 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 task.getCompletedAt(),
                 task.getDisposedAt(),
                 task.getPurgeAfter());
+    }
+
+    private GraphExtractionTask syncTaskFromAi(GraphExtractionTask task) {
+        if (task == null
+                || task.getAiBatchId() == null
+                || task.getExecutionStatus() == GraphExtractionExecutionStatus.SUCCEEDED
+                || task.getExecutionStatus() == GraphExtractionExecutionStatus.FAILED
+                || task.getExecutionStatus() == GraphExtractionExecutionStatus.CANCELLED) {
+            return task;
+        }
+        AiBatchJobFacadeResponse batch = aiFacade.getBatchJob(task.getAiBatchId());
+        if (batch == null || batch.getStatus() == null) {
+            return task;
+        }
+        GraphExtractionExecutionStatus originalStatus = task.getExecutionStatus();
+        switch (batch.getStatus()) {
+            case "RUNNING" -> startPendingTask(task);
+            case "SUCCEEDED", "PARTIAL" -> succeedTaskFromAi(task);
+            case "FAILED" -> failTaskFromAi(task, batch.getCompletedAt());
+            case "CANCELLED" -> cancelTaskFromAi(task, batch.getCompletedAt());
+            default -> {
+                return task;
+            }
+        }
+        if (task.getExecutionStatus() != originalStatus) {
+            updateTask(task, task.getLockVersion());
+            if (task.getExecutionStatus() != GraphExtractionExecutionStatus.PENDING
+                    && task.getExecutionStatus() != GraphExtractionExecutionStatus.RUNNING) {
+                clearActiveTask(task);
+            }
+            statsRefresher.refresh(task.getContentRef());
+        }
+        return task;
+    }
+
+    private void startPendingTask(GraphExtractionTask task) {
+        if (task.getExecutionStatus() == GraphExtractionExecutionStatus.PENDING) {
+            task.start();
+        }
+    }
+
+    private void succeedTaskFromAi(GraphExtractionTask task) {
+        AiCandidateFacadeDto candidate = aiFacade.getLatestCandidateByBatch(task.getAiBatchId());
+        if (candidate == null || candidate.getCandidateId() == null) {
+            return;
+        }
+        startPendingTask(task);
+        task.succeed(candidate.getCandidateId(), "CANDIDATE_READY", 100, Instant.now(clock));
+    }
+
+    private void failTaskFromAi(GraphExtractionTask task, Instant completedAt) {
+        startPendingTask(task);
+        task.fail("FAILED", completedAt == null ? Instant.now(clock) : completedAt);
+    }
+
+    private void cancelTaskFromAi(GraphExtractionTask task, Instant completedAt) {
+        task.cancel(completedAt == null ? Instant.now(clock) : completedAt);
     }
 
     private String snapshotJson(GraphMaterialContentSnapshotDto snapshot) {

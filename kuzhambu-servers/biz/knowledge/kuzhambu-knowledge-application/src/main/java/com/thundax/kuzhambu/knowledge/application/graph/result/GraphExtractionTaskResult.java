@@ -10,6 +10,7 @@ public record GraphExtractionTaskResult(
         String disposition,
         int attemptNo,
         long lockVersion,
+        String batchId,
         Long candidateId,
         String currentStage,
         int progress,

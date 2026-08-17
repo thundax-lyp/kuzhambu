@@ -28,6 +28,7 @@ public class GraphExtractionTask {
     private int attemptNo;
     private long lockVersion;
     private String batchId;
+    private Long aiBatchId;
     private Long candidateId;
     private String currentStage;
     private int progress;

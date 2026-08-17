@@ -25,11 +25,12 @@ public final class GraphMaterialRequests {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContentRefRequest {
 
-        @NotBlank
+        @Valid
+        private ContentRefRequest contentRef;
+
         @Size(max = 64)
         private String contentType;
 
-        @NotBlank
         @Pattern(regexp = "^\\d+$")
         private String contentRefId;
     }

@@ -60,6 +60,16 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
+    public List<ContentRef> listContentRefsByTaskState(
+            GraphExtractionExecutionStatus executionStatus, GraphExtractionDisposition disposition) {
+        String statusValue = executionStatus == null ? null : executionStatus.value();
+        String dispositionValue = disposition == null ? null : disposition.value();
+        return mapper.selectContentRefsByTaskState(statusValue, dispositionValue).stream()
+                .map(row -> ContentRefCodec.toDomain(row.getContentType(), row.getContentRefId()))
+                .toList();
+    }
+
+    @Override
     public PageResult<GraphExtractionTask> page(
             List<ContentRef> contentRefs,
             String batchId,

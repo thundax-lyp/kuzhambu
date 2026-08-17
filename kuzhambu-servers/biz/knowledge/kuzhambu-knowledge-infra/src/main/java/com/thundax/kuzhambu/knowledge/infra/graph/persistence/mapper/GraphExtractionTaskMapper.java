@@ -68,6 +68,20 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
     @Select(
             """
             <script>
+            select content_type, content_ref_id
+            from knowledge_graph_extraction_task
+            where (#{executionStatus} is null or execution_status = #{executionStatus})
+              and (#{disposition} is null or disposition = #{disposition})
+            group by content_type, content_ref_id
+            order by max(requested_at) desc, max(id) desc
+            </script>
+            """)
+    List<GraphExtractionTaskDO> selectContentRefsByTaskState(
+            @Param("executionStatus") String executionStatus, @Param("disposition") String disposition);
+
+    @Select(
+            """
+            <script>
             select count(*)
             from knowledge_graph_extraction_task
             where (#{batchId} is null or batch_id = #{batchId})
@@ -134,6 +148,7 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
                 disposition = #{row.disposition},
                 attempt_no = #{row.attemptNo},
                 batch_id = #{row.batchId},
+                ai_batch_id = #{row.aiBatchId},
                 candidate_id = #{row.candidateId},
                 current_stage = #{row.currentStage},
                 progress = #{row.progress},

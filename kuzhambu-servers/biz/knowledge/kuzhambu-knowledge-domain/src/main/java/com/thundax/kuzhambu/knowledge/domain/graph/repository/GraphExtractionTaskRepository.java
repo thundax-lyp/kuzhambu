@@ -20,6 +20,9 @@ public interface GraphExtractionTaskRepository {
 
     List<GraphExtractionTask> listByBatchId(String batchId);
 
+    List<ContentRef> listContentRefsByTaskState(
+            GraphExtractionExecutionStatus executionStatus, GraphExtractionDisposition disposition);
+
     PageResult<GraphExtractionTask> page(
             List<ContentRef> contentRefs,
             String batchId,
