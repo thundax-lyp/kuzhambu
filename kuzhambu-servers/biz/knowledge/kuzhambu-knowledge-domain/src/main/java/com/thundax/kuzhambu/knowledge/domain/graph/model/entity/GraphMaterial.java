@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,12 +18,14 @@ public class GraphMaterial {
     public static final String FAILED_OPERATION_PUBLISH = "PUBLISH";
     public static final String FAILED_OPERATION_WITHDRAW = "WITHDRAW";
 
+    private Long id;
     private ContentRef contentRef;
     private String contentTitleSnapshot;
     private GraphMaterialStatus status;
     private Instant publishedAt;
     private String failureReason;
     private String failedOperation;
+    private GraphExtractionTaskId currentExtractionTaskId;
     private long lockVersion;
 
     public GraphMaterial(

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph task persistence`：实现图谱提取任务持久化
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S1b
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/**/graph/model/`、`repository/`、`kuzhambu-knowledge-infra/src/main/java/**/graph/persistence/`、`repository/`
-    - 处理动作：实现任务、阶段和统计快照的领域对象、DO、mapper、assembler 与 repository。
-    - 验收点：集成测试覆盖并发互斥、按素材/批次/到期查询和乐观锁更新。
-    - 重要度：10/10
-
 - [ ] `knowledge graph task state machine`：实现提取任务状态机
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S2

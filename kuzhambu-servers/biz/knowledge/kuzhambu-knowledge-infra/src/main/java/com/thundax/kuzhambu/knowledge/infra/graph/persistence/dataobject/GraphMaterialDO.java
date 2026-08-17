@@ -23,5 +23,6 @@ public class GraphMaterialDO {
     private Instant publishedAt;
     private String failureReason;
     private String failedOperation;
+    private Long currentExtractionTaskId;
     private Long lockVersion;
 }
