@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本手册只实现 `kuzhambu-servers/` 的图谱素材管理和提取任务能力。执行者必须按小任务顺序完成；每个小任务结束后运行其验证，再开始下一项。
+本手册只实现 `kuzhambu-servers/` 的图谱素材管理和提取任务能力。一个提交单元就是一个 TODO 和一个独立提交。执行者按本手册的 DAG 依赖执行，每个单元结束后运行其验证，再开始依赖它的下一项。
 
 HTTP 真相源是 [`KNOWLEDGE-GRAPH-INTERFACE.md`](../20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md)。不能因现有代码、旧表或旧接口不同而修改该契约；若契约本身需变更，先停止实现、更新契约并重新评审。
 
@@ -11,7 +11,7 @@ HTTP 真相源是 [`KNOWLEDGE-GRAPH-INTERFACE.md`](../20-interfaces/KNOWLEDGE-GR
 ## Scope
 
 - Knowledge graph 的素材复合查询、素材统计快照、提取任务、候选处置、批量操作和到期清理。
-- Classics facade 的最小读取能力，以及 AI facade 的最小候选/清理协作能力。
+- Classics facade 的最小读取能力，以及 AI facade 的最小候选读取、处置和清理协作能力。
 - `db/schema/knowledge.sql`、Java domain/application/infra/interface、测试。
 
 ## Non-goals
@@ -69,14 +69,39 @@ disposedAt + 7 days <= now                可清理任务和阶段；不清理�
 
 任务命令的固定错误码：`GRAPH_TASK_LOCK_CONFLICT`、`GRAPH_TASK_STATE_CONFLICT`、`GRAPH_TASK_ACTIVE_EXISTS`、`GRAPH_CANDIDATE_UNAVAILABLE`。重复 `idempotencyKey` 返回首次成功结果，不得重新创建任务或投递调用。
 
-## Small Tasks
+## Plan
+
+### DAG Execution Topology
+
+本 RUNBOOK 允许本地并行，但同时最多两条执行线、两个 worktree。不得为每个提交单元创建独立 worktree，也不得在两个执行线中修改同一个文件。每条执行线只提交本线所属单元；集成分支只接收已验证的完整提交。
+
+开始前，从同一个干净的集成基线创建两条本地分支和 worktree：
+
+```sh
+git worktree add ../kuzhambu-kg-line-a -b feature/knowledge-graph-material-line-a <integration-base>
+git worktree add ../kuzhambu-kg-line-b -b feature/knowledge-graph-material-line-b <integration-base>
+```
+
+`<integration-base>` 是准备合入的目标分支或其当前特性分支。每个同步点由集成人将已验证提交按编号顺序 cherry-pick 到集成分支；下一阶段的 worktree 必须先 rebase 到该集成分支。不要合并两个执行线分支，不要在未同步依赖时开始后续单元。
+
+| 阶段 | 执行线 A：存储与任务 | 执行线 B：跨域与查询 | 开始条件 | 同步条件 |
+| --- | --- | --- | --- | --- |
+| G0 | `S0` | - | 无 | `S0` 已提交基线证据 |
+| G1 | `S1a -> S1b -> S2` | `S3a -> S3b` | `S0` 已同步 | `S1b`、`S2`、`S3a`、`S3b` 均已同步 |
+| G2 | `S4b -> S6b -> S5a` | `S4a -> S4c -> S5b` | G1 已同步；`S4b` 还依赖 `S3a` 与 `S3b` | `S4a`、`S4b`、`S4c`、`S5a`、`S5b`、`S6b` 均已同步 |
+| G3 | - | `S6a` | G2 的 `S4b`、`S4c` 已同步 | `S6a` 已同步 |
+| G4 | `S6c -> S6d` | - | G2、G3 全部同步 | `S6c` 后才可开始 `S6d` |
+
+额外依赖固定如下：`S4a` 和 `S4c` 均依赖 `S1b` 与 `S3a`；`S5a` 依赖 `S4a` 与 `S4b`；`S6a` 依赖 `S4a`、`S4b`、`S4c`；`S6b` 依赖 `S1b`、`S2`、`S3b`；`S6c` 依赖 `S5a`、`S5b`、`S6a`、`S6b`。这些依赖优先于表中的执行线归属。
+
+每个同步点固定执行：检查提交只对应一个 RUNBOOK 单元，运行该单元验收，cherry-pick 到集成分支，运行受影响模块的最窄 Maven 测试；发生冲突时停止后续单元，先在产生冲突的执行线修复并重新验证。
 
 ### S0. Freeze the Baseline
 
 **Input:** 当前分支和现有图谱数据。
 
 **Output:** 可比较的迁移前统计与明确的旧路径清单。
-**Modify:** 不修改生产文件；新增测试或临时本地记录不提交。
+**Modify:** 新建 `docs/40-readiness/KNOWLEDGE-GRAPH-MATERIAL-TASK-BASELINE.md`；不修改数据库数据或生产代码。
 
 1. 阅读现有文件：
    - `db/schema/knowledge.sql`
@@ -88,7 +113,7 @@ disposedAt + 7 days <= now                可清理任务和阶段；不清理�
 2. 记录现有素材、节点、边、发布映射、抽取任务数量和旧任务状态分布。
 3. 列出所有仍调用 `retry_from_task_id`、旧 `status`、旧 graph extraction/result HTTP 入口的 Java 文件。
 
-**Done when:** 输出可用于迁移回归的基准，且没有修改数据库数据。
+**Done when:** 基线文档记录采集时间、统计口径、素材/图对象/发布映射/抽取任务的数量与状态分布，以及旧调用路径清单；该文档与本单元一并提交。
 
 ### S1. Add Schema and Persistence Types
 
@@ -117,6 +142,11 @@ disposedAt + 7 days <= now                可清理任务和阶段；不清理�
 5. DO、mapper、repository 只做存取和转换；状态转换不得放入 mapper。
 
 **Verify:** 新增 DDL 测试；repository 集成测试覆盖插入、按素材查询、按批次查询、到期查询和乐观锁更新。
+
+**Commit units:**
+
+1. S1a 只修改 `db/schema/knowledge.sql` 和 DDL 测试：新增统计表、任务字段、索引及数据库级活动任务互斥保护；验证 schema 导入和 DDL 断言。
+2. S1b 修改本节其余 domain/infra 文件和 repository 集成测试：实现实体、DO、mapper、assembler、repository 与乐观锁读写；验证并发活动任务互斥、按素材/批次/到期查询和版本更新。
 
 ### S2. Implement Task State Machine
 
@@ -165,6 +195,11 @@ disposedAt + 7 days <= now                可清理任务和阶段；不清理�
 
 **Verify:** facade 单测证明不可见稿件不返回、页面分页在 Classics 内完成、AI 调用拿到冻结快照且无完整正文/凭据日志。
 
+**Commit units:**
+
+1. S3a 只修改 Classics facade、其 request/response、实现、assembler 与 `ClassicsFacadeImplTest`。
+2. S3b 只修改 AI facade、其 request/response、实现、assembler 与 `AiFacadeImplTest`；必须提供候选读取、采用标记、拒绝和清理协作。
+
 ### S4. Implement Application Queries and Commands
 
 **Modify exactly:**
@@ -188,6 +223,12 @@ disposedAt + 7 days <= now                可清理任务和阶段；不清理�
 
 **Verify:** application 测试覆盖未初始化素材、来源不可见、批量部分失败、候选无载荷、按素材分组和活动任务冲突。
 
+**Commit units:**
+
+1. S4a 只修改 `GraphMaterialApplicationService*`、`GraphMaterialListQuery`、`GraphMaterialQuery` 和 `GraphApplicationAssembler`，实现素材复合分页与详情。
+2. S4b 只修改 `GraphExtractionApplicationService*`、`GraphExtractionQuery`、`GraphTaskPageQuery`、`GraphTaskDetailQuery`、任务 command/result 与 `GraphTaskCandidateResolver`，实现提取、任务查询、状态动作和候选处置。
+3. S4c 只修改 `GraphPublicationApplicationService*`、`GraphBatchWithdrawalCommand`、`GraphBatchWithdrawalPreviewQuery` 及其测试，实施批量撤回预览与执行。
+
 ### S5. Expose HTTP DTOs and Controller Methods
 
 **Modify exactly:**
@@ -204,12 +245,17 @@ disposedAt + 7 days <= now                可清理任务和阶段；不清理�
 
 **Steps:**
 
-1. 每个 S0 表中的 URL 都有一条 Controller 方法、独立 request/response 类型和 assembler 转换。
+1. Fixed HTTP Surface 表中的每个 URL 都有一条 Controller 方法、独立 request/response 类型和 assembler 转换。
 2. request 不允许传操作者 ID；任务动作必须校验 `taskLockVersion`、预期状态、幂等键。
 3. response 的 `id`、`lockVersion`、时间、分页字段全部序列化为字符串；`candidate` 只返回 `candidatePreview|null`。
 4. 注解权限与接口读写语义一致；Controller 不写业务状态逻辑。
 
 **Verify:** MockMvc/WebMvc 测试覆盖每个 URL 的 200、无权限、状态冲突、版本冲突、候选不可用和批量部分失败。
+
+**Commit units:**
+
+1. S5a 只修改素材、提取任务、候选处置相关 request/response、assembler、`GraphController` 方法和 Web 测试。
+2. S5b 只修改批量撤回相关 request/response、assembler、`GraphController` 方法和 Web 测试；不得改变已在 S5a 完成的资源。
 
 ### S6. Refresh Stats, Schedule Cleanup, Remove Legacy Writes
 
@@ -230,15 +276,30 @@ disposedAt + 7 days <= now                可清理任务和阶段；不清理�
 
 **Verify:** 时钟可控的测试覆盖 7 天前后边界、AI 清理失败重试、统计刷新和保留数据不被删除。
 
+**Commit units:**
+
+1. S6a 只修改 `GraphMaterialStatsRefresher`、统计 repository/mapper，以及三个应用服务的统计刷新点和测试。
+2. S6b 只修改 `GraphExtractionTaskCleanupScheduler`、任务 repository 清理查询、`AiFacade` 清理协作和时钟可控测试。
+3. S6c 只修改 `docs/40-readiness/KNOWLEDGE-GRAPH-MATERIAL-TASK-BASELINE.md`，补充迁移后统计、差异结论和验证命令结果。
+4. S6d 只删除旧 extraction/result/refinement 写路径、兼容 schema 字段及无引用测试；开始前必须确认 S6c 证据已提交。
+
 ## Required Commit Boundaries
 
-1. `Feat(knowledge): 扩展图谱素材任务存储模型`：S1。
-2. `Feat(knowledge): 实现图谱提取任务状态机`：S2。
-3. `Feat(classics): 提供图谱素材跨域读取门面` 与 `Feat(ai): 提供图谱候选协作门面`：S3，可分两个提交。
-4. `Feat(knowledge): 实现图谱素材任务应用服务`：S4。
-5. `Feat(knowledge): 暴露图谱素材任务管理接口`：S5。
-6. `Feat(knowledge): 增加图谱任务清理与统计快照`：S6 前半段。
-7. 旧路径清理必须单独提交，并附调用方为零的证据。
+1. `Docs(knowledge): 记录图谱素材任务迁移基线`：S0。
+2. `Feat(knowledge): 扩展图谱素材任务表结构`：S1a。
+3. `Feat(knowledge): 实现图谱素材任务持久化`：S1b。
+4. `Feat(knowledge): 实现图谱提取任务状态机`：S2。
+5. `Feat(classics): 提供图谱素材跨域读取门面`：S3a。
+6. `Feat(ai): 提供图谱候选协作门面`：S3b。
+7. `Feat(knowledge): 实现图谱素材复合查询`：S4a。
+8. `Feat(knowledge): 实现图谱提取任务应用服务`：S4b。
+9. `Feat(knowledge): 实现图谱批量撤回`：S4c。
+10. `Feat(knowledge): 暴露图谱素材任务接口`：S5a。
+11. `Feat(knowledge): 暴露图谱批量撤回接口`：S5b。
+12. `Feat(knowledge): 刷新图谱素材统计快照`：S6a。
+13. `Feat(knowledge): 清理到期图谱提取任务`：S6b。
+14. `Docs(knowledge): 核对图谱素材任务迁移结果`：S6c。
+15. `Refactor(knowledge): 清理旧图谱提取写路径`：S6d。
 
 ## Verification
 
