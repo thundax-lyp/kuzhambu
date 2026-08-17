@@ -32,12 +32,12 @@ public class GraphMaterialStatsRepositoryImpl implements GraphMaterialStatsRepos
     }
 
     @Override
-    public int upsert(GraphMaterialStats stats) {
+    public int update(GraphMaterialStats stats) {
         return mapper.upsert(GraphMaterialStatsPersistenceAssembler.toObject(stats));
     }
 
     @Override
-    public int refresh(Long materialId, Instant calculatedAt) {
+    public int updateCalculatedAt(Long materialId, Instant calculatedAt) {
         if (materialId == null) {
             return 0;
         }

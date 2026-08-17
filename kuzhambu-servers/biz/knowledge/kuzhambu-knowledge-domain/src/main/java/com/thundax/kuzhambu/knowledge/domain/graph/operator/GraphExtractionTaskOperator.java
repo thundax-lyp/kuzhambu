@@ -1,11 +1,11 @@
-package com.thundax.kuzhambu.knowledge.domain.graph.service;
+package com.thundax.kuzhambu.knowledge.domain.graph.operator;
 
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import java.time.Instant;
 
-public class GraphExtractionTaskDomainService {
+public class GraphExtractionTaskOperator {
 
     public void retry(GraphExtractionTask task) {
         task.retry();

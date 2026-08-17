@@ -14,14 +14,14 @@ import org.junit.jupiter.api.Test;
 class GraphMaterialStatsRepositoryImplTest {
 
     @Test
-    void refreshShouldDelegateSingleMaterialAggregateUpsert() {
+    void updateCalculatedAtShouldDelegateSingleMaterialAggregateUpsert() {
         GraphMaterialStatsMapper mapper = mock(GraphMaterialStatsMapper.class);
         GraphMaterialStatsRepositoryImpl repository = new GraphMaterialStatsRepositoryImpl(mapper);
         Instant calculatedAt = Instant.parse("2026-08-17T00:00:00Z");
         when(mapper.refresh(11L, calculatedAt)).thenReturn(1);
 
-        assertThat(repository.refresh(11L, calculatedAt)).isEqualTo(1);
-        assertThat(repository.refresh(null, calculatedAt)).isZero();
+        assertThat(repository.updateCalculatedAt(11L, calculatedAt)).isEqualTo(1);
+        assertThat(repository.updateCalculatedAt(null, calculatedAt)).isZero();
 
         verify(mapper).refresh(11L, calculatedAt);
         verify(mapper, never()).refresh(null, calculatedAt);

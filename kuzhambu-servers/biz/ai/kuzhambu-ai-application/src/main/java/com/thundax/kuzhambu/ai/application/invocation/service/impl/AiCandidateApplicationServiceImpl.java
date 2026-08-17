@@ -53,7 +53,7 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
     @Override
     public void cleanup(AiCandidateId candidateId) {
         getRequired(candidateId);
-        if (repository.deleteCandidate(candidateId) != 1) {
+        if (repository.deleteByCandidateId(candidateId) != 1) {
             throw new BizException(
                     "AI-INVOCATION-409", "ai.candidate.cleanup-failed", "AI candidate cleanup failed: " + candidateId);
         }

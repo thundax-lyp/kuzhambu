@@ -37,6 +37,6 @@ public class GraphMaterialStatsRefresher {
         if (material == null || material.getId() == null) {
             return;
         }
-        statsRepository.refresh(material.getId(), Instant.now(clock));
+        statsRepository.updateCalculatedAt(material.getId(), Instant.now(clock));
     }
 }

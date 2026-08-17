@@ -47,9 +47,9 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDi
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.operator.GraphExtractionTaskOperator;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialRepository;
-import com.thundax.kuzhambu.knowledge.domain.graph.service.GraphExtractionTaskDomainService;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -76,7 +76,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     private final GraphDocumentMerger documentMerger;
     private final GraphMaterialRepository materialRepository;
     private final GraphExtractionTaskRepository taskRepository;
-    private final GraphExtractionTaskDomainService taskDomainService;
+    private final GraphExtractionTaskOperator taskOperator;
     private final GraphTaskCandidateResolver candidateResolver;
     private Clock clock = Clock.systemUTC();
 
@@ -92,7 +92,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             GraphDocumentMerger documentMerger,
             GraphMaterialRepository materialRepository,
             GraphExtractionTaskRepository taskRepository,
-            GraphExtractionTaskDomainService taskDomainService,
+            GraphExtractionTaskOperator taskOperator,
             GraphTaskCandidateResolver candidateResolver) {
         this.aiFacade = aiFacade;
         this.objectMapper = objectMapper;
@@ -105,7 +105,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         this.documentMerger = documentMerger;
         this.materialRepository = materialRepository;
         this.taskRepository = taskRepository;
-        this.taskDomainService = taskDomainService;
+        this.taskOperator = taskOperator;
         this.candidateResolver = candidateResolver;
     }
 
@@ -205,7 +205,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphExtractionTask task =
                 requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
         requireExpectedStatus(task, command.expectedExecutionStatus());
-        taskDomainService.retry(task);
+        taskOperator.retry(task);
         updateTask(task, command.taskLockVersion());
         statsRefresher.refresh(task.getContentRef());
         return toTaskResult(task);
@@ -217,7 +217,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphExtractionTask task =
                 requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
         requireExpectedStatus(task, command.expectedExecutionStatus());
-        taskDomainService.cancel(task, Instant.now(clock));
+        taskOperator.cancel(task, Instant.now(clock));
         updateTask(task, command.taskLockVersion());
         clearActiveTask(task);
         statsRefresher.refresh(task.getContentRef());
@@ -249,7 +249,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphMaterialGraph saved =
                 graphSaver.replaceDocument(graph, documentToApply, GraphSourceType.AI, command.materialLockVersion());
         GraphMaterialResult result = GraphApplicationAssembler.toMaterialResult(saved);
-        taskDomainService.adopt(task, dispositionFor(command.applyMode()), Instant.now(clock), purgeAfter());
+        taskOperator.adopt(task, dispositionFor(command.applyMode()), Instant.now(clock), purgeAfter());
         updateTask(task, command.taskLockVersion());
         statsRefresher.refresh(saved.material());
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
@@ -268,7 +268,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
         requireExpectedStatus(task, command.expectedExecutionStatus());
         requireExpectedDisposition(task, command.expectedDisposition());
-        taskDomainService.discard(task, Instant.now(clock), purgeAfter());
+        taskOperator.discard(task, Instant.now(clock), purgeAfter());
         updateTask(task, command.taskLockVersion());
         statsRefresher.refresh(task.getContentRef());
         aiFacade.rejectCandidate(RejectAiCandidateFacadeRequest.builder()
@@ -298,10 +298,10 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         rejectActiveTask(material);
         GraphExtractionTask nextTask =
                 newTask(material, snapshot, command.idempotencyKey(), previous.getBatchId(), command.requestedBy());
-        taskDomainService.regenerate(previous, nextTask);
+        taskOperator.regenerate(previous, nextTask);
         GraphExtractionTaskId nextTaskId = taskRepository.insert(nextTask);
         nextTask.setId(nextTaskId);
-        taskDomainService.supersede(previous, nextTaskId, Instant.now(clock), purgeAfter());
+        taskOperator.supersede(previous, nextTaskId, Instant.now(clock), purgeAfter());
         updateTask(previous, command.taskLockVersion());
         material.setCurrentExtractionTaskId(nextTaskId);
         updateMaterial(material);

@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.knowledge.domain.graph.service;
+package com.thundax.kuzhambu.knowledge.domain.graph.operator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,8 +11,8 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtrac
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
-class GraphExtractionTaskDomainServiceTest {
-    private final GraphExtractionTaskDomainService service = new GraphExtractionTaskDomainService();
+class GraphExtractionTaskOperatorTest {
+    private final GraphExtractionTaskOperator service = new GraphExtractionTaskOperator();
 
     @Test
     void retryShouldResetTheSameFailedTask() {

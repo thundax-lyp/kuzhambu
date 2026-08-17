@@ -9,7 +9,7 @@ public interface GraphMaterialStatsRepository {
 
     List<GraphMaterialStats> listByMaterialIds(List<Long> materialIds);
 
-    int upsert(GraphMaterialStats stats);
+    int update(GraphMaterialStats stats);
 
-    int refresh(Long materialId, Instant calculatedAt);
+    int updateCalculatedAt(Long materialId, Instant calculatedAt);
 }

@@ -31,9 +31,9 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDi
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.operator.GraphExtractionTaskOperator;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialRepository;
-import com.thundax.kuzhambu.knowledge.domain.graph.service.GraphExtractionTaskDomainService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -64,7 +64,7 @@ class GraphExtractionApplicationServiceImplTest {
                     mock(GraphDocumentMerger.class),
                     materialRepository,
                     taskRepository,
-                    new GraphExtractionTaskDomainService(),
+                    new GraphExtractionTaskOperator(),
                     candidateResolver)
             .useClock(Clock.fixed(NOW, ZoneOffset.UTC));
 
