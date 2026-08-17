@@ -4,7 +4,9 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionT
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import java.time.Instant;
+import org.springframework.stereotype.Service;
 
+@Service
 public class GraphExtractionTaskOperator {
 
     public void retry(GraphExtractionTask task) {
