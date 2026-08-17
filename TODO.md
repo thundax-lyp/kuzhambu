@@ -19,14 +19,6 @@
     - 验收点：路由单测通过，且 `rg` 确认新素材/任务组件不 import 旧 `graph-result` 或 `refinement` service。
     - 重要度：8/10
 
-- [ ] `AW/graph-extraction types`：定义图谱提取任务领域类型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-types.ts`
-    - 处理动作：按 RUNBOOK 固定字段定义任务、阶段和候选预览领域类型。
-    - 验收点：页面组件只消费 `graph-extraction-types.ts` 导出的领域类型，候选 diff 和 drawer section 使用固定枚举值。
-    - 重要度：10/10
-
 - [ ] `AW/graph-material service`：建立图谱素材 HTTP service 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
