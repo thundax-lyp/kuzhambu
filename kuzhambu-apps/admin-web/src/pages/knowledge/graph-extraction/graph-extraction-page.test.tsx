@@ -16,6 +16,17 @@ const serviceMocks = vi.hoisted(() => ({
         request.taskId === "9001"
             ? {
                   aiCandidateId: "7001",
+                  attemptNo: "1",
+                  currentStage: "CANDIDATE_READY",
+                  disposition: "PENDING",
+                  executionStatus: "SUCCEEDED",
+                  id: "9001",
+                  lockVersion: "1",
+                  materialRef: {
+                      contentRefId: "1001",
+                      contentType: "SANCAI_ENTRY"
+                  },
+                  progress: 100,
                   sourceContentId: "1001",
                   sourceContentType: "SANCAI_ENTRY",
                   status: "SUCCEEDED",
@@ -24,6 +35,17 @@ const serviceMocks = vi.hoisted(() => ({
               }
             : {
                   batchJobId: "1001",
+                  attemptNo: "1",
+                  currentStage: "CANDIDATE_READY",
+                  disposition: "PENDING",
+                  executionStatus: "SUCCEEDED",
+                  id: "8008",
+                  lockVersion: "1",
+                  materialRef: {
+                      contentRefId: "1001",
+                      contentType: "SANCAI_ENTRY"
+                  },
+                  progress: 100,
                   selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
                   aiCandidateId: "7001",
                   taskId: "8008",
@@ -42,6 +64,17 @@ const serviceMocks = vi.hoisted(() => ({
                 ? [
                       {
                           batchJobId: "1001",
+                          attemptNo: "1",
+                          currentStage: "CANDIDATE_READY",
+                          disposition: "PENDING",
+                          executionStatus: "SUCCEEDED",
+                          id: "8008",
+                          lockVersion: "1",
+                          materialRef: {
+                              contentRefId: "1001",
+                              contentType: "SANCAI_ENTRY"
+                          },
+                          progress: 100,
                           triggerSource: "QUALITY_REPORT",
                           selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
                           replaceUnconfirmedOnly: true,
@@ -54,6 +87,18 @@ const serviceMocks = vi.hoisted(() => ({
                       },
                       {
                           batchJobId: "1002",
+                          attemptNo: "1",
+                          currentStage: "CANDIDATE_BUILD",
+                          disposition: "PENDING",
+                          executionStatus: "FAILED",
+                          failureReason: "候选解析失败",
+                          id: "8010",
+                          lockVersion: "1",
+                          materialRef: {
+                              contentRefId: "1001",
+                              contentType: "SANCAI_ENTRY"
+                          },
+                          progress: 60,
                           triggerSource: "MANUAL",
                           selectionScopeJson: '{"sourceContentIds":[2001]}',
                           replaceUnconfirmedOnly: false,
@@ -68,6 +113,17 @@ const serviceMocks = vi.hoisted(() => ({
                 : [
                       {
                           batchJobId: "1001",
+                          attemptNo: "1",
+                          currentStage: "CANDIDATE_READY",
+                          disposition: "PENDING",
+                          executionStatus: "SUCCEEDED",
+                          id: "8008",
+                          lockVersion: "1",
+                          materialRef: {
+                              contentRefId: "1001",
+                              contentType: "SANCAI_ENTRY"
+                          },
+                          progress: 100,
                           triggerSource: "QUALITY_REPORT",
                           selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
                           replaceUnconfirmedOnly: true,
@@ -294,8 +350,8 @@ describe("GraphExtractionPage", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "任务列表(1)" }));
 
-        expect(await screen.findByText("8008")).toBeInTheDocument();
-        expect(screen.getByText("QUALITY_REPORT")).toBeInTheDocument();
+        expect(await screen.findByText("任务 8008")).toBeInTheDocument();
+        expect(screen.getByText("SANCAI_ENTRY / 1001")).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: /查\s*看/u }));
 
@@ -352,7 +408,7 @@ describe("GraphExtractionPage", () => {
                 pageSize: 20
             });
         });
-        expect(await screen.findByText("8010")).toBeInTheDocument();
+        expect(await screen.findByText("任务 8010")).toBeInTheDocument();
     });
 
     it("does not regroup flat task results in the browser", async () => {
@@ -360,7 +416,7 @@ describe("GraphExtractionPage", () => {
 
         fireEvent.click(await screen.findByRole("button", { name: "任务列表(1)" }));
 
-        expect(await screen.findByText("8008")).toBeInTheDocument();
+        expect(await screen.findByText("任务 8008")).toBeInTheDocument();
         expect(screen.queryByText("素材：SANCAI_ENTRY / 1001")).not.toBeInTheDocument();
         expect(screen.queryByText("三才稿件")).not.toBeInTheDocument();
     });

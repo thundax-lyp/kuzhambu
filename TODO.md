@@ -67,14 +67,6 @@
     - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
     - 重要度：9/10
 
-- [ ] `AW/graph-extraction task table`：实现提取任务表格
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-task-table/`
-    - 处理动作：实现任务素材、运行状态、采纳状态、阶段、摘要、失败原因、关联任务和清理时间列。
-    - 验收点：`graph-extraction-task-table` 测试覆盖运行任务取消和失败任务重试的可见性。
-    - 重要度：9/10
-
 - [ ] `AW/graph-extraction batch create`：实现批量创建面板
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
