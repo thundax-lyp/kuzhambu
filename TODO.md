@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-material publication panel`：改造发布与变更段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/publication-preview/publication-preview.tsx`
-    - 处理动作：将发布、撤回和删除预检入口收敛到素材 drawer 的发布与变更段。
-    - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
-    - 重要度：9/10
-
 - [ ] `AW/graph-extraction disposition panel`：实现候选处置动作段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`

@@ -112,6 +112,11 @@ describe("MaterialDetailDrawer", () => {
         expect(
             screen.getByTestId("knowledge-graph-material-detail-publication-changes-section")
         ).toBeInTheDocument();
+        expect(screen.getByText("发布预览")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "发布素材" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "撤回素材" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "删除预检" })).toBeInTheDocument();
+        expect(screen.queryByText("发布变更待接入。")).not.toBeInTheDocument();
     });
 
     it("keeps published material draft graph read-only in the drawer section", async () => {
@@ -135,6 +140,52 @@ describe("MaterialDetailDrawer", () => {
         expect(screen.queryByRole("button", { name: "导入草稿" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "撤回素材" })).not.toBeInTheDocument();
         expect(screen.queryByText("发布预览")).not.toBeInTheDocument();
+    });
+
+    it("keeps publish and withdraw actions in publication changes", async () => {
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
+        renderDrawer();
+        const user = userEvent.setup();
+
+        await user.click(screen.getByText("发布变更"));
+        await user.click(screen.getByRole("button", { name: "标记冲突已解决" }));
+        await user.click(screen.getByRole("button", { name: "发布素材" }));
+
+        expect(screen.getByText("发布已冻结")).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: "撤回素材" }));
+
+        expect(screen.getByText("素材已撤回")).toBeInTheDocument();
+    });
+
+    it("keeps delete precheck in publication changes instead of task menus", async () => {
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
+        renderDrawer();
+        const user = userEvent.setup();
+
+        await user.click(screen.getByText("任务"));
+
+        expect(screen.getByTestId("knowledge-graph-material-detail-tasks-section")).toBeVisible();
+        expect(screen.queryByRole("button", { name: "删除变更" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "删除任务" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "删除预检" })).not.toBeInTheDocument();
+
+        await user.click(screen.getByText("发布变更"));
+        await user.click(screen.getByRole("button", { name: "删除预检" }));
+
+        expect(
+            screen.getByText("删除预检已生成，请在当前发布变更段确认影响。")
+        ).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "删除变更" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "删除任务" })).not.toBeInTheDocument();
     });
 
     it("does not keep the selected draft object state after the drawer closes", async () => {
