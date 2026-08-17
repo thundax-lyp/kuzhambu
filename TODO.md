@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW knowledge graph e2e`：补充素材任务端到端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/knowledge-graph-material-task.spec.ts`
-    - 处理动作：补充素材页、素材 drawer、单项提取、任务 drawer、失败重试、候选采用和批量部分失败 E2E。
-    - 验收点：E2E 验证 Network 只请求 `/knowledge/graph/**`，不请求 Classics、AI 或旧图谱 URL。
-    - 重要度：8/10
-
 - [ ] `AW knowledge graph readiness evidence`：记录真实联调开发中证据
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
