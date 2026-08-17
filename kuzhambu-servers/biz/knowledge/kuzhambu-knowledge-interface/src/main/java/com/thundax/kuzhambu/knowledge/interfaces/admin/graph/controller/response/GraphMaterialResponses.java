@@ -56,15 +56,7 @@ public final class GraphMaterialResponses {
                     latestTask) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    public record MaterialTreeNodeData(
-            String id,
-            String parentId,
-            String title,
-            String nodeType,
-            String contentType,
-            String categoryCode,
-            String volumeCode,
-            boolean leaf) {}
+    public record MaterialTreeNodeData(String id, String parentId, String title, String nodeType, boolean leaf) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record NodeData(String id, String nodeType, String name, Map<String, Object> properties, String source) {}

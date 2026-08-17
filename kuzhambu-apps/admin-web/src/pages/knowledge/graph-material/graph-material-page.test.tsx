@@ -83,7 +83,6 @@ const mockCatalogThenPage = (
 const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]> = {
     root: [
         {
-            contentType: "SANCAI_ENTRY",
             id: "type:SANCAI_ENTRY",
             leaf: false,
             nodeType: "contentType",
@@ -91,7 +90,6 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
             title: "三才图会"
         },
         {
-            contentType: "WANGQI_DOCUMENT",
             id: "type:WANGQI_DOCUMENT",
             leaf: false,
             nodeType: "contentType",
@@ -99,7 +97,6 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
             title: "王祺文献"
         },
         {
-            contentType: "MING_CUSTOMS",
             id: "type:MING_CUSTOMS",
             leaf: false,
             nodeType: "contentType",
@@ -109,8 +106,6 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
     ],
     "type:SANCAI_ENTRY": [
         {
-            categoryCode: "天文",
-            contentType: "SANCAI_ENTRY",
             id: "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87",
             leaf: false,
             nodeType: "category",
@@ -118,8 +113,6 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
             title: "天文"
         },
         {
-            categoryCode: "人物",
-            contentType: "SANCAI_ENTRY",
             id: "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9",
             leaf: false,
             nodeType: "category",
@@ -129,8 +122,6 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
     ],
     "type:WANGQI_DOCUMENT": [
         {
-            categoryCode: "方志",
-            contentType: "WANGQI_DOCUMENT",
             id: "type:WANGQI_DOCUMENT:category:%E6%96%B9%E5%BF%97",
             leaf: false,
             nodeType: "category",
@@ -140,8 +131,6 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
     ],
     "type:MING_CUSTOMS": [
         {
-            categoryCode: "风俗",
-            contentType: "MING_CUSTOMS",
             id: "type:MING_CUSTOMS:category:%E9%A3%8E%E4%BF%97",
             leaf: false,
             nodeType: "category",
@@ -151,26 +140,20 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
     ],
     "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87": [
         {
-            categoryCode: "天文",
-            contentType: "SANCAI_ENTRY",
             id: "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87:volume:%E5%8D%B7%E4%B8%80",
             leaf: true,
             nodeType: "volume",
             parentId: "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87",
-            title: "卷一",
-            volumeCode: "卷一"
+            title: "卷一"
         }
     ],
     "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9": [
         {
-            categoryCode: "人物",
-            contentType: "SANCAI_ENTRY",
             id: "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9:volume:%E5%8D%B7%E4%BA%8C",
             leaf: true,
             nodeType: "volume",
             parentId: "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9",
-            title: "卷二",
-            volumeCode: "卷二"
+            title: "卷二"
         }
     ]
 };

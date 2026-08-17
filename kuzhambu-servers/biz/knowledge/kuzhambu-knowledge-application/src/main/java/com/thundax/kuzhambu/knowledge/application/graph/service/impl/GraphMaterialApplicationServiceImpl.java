@@ -182,14 +182,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                 ? List.of()
                 : response.getNodes().stream()
                         .map(node -> new GraphMaterialTreeNodeResult(
-                                node.getId(),
-                                node.getParentId(),
-                                node.getTitle(),
-                                node.getNodeType(),
-                                node.getContentType(),
-                                node.getCategoryCode(),
-                                node.getVolumeCode(),
-                                node.isLeaf()))
+                                node.getId(), node.getParentId(), node.getTitle(), node.getNodeType(), node.isLeaf()))
                         .toList();
     }
 

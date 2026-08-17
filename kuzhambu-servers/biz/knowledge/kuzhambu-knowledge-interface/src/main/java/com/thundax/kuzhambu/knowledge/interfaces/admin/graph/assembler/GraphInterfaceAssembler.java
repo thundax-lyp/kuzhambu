@@ -293,14 +293,7 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphMaterialTreeNodeResult value) {
         Objects.requireNonNull(value, "value");
         return new GraphMaterialResponses.MaterialTreeNodeData(
-                value.id(),
-                value.parentId(),
-                value.title(),
-                value.nodeType(),
-                value.contentType(),
-                value.categoryCode(),
-                value.volumeCode(),
-                value.leaf());
+                value.id(), value.parentId(), value.title(), value.nodeType(), value.leaf());
     }
 
     @NonNull

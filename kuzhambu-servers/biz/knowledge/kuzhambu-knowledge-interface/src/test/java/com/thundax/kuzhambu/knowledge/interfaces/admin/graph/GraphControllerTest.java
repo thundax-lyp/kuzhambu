@@ -141,9 +141,6 @@ class GraphControllerTest {
                         "type:SANCAI_ENTRY:category:TIANWEN",
                         "卷一",
                         "volume",
-                        "SANCAI_ENTRY",
-                        "TIANWEN",
-                        "V1",
                         true)));
 
         var response = controller.materialTreeList(request);

@@ -214,8 +214,6 @@ class GraphMaterialApplicationServiceImplTest {
                                 .parentId("type:SANCAI_ENTRY")
                                 .title("天文")
                                 .nodeType("category")
-                                .contentType("SANCAI_ENTRY")
-                                .categoryCode("TIANWEN")
                                 .leaf(false)
                                 .build()))
                         .build());

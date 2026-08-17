@@ -20,9 +20,6 @@ public class KnowledgeGraphMaterialTreeFacadeResponse {
         private final String parentId;
         private final String title;
         private final String nodeType;
-        private final String contentType;
-        private final String categoryCode;
-        private final String volumeCode;
         private final boolean leaf;
     }
 }

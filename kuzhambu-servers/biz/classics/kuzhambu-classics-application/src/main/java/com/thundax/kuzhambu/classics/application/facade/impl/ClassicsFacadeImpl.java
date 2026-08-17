@@ -332,7 +332,6 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                         .parentId("root")
                         .title(contentTypeLabel(ClassicsContentType.SANCAI_ENTRY.value()))
                         .nodeType("contentType")
-                        .contentType(ClassicsContentType.SANCAI_ENTRY.value())
                         .leaf(false)
                         .build()))
                 .build();
@@ -362,8 +361,6 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                                     .parentId(parentId)
                                     .title(defaultTitle(category.getTitle(), categoryCode))
                                     .nodeType("category")
-                                    .contentType(contentType)
-                                    .categoryCode(categoryCode)
                                     .leaf(!hasSancaiVolumes(category))
                                     .build();
                         })
@@ -400,9 +397,6 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                                     .parentId(parentId)
                                     .title(defaultTitle(volume.getTitle(), volumeCode))
                                     .nodeType("volume")
-                                    .contentType(contentType)
-                                    .categoryCode(categoryCode)
-                                    .volumeCode(volumeCode)
                                     .leaf(true)
                                     .build();
                         })

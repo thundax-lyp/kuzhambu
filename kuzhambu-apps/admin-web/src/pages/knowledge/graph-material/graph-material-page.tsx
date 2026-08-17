@@ -28,20 +28,25 @@ const EMPTY_CATALOG_NODES: MaterialCatalogNode[] = [];
 const SEARCH_DEBOUNCE_MS = 500;
 const ROOT_CATALOG_KEY = "root";
 
+const decodeCatalogNodeIdPart = (value: string) => {
+    try {
+        return decodeURIComponent(value.replaceAll("+", " "));
+    } catch {
+        return value;
+    }
+};
+
 const normalizeKeyword = (value: string) => {
     const keyword = value.trim();
     return keyword || undefined;
 };
 
 const toCatalogNode = (record: GraphMaterialTreeNodeRecord): MaterialCatalogNode => ({
-    categoryCode: record.categoryCode ?? undefined,
     children: record.leaf ? undefined : [],
-    contentType: record.contentType ?? undefined,
     key: record.id,
     leaf: record.leaf,
     nodeType: record.nodeType,
-    title: record.title,
-    volumeCode: record.volumeCode ?? undefined
+    title: record.title
 });
 
 const loadInitialCatalog = async () => {
@@ -87,14 +92,24 @@ const toCatalogQuery = (
     node: MaterialCatalogNode,
     keyword: string | null,
     pageSize: number
-): GraphMaterialPageQuery => ({
-    categoryCode: node.categoryCode,
-    contentType: node.contentType,
-    keyword: keyword ?? undefined,
-    pageNo: DEFAULT_PAGE_NO,
-    pageSize,
-    volumeCode: node.volumeCode
-});
+): GraphMaterialPageQuery => {
+    const parts = node.key.split(":");
+    const query: GraphMaterialPageQuery = {
+        keyword: keyword ?? undefined,
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize
+    };
+    if (parts.length >= 2 && parts[0] === "type") {
+        query.contentType = decodeCatalogNodeIdPart(parts[1]);
+    }
+    if ((node.nodeType === "category" || node.nodeType === "volume") && parts[2] === "category") {
+        query.categoryCode = decodeCatalogNodeIdPart(parts[3] ?? "");
+    }
+    if (node.nodeType === "volume" && parts[4] === "volume") {
+        query.volumeCode = decodeCatalogNodeIdPart(parts[5] ?? "");
+    }
+    return query;
+};
 
 const isSamePageQuery = (left: GraphMaterialPageQuery, right: GraphMaterialPageQuery) =>
     left.categoryCode === right.categoryCode &&
