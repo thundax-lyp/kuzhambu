@@ -44,8 +44,6 @@ public final class SourceHardRuleArchitectureRuleSupport {
             "\\bthrow\\s+(?:(?:[A-Za-z_$][\\w$]*\\.)*)([A-Za-z_$][\\w$]*)\\.([A-Za-z_$][\\w$]*)\\s*\\(");
     private static final Pattern EXCEPTION_VARIABLE_PATTERN = Pattern.compile(
             "\\b(?:(?:[A-Za-z_$][\\w$]*\\.)*)([A-Za-z_$][\\w$]*(?:Exception|Error))\\s+([A-Za-z_$][\\w$]*)\\b");
-    private static final Pattern COMMENTS_AND_LITERALS_PATTERN =
-            Pattern.compile("(?s)/\\*.*?\\*/|//[^\\r\\n]*|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'");
 
     private SourceHardRuleArchitectureRuleSupport() {}
 
@@ -226,7 +224,83 @@ public final class SourceHardRuleArchitectureRuleSupport {
     }
 
     private static String withoutCommentsAndLiterals(String source) {
-        return COMMENTS_AND_LITERALS_PATTERN.matcher(source).replaceAll(" ");
+        StringBuilder sanitized = new StringBuilder(source.length());
+        int index = 0;
+        while (index < source.length()) {
+            char current = source.charAt(index);
+            if (current == '/' && index + 1 < source.length() && source.charAt(index + 1) == '/') {
+                index = appendMaskedLineComment(source, sanitized, index);
+            } else if (current == '/' && index + 1 < source.length() && source.charAt(index + 1) == '*') {
+                index = appendMaskedBlockComment(source, sanitized, index);
+            } else if (current == '\"' && startsTextBlock(source, index)) {
+                index = appendMaskedTextBlock(source, sanitized, index);
+            } else if (current == '\"') {
+                index = appendMaskedQuotedLiteral(source, sanitized, index, '\"');
+            } else if (current == '\'') {
+                index = appendMaskedQuotedLiteral(source, sanitized, index, '\'');
+            } else {
+                sanitized.append(current);
+                index++;
+            }
+        }
+        return sanitized.toString();
+    }
+
+    private static int appendMaskedLineComment(String source, StringBuilder sanitized, int index) {
+        while (index < source.length() && source.charAt(index) != '\n') {
+            sanitized.append(' ');
+            index++;
+        }
+        return index;
+    }
+
+    private static int appendMaskedBlockComment(String source, StringBuilder sanitized, int index) {
+        sanitized.append("  ");
+        index += 2;
+        while (index < source.length()) {
+            if (source.charAt(index) == '*' && index + 1 < source.length() && source.charAt(index + 1) == '/') {
+                sanitized.append("  ");
+                return index + 2;
+            }
+            sanitized.append(source.charAt(index) == '\n' ? '\n' : ' ');
+            index++;
+        }
+        return index;
+    }
+
+    private static boolean startsTextBlock(String source, int index) {
+        return index + 2 < source.length() && source.charAt(index + 1) == '\"' && source.charAt(index + 2) == '\"';
+    }
+
+    private static int appendMaskedTextBlock(String source, StringBuilder sanitized, int index) {
+        sanitized.append("   ");
+        index += 3;
+        while (index < source.length()) {
+            if (startsTextBlock(source, index)) {
+                sanitized.append("   ");
+                return index + 3;
+            }
+            sanitized.append(source.charAt(index) == '\n' ? '\n' : ' ');
+            index++;
+        }
+        return index;
+    }
+
+    private static int appendMaskedQuotedLiteral(String source, StringBuilder sanitized, int index, char quote) {
+        sanitized.append(' ');
+        index++;
+        while (index < source.length()) {
+            char current = source.charAt(index);
+            sanitized.append(current == '\n' ? '\n' : ' ');
+            index++;
+            if (current == '\\' && index < source.length()) {
+                sanitized.append(source.charAt(index) == '\n' ? '\n' : ' ');
+                index++;
+            } else if (current == quote) {
+                return index;
+            }
+        }
+        return index;
     }
 
     @FunctionalInterface
