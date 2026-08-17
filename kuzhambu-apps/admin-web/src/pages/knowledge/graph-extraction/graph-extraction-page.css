@@ -16,24 +16,6 @@
     margin-bottom: 12px;
 }
 
-.knowledge-graph-extraction-work-area {
-    min-width: 0;
-}
-
-.knowledge-graph-extraction-tree-panel,
-.knowledge-graph-extraction-detail-panel {
-    box-sizing: border-box;
-    min-width: 0;
-}
-
-.knowledge-graph-extraction-tree-panel {
-    padding-right: 4px;
-}
-
-.knowledge-graph-extraction-detail-panel {
-    padding-left: 4px;
-}
-
 .graph-extraction-create-card,
 .graph-extraction-create-result {
     border: 1px solid rgba(5, 5, 5, 0.06);
@@ -45,44 +27,8 @@
     margin-block: 24px 12px;
 }
 
-.graph-extraction-manuscript-tree-card {
-    min-height: 520px;
-}
-
-.graph-extraction-manuscript-tree-node {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-width: 0;
-    gap: 8px;
-}
-
-.graph-extraction-manuscript-tree-title {
-    min-width: 0;
-}
-
-.graph-extraction-candidate-payload {
-    max-height: 220px;
-    overflow: auto;
-    border-radius: 8px;
-    background: #f8fafc;
-    padding: 12px;
-    white-space: pre-wrap;
-}
-
 @media (max-width: 768px) {
     .knowledge-graph-extraction-page {
         padding: 12px;
-    }
-
-    .knowledge-graph-extraction-work-area {
-        min-height: 520px;
-    }
-
-    .knowledge-graph-extraction-tree-panel,
-    .knowledge-graph-extraction-detail-panel {
-        padding-right: 0;
-        padding-left: 0;
     }
 }

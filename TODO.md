@@ -10,11 +10,3 @@
 ## 当前任务项
 
 ## 待审阅任务项
-
-- [ ] `AW legacy graph extraction cleanup`：独立清理旧图谱提取组件和旧 service
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-manuscript-tree/`、`graph-extraction-manuscript-detail/`、`graph-workbench-service.ts`、`graph-extraction-candidate-modal.tsx`
-    - 处理动作：在 W4/W5 停止引用后，单独删除无引用的旧组件和旧 service。
-    - 验收点：`rg` 证明无引用，相关单测、lint 和 build 通过。
-    - 重要度：7/10

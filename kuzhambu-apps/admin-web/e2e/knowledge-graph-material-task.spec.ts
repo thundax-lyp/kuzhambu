@@ -579,10 +579,11 @@ test.describe("admin knowledge graph material and task flow", () => {
             });
 
         await page.getByTestId("knowledge-graph-extraction-task-list-button").click();
-        await expect(page.getByTestId("knowledge-graph-extraction-task-list-drawer")).toBeVisible();
-        await expect(page.getByRole("table", { name: "知识抽取表格" })).toBeVisible();
+        const taskListDrawer = page.getByTestId("knowledge-graph-extraction-task-list-drawer");
+        await expect(taskListDrawer).toBeVisible();
+        await expect(taskListDrawer.getByRole("table", { name: "知识抽取表格" })).toBeVisible();
 
-        await page
+        await taskListDrawer
             .getByTestId("knowledge-graph-extraction-graph-extraction-task-view-button")
             .first()
             .click();
@@ -609,7 +610,7 @@ test.describe("admin knowledge graph material and task flow", () => {
             });
 
         await page.keyboard.press("Escape");
-        await page
+        await taskListDrawer
             .getByRole("row", { name: /7003/u })
             .getByTestId("knowledge-graph-extraction-graph-extraction-task-view-button")
             .click();

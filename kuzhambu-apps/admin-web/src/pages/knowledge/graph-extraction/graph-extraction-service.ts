@@ -24,8 +24,6 @@ const TASK_CANDIDATE_APPLY_PATH = "/knowledge/graph/task/candidate/apply";
 const TASK_CANDIDATE_DISCARD_PATH = "/knowledge/graph/task/candidate/discard";
 const TASK_CANDIDATE_REGENERATE_PATH = "/knowledge/graph/task/candidate/regenerate";
 const TASK_BATCH_CREATE_PATH = "/knowledge/graph/task/batch/create";
-const LEGACY_TASK_ADD_PATH = "/knowledge/graph-extraction/task/add";
-const LEGACY_BATCH_CANCEL_PATH = "/knowledge/graph-extraction/task/cancel";
 
 interface GraphApiPage<TRecord> {
     pageNo: string;
@@ -128,46 +126,7 @@ export interface GraphExtractionBatchCreateCommand {
     volumeCode?: string;
 }
 
-export interface GraphExtractionCreateCommand {
-    forceJson?: boolean | null;
-    inputPayloadJson?: string | null;
-    locale?: string | null;
-    modelId?: string | null;
-    modelName?: string | null;
-    outputSchemaJson?: string | null;
-    promptHash?: string | null;
-    promptMessagesJson?: string | null;
-    promptVariablesJson?: string | null;
-    promptVersionId?: string | null;
-    replaceUnconfirmedOnly?: boolean | null;
-    requestId?: string | null;
-    requestedBy?: string | null;
-    scopeJson?: string | null;
-    scopeType?: string | null;
-    selectionScopeJson?: string | null;
-    serviceId?: string | null;
-    serviceRole?: string | null;
-    sourceContentId?: string | null;
-    sourceContentType?: string | null;
-    taskType: GraphExtractionTaskType;
-    traceId?: string | null;
-    triggerSource?: GraphExtractionTriggerSource | null;
-}
-
 export interface GraphExtractionRegenerateCommand extends GraphExtractionTaskStateCommand {}
-
-export interface GraphExtractionBatchCancelCommand {
-    batchJobId: string;
-    requestedBy?: string | null;
-}
-
-export interface GraphExtractionBatchCancelRecord {
-    batchJobId: string;
-    cancelledCount?: number | null;
-    completedCount?: number | null;
-    failedCount?: number | null;
-    status?: GraphExtractionTaskStatus | null;
-}
 
 export interface GraphExtractionService {
     applyCandidate: (
@@ -324,27 +283,3 @@ export const applyCandidate = httpGraphExtractionService.applyCandidate;
 export const discardCandidate = httpGraphExtractionService.discardCandidate;
 export const regenerateTask = httpGraphExtractionService.regenerateTask;
 export const createBatchExtraction = httpGraphExtractionService.createBatchExtraction;
-export const getTaskDetail = async (command: GraphExtractionTaskIdCommand) => {
-    const detail = await httpGraphExtractionService.getTask(command);
-    return detail.task;
-};
-export const applyTaskCandidate = (command: GraphExtractionTaskIdCommand) =>
-    httpGraphExtractionService.applyCandidate({
-        applyMode: "MERGE",
-        expectedDisposition: "PENDING",
-        expectedExecutionStatus: "SUCCEEDED",
-        materialLockVersion: "",
-        taskId: command.taskId,
-        taskLockVersion: ""
-    });
-export const addTask = (command: GraphExtractionCreateCommand) =>
-    postJson<GraphExtractionTaskRecord, GraphExtractionCreateCommand>(LEGACY_TASK_ADD_PATH, {
-        body: command
-    });
-export const cancelBatchTask = (command: GraphExtractionBatchCancelCommand) =>
-    postJson<GraphExtractionBatchCancelRecord, GraphExtractionBatchCancelCommand>(
-        LEGACY_BATCH_CANCEL_PATH,
-        {
-            body: command
-        }
-    );
