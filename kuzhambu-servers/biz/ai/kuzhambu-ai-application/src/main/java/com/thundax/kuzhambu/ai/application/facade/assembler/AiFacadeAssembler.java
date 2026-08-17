@@ -239,20 +239,20 @@ public class AiFacadeAssembler {
                 request.getContentType(),
                 request.getContentId(),
                 request.getRequestedBy(),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
+                request.getServiceId(),
+                request.getServiceRole(),
+                AiModelIdCodec.toDomain(request.getModelId()),
+                AiModelNameCodec.toDomain(request.getModelName()),
+                PromptVersionIdCodec.toDomain(request.getPromptVersionId()),
+                RequestIdCodec.toDomain(request.getRequestId()),
+                TraceIdCodec.toDomain(request.getTraceId()),
+                request.getPromptMessagesJson(),
+                request.getPromptVariablesJson(),
+                request.getPromptHash(),
                 graphExtractionInputPayload(request.getContentSnapshotJson()),
-                null,
-                true,
-                null);
+                request.getOutputSchemaJson(),
+                request.isForceJson(),
+                request.getLocale());
     }
 
     private String graphExtractionInputPayload(String contentSnapshotJson) {

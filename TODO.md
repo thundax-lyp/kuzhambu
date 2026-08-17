@@ -27,14 +27,6 @@
     - 验收点：领域测试覆盖合法/非法转换、版本冲突、重复请求和候选重复应用。
     - 重要度：10/10
 
-- [ ] `ai graph extraction snapshot facade`：冻结图谱提取运行快照
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S3b1
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/`、`kuzhambu-ai-application/src/main/java/**/facade/`
-    - 处理动作：在图谱提取 Facade 中透传模型、提示词、变量和 Schema 快照。
-    - 验收点：Facade 测试证明传入快照未经重新解析或覆盖，Knowledge 无 AI 表访问。
-    - 重要度：9/10
-
 - [ ] `ai graph candidate cleanup facade`：清理到期图谱候选
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S3b2
