@@ -317,6 +317,28 @@ describe("GraphExtractionPage", () => {
         });
     });
 
+    it("loads task filters from batchId and contentRefs search params", async () => {
+        window.history.pushState(
+            {},
+            "",
+            `/knowledge/graph-extraction?batchId=batch-001&contentRefs=${encodeURIComponent(
+                JSON.stringify([{ contentType: "SANCAI_ENTRY", contentRefId: "1001" }])
+            )}`
+        );
+
+        renderPage();
+
+        await waitFor(() => {
+            expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
+                batchId: "batch-001",
+                contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }],
+                groupBy: "NONE",
+                pageNo: 1,
+                pageSize: 20
+            });
+        });
+    });
+
     it("switches task list mode by requesting server grouped results", async () => {
         renderPage();
 
