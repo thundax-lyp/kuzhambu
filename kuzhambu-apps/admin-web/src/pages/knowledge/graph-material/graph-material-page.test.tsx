@@ -5,7 +5,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
 import type { Page } from "@/types/page";
-import { graphMaterialMockListRecords } from "./__mocks__/graph-mock-data";
+import {
+    graphMaterialMockDetails,
+    graphMaterialMockListRecords
+} from "./__mocks__/graph-mock-data";
 import { GraphMaterialPage } from "./graph-material-page";
 import type { GraphMaterialListRecord } from "./graph-material-types";
 import * as service from "./graph-material-service";
@@ -16,6 +19,7 @@ vi.mock("@/components/kuzhambu-graph", () => ({
 
 vi.mock("./graph-material-service", () => ({
     createBatchExtraction: vi.fn(),
+    getMaterial: vi.fn(),
     pageMaterials: vi.fn(),
     previewBatchWithdrawal: vi.fn(),
     withdrawBatch: vi.fn()
@@ -196,11 +200,65 @@ describe("GraphMaterialPage", () => {
         ]);
     });
 
+    it("clears selected material when the detail drawer closes", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        vi.mocked(service.getMaterial).mockResolvedValue(graphMaterialMockDetails[1]);
+        renderPage();
+        const user = userEvent.setup();
+
+        await screen.findByText("三才图会 人物一");
+        await user.click(screen.getByTestId("knowledge-graph-material-open-2002-link"));
+
+        expect(await screen.findByTestId("knowledge-graph-material-detail-drawer")).toBeVisible();
+        expect(service.getMaterial).toHaveBeenCalledWith({
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+        });
+
+        await user.click(screen.getByTestId("knowledge-graph-material-detail-close-button"));
+
+        await waitFor(() => {
+            expect(
+                screen.queryByTestId("knowledge-graph-material-detail-drawer")
+            ).not.toBeInTheDocument();
+        });
+
+        await user.click(screen.getByTestId("knowledge-graph-material-open-2002-link"));
+
+        await waitFor(() => {
+            expect(service.getMaterial).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    it("recovers from material detail loading error by retrying the query", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        vi.mocked(service.getMaterial)
+            .mockRejectedValueOnce(new Error("素材详情服务暂不可用"))
+            .mockResolvedValueOnce(graphMaterialMockDetails[1]);
+        renderPage();
+        const user = userEvent.setup();
+
+        await screen.findByText("三才图会 人物一");
+        await user.click(screen.getByTestId("knowledge-graph-material-open-2002-link"));
+
+        expect(await screen.findByText("素材详情加载失败")).toBeInTheDocument();
+        expect(screen.getByText("素材详情服务暂不可用")).toBeInTheDocument();
+
+        await user.click(screen.getByTestId("knowledge-graph-material-detail-retry-button"));
+
+        await waitFor(() => {
+            expect(screen.queryByText("素材详情加载失败")).not.toBeInTheDocument();
+        });
+        expect(service.getMaterial).toHaveBeenCalledTimes(2);
+    });
+
     it("does not query materials when graph view permission is missing", () => {
         replacePermissions([]);
         renderPage();
 
         expect(screen.getByText("无权查看图谱素材库")).toBeInTheDocument();
         expect(service.pageMaterials).not.toHaveBeenCalled();
+        expect(service.getMaterial).not.toHaveBeenCalled();
     });
 });

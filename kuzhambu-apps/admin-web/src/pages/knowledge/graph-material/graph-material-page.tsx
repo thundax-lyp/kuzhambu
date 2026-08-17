@@ -13,14 +13,14 @@ import {
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { graphMaterialMockData } from "./__mocks__/graph-mock-data";
 import { MaterialBatchActions } from "./material-batch-actions";
+import { MaterialDetailDrawer } from "./material-detail-drawer";
 import { MaterialFilters } from "./material-filters";
 import { MaterialTable } from "./material-table";
-import { MaterialDraftCanvas } from "./material-draft-canvas";
-import { MaterialObjectDrawer } from "./material-object-drawer";
 import * as service from "./graph-material-service";
 import type { GraphMaterialPageQuery } from "./graph-material-service";
 import type {
     GraphContentRefRecord,
+    GraphMaterialDrawerSection,
     GraphMaterialListRecord,
     GraphMaterialRecord
 } from "./graph-material-types";
@@ -35,12 +35,12 @@ const getErrorMessage = (error: unknown) =>
 export const GraphMaterialPage = () => {
     const navigate = useNavigate();
     const canViewGraph = hasPermission("knowledge:graph:view");
-    const canEditGraph = hasPermission("knowledge:graph:edit");
     const canApplyGraph = hasPermission("knowledge:graph:apply");
     const [selectedMaterialKeys, setSelectedMaterialKeys] = useState<Key[]>([]);
     const [isBatchPublishing, setIsBatchPublishing] = useState(false);
     const [activeMaterial, setActiveMaterial] = useState<GraphMaterialRecord | null>(null);
-    const [activeObjectId, setActiveObjectId] = useState<string | null>(null);
+    const [activeMaterialSection, setActiveMaterialSection] =
+        useState<GraphMaterialDrawerSection>("OVERVIEW");
     const [query, setQuery] = useState<GraphMaterialPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -49,6 +49,16 @@ export const GraphMaterialPage = () => {
         enabled: canViewGraph,
         queryFn: () => service.pageMaterials(query),
         queryKey: ["knowledge", "graph-material", "page", query]
+    });
+    const materialDetailQuery = useQuery({
+        enabled: activeMaterial !== null,
+        queryFn: () => {
+            if (!activeMaterial) {
+                throw new Error("未选择素材");
+            }
+            return service.getMaterial({ contentRef: activeMaterial.contentRef });
+        },
+        queryKey: ["knowledge", "graph-material", "detail", activeMaterial?.contentRef]
     });
     const pageResult = materialPageQuery.data;
     const records = pageResult?.records ?? [];
@@ -111,6 +121,14 @@ export const GraphMaterialPage = () => {
         const params = new URLSearchParams();
         params.set("contentRefs", JSON.stringify(contentRefs));
         navigate(`/knowledge/graph-extraction?${params.toString()}`);
+    };
+    const openMaterialDetailDrawer = (material: GraphMaterialRecord) => {
+        setActiveMaterial(material);
+        setActiveMaterialSection("OVERVIEW");
+    };
+    const closeMaterialDetailDrawer = () => {
+        setActiveMaterial(null);
+        setActiveMaterialSection("OVERVIEW");
     };
 
     if (!canViewGraph) {
@@ -179,30 +197,24 @@ export const GraphMaterialPage = () => {
                             canViewTasks={canViewGraph}
                             dataSource={records}
                             loading={materialPageQuery.isLoading}
-                            onOpenMaterial={setActiveMaterial}
+                            onOpenMaterial={openMaterialDetailDrawer}
                             onSelectionChange={(keys) => setSelectedMaterialKeys(keys)}
                             onViewTasks={navigate}
                             selectedRowKeys={selectedMaterialKeys}
                         />
                     </KuzhambuCard>
                 ) : null}
-                {activeMaterial ? (
-                    <MaterialDraftCanvas
-                        canApplyGraph={canApplyGraph}
-                        canEditGraph={canEditGraph}
-                        material={activeMaterial}
-                        onClose={() => {
-                            setActiveMaterial(null);
-                            setActiveObjectId(null);
-                        }}
-                        onOpenObject={setActiveObjectId}
-                    />
-                ) : null}
             </KuzhambuSpace>
-            <MaterialObjectDrawer
-                objectId={activeObjectId}
-                onClose={() => setActiveObjectId(null)}
-                open={activeObjectId !== null}
+            <MaterialDetailDrawer
+                activeSection={activeMaterialSection}
+                detail={materialDetailQuery.data ?? null}
+                error={materialDetailQuery.error}
+                loading={materialDetailQuery.isFetching}
+                material={activeMaterial}
+                open={activeMaterial !== null}
+                onClose={closeMaterialDetailDrawer}
+                onRetry={() => void materialDetailQuery.refetch()}
+                onSectionChange={setActiveMaterialSection}
             />
         </KuzhambuPage>
     );

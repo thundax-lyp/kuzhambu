@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-material drawer shell`：建立素材分段详情抽屉
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/material-detail-drawer/`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-page.tsx`
-    - 处理动作：用 `KuzhambuSegmentedDrawer` 建立素材详情四段容器并按打开状态调用 `getMaterial`。
-    - 验收点：测试覆盖四段可访问、关闭后清除选中素材和详情加载错误可恢复。
-    - 重要度：9/10
-
 - [ ] `AW/graph-material overview panel`：实现素材概览段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
