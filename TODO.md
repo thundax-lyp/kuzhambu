@@ -35,14 +35,6 @@
     - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
     - 重要度：9/10
 
-- [ ] `AW/graph-extraction execution panel`：实现任务执行过程段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/task-execution-panel/`
-    - 处理动作：按阶段展示进度、摘要、失败原因和时间字段。
-    - 验收点：测试覆盖阶段进度、失败原因展示，且不显示完整正文或提示词。
-    - 重要度：8/10
-
 - [ ] `AW/graph-extraction candidate panel`：实现候选预览段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`

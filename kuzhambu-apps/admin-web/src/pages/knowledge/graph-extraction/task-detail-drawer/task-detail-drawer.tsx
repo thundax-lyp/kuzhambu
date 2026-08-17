@@ -5,6 +5,7 @@ import type {
     GraphExtractionTaskDetailRecord,
     GraphExtractionTaskDrawerSection
 } from "../graph-extraction-types";
+import { TaskExecutionPanel } from "../task-execution-panel";
 
 const { Text } = Typography;
 
@@ -95,11 +96,7 @@ export const TaskDetailDrawer = ({
             value: "OVERVIEW"
         },
         {
-            content: (
-                <TaskDetailPlaceholder testId="knowledge-graph-extraction-task-detail-execution-section">
-                    执行过程面板待接入。
-                </TaskDetailPlaceholder>
-            ),
+            content: <TaskExecutionPanel detail={detail} />,
             label: "执行过程",
             value: "EXECUTION"
         },
