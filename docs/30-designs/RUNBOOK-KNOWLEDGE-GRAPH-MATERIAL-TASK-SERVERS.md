@@ -87,12 +87,13 @@ git worktree add ../kuzhambu-kg-line-b -b feature/knowledge-graph-material-line-
 | 阶段 | 执行线 A：存储与任务 | 执行线 B：跨域与查询 | 开始条件 | 同步条件 |
 | --- | --- | --- | --- | --- |
 | G0 | `S0` | - | 无 | `S0` 已提交基线证据 |
-| G1 | `S1a -> S1b -> S2` | `S3a -> S3b` | `S0` 已同步 | `S1b`、`S2`、`S3a`、`S3b` 均已同步 |
-| G2 | `S4b -> S6b -> S5a` | `S4a -> S4c -> S5b` | G1 已同步；`S4b` 还依赖 `S3a` 与 `S3b` | `S4a`、`S4b`、`S4c`、`S5a`、`S5b`、`S6b` 均已同步 |
+| G1 | `S1a -> S1b -> S2` | `S3a -> S3b1` | `S0` 已同步 | `S1b`、`S2`、`S3a`、`S3b1` 均已同步 |
+| G2 | `S4b -> S5a` | `S4a -> S4c -> S5b` | G1 已同步；`S4b` 还依赖 `S3a` 与 `S3b1` | `S4a`、`S4b`、`S4c`、`S5a`、`S5b` 均已同步 |
+| G2.5 | `S6b` | - | `S1b`、`S2`、`S3b2` 已同步 | `S6b` 已同步 |
 | G3 | - | `S6a` | G2 的 `S4b`、`S4c` 已同步 | `S6a` 已同步 |
 | G4 | `S6c -> S6d` | - | G2、G3 全部同步 | `S6c` 后才可开始 `S6d` |
 
-额外依赖固定如下：`S4a` 和 `S4c` 均依赖 `S1b` 与 `S3a`；`S5a` 依赖 `S4a` 与 `S4b`；`S6a` 依赖 `S4a`、`S4b`、`S4c`；`S6b` 依赖 `S1b`、`S2`、`S3b`；`S6c` 依赖 `S5a`、`S5b`、`S6a`、`S6b`。这些依赖优先于表中的执行线归属。
+额外依赖固定如下：`S4a` 和 `S4c` 均依赖 `S1b` 与 `S3a`；`S5a` 依赖 `S4a` 与 `S4b`；`S6a` 依赖 `S4a`、`S4b`、`S4c`；`S6b` 依赖 `S1b`、`S2`、`S3b2`；`S6c` 依赖 `S5a`、`S5b`、`S6a`、`S6b`。这些依赖优先于表中的执行线归属。
 
 每个同步点固定执行：检查提交只对应一个 RUNBOOK 单元，运行该单元验收，cherry-pick 到集成分支，运行受影响模块的最窄 Maven 测试；发生冲突时停止后续单元，先在产生冲突的执行线修复并重新验证。
 
@@ -198,7 +199,8 @@ git worktree add ../kuzhambu-kg-line-b -b feature/knowledge-graph-material-line-
 **Commit units:**
 
 1. S3a 只修改 Classics facade、其 request/response、实现、assembler 与 `ClassicsFacadeImplTest`。
-2. S3b 只修改 AI facade、其 request/response、实现、assembler 与 `AiFacadeImplTest`；必须提供候选读取、采用标记、拒绝和清理协作。
+2. S3b1 只修改 AI facade、图谱提取 request、assembler 与 `AiFacadeImplTest`；传入的模型、提示词、变量和 Schema 快照不得被重新解析或覆盖。
+3. S3b2 只修改 AI 候选清理的 application/domain/infra 端口、AI facade、request/response 和测试；按候选 ID 清理时不得影响其他候选或调用记录。
 
 ### S4. Implement Application Queries and Commands
 
@@ -290,16 +292,17 @@ git worktree add ../kuzhambu-kg-line-b -b feature/knowledge-graph-material-line-
 3. `Feat(knowledge): 实现图谱素材任务持久化`：S1b。
 4. `Feat(knowledge): 实现图谱提取任务状态机`：S2。
 5. `Feat(classics): 提供图谱素材跨域读取门面`：S3a。
-6. `Feat(ai): 提供图谱候选协作门面`：S3b。
-7. `Feat(knowledge): 实现图谱素材复合查询`：S4a。
-8. `Feat(knowledge): 实现图谱提取任务应用服务`：S4b。
-9. `Feat(knowledge): 实现图谱批量撤回`：S4c。
-10. `Feat(knowledge): 暴露图谱素材任务接口`：S5a。
-11. `Feat(knowledge): 暴露图谱批量撤回接口`：S5b。
-12. `Feat(knowledge): 刷新图谱素材统计快照`：S6a。
-13. `Feat(knowledge): 清理到期图谱提取任务`：S6b。
-14. `Docs(knowledge): 核对图谱素材任务迁移结果`：S6c。
-15. `Refactor(knowledge): 清理旧图谱提取写路径`：S6d。
+6. `Feat(ai): 冻结图谱提取运行快照`：S3b1。
+7. `Feat(ai): 清理到期图谱候选`：S3b2。
+8. `Feat(knowledge): 实现图谱素材复合查询`：S4a。
+9. `Feat(knowledge): 实现图谱提取任务应用服务`：S4b。
+10. `Feat(knowledge): 实现图谱批量撤回`：S4c。
+11. `Feat(knowledge): 暴露图谱素材任务接口`：S5a。
+12. `Feat(knowledge): 暴露图谱批量撤回接口`：S5b。
+13. `Feat(knowledge): 刷新图谱素材统计快照`：S6a。
+14. `Feat(knowledge): 清理到期图谱提取任务`：S6b。
+15. `Docs(knowledge): 核对图谱素材任务迁移结果`：S6c。
+16. `Refactor(knowledge): 清理旧图谱提取写路径`：S6d。
 
 ## Verification
 
