@@ -115,6 +115,9 @@ const getOpenKeys = (pathname: string) => {
     }
 
     if (
+        pathname.startsWith("/knowledge/graph-materials") ||
+        pathname.startsWith("/knowledge/graph-workbench") ||
+        pathname.startsWith("/knowledge/graph-governance") ||
         pathname.startsWith("/knowledge/graph-extraction") ||
         pathname.startsWith("/knowledge/refinement") ||
         pathname.startsWith("/knowledge/graph-results") ||
