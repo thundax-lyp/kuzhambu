@@ -723,6 +723,40 @@ public class GraphController {
                 publicationService.withdraw(GraphInterfaceAssembler.toCommand(request)));
     }
 
+    @Operation(summary = "批量预览撤回图谱素材发布", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "图谱批量发布撤回预览")
+    @PostMapping("publication/batch/withdrawal/preview")
+    public GraphPublicationResponses.BatchWithdrawalPreviewData withdrawalBatchPreview(
+            @Valid @RequestBody GraphPublicationRequests.BatchWithdrawalPreviewRequest request) {
+        return GraphInterfaceAssembler.toBatchWithdrawalPreviewData(
+                publicationService.previewBatchWithdrawal(GraphInterfaceAssembler.toQuery(request)));
+    }
+
+    @Operation(summary = "批量撤回图谱素材发布", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱批量发布撤回")
+    @PostMapping("publication/batch/withdrawal/withdraw")
+    public GraphPublicationResponses.BatchWithdrawalData withdrawalBatch(
+            @Valid @RequestBody GraphPublicationRequests.BatchWithdrawalRequest request) {
+        return GraphInterfaceAssembler.toBatchWithdrawalData(
+                publicationService.withdrawBatch(GraphInterfaceAssembler.toCommand(request)));
+    }
+
     @Operation(summary = "分页查询发布节点", description = "knowledge:graph:view")
     @ApiImplicitParams({
         @ApiImplicitParam(

@@ -10,8 +10,11 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublicationApplicationService;
@@ -20,6 +23,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchAp
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +42,8 @@ class GraphControllerTest {
         assertThat(permission("extractionCreate")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("candidateApply")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publicationPublish")).isEqualTo("knowledge:graph:edit");
+        assertThat(permission("withdrawalBatchPreview")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("withdrawalBatch")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publishedNodeDelete")).isEqualTo("knowledge:graph:edit");
     }
 
@@ -78,6 +84,39 @@ class GraphControllerTest {
         assertThrows(ApiException.class, () -> controller.materialNodeCreate(request));
     }
 
+    @Test
+    void shouldMapBatchWithdrawalThroughAssemblerAndApplicationService() {
+        GraphPublicationApplicationService publicationService = mock(GraphPublicationApplicationService.class);
+        GraphController controller = controller(publicationService);
+        GraphPublicationRequests.BatchWithdrawalRequest request = batchWithdrawalRequest();
+        when(publicationService.withdrawBatch(any()))
+                .thenReturn(new GraphBatchWithdrawalResult(
+                        "batch-001",
+                        List.of(new GraphWithdrawalResult(
+                                new ContentRef("SANCAI_ENTRY", 1001L),
+                                true,
+                                new GraphMaterial(
+                                        new ContentRef("SANCAI_ENTRY", 1001L),
+                                        "三才图会",
+                                        GraphMaterialStatus.DRAFT,
+                                        null,
+                                        8L),
+                                null,
+                                null))));
+
+        var response = controller.withdrawalBatch(request);
+
+        ArgumentCaptor<GraphBatchWithdrawalCommand> captor = ArgumentCaptor.forClass(GraphBatchWithdrawalCommand.class);
+        verify(publicationService).withdrawBatch(captor.capture());
+        assertThat(captor.getValue().idempotencyKey()).isEqualTo("batch-001");
+        assertThat(captor.getValue().materials()).hasSize(2);
+        assertThat(captor.getValue().materials().get(1).materialRef()).isEqualTo(new ContentRef("SANCAI_ENTRY", 1002L));
+        assertThat(captor.getValue().materials().get(1).materialLockVersion()).isEqualTo(9L);
+        assertThat(response.materials())
+                .extracting(item -> item.contentRef().contentRefId())
+                .containsExactly("1001");
+    }
+
     private static String permission(String methodName) {
         for (Method method : GraphController.class.getDeclaredMethods()) {
             if (method.getName().equals(methodName)) {
@@ -96,6 +135,15 @@ class GraphControllerTest {
                 mock(GraphPublishedApplicationService.class));
     }
 
+    private static GraphController controller(GraphPublicationApplicationService publicationService) {
+        return new GraphController(
+                mock(GraphWorkbenchApplicationService.class),
+                mock(GraphMaterialApplicationService.class),
+                mock(GraphExtractionApplicationService.class),
+                publicationService,
+                mock(GraphPublishedApplicationService.class));
+    }
+
     private static GraphMaterialRequests.MaterialObjectRequest materialNodeRequest() {
         GraphMaterialRequests.MaterialObjectRequest request = new GraphMaterialRequests.MaterialObjectRequest();
         request.setContentType("SANCAI_ENTRY");
@@ -107,6 +155,24 @@ class GraphControllerTest {
         node.setSource("MANUAL");
         node.setProperties(Map.of("identityQualifier", "明代"));
         request.setNode(node);
+        return request;
+    }
+
+    private static GraphPublicationRequests.BatchWithdrawalRequest batchWithdrawalRequest() {
+        GraphPublicationRequests.BatchWithdrawalRequest request = new GraphPublicationRequests.BatchWithdrawalRequest();
+        request.setIdempotencyKey("batch-001");
+        GraphPublicationRequests.WithdrawalRequest first = withdrawalRequest("1001", "8");
+        GraphPublicationRequests.WithdrawalRequest second = withdrawalRequest("1002", "9");
+        request.setMaterials(List.of(first, second));
+        return request;
+    }
+
+    private static GraphPublicationRequests.WithdrawalRequest withdrawalRequest(
+            String contentRefId, String lockVersion) {
+        GraphPublicationRequests.WithdrawalRequest request = new GraphPublicationRequests.WithdrawalRequest();
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentRefId(contentRefId);
+        request.setMaterialLockVersion(lockVersion);
         return request;
     }
 }

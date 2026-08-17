@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchPublicationCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCancelCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateApplyCommand;
@@ -30,6 +31,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeSplitCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
@@ -50,6 +52,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskPageQuery
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionCandidatePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionStageResult;
@@ -640,6 +644,15 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphBatchWithdrawalPreviewQuery toQuery(
+            @NonNull GraphPublicationRequests.BatchWithdrawalPreviewRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphBatchWithdrawalPreviewQuery(request.getContentRefs().stream()
+                .map(GraphInterfaceAssembler::toContentRef)
+                .toList());
+    }
+
+    @NonNull
     public static GraphPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.PublicationConfirmRequest request) {
         Objects.requireNonNull(request, "request");
@@ -674,6 +687,17 @@ public final class GraphInterfaceAssembler {
     public static GraphWithdrawalCommand toCommand(@NonNull GraphPublicationRequests.WithdrawalRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphWithdrawalCommand(toContentRef(request), Long.valueOf(request.getMaterialLockVersion()));
+    }
+
+    @NonNull
+    public static GraphBatchWithdrawalCommand toCommand(
+            @NonNull GraphPublicationRequests.BatchWithdrawalRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphBatchWithdrawalCommand(
+                request.getMaterials().stream()
+                        .map(GraphInterfaceAssembler::toCommand)
+                        .toList(),
+                request.getIdempotencyKey());
     }
 
     @NonNull
@@ -771,6 +795,35 @@ public final class GraphInterfaceAssembler {
                         .toList(),
                 value.governedEdges().stream()
                         .map(GraphInterfaceAssembler::toEdgeData)
+                        .toList());
+    }
+
+    @NonNull
+    public static GraphPublicationResponses.BatchWithdrawalPreviewData toBatchWithdrawalPreviewData(
+            @NonNull GraphBatchWithdrawalPreviewResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphPublicationResponses.BatchWithdrawalPreviewData(value.materials().stream()
+                .map(item -> new GraphPublicationResponses.BatchWithdrawalPreviewItemData(
+                        toNullableContentRefData(item.contentRef()),
+                        item.preview() == null ? null : toWithdrawalPreviewData(item.preview()),
+                        item.failureCode(),
+                        item.failureMessage()))
+                .toList());
+    }
+
+    @NonNull
+    public static GraphPublicationResponses.BatchWithdrawalData toBatchWithdrawalData(
+            @NonNull GraphBatchWithdrawalResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphPublicationResponses.BatchWithdrawalData(
+                value.batchId(),
+                value.materials().stream()
+                        .map(item -> new GraphPublicationResponses.WithdrawalResultData(
+                                toNullableContentRefData(item.contentRef()),
+                                item.success(),
+                                item.result() == null ? null : toMaterialData(item.result()),
+                                item.failureCode(),
+                                item.failureMessage()))
                         .toList());
     }
 

@@ -19,14 +19,6 @@
     - 验收点：测试证明仅清理指定候选，失败可由调用方重试，Knowledge 无 AI 表访问。
     - 重要度：9/10
 
-- [ ] `knowledge graph batch withdrawal HTTP`：暴露批量撤回 HTTP 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S5b、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/**/interfaces/admin/graph/GraphController.java`、`GraphPublicationRequests.java`、`GraphPublicationResponses.java`、`GraphInterfaceAssembler.java`
-    - 处理动作：实现批量撤回预览与执行的 HTTP 转换与权限控制。
-    - 验收点：Web 测试覆盖逐项结果、输入顺序、乐观锁冲突和部分失败。
-    - 重要度：8/10
-
 - [ ] `knowledge graph material stats`：刷新素材统计快照
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S6a
