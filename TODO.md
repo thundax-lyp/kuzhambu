@@ -19,14 +19,6 @@
     - 验收点：测试证明仅清理指定候选，失败可由调用方重试，Knowledge 无 AI 表访问。
     - 重要度：9/10
 
-- [ ] `knowledge graph material composite query`：实现素材复合查询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S4a
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/**/graph/GraphMaterial*`、`GraphMaterialListQuery.java`、`GraphMaterialQuery.java`、`GraphApplicationAssembler.java`
-    - 处理动作：实现 Classics 来源叠加素材、统计和最新任务的分页及详情查询。
-    - 验收点：应用测试覆盖未初始化素材、来源不可见、详情校验和无逐行明细聚合。
-    - 重要度：10/10
-
 - [ ] `knowledge graph task application`：实现图谱提取任务应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S4b

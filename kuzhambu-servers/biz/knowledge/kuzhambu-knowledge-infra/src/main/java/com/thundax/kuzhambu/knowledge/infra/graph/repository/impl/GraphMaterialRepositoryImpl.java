@@ -33,6 +33,29 @@ public class GraphMaterialRepositoryImpl implements GraphMaterialRepository {
     }
 
     @Override
+    public List<GraphMaterial> listByContentRefs(List<ContentRef> contentRefs) {
+        if (contentRefs == null || contentRefs.isEmpty()) {
+            return List.of();
+        }
+        List<GraphMaterialDO> refs = contentRefs.stream()
+                .map(ref -> new GraphMaterialDO(
+                        null,
+                        ContentRefCodec.toContentType(ref),
+                        ContentRefCodec.toValue(ref),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null))
+                .toList();
+        return mapper.selectByRefs(refs).stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
     public PageResult<GraphMaterial> page(String keyword, GraphMaterialStatus status, int pageNo, int pageSize) {
         int effectivePageNo = pageNo <= 0 ? 1 : pageNo;
         int effectivePageSize = pageSize <= 0 ? 10 : pageSize;

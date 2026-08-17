@@ -45,6 +45,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceIm
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
@@ -95,19 +96,30 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphMaterialQuery toQuery(@NonNull GraphMaterialRequests.ContentRefRequest request) {
-        Objects.requireNonNull(request, "request");
-        return new GraphMaterialQuery(toContentRef(request));
+        return toQuery(request, null);
     }
 
     @NonNull
-    public static GraphMaterialListQuery toQuery(@NonNull GraphMaterialRequests.MaterialPageRequest request) {
+    public static GraphMaterialQuery toQuery(
+            @NonNull GraphMaterialRequests.ContentRefRequest request, String subjectId) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialQuery(subjectId, toContentRef(request));
+    }
+
+    @NonNull
+    public static GraphMaterialListQuery toQuery(
+            @NonNull GraphMaterialRequests.MaterialPageRequest request, String subjectId) {
         Objects.requireNonNull(request, "request");
         return new GraphMaterialListQuery(
+                subjectId,
                 request.getKeyword(),
                 request.getStatus() == null
                         ? null
                         : com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus.valueOf(
-                                request.getStatus()));
+                                request.getStatus()),
+                request.getContentType(),
+                request.getCategoryCode(),
+                request.getVolumeCode());
     }
 
     @NonNull
@@ -155,6 +167,10 @@ public final class GraphInterfaceAssembler {
                         : null);
     }
 
+    public static GraphMaterialResponses.MaterialData toMaterialData(GraphMaterialPageResult value) {
+        return value == null || value.material() == null ? null : toMaterialData(value.material());
+    }
+
     @NonNull
     public static GraphMaterialResponses.NodeData toMaterialNodeData(@NonNull GraphMaterialNode value) {
         Objects.requireNonNull(value, "value");
@@ -184,7 +200,7 @@ public final class GraphInterfaceAssembler {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(extractionTasks, "extractionTasks");
         return new GraphMaterialResponses.DetailData(
-                toMaterialData(value.material()),
+                value.material() == null ? null : toMaterialData(value.material()),
                 value.nodes().stream()
                         .map(GraphInterfaceAssembler::toMaterialNodeData)
                         .toList(),
@@ -198,7 +214,7 @@ public final class GraphInterfaceAssembler {
     public static GraphMaterialResponses.GraphData toGraphData(@NonNull GraphMaterialResult value) {
         Objects.requireNonNull(value, "value");
         return new GraphMaterialResponses.GraphData(
-                toMaterialData(value.material()),
+                value.material() == null ? null : toMaterialData(value.material()),
                 value.nodes().stream()
                         .map(GraphInterfaceAssembler::toMaterialNodeData)
                         .toList(),

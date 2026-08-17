@@ -2,4 +2,4 @@ package com.thundax.kuzhambu.knowledge.application.graph.query;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 
-public record GraphMaterialQuery(ContentRef materialRef) {}
+public record GraphMaterialQuery(String subjectId, ContentRef materialRef) {}

@@ -1,5 +1,10 @@
 package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnapshotFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -27,23 +32,32 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeS
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialSourceResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialNode;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialStats;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialNodeId;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialEdgeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialStatsRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +65,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplicationService {
 
     private final GraphMaterialRepository materialRepository;
+    private final ClassicsFacade classicsFacade;
+    private final GraphMaterialStatsRepository materialStatsRepository;
+    private final GraphExtractionTaskRepository extractionTaskRepository;
     private final GraphMaterialNodeRepository nodeRepository;
     private final GraphMaterialEdgeRepository edgeRepository;
     private final GraphMaterialContentResolver contentResolver;
@@ -62,6 +79,9 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
 
     public GraphMaterialApplicationServiceImpl(
             GraphMaterialRepository materialRepository,
+            ClassicsFacade classicsFacade,
+            GraphMaterialStatsRepository materialStatsRepository,
+            GraphExtractionTaskRepository extractionTaskRepository,
             GraphMaterialNodeRepository nodeRepository,
             GraphMaterialEdgeRepository edgeRepository,
             GraphMaterialContentResolver contentResolver,
@@ -71,6 +91,9 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
             GraphSchemaResolver schemaSupport,
             GraphDocumentMerger documentMerger) {
         this.materialRepository = materialRepository;
+        this.classicsFacade = classicsFacade;
+        this.materialStatsRepository = materialStatsRepository;
+        this.extractionTaskRepository = extractionTaskRepository;
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
         this.contentResolver = contentResolver;
@@ -82,19 +105,84 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
     }
 
     @Override
-    public PageResult<GraphMaterial> pageMaterials(GraphMaterialListQuery query, PageQuery pageQuery) {
+    public PageResult<GraphMaterialPageResult> pageMaterials(GraphMaterialListQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
-        return materialRepository.page(
-                query == null ? null : query.keyword(),
-                query == null ? null : query.status(),
-                effectivePage.getPageNo(),
-                effectivePage.getPageSize());
+        var page = classicsFacade.pageKnowledgeGraphMaterials(KnowledgeGraphMaterialPageFacadeRequest.builder()
+                .subjectId(query == null ? null : query.subjectId())
+                .keyword(query == null ? null : query.keyword())
+                .contentType(query == null ? null : query.contentType())
+                .categoryCode(query == null ? null : query.categoryCode())
+                .volumeCode(query == null ? null : query.volumeCode())
+                .pageNo(effectivePage.getPageNo())
+                .pageSize(effectivePage.getPageSize())
+                .build());
+        List<KnowledgeGraphMaterialPageFacadeResponse.Source> sources =
+                page.getRecords() == null ? List.of() : page.getRecords();
+        List<ContentRef> contentRefs = sources.stream().map(this::toContentRef).toList();
+        Map<ContentRef, GraphMaterial> materialByRef = materialRepository.listByContentRefs(contentRefs).stream()
+                .collect(Collectors.toMap(GraphMaterial::getContentRef, Function.identity()));
+        List<Long> materialIds = materialByRef.values().stream()
+                .map(GraphMaterial::getId)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+        Map<Long, GraphMaterialStats> statsByMaterialId =
+                materialStatsRepository.listByMaterialIds(materialIds).stream()
+                        .collect(Collectors.toMap(GraphMaterialStats::getMaterialId, Function.identity()));
+        Map<Long, GraphExtractionTask> latestTaskByMaterialId =
+                extractionTaskRepository.listLatestByMaterialIds(materialIds).stream()
+                        .collect(Collectors.toMap(GraphExtractionTask::getMaterialId, Function.identity()));
+        return PageResult.of(
+                page.getPageNo(),
+                page.getPageSize(),
+                page.getTotalCount(),
+                sources.stream()
+                        .map(source -> {
+                            ContentRef contentRef = toContentRef(source);
+                            GraphMaterial material = materialByRef.get(contentRef);
+                            Long materialId = material == null ? null : material.getId();
+                            return new GraphMaterialPageResult(
+                                    toSourceResult(source),
+                                    material,
+                                    materialId == null ? null : statsByMaterialId.get(materialId),
+                                    materialId == null
+                                            ? null
+                                            : GraphApplicationAssembler.toExtractionTaskResult(
+                                                    latestTaskByMaterialId.get(materialId)));
+                        })
+                        .toList());
     }
 
     @Override
     public GraphMaterialResult getMaterialGraph(GraphMaterialQuery query) {
-        return GraphApplicationAssembler.toMaterialResult(graphLoader.require(requireMaterialRef(query)));
+        ContentRef materialRef = requireMaterialRef(query);
+        KnowledgeGraphMaterialSnapshotFacadeResponse snapshot =
+                classicsFacade.getKnowledgeGraphMaterialSnapshot(KnowledgeGraphMaterialSnapshotFacadeRequest.builder()
+                        .subjectId(query.subjectId())
+                        .contentType(materialRef.getContentType())
+                        .contentId(String.valueOf(materialRef.getContentId()))
+                        .build());
+        GraphMaterialSourceResult source = toSourceResult(snapshot == null ? null : snapshot.getSource(), null);
+        GraphMaterial material = materialRepository.getByContentRef(materialRef);
+        GraphMaterialStats stats = material == null ? null : materialStatsRepository.getByMaterialId(material.getId());
+        GraphExtractionTask latestTask = material == null
+                ? null
+                : extractionTaskRepository.listLatestByMaterialIds(List.of(material.getId())).stream()
+                        .findFirst()
+                        .orElse(null);
+        if (material == null) {
+            return new GraphMaterialResult(
+                    source, null, null, List.of(), List.of(), GraphApplicationAssembler.toExtractionTaskResult(null));
+        }
+        GraphMaterialGraph graph = GraphMaterialGraph.of(
+                material, nodeRepository.listByMaterial(materialRef), edgeRepository.listByMaterial(materialRef));
+        return new GraphMaterialResult(
+                source,
+                graph.material(),
+                stats,
+                graph.nodes(),
+                graph.edges(),
+                GraphApplicationAssembler.toExtractionTaskResult(latestTask));
     }
 
     @Override
@@ -279,6 +367,34 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
             throw new BizException("Graph material ref is required");
         }
         return query.materialRef();
+    }
+
+    private ContentRef toContentRef(KnowledgeGraphMaterialPageFacadeResponse.Source source) {
+        if (source == null) {
+            throw new BizException("Graph material source is required");
+        }
+        return new ContentRef(source.getContentType(), Long.valueOf(source.getContentId()));
+    }
+
+    private GraphMaterialSourceResult toSourceResult(KnowledgeGraphMaterialPageFacadeResponse.Source source) {
+        return toSourceResult(source, null);
+    }
+
+    private GraphMaterialSourceResult toSourceResult(
+            KnowledgeGraphMaterialPageFacadeResponse.Source source, String summary) {
+        if (source == null) {
+            return null;
+        }
+        return new GraphMaterialSourceResult(
+                toContentRef(source),
+                source.getTitle(),
+                summary,
+                source.getContentType(),
+                source.getCategoryCode(),
+                source.getCategoryName(),
+                source.getVolumeCode(),
+                source.getVolumeName(),
+                source.isGraphable());
     }
 
     private GraphMaterialNode requireNode(GraphMaterialGraph graph, GraphMaterialNodeId nodeId) {

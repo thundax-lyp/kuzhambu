@@ -47,6 +47,15 @@ public final class GraphMaterialRequests {
         @Pattern(regexp = "DRAFT|PUBLISHING|PUBLISHED|WITHDRAWING|FAILED")
         private String status;
 
+        @Size(max = 32)
+        private String contentType;
+
+        @Size(max = 64)
+        private String categoryCode;
+
+        @Size(max = 64)
+        private String volumeCode;
+
         @Pattern(regexp = "^\\d+$")
         private String pageNo;
 

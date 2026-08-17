@@ -16,14 +16,14 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeS
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialNodeId;
 
 public interface GraphMaterialApplicationService {
 
-    PageResult<GraphMaterial> pageMaterials(GraphMaterialListQuery query, PageQuery pageQuery);
+    PageResult<GraphMaterialPageResult> pageMaterials(GraphMaterialListQuery query, PageQuery pageQuery);
 
     GraphMaterialResult getMaterialGraph(GraphMaterialQuery query);
 

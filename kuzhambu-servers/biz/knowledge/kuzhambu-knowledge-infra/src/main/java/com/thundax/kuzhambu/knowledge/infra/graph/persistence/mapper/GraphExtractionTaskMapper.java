@@ -26,6 +26,39 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
 
     @Select(
             """
+            <script>
+            select t.*
+            from knowledge_graph_extraction_task t
+            join (
+                select material_id, max(requested_at) as requested_at
+                from knowledge_graph_extraction_task
+                where material_id in
+                <foreach collection="materialIds" item="materialId" open="(" separator="," close=")">
+                  #{materialId}
+                </foreach>
+                group by material_id
+            ) latest
+              on latest.material_id = t.material_id
+             and latest.requested_at = t.requested_at
+            join (
+                select material_id, requested_at, max(id) as id
+                from knowledge_graph_extraction_task
+                where material_id in
+                <foreach collection="materialIds" item="materialId" open="(" separator="," close=")">
+                  #{materialId}
+                </foreach>
+                group by material_id, requested_at
+            ) tie_breaker
+              on tie_breaker.material_id = t.material_id
+             and tie_breaker.requested_at = t.requested_at
+             and tie_breaker.id = t.id
+            order by t.material_id asc
+            </script>
+            """)
+    List<GraphExtractionTaskDO> selectLatestByMaterialIds(@Param("materialIds") List<Long> materialIds);
+
+    @Select(
+            """
             select * from knowledge_graph_extraction_task
             where batch_id = #{batchId}
             order by requested_at asc, id asc

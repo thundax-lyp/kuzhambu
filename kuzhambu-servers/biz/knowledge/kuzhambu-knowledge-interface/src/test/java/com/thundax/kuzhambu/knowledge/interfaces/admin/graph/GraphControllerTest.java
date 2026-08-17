@@ -43,10 +43,13 @@ class GraphControllerTest {
         GraphMaterialRequests.MaterialObjectRequest request = materialNodeRequest();
         when(materialService.getMaterialGraph(any()))
                 .thenReturn(new GraphMaterialResult(
+                        null,
                         new GraphMaterial(
                                 new ContentRef("SANCAI_ENTRY", 1001L), "三才图会", GraphMaterialStatus.DRAFT, null, 7),
+                        null,
                         List.of(),
-                        List.of()));
+                        List.of(),
+                        null));
 
         var response = controller.materialNodeCreate(request);
 

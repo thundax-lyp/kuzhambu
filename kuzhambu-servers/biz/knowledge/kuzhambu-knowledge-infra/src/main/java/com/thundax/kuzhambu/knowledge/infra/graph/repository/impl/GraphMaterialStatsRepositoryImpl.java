@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialSta
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialStatsRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphMaterialStatsPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphMaterialStatsMapper;
+import java.util.List;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,6 +18,16 @@ public class GraphMaterialStatsRepositoryImpl implements GraphMaterialStatsRepos
     @Override
     public GraphMaterialStats getByMaterialId(Long materialId) {
         return GraphMaterialStatsPersistenceAssembler.toDomain(mapper.selectById(materialId));
+    }
+
+    @Override
+    public List<GraphMaterialStats> listByMaterialIds(List<Long> materialIds) {
+        if (materialIds == null || materialIds.isEmpty()) {
+            return List.of();
+        }
+        return mapper.selectByMaterialIds(materialIds).stream()
+                .map(GraphMaterialStatsPersistenceAssembler::toDomain)
+                .toList();
     }
 
     @Override

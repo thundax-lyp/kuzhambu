@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphEdgePublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphIncidentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
@@ -17,6 +18,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNod
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphSearchResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdgeMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdgeProperty;
@@ -41,7 +43,31 @@ public final class GraphApplicationAssembler {
     private GraphApplicationAssembler() {}
 
     public static GraphMaterialResult toMaterialResult(GraphMaterialGraph graph) {
-        return graph == null ? null : new GraphMaterialResult(graph.material(), graph.nodes(), graph.edges());
+        return graph == null
+                ? null
+                : new GraphMaterialResult(null, graph.material(), null, graph.nodes(), graph.edges(), null);
+    }
+
+    public static GraphExtractionTaskResult toExtractionTaskResult(GraphExtractionTask task) {
+        if (task == null) {
+            return null;
+        }
+        return new GraphExtractionTaskResult(
+                task.getId() == null ? null : task.getId().value(),
+                task.getContentRef(),
+                task.getExecutionStatus() == null
+                        ? null
+                        : task.getExecutionStatus().value(),
+                task.getDisposition() == null ? null : task.getDisposition().value(),
+                task.getAttemptNo(),
+                task.getLockVersion(),
+                task.getCandidateId(),
+                task.getCurrentStage(),
+                task.getProgress(),
+                task.getRequestedAt(),
+                task.getCompletedAt(),
+                task.getDisposedAt(),
+                task.getPurgeAfter());
     }
 
     public static GraphPublishedNodeDetailResult toNodeDetail(

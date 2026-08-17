@@ -38,6 +38,16 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
+    public List<GraphExtractionTask> listLatestByMaterialIds(List<Long> materialIds) {
+        if (materialIds == null || materialIds.isEmpty()) {
+            return List.of();
+        }
+        return mapper.selectLatestByMaterialIds(materialIds).stream()
+                .map(GraphExtractionTaskPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<GraphExtractionTask> listByBatchId(String batchId) {
         return mapper.selectByBatchId(batchId).stream()
                 .map(GraphExtractionTaskPersistenceAssembler::toDomain)

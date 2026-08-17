@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -183,7 +184,8 @@ public class GraphController {
     public PageResponse<GraphMaterialResponses.MaterialData> materialPage(
             @Valid @RequestBody GraphMaterialRequests.MaterialPageRequest request) {
         var result = materialService.pageMaterials(
-                GraphInterfaceAssembler.toQuery(request), pageQuery(request.getPageNo(), request.getPageSize()));
+                GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId()),
+                pageQuery(request.getPageNo(), request.getPageSize()));
         return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toMaterialData);
     }
 
@@ -200,7 +202,8 @@ public class GraphController {
     @PostMapping("material/get")
     public GraphMaterialResponses.DetailData materialGet(
             @Valid @RequestBody GraphMaterialRequests.ContentRefRequest request) {
-        var result = materialService.getMaterialGraph(GraphInterfaceAssembler.toQuery(request));
+        var result = materialService.getMaterialGraph(
+                GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId()));
         return GraphInterfaceAssembler.toDetailData(result, List.of());
     }
 
@@ -219,7 +222,9 @@ public class GraphController {
             @Valid @RequestBody GraphMaterialRequests.MaterialObjectRequest request) {
         materialService.createNode(GraphInterfaceAssembler.toCommand(request));
         return GraphInterfaceAssembler.toDetailData(
-                materialService.getMaterialGraph(GraphInterfaceAssembler.toQuery(request)), List.of());
+                materialService.getMaterialGraph(
+                        GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId())),
+                List.of());
     }
 
     @Operation(summary = "更新图谱素材节点", description = "knowledge:graph:edit")
@@ -237,7 +242,9 @@ public class GraphController {
             @Valid @RequestBody GraphMaterialRequests.MaterialObjectRequest request) {
         materialService.updateNode(GraphInterfaceAssembler.toCommand(request));
         return GraphInterfaceAssembler.toDetailData(
-                materialService.getMaterialGraph(GraphInterfaceAssembler.toQuery(request)), List.of());
+                materialService.getMaterialGraph(
+                        GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId())),
+                List.of());
     }
 
     @Operation(summary = "删除图谱素材节点", description = "knowledge:graph:edit")
@@ -255,7 +262,9 @@ public class GraphController {
             @Valid @RequestBody GraphMaterialRequests.MaterialObjectDeleteRequest request) {
         materialService.deleteNode(GraphInterfaceAssembler.toCommand(request));
         return GraphInterfaceAssembler.toDetailData(
-                materialService.getMaterialGraph(GraphInterfaceAssembler.toQuery(request)), List.of());
+                materialService.getMaterialGraph(
+                        GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId())),
+                List.of());
     }
 
     @Operation(summary = "创建图谱素材关系", description = "knowledge:graph:edit")
@@ -273,7 +282,9 @@ public class GraphController {
             @Valid @RequestBody GraphMaterialRequests.MaterialEdgeRequest request) {
         materialService.createEdge(GraphInterfaceAssembler.toCommand(request));
         return GraphInterfaceAssembler.toDetailData(
-                materialService.getMaterialGraph(GraphInterfaceAssembler.toQuery(request)), List.of());
+                materialService.getMaterialGraph(
+                        GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId())),
+                List.of());
     }
 
     @Operation(summary = "更新图谱素材关系", description = "knowledge:graph:edit")
@@ -291,7 +302,9 @@ public class GraphController {
             @Valid @RequestBody GraphMaterialRequests.MaterialEdgeRequest request) {
         materialService.updateEdge(GraphInterfaceAssembler.toCommand(request));
         return GraphInterfaceAssembler.toDetailData(
-                materialService.getMaterialGraph(GraphInterfaceAssembler.toQuery(request)), List.of());
+                materialService.getMaterialGraph(
+                        GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId())),
+                List.of());
     }
 
     @Operation(summary = "删除图谱素材关系", description = "knowledge:graph:edit")
@@ -309,7 +322,9 @@ public class GraphController {
             @Valid @RequestBody GraphMaterialRequests.MaterialEdgeDeleteRequest request) {
         materialService.deleteEdge(GraphInterfaceAssembler.toCommand(request));
         return GraphInterfaceAssembler.toDetailData(
-                materialService.getMaterialGraph(GraphInterfaceAssembler.toQuery(request)), List.of());
+                materialService.getMaterialGraph(
+                        GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId())),
+                List.of());
     }
 
     @Operation(summary = "预览图谱素材节点合并", description = "knowledge:graph:view")

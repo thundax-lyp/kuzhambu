@@ -2,11 +2,27 @@ package com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialStatsDO;
+import java.util.List;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface GraphMaterialStatsMapper extends BaseMapper<GraphMaterialStatsDO> {
+
+    @Select(
+            """
+            <script>
+            select *
+            from knowledge_graph_material_stats
+            where material_id in
+            <foreach collection="materialIds" item="materialId" open="(" separator="," close=")">
+              #{materialId}
+            </foreach>
+            </script>
+            """)
+    List<GraphMaterialStatsDO> selectByMaterialIds(@Param("materialIds") List<Long> materialIds);
 
     @Insert(
             """

@@ -12,6 +12,8 @@ public interface GraphExtractionTaskRepository {
 
     List<GraphExtractionTask> listByMaterialId(Long materialId);
 
+    List<GraphExtractionTask> listLatestByMaterialIds(List<Long> materialIds);
+
     List<GraphExtractionTask> listByBatchId(String batchId);
 
     List<GraphExtractionTask> listPurgeableBefore(Instant deadline, int limit);

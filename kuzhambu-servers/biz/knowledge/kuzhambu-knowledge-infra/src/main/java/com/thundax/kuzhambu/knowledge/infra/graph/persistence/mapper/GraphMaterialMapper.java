@@ -43,6 +43,19 @@ public interface GraphMaterialMapper extends BaseMapper<GraphMaterialDO> {
             """)
     long countMaterials(@Param("keyword") String keyword, @Param("status") String status);
 
+    @Select(
+            """
+            <script>
+            select *
+            from knowledge_graph_material
+            where (content_type, content_ref_id) in
+            <foreach collection="refs" item="ref" open="(" separator="," close=")">
+              (#{ref.contentType}, #{ref.contentRefId})
+            </foreach>
+            </script>
+            """)
+    List<GraphMaterialDO> selectByRefs(@Param("refs") List<GraphMaterialDO> refs);
+
     @Update(
             """
             update knowledge_graph_material
