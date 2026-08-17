@@ -12,11 +12,14 @@ import {
     KuzhambuSpace,
     KuzhambuTag
 } from "@/components";
+import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { graphMaterialMockData } from "./__mocks__/graph-mock-data";
 import { BatchPublicationPanel } from "./batch-publication-panel";
+import { MaterialFilters } from "./material-filters";
 import { MaterialDraftCanvas } from "./material-draft-canvas";
 import { MaterialObjectDrawer } from "./material-object-drawer";
 import * as service from "./graph-material-service";
+import type { GraphMaterialPageQuery } from "./graph-material-service";
 import type {
     GraphMaterialListRecord,
     GraphMaterialRecord,
@@ -61,15 +64,24 @@ export const GraphMaterialPage = () => {
     const [isBatchPanelOpen, setIsBatchPanelOpen] = useState(false);
     const [activeMaterial, setActiveMaterial] = useState<GraphMaterialRecord | null>(null);
     const [activeObjectId, setActiveObjectId] = useState<string | null>(null);
+    const [query, setQuery] = useState<GraphMaterialPageQuery>({
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize: DEFAULT_PAGE_SIZE
+    });
     const materialPageQuery = useQuery({
         enabled: canViewGraph,
-        queryFn: () => service.pageMaterials(),
-        queryKey: ["knowledge", "graph-material", "page"]
+        queryFn: () => service.pageMaterials(query),
+        queryKey: ["knowledge", "graph-material", "page", query]
     });
     const pageResult = materialPageQuery.data;
     const records = pageResult?.records ?? [];
     const materials = records.map(toMaterialRecord).filter((material) => material !== null);
+    const totalCount = pageResult?.totalCount ?? pageResult?.count ?? 0;
     const isInitialError = materialPageQuery.isError && records.length === 0;
+    const updateQuery = (nextQuery: GraphMaterialPageQuery) => {
+        setSelectedMaterialIds([]);
+        setQuery(nextQuery);
+    };
 
     if (!canViewGraph) {
         return (
@@ -90,6 +102,14 @@ export const GraphMaterialPage = () => {
             title="图谱素材库"
         >
             <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
+                <KuzhambuCard title="素材筛选">
+                    <MaterialFilters
+                        loading={materialPageQuery.isFetching}
+                        totalCount={totalCount}
+                        value={query}
+                        onChange={updateQuery}
+                    />
+                </KuzhambuCard>
                 <KuzhambuSpace>
                     <KuzhambuButton
                         disabled={selectedMaterialIds.length === 0 || !canApplyGraph}

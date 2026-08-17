@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-material filters`：实现素材筛选与分页控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/material-filters/`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-page.tsx`
-    - 处理动作：实现关键字、来源类型、分类、卷目、素材状态、任务运行状态、任务采纳状态和分页筛选。
-    - 验收点：`material-filters` 测试覆盖筛选变更会生成 `pageMaterials` 查询参数。
-    - 重要度：8/10
-
 - [ ] `AW/graph-material table`：实现素材复合表格
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
