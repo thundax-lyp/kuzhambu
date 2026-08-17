@@ -75,6 +75,10 @@ public interface AiInvocationRepository {
 
     int updateCandidate(AiCandidate candidate);
 
+    default int deleteCandidate(AiCandidateId candidateId) {
+        throw new UnsupportedOperationException("AI candidate cleanup is not implemented");
+    }
+
     List<AiCandidate> listCandidates(
             AiContentRef contentRef,
             AiTargetObjectId targetObjectId,

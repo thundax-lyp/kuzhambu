@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandidateDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiInvocationLogDO;
 import java.util.List;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -226,4 +227,7 @@ public interface AiInvocationMapper extends BaseMapper<AiInvocationLogDO> {
               and status = 'PENDING'
             """)
     int updateCandidate(AiCandidateDO dataObject);
+
+    @Delete("delete from ai_candidate where id = #{candidateId}")
+    int deleteCandidate(@Param("candidateId") Long candidateId);
 }

@@ -198,6 +198,11 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
+    public int deleteCandidate(AiCandidateId candidateId) {
+        return aiInvocationMapper.deleteCandidate(AiCandidateIdCodec.toValue(candidateId));
+    }
+
+    @Override
     public List<AiCandidate> listCandidates(
             AiContentRef contentRef,
             AiTargetObjectId targetObjectId,

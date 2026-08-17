@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
@@ -18,6 +19,7 @@ import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobPageFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
+import com.thundax.kuzhambu.ai.facade.response.CleanupKnowledgeGraphCandidateFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
 
@@ -69,4 +71,7 @@ public interface AiFacade {
     AiCandidateFacadeDto markCandidateApplied(MarkAiCandidateAppliedFacadeRequest request);
 
     AiCandidateFacadeDto rejectCandidate(RejectAiCandidateFacadeRequest request);
+
+    CleanupKnowledgeGraphCandidateFacadeResponse cleanupKnowledgeGraphCandidate(
+            CleanupKnowledgeGraphCandidateFacadeRequest request);
 }

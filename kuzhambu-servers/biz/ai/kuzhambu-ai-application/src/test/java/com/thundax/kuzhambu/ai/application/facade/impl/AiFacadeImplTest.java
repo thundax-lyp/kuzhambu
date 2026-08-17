@@ -50,6 +50,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapsh
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobQueryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
@@ -752,6 +753,26 @@ class AiFacadeImplTest {
                         && new AiCandidateId(901L).equals(command.candidateId())
                         && "USER_REJECTED".equals(command.errorType())
                         && "not useful".equals(command.errorMessage())));
+    }
+
+    @Test
+    void cleanupKnowledgeGraphCandidateShouldDeleteOnlyRequestedCandidate() {
+        AiCandidateApplicationService candidateService = mock(AiCandidateApplicationService.class);
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
+                mock(AiInvocationRepository.class),
+                candidateService);
+
+        var response = facade.cleanupKnowledgeGraphCandidate(CleanupKnowledgeGraphCandidateFacadeRequest.builder()
+                .candidateId(901L)
+                .build());
+
+        verify(candidateService).cleanup(new AiCandidateId(901L));
+        assertEquals(901L, response.getCandidateId());
+        assertTrue(response.isCleaned());
     }
 
     private static AiFacadeImpl newFacade(
