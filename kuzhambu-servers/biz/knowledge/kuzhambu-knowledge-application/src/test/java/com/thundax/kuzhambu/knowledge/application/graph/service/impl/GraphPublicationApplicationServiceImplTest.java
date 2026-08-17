@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdr
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphPublicationExecutor;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
@@ -82,6 +83,8 @@ class GraphPublicationApplicationServiceImplTest {
         assertThat(result.materials().get(1).materialStatus()).isEqualTo(GraphMaterialStatus.DRAFT);
         assertThat(result.materials().get(1).failureMessage()).isEqualTo("preview stale");
         verify(fixture.executor).publishOne(third);
+        verify(fixture.statsRefresher).refresh(firstRef);
+        verify(fixture.statsRefresher).refresh(thirdRef);
     }
 
     @Test
@@ -129,6 +132,8 @@ class GraphPublicationApplicationServiceImplTest {
                 .containsExactly(true, false, true);
         assertThat(result.materials().get(1).failureCode()).isEqualTo("GRAPH_LOCK_CONFLICT");
         verify(fixture.executor).withdrawOne(third);
+        verify(fixture.statsRefresher, org.mockito.Mockito.times(2))
+                .refresh(org.mockito.ArgumentMatchers.any(GraphMaterial.class));
     }
 
     private static GraphPublicationCommand command(ContentRef ref) {
@@ -150,6 +155,7 @@ class GraphPublicationApplicationServiceImplTest {
 
     private static final class Fixture {
         private final GraphMaterialGraphLoader graphLoader = mock(GraphMaterialGraphLoader.class);
+        private final GraphMaterialStatsRefresher statsRefresher = mock(GraphMaterialStatsRefresher.class);
         private final GraphPublicationExecutor executor = mock(GraphPublicationExecutor.class);
         private final GraphPublishedNodeRepository publishedNodeRepository = mock(GraphPublishedNodeRepository.class);
         private final GraphPublishedEdgeRepository publishedEdgeRepository = mock(GraphPublishedEdgeRepository.class);
@@ -162,6 +168,7 @@ class GraphPublicationApplicationServiceImplTest {
         private final GraphPublicationApplicationServiceImpl service = new GraphPublicationApplicationServiceImpl(
                 new ObjectMapper(),
                 graphLoader,
+                statsRefresher,
                 executor,
                 publishedNodeRepository,
                 publishedEdgeRepository,

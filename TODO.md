@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph material stats`：刷新素材统计快照
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S6a
-    - 范围对象：`GraphMaterialStatsRefresher.java`、统计 repository/mapper、`GraphExtractionApplicationServiceImpl.java`、`GraphMaterialApplicationServiceImpl.java`、`GraphPublicationApplicationServiceImpl.java`
-    - 处理动作：在图谱变更后刷新对应素材的统计快照。
-    - 验收点：集成测试证明列表读模型正确更新且不逐行聚合明细。
-    - 重要度：9/10
-
 - [ ] `knowledge graph task cleanup`：清理到期图谱提取任务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S6b

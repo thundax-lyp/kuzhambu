@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphDocumentMe
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphSaver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphTaskCandidateResolver;
@@ -48,6 +49,7 @@ class GraphExtractionApplicationServiceImplTest {
     private final GraphMaterialGraphLoader graphLoader = mock(GraphMaterialGraphLoader.class);
     private final GraphMaterialRepository materialRepository = mock(GraphMaterialRepository.class);
     private final GraphExtractionTaskRepository taskRepository = mock(GraphExtractionTaskRepository.class);
+    private final GraphMaterialStatsRefresher statsRefresher = mock(GraphMaterialStatsRefresher.class);
     private final GraphTaskCandidateResolver candidateResolver = new GraphTaskCandidateResolver(aiFacade);
 
     private final GraphExtractionApplicationServiceImpl service = new GraphExtractionApplicationServiceImpl(
@@ -58,6 +60,7 @@ class GraphExtractionApplicationServiceImplTest {
             mock(GraphSnapshotResolver.class),
             mock(GraphSchemaResolver.class),
             mock(GraphMaterialGraphSaver.class),
+            statsRefresher,
             mock(GraphDocumentMerger.class),
             materialRepository,
             taskRepository,
@@ -82,6 +85,7 @@ class GraphExtractionApplicationServiceImplTest {
         assertThat(result.taskId()).isEqualTo(7001L);
         assertThat(result.executionStatus()).isEqualTo("PENDING");
         verify(aiFacade).submitKnowledgeGraphExtraction(any());
+        verify(statsRefresher).refresh(any(GraphMaterial.class));
 
         when(materialRepository.getByContentRef(ref)).thenReturn(material(11L, ref, new GraphExtractionTaskId(7001L)));
         assertThatThrownBy(() -> service.createExtraction(new GraphExtractionCommand(ref, "idem-2", 1L)))

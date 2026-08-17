@@ -23,6 +23,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphDocumentMe
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphSaver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
@@ -73,6 +74,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
     private final GraphMaterialContentResolver contentResolver;
     private final GraphMaterialGraphLoader graphLoader;
     private final GraphMaterialGraphSaver graphSaver;
+    private final GraphMaterialStatsRefresher statsRefresher;
     private final GraphSnapshotResolver snapshotSupport;
     private final GraphSchemaResolver schemaSupport;
     private final GraphDocumentMerger documentMerger;
@@ -87,6 +89,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
             GraphMaterialContentResolver contentResolver,
             GraphMaterialGraphLoader graphLoader,
             GraphMaterialGraphSaver graphSaver,
+            GraphMaterialStatsRefresher statsRefresher,
             GraphSnapshotResolver snapshotSupport,
             GraphSchemaResolver schemaSupport,
             GraphDocumentMerger documentMerger) {
@@ -99,6 +102,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         this.contentResolver = contentResolver;
         this.graphLoader = graphLoader;
         this.graphSaver = graphSaver;
+        this.statsRefresher = statsRefresher;
         this.snapshotSupport = snapshotSupport;
         this.schemaSupport = schemaSupport;
         this.documentMerger = documentMerger;
@@ -193,7 +197,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         graph.material().requireLockVersion(command.materialLockVersion());
         refreshNodeKey(node);
         graph.addNode(node);
-        graphSaver.save(graph, command.materialLockVersion());
+        saveAndRefresh(graph, command.materialLockVersion());
         return node.getId();
     }
 
@@ -206,7 +210,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         refreshNodeKey(node);
         graph.updateNode(node);
         refreshAllEdgeKeys(graph);
-        graphSaver.save(graph, command.materialLockVersion());
+        saveAndRefresh(graph, command.materialLockVersion());
     }
 
     @Override
@@ -215,7 +219,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         GraphMaterialGraph graph = graphLoader.require(command.materialRef());
         graph.material().requireLockVersion(command.materialLockVersion());
         graph.removeNode(command.nodeId());
-        graphSaver.save(graph, command.materialLockVersion());
+        saveAndRefresh(graph, command.materialLockVersion());
     }
 
     @Override
@@ -226,7 +230,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         graph.material().requireLockVersion(command.materialLockVersion());
         refreshEdgeKey(graph, edge);
         graph.addEdge(edge);
-        graphSaver.save(graph, command.materialLockVersion());
+        saveAndRefresh(graph, command.materialLockVersion());
         return edge.getId();
     }
 
@@ -238,7 +242,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         graph.material().requireLockVersion(command.materialLockVersion());
         refreshEdgeKey(graph, edge);
         graph.updateEdge(edge);
-        graphSaver.save(graph, command.materialLockVersion());
+        saveAndRefresh(graph, command.materialLockVersion());
     }
 
     @Override
@@ -247,7 +251,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         GraphMaterialGraph graph = graphLoader.require(command.materialRef());
         graph.material().requireLockVersion(command.materialLockVersion());
         graph.removeEdge(command.edgeId());
-        graphSaver.save(graph, command.materialLockVersion());
+        saveAndRefresh(graph, command.materialLockVersion());
     }
 
     @Override
@@ -274,7 +278,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         graph.material().requireLockVersion(command.materialLockVersion());
         graph.mergeNodes(command.retainedNodeId(), command.mergedNodeIds());
         refreshAndDeduplicateEdges(graph);
-        graphSaver.save(graph, command.materialLockVersion());
+        saveAndRefresh(graph, command.materialLockVersion());
         return GraphApplicationAssembler.toMaterialResult(graphLoader.require(command.materialRef()));
     }
 
@@ -299,7 +303,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         splitNode.setId(nodeRepository.insert(splitNode));
         graph.splitNode(command.sourceNodeId(), splitNode, command.reassignedEdgeIds());
         refreshAndDeduplicateEdges(graph);
-        graphSaver.save(graph, command.materialLockVersion());
+        saveAndRefresh(graph, command.materialLockVersion());
         return GraphApplicationAssembler.toMaterialResult(graphLoader.require(command.materialRef()));
     }
 
@@ -329,8 +333,10 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         GraphMaterialGraph graph = graphLoader.getOrCreate(command.materialRef(), snapshot.title());
         graph.material().requireLockVersion(command.materialLockVersion());
         GraphDocumentDto documentToImport = documentForMode(graph, document, command.applyMode());
-        return GraphApplicationAssembler.toMaterialResult(graphSaver.replaceDocument(
-                graph, documentToImport, GraphSourceType.IMPORT, command.materialLockVersion()));
+        GraphMaterialGraph saved = graphSaver.replaceDocument(
+                graph, documentToImport, GraphSourceType.IMPORT, command.materialLockVersion());
+        statsRefresher.refresh(saved.material());
+        return GraphApplicationAssembler.toMaterialResult(saved);
     }
 
     @Override
@@ -436,6 +442,11 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
 
     private void refreshAllEdgeKeys(GraphMaterialGraph graph) {
         graph.edges().forEach(edge -> refreshEdgeKey(graph, edge));
+    }
+
+    private void saveAndRefresh(GraphMaterialGraph graph, long expectedLockVersion) {
+        graphSaver.save(graph, expectedLockVersion);
+        statsRefresher.refresh(graph.material());
     }
 
     private GraphDocumentDto documentForMode(

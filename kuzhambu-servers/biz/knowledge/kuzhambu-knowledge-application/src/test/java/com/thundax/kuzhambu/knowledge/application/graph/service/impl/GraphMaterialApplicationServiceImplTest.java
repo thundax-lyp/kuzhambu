@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphDocumentMe
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphSaver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
@@ -57,6 +58,7 @@ class GraphMaterialApplicationServiceImplTest {
             mock(GraphMaterialContentResolver.class),
             mock(GraphMaterialGraphLoader.class),
             mock(GraphMaterialGraphSaver.class),
+            mock(GraphMaterialStatsRefresher.class),
             mock(GraphSnapshotResolver.class),
             mock(GraphSchemaResolver.class),
             mock(GraphDocumentMerger.class));

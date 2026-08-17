@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdr
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphPublicationExecutor;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
@@ -59,6 +60,7 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
 
     private final ObjectMapper objectMapper;
     private final GraphMaterialGraphLoader graphLoader;
+    private final GraphMaterialStatsRefresher statsRefresher;
     private final GraphPublicationExecutor publicationExecutor;
     private final GraphPublishedNodeRepository publishedNodeRepository;
     private final GraphPublishedEdgeRepository publishedEdgeRepository;
@@ -70,6 +72,7 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     public GraphPublicationApplicationServiceImpl(
             ObjectMapper objectMapper,
             GraphMaterialGraphLoader graphLoader,
+            GraphMaterialStatsRefresher statsRefresher,
             GraphPublicationExecutor publicationExecutor,
             GraphPublishedNodeRepository publishedNodeRepository,
             GraphPublishedEdgeRepository publishedEdgeRepository,
@@ -79,6 +82,7 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
             Clock clock) {
         this.objectMapper = objectMapper;
         this.graphLoader = graphLoader;
+        this.statsRefresher = statsRefresher;
         this.publicationExecutor = publicationExecutor;
         this.publishedNodeRepository = publishedNodeRepository;
         this.publishedEdgeRepository = publishedEdgeRepository;
@@ -102,7 +106,11 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
 
     @Override
     public GraphPublicationResult publish(GraphPublicationCommand command) {
-        return publicationExecutor.publishOne(command);
+        GraphPublicationResult result = publicationExecutor.publishOne(command);
+        if (result != null && result.success()) {
+            statsRefresher.refresh(result.materialRef());
+        }
+        return result;
     }
 
     @Override
@@ -137,7 +145,9 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
 
     @Override
     public GraphMaterial withdraw(GraphWithdrawalCommand command) {
-        return publicationExecutor.withdrawOne(command);
+        GraphMaterial material = publicationExecutor.withdrawOne(command);
+        statsRefresher.refresh(material);
+        return material;
     }
 
     @Override
@@ -248,7 +258,11 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
 
     private GraphPublicationResult publishOneSafely(GraphPublicationCommand command) {
         try {
-            return publicationExecutor.publishOne(command);
+            GraphPublicationResult result = publicationExecutor.publishOne(command);
+            if (result != null && result.success()) {
+                statsRefresher.refresh(result.materialRef());
+            }
+            return result;
         } catch (RuntimeException ex) {
             ContentRef materialRef = command == null ? null : command.materialRef();
             return new GraphPublicationResult(
@@ -277,7 +291,9 @@ public class GraphPublicationApplicationServiceImpl implements GraphPublicationA
     private GraphWithdrawalResult withdrawOneSafely(GraphWithdrawalCommand command) {
         ContentRef materialRef = command == null ? null : command.materialRef();
         try {
-            return new GraphWithdrawalResult(materialRef, true, publicationExecutor.withdrawOne(command), null, null);
+            GraphMaterial material = publicationExecutor.withdrawOne(command);
+            statsRefresher.refresh(material);
+            return new GraphWithdrawalResult(materialRef, true, material, null, null);
         } catch (RuntimeException ex) {
             return new GraphWithdrawalResult(materialRef, false, null, failureCode(ex), ex.getMessage());
         }

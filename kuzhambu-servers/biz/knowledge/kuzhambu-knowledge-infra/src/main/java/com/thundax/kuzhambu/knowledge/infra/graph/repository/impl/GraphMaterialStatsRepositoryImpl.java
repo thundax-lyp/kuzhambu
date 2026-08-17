@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialSta
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialStatsRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphMaterialStatsPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphMaterialStatsMapper;
+import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -33,5 +34,13 @@ public class GraphMaterialStatsRepositoryImpl implements GraphMaterialStatsRepos
     @Override
     public int upsert(GraphMaterialStats stats) {
         return mapper.upsert(GraphMaterialStatsPersistenceAssembler.toObject(stats));
+    }
+
+    @Override
+    public int refresh(Long materialId, Instant calculatedAt) {
+        if (materialId == null) {
+            return 0;
+        }
+        return mapper.refresh(materialId, calculatedAt);
     }
 }

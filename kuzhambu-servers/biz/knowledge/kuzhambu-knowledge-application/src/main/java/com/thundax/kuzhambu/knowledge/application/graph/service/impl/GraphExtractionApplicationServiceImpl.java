@@ -28,6 +28,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphDocumentMe
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphLoader;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGraphSaver;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphTaskCandidateResolver;
@@ -74,6 +75,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     private final GraphSnapshotResolver snapshotSupport;
     private final GraphSchemaResolver schemaSupport;
     private final GraphMaterialGraphSaver graphSaver;
+    private final GraphMaterialStatsRefresher statsRefresher;
     private final GraphDocumentMerger documentMerger;
     private final GraphMaterialRepository materialRepository;
     private final GraphExtractionTaskRepository taskRepository;
@@ -89,6 +91,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             GraphSnapshotResolver snapshotSupport,
             GraphSchemaResolver schemaSupport,
             GraphMaterialGraphSaver graphSaver,
+            GraphMaterialStatsRefresher statsRefresher,
             GraphDocumentMerger documentMerger,
             GraphMaterialRepository materialRepository,
             GraphExtractionTaskRepository taskRepository,
@@ -102,6 +105,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 snapshotSupport,
                 schemaSupport,
                 graphSaver,
+                statsRefresher,
                 documentMerger,
                 materialRepository,
                 taskRepository,
@@ -118,6 +122,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             GraphSnapshotResolver snapshotSupport,
             GraphSchemaResolver schemaSupport,
             GraphMaterialGraphSaver graphSaver,
+            GraphMaterialStatsRefresher statsRefresher,
             GraphDocumentMerger documentMerger,
             GraphMaterialRepository materialRepository,
             GraphExtractionTaskRepository taskRepository,
@@ -131,6 +136,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         this.snapshotSupport = snapshotSupport;
         this.schemaSupport = schemaSupport;
         this.graphSaver = graphSaver;
+        this.statsRefresher = statsRefresher;
         this.documentMerger = documentMerger;
         this.materialRepository = materialRepository;
         this.taskRepository = taskRepository;
@@ -156,6 +162,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         task.setId(taskId);
         material.setCurrentExtractionTaskId(taskId);
         updateMaterial(material);
+        statsRefresher.refresh(material);
         aiFacade.submitKnowledgeGraphExtraction(extractionRequest(materialRef, snapshot, command.requestedBy()));
         return toTaskResult(task);
     }
@@ -231,6 +238,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         requireExpectedStatus(task, command.expectedExecutionStatus());
         taskDomainService.retry(task);
         updateTask(task, command.taskLockVersion());
+        statsRefresher.refresh(task.getContentRef());
         return toTaskResult(task);
     }
 
@@ -243,6 +251,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         taskDomainService.cancel(task, Instant.now(clock));
         updateTask(task, command.taskLockVersion());
         clearActiveTask(task);
+        statsRefresher.refresh(task.getContentRef());
         return toTaskResult(task);
     }
 
@@ -268,10 +277,12 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphMaterialGraph graph = graphLoader.require(task.getContentRef());
         graph.material().setCurrentExtractionTaskId(null);
         GraphDocumentDto documentToApply = documentForMode(graph, document, command.applyMode());
-        GraphMaterialResult result = GraphApplicationAssembler.toMaterialResult(
-                graphSaver.replaceDocument(graph, documentToApply, GraphSourceType.AI, command.materialLockVersion()));
+        GraphMaterialGraph saved =
+                graphSaver.replaceDocument(graph, documentToApply, GraphSourceType.AI, command.materialLockVersion());
+        GraphMaterialResult result = GraphApplicationAssembler.toMaterialResult(saved);
         taskDomainService.adopt(task, dispositionFor(command.applyMode()), Instant.now(clock), purgeAfter());
         updateTask(task, command.taskLockVersion());
+        statsRefresher.refresh(saved.material());
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
                 .candidateId(candidate.getCandidateId())
                 .resultFormat(candidate.getResultFormat())
@@ -290,6 +301,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         requireExpectedDisposition(task, command.expectedDisposition());
         taskDomainService.discard(task, Instant.now(clock), purgeAfter());
         updateTask(task, command.taskLockVersion());
+        statsRefresher.refresh(task.getContentRef());
         aiFacade.rejectCandidate(RejectAiCandidateFacadeRequest.builder()
                 .candidateId(task.getCandidateId())
                 .errorType("DISCARDED")
@@ -324,6 +336,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         updateTask(previous, command.taskLockVersion());
         material.setCurrentExtractionTaskId(nextTaskId);
         updateMaterial(material);
+        statsRefresher.refresh(material);
         aiFacade.submitKnowledgeGraphExtraction(
                 extractionRequest(previous.getContentRef(), snapshot, command.requestedBy()));
         return toTaskResult(nextTask);
