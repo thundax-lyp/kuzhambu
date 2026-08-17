@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-material batch actions`：实现素材批量动作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/material-batch-actions/`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-page.tsx`
-    - 处理动作：实现行选择后的批量提取、批量发布、批量撤回和查看任务动作。
-    - 验收点：`material-batch-actions` 测试覆盖无选择隐藏、批量部分失败和逐素材结果展示。
-    - 重要度：8/10
-
 - [ ] `AW/graph-material drawer shell`：建立素材分段详情抽屉
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
