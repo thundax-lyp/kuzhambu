@@ -58,17 +58,6 @@ html[data-theme="dark"] .graph-material-page {
     border-radius: 8px;
 }
 
-.graph-material-list-placeholder {
-    display: grid;
-    min-height: 260px;
-    place-items: center;
-    min-width: 0;
-    color: var(--graph-material-copy);
-    background: var(--graph-material-soft);
-    border: 1px dashed var(--graph-material-line);
-    border-radius: 8px;
-}
-
 @media (max-width: 760px) {
     .graph-material-page-search {
         width: 100%;

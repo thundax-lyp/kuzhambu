@@ -14,7 +14,7 @@ test.describe("knowledge graph mock flows", () => {
         await expect(page.getByRole("button", { name: "查看节点 孤立节点" })).toHaveCount(0);
         await expect(page.getByLabel("局部画布节点数量")).toHaveText("当前节点 4 / 最多 200");
 
-        await page.goto("/knowledge/graph-materials");
+        await page.goto("/knowledge/graph-material");
         await expect(page.getByRole("heading", { name: "图谱素材库" })).toBeVisible();
         await page.getByTestId("knowledge-graph-material-select-material-draft-button").click();
         await page.getByTestId("knowledge-graph-material-select-material-failed-button").click();

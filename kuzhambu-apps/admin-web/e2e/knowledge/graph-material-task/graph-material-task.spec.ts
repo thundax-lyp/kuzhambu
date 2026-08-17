@@ -65,7 +65,7 @@ const mockShellApis = async (page: Page, permissions: string[]) => {
                 id: "graph-materials",
                 name: "图谱素材库",
                 parentId: "knowledge",
-                url: "/knowledge/graph-materials"
+                url: "/knowledge/graph-material"
             },
             {
                 displayParams: '{"icon":"submissions"}',
@@ -524,7 +524,7 @@ test.describe("admin knowledge graph material and task flow", () => {
         const apiCollector = createApiPathCollector(page);
         const mocks = await createMaterialHandlers(page);
 
-        await page.goto("/knowledge/graph-materials");
+        await page.goto("/knowledge/graph-material");
 
         await expect(page.getByRole("heading", { name: "图谱素材库" })).toBeVisible();
         await expect(page.getByRole("table", { name: "图谱素材复合表格" })).toBeVisible();

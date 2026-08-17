@@ -154,7 +154,7 @@ export interface GraphMaterialEdgeRecord {
     source: "AI" | "MANUAL" | "MATERIAL" | string;
 }
 
-export interface GraphMaterialTaskSummaryPanelRecord {
+export interface GraphMaterialTaskSummarySnapshotRecord {
     activeTaskCount: string;
     pendingReviewTaskCount: string;
     failedTaskCount: string;
@@ -167,7 +167,7 @@ export interface GraphMaterialDetailRecord {
     materialStats?: GraphMaterialStatsRecord | null;
     nodes: GraphMaterialNodeRecord[];
     edges: GraphMaterialEdgeRecord[];
-    taskSummary: GraphMaterialTaskSummaryPanelRecord;
+    taskSummary?: GraphMaterialTaskSummarySnapshotRecord | null;
 }
 
 export interface GraphBatchMaterialResultRecord<TResult = unknown> {

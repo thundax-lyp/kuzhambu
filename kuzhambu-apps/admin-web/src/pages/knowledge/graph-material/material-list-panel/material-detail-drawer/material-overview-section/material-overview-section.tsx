@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { Empty, Typography } from "antd";
 import {
     KuzhambuCard,
@@ -12,6 +11,7 @@ import type {
     GraphMaterialStatus,
     GraphTaskExecutionStatus
 } from "@/pages/knowledge/graph-material/graph-material-types";
+import "./material-overview-section.css";
 
 const { Text } = Typography;
 
@@ -47,12 +47,9 @@ const TASK_STATUS_LABELS: Readonly<Record<GraphTaskExecutionStatus, string>> = {
     SUCCEEDED: "已成功"
 };
 
-interface MaterialOverviewPanelProps {
+interface MaterialOverviewSectionProps {
     detail: GraphMaterialDetailRecord | null;
 }
-
-const formatContentRef = (detail: GraphMaterialDetailRecord) =>
-    `${detail.source.contentRef.contentType}:${detail.source.contentRef.contentRefId}`;
 
 const formatTimestamp = (value?: string | null) => {
     if (!value) {
@@ -78,43 +75,9 @@ const readMaterialStatus = (detail: GraphMaterialDetailRecord) => {
     );
 };
 
-const isStatsOutdated = (detail: GraphMaterialDetailRecord) =>
-    Boolean(
-        detail.material?.lockVersion &&
-        detail.materialStats?.statsRevision &&
-        detail.material.lockVersion !== detail.materialStats.statsRevision
-    );
-
-const buildRiskItems = (detail: GraphMaterialDetailRecord) => {
-    const riskItems: ReactNode[] = [];
-    if (!detail.material) {
-        riskItems.push(<KuzhambuTag type="warning">素材尚未初始化</KuzhambuTag>);
-    }
-    if (isStatsOutdated(detail)) {
-        riskItems.push(<KuzhambuTag type="warning">统计已过期</KuzhambuTag>);
-    }
-    if (detail.material?.status === "FAILED") {
-        riskItems.push(
-            <KuzhambuTag type="danger">
-                {detail.material.failureReason ?? "素材处理失败"}
-            </KuzhambuTag>
-        );
-    }
-    if (Number(detail.taskSummary.activeTaskCount) > 0) {
-        riskItems.push(<KuzhambuTag type="info">存在运行中任务</KuzhambuTag>);
-    }
-    if (Number(detail.taskSummary.pendingReviewTaskCount) > 0) {
-        riskItems.push(<KuzhambuTag type="warning">存在待处置候选</KuzhambuTag>);
-    }
-    if (Number(detail.taskSummary.failedTaskCount) > 0) {
-        riskItems.push(<KuzhambuTag type="danger">存在失败任务</KuzhambuTag>);
-    }
-    return riskItems;
-};
-
 const buildRecentActivityItems = (detail: GraphMaterialDetailRecord) => {
     const items = [];
-    const latestTask = detail.taskSummary.latestTask;
+    const latestTask = detail.taskSummary?.latestTask;
     if (latestTask) {
         items.push({
             children: (
@@ -143,7 +106,7 @@ const buildRecentActivityItems = (detail: GraphMaterialDetailRecord) => {
     return items;
 };
 
-export const MaterialOverviewPanel = ({ detail }: MaterialOverviewPanelProps) => {
+export const MaterialOverviewSection = ({ detail }: MaterialOverviewSectionProps) => {
     if (!detail) {
         return (
             <Empty
@@ -153,15 +116,14 @@ export const MaterialOverviewPanel = ({ detail }: MaterialOverviewPanelProps) =>
         );
     }
 
-    const riskItems = buildRiskItems(detail);
     const recentActivityItems = buildRecentActivityItems(detail);
 
     return (
         <KuzhambuSpace
+            className="knowledge-graph-material-overview-section"
             data-testid="knowledge-graph-material-detail-overview-section"
             orientation="vertical"
             size={12}
-            style={{ width: "100%" }}
         >
             <KuzhambuCard title="素材来源" size="small">
                 <KuzhambuDescriptions
@@ -173,8 +135,6 @@ export const MaterialOverviewPanel = ({ detail }: MaterialOverviewPanelProps) =>
                             label: "来源类型",
                             children: readSourceTypeLabel(detail.source.contentType)
                         },
-                        { label: "内容引用", children: formatContentRef(detail) },
-                        { label: "分类", children: detail.source.category ?? "-" },
                         { label: "卷册", children: detail.source.volume ?? "-" },
                         { label: "状态", children: readMaterialStatus(detail) },
                         { label: "摘要", children: detail.source.summary ?? "-", span: 2 }
@@ -214,14 +174,6 @@ export const MaterialOverviewPanel = ({ detail }: MaterialOverviewPanelProps) =>
                     size="small"
                     bordered
                 />
-            </KuzhambuCard>
-
-            <KuzhambuCard title="风险" size="small">
-                {riskItems.length > 0 ? (
-                    <KuzhambuSpace wrap>{riskItems}</KuzhambuSpace>
-                ) : (
-                    <Text type="secondary">暂无风险</Text>
-                )}
             </KuzhambuCard>
 
             <KuzhambuCard title="最近活动" size="small">

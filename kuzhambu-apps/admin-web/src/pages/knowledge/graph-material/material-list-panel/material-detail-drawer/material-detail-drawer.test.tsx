@@ -2,18 +2,29 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { replacePermissions } from "@/auth/permission-storage";
-import { graphMaterialMockDetails } from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
-import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material/graph-material-types";
-import type { GraphMaterialDrawerSection } from "@/pages/knowledge/graph-material/graph-material-types";
+import {
+    graphMaterialMockDetails,
+    graphMaterialMockListRecords
+} from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
+import * as service from "@/pages/knowledge/graph-material/graph-material-service";
 import { MaterialDetailDrawer } from "./material-detail-drawer";
 
 const drawerActionMocks = {
-    onDeletePrecheck: vi.fn(async () => ({ executable: true })),
-    onPublish: vi.fn(async () => undefined),
-    onWithdraw: vi.fn(async () => undefined)
+    onClose: vi.fn()
 };
+
+vi.mock("@/pages/knowledge/graph-material/graph-material-service", () => ({
+    createExtraction: vi.fn(),
+    getMaterial: vi.fn(),
+    precheckDeletion: vi.fn(),
+    previewPublication: vi.fn(),
+    previewWithdrawal: vi.fn(),
+    publishMaterial: vi.fn(),
+    withdrawMaterial: vi.fn()
+}));
 
 vi.mock("@/components/kuzhambu-graph", () => ({
     ["KuzhambuGraph"]: ({ spoList }: { spoList: unknown[] }) => (
@@ -22,40 +33,34 @@ vi.mock("@/components/kuzhambu-graph", () => ({
 }));
 
 const renderDrawer = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } }
+    });
     const Wrapper = () => {
-        const [activeSection, setActiveSection] = useState<GraphMaterialDrawerSection>("OVERVIEW");
-        const detail = graphMaterialMockDetails[1];
         return (
             <MaterialDetailDrawer
-                activeSection={activeSection}
-                detail={detail}
-                material={detail.material ?? null}
-                open
-                onClose={vi.fn()}
-                onDeletePrecheck={drawerActionMocks.onDeletePrecheck}
-                onPublish={drawerActionMocks.onPublish}
-                onRetry={vi.fn()}
-                onSectionChange={setActiveSection}
-                onWithdraw={drawerActionMocks.onWithdraw}
+                record={graphMaterialMockListRecords[1]}
+                onClose={drawerActionMocks.onClose}
             />
         );
     };
     return render(
-        <MemoryRouter>
-            <Wrapper />
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+            <MemoryRouter>
+                <Wrapper />
+            </MemoryRouter>
+        </QueryClientProvider>
     );
 };
 
 const renderSwitchableDrawer = () => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } }
+    });
     const Wrapper = () => {
-        const [activeSection, setActiveSection] = useState<GraphMaterialDrawerSection>("OVERVIEW");
-        const [detail, setDetail] = useState<GraphMaterialDetailRecord>(
-            graphMaterialMockDetails[3]
-        );
+        const [record, setRecord] = useState(graphMaterialMockListRecords[3]);
         const [open, setOpen] = useState(true);
         const closeMaterialDetailDrawer = () => {
-            setActiveSection("OVERVIEW");
             setOpen(false);
         };
         return (
@@ -63,31 +68,25 @@ const renderSwitchableDrawer = () => {
                 <button
                     type="button"
                     onClick={() => {
-                        setDetail(graphMaterialMockDetails[1]);
+                        setRecord(graphMaterialMockListRecords[1]);
                         setOpen(true);
                     }}
                 >
                     打开已发布素材
                 </button>
                 <MaterialDetailDrawer
-                    activeSection={activeSection}
-                    detail={detail}
-                    material={detail.material ?? null}
-                    open={open}
+                    record={open ? record : null}
                     onClose={closeMaterialDetailDrawer}
-                    onDeletePrecheck={drawerActionMocks.onDeletePrecheck}
-                    onPublish={drawerActionMocks.onPublish}
-                    onRetry={vi.fn()}
-                    onSectionChange={setActiveSection}
-                    onWithdraw={drawerActionMocks.onWithdraw}
                 />
             </>
         );
     };
     return render(
-        <MemoryRouter>
-            <Wrapper />
-        </MemoryRouter>
+        <QueryClientProvider client={queryClient}>
+            <MemoryRouter>
+                <Wrapper />
+            </MemoryRouter>
+        </QueryClientProvider>
     );
 };
 
@@ -98,14 +97,51 @@ describe("MaterialDetailDrawer", () => {
         vi.clearAllMocks();
     });
 
+    beforeEach(() => {
+        vi.mocked(service.getMaterial).mockImplementation(async ({ contentRef }) => {
+            const detail = graphMaterialMockDetails.find(
+                (item) =>
+                    item.source.contentRef.contentType === contentRef.contentType &&
+                    item.source.contentRef.contentRefId === contentRef.contentRefId
+            );
+            if (!detail) {
+                throw new Error("素材详情不存在");
+            }
+            return detail;
+        });
+        vi.mocked(service.precheckDeletion).mockResolvedValue({ executable: true });
+        vi.mocked(service.previewPublication).mockResolvedValue({
+            edges: [],
+            issues: [],
+            materialLockVersion: "4",
+            materialRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            nodes: [],
+            previewToken: "preview-token",
+            publishable: true
+        });
+        vi.mocked(service.previewWithdrawal).mockResolvedValue({});
+        vi.mocked(service.publishMaterial).mockResolvedValue({
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            createdEdgeCount: "0",
+            createdNodeCount: "0",
+            materialStatus: "PUBLISHED",
+            reusedEdgeCount: "1",
+            reusedNodeCount: "1",
+            success: true
+        });
+        vi.mocked(service.withdrawMaterial).mockResolvedValue(
+            graphMaterialMockDetails[1].material!
+        );
+    });
+
     it("renders the four material detail sections", async () => {
         renderDrawer();
         const user = userEvent.setup();
 
         expect(
-            screen.getByTestId("knowledge-graph-material-detail-overview-section")
+            await screen.findByTestId("knowledge-graph-material-detail-overview-section")
         ).toBeInTheDocument();
-        expect(screen.getByText("素材来源")).toBeInTheDocument();
+        expect(await screen.findByText("素材来源")).toBeInTheDocument();
 
         await user.click(screen.getByText("草稿图谱"));
         expect(
@@ -161,14 +197,28 @@ describe("MaterialDetailDrawer", () => {
         await user.click(screen.getByRole("button", { name: "发布素材" }));
 
         await waitFor(() => {
-            expect(drawerActionMocks.onPublish).toHaveBeenCalledWith(graphMaterialMockDetails[1]);
+            expect(service.previewPublication).toHaveBeenCalledWith({
+                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+            });
+            expect(service.publishMaterial).toHaveBeenCalledWith({
+                conflictDecisions: [],
+                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                materialLockVersion: "4",
+                previewToken: "preview-token"
+            });
         });
         expect(screen.getByText("素材已发布")).toBeInTheDocument();
 
         await user.click(screen.getByRole("button", { name: "撤回素材" }));
 
         await waitFor(() => {
-            expect(drawerActionMocks.onWithdraw).toHaveBeenCalledWith(graphMaterialMockDetails[1]);
+            expect(service.previewWithdrawal).toHaveBeenCalledWith({
+                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+            });
+            expect(service.withdrawMaterial).toHaveBeenCalledWith({
+                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                materialLockVersion: "4"
+            });
         });
         expect(screen.getByText("素材已撤回")).toBeInTheDocument();
     });
@@ -189,9 +239,11 @@ describe("MaterialDetailDrawer", () => {
         await user.click(screen.getByRole("button", { name: "删除预检" }));
 
         await waitFor(() => {
-            expect(drawerActionMocks.onDeletePrecheck).toHaveBeenCalledWith({
-                contentRefId: "1002",
-                contentType: "SANCAI_ENTRY"
+            expect(service.precheckDeletion).toHaveBeenCalledWith({
+                contentRef: {
+                    contentRefId: "1002",
+                    contentType: "SANCAI_ENTRY"
+                }
             });
         });
         expect(

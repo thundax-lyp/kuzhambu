@@ -1,22 +1,18 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { Input, Splitter } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuAlert, KuzhambuButton, KuzhambuPage, KuzhambuSpace } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { MaterialCatalogPanel } from "./material-catalog-panel";
-import { MaterialDetailDrawer } from "./material-detail-drawer";
-import { MaterialTable } from "./material-table";
+import { MaterialListPanel } from "./material-list-panel";
 import * as service from "./graph-material-service";
 import type { GraphMaterialPageQuery } from "./graph-material-service";
 import type {
-    GraphMaterialDrawerSection,
     GraphMaterialListRecord,
     MaterialCatalogNode,
-    GraphMaterialTreeNodeRecord,
-    GraphMaterialRecord
+    GraphMaterialTreeNodeRecord
 } from "./graph-material-types";
 import "./graph-material-page.css";
 
@@ -122,7 +118,6 @@ const isSamePageQuery = (left: GraphMaterialPageQuery, right: GraphMaterialPageQ
 const isLeafCatalogNode = (node?: MaterialCatalogNode) => Boolean(node?.leaf);
 
 export const GraphMaterialPage = () => {
-    const navigate = useNavigate();
     const canViewGraph = hasPermission("knowledge:graph:view");
     const canEditGraph = hasPermission("knowledge:graph:edit");
     const [searchText, setSearchText] = useState("");
@@ -132,9 +127,6 @@ export const GraphMaterialPage = () => {
         null
     );
     const [catalogExpandedKeys, setCatalogExpandedKeys] = useState<string[] | null>(null);
-    const [activeMaterial, setActiveMaterial] = useState<GraphMaterialRecord | null>(null);
-    const [activeMaterialSection, setActiveMaterialSection] =
-        useState<GraphMaterialDrawerSection>("OVERVIEW");
     const [query, setQuery] = useState<GraphMaterialPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -161,16 +153,6 @@ export const GraphMaterialPage = () => {
         enabled: canViewGraph && selectedLeafCatalogNode !== undefined,
         queryFn: () => service.pageMaterials(query),
         queryKey: ["knowledge", "graph-material", "page", query]
-    });
-    const materialDetailQuery = useQuery({
-        enabled: activeMaterial !== null,
-        queryFn: () => {
-            if (!activeMaterial) {
-                throw new Error("未选择素材");
-            }
-            return service.getMaterial({ contentRef: activeMaterial.contentRef });
-        },
-        queryKey: ["knowledge", "graph-material", "detail", activeMaterial?.contentRef]
     });
     const pageResult = materialPageQuery.data;
     const records = pageResult?.records ?? EMPTY_MATERIAL_RECORDS;
@@ -217,21 +199,6 @@ export const GraphMaterialPage = () => {
             )
         );
     };
-    const batchExtractionMutation = useMutation({
-        mutationFn: service.createBatchExtraction,
-        onSuccess: () => {
-            void materialPageQuery.refetch();
-        }
-    });
-    const openMaterialDetailDrawer = (material: GraphMaterialRecord) => {
-        setActiveMaterial(material);
-        setActiveMaterialSection("OVERVIEW");
-    };
-    const closeMaterialDetailDrawer = () => {
-        setActiveMaterial(null);
-        setActiveMaterialSection("OVERVIEW");
-    };
-
     if (!canViewGraph) {
         return (
             <KuzhambuPage
@@ -342,81 +309,26 @@ export const GraphMaterialPage = () => {
                     </aside>
                 </Splitter.Panel>
                 <Splitter.Panel className="graph-material-work-panel">
-                    {!selectedLeafCatalogNode ? (
-                        <div
-                            className="graph-material-list-placeholder"
-                            aria-label="图谱素材列表占位"
-                        >
-                            请选择左侧目录叶子节点查看素材列表
-                        </div>
-                    ) : !isInitialError ? (
-                        <MaterialTable
-                            canOpenMaterial={canViewGraph}
-                            canExtractMaterial={canEditGraph}
-                            canViewTasks={canViewGraph}
-                            dataSource={records}
-                            loading={materialPageQuery.isLoading}
-                            onOpenMaterial={openMaterialDetailDrawer}
-                            onExtract={(contentRef) =>
-                                batchExtractionMutation.mutateAsync({ contentRefs: [contentRef] })
-                            }
-                            onViewTasks={navigate}
-                            pagination={{
-                                current: query.pageNo || DEFAULT_PAGE_NO,
-                                pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
-                                total: totalCount,
-                                onChange: (pageNo, pageSize) =>
-                                    updateQuery({
-                                        ...query,
-                                        pageNo,
-                                        pageSize
-                                    })
-                            }}
-                        />
-                    ) : null}
+                    <MaterialListPanel
+                        canExtractMaterial={canEditGraph}
+                        dataSource={records}
+                        loading={materialPageQuery.isLoading}
+                        onRefreshMaterials={() => materialPageQuery.refetch()}
+                        showPlaceholder={!selectedLeafCatalogNode || isInitialError}
+                        pagination={{
+                            current: query.pageNo || DEFAULT_PAGE_NO,
+                            pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
+                            total: totalCount,
+                            onChange: (pageNo, pageSize) =>
+                                updateQuery({
+                                    ...query,
+                                    pageNo,
+                                    pageSize
+                                })
+                        }}
+                    />
                 </Splitter.Panel>
             </Splitter>
-            <MaterialDetailDrawer
-                activeSection={activeMaterialSection}
-                detail={materialDetailQuery.data ?? null}
-                error={materialDetailQuery.error}
-                loading={materialDetailQuery.isFetching}
-                material={activeMaterial}
-                open={activeMaterial !== null}
-                onClose={closeMaterialDetailDrawer}
-                onRetry={() => void materialDetailQuery.refetch()}
-                onDeletePrecheck={(contentRef) => service.precheckDeletion({ contentRef })}
-                onPublish={async (detail) => {
-                    if (!detail.material?.lockVersion) {
-                        throw new Error("素材缺少锁版本，无法发布。");
-                    }
-                    const preview = await service.previewPublication({
-                        contentRef: detail.material.contentRef
-                    });
-                    if (!preview.publishable) {
-                        throw new Error(preview.issues[0]?.message ?? "发布预检未通过。");
-                    }
-                    await service.publishMaterial({
-                        conflictDecisions: [],
-                        contentRef: preview.materialRef,
-                        materialLockVersion: preview.materialLockVersion,
-                        previewToken: preview.previewToken
-                    });
-                    await Promise.all([materialPageQuery.refetch(), materialDetailQuery.refetch()]);
-                }}
-                onWithdraw={async (detail) => {
-                    if (!detail.material?.lockVersion) {
-                        throw new Error("素材缺少锁版本，无法撤回。");
-                    }
-                    await service.previewWithdrawal({ contentRef: detail.material.contentRef });
-                    await service.withdrawMaterial({
-                        contentRef: detail.material.contentRef,
-                        materialLockVersion: detail.material.lockVersion
-                    });
-                    await Promise.all([materialPageQuery.refetch(), materialDetailQuery.refetch()]);
-                }}
-                onSectionChange={setActiveMaterialSection}
-            />
         </KuzhambuPage>
     );
 };

@@ -58,7 +58,7 @@ const renderPage = () => {
         return null;
     };
     const view = render(
-        <MemoryRouter initialEntries={["/knowledge/graph-materials"]}>
+        <MemoryRouter initialEntries={["/knowledge/graph-material"]}>
             <QueryClientProvider client={queryClient}>
                 <GraphMaterialPage />
                 <LocationProbe />
@@ -310,9 +310,9 @@ describe("GraphMaterialPage", () => {
         await selectCatalogLeaf("卷一");
 
         expect(await screen.findByText("三才图会 天文一")).toBeInTheDocument();
-        expect(screen.getAllByText("未初始化/未抽取").length).toBeGreaterThan(0);
-        expect(screen.getAllByRole("columnheader")).toHaveLength(4);
-        expect(screen.getByRole("button", { name: /打开素材 三才图会 天文一/u })).toBeDisabled();
+        expect(screen.getAllByText("未抽取").length).toBeGreaterThan(0);
+        expect(screen.getAllByRole("columnheader")).toHaveLength(5);
+        expect(screen.getByRole("button", { name: /查看素材 三才图会 天文一/u })).toBeEnabled();
     });
 
     it("creates extraction task for a single material row", async () => {
@@ -362,7 +362,7 @@ describe("GraphMaterialPage", () => {
         const user = await selectCatalogLeaf();
 
         await screen.findByText("三才图会 人物一");
-        await user.click(screen.getByTestId("knowledge-graph-material-open-2002-link"));
+        await user.click(screen.getByRole("button", { name: "查看素材 三才图会 人物一" }));
 
         expect(await screen.findByTestId("knowledge-graph-material-detail-drawer")).toBeVisible();
         expect(service.getMaterial).toHaveBeenCalledWith({
@@ -377,7 +377,7 @@ describe("GraphMaterialPage", () => {
             ).not.toBeInTheDocument();
         });
 
-        await user.click(screen.getByTestId("knowledge-graph-material-open-2002-link"));
+        await user.click(screen.getByRole("button", { name: "查看素材 三才图会 人物一" }));
 
         await waitFor(() => {
             expect(service.getMaterial).toHaveBeenCalledTimes(2);

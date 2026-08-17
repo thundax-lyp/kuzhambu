@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { hasPermission } from "@/auth/permission-storage";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -7,11 +9,9 @@ import {
     KuzhambuSpace,
     KuzhambuTag
 } from "@/components";
-import type {
-    GraphContentRefRecord,
-    GraphDeletionPrecheckRecord,
-    GraphMaterialDetailRecord
-} from "@/pages/knowledge/graph-material/graph-material-types";
+import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material/graph-material-types";
+import * as service from "@/pages/knowledge/graph-material/graph-material-service";
+import "./material-publication-changes-section.css";
 
 const PREVIEW_TYPE_LABELS = {
     green: "新增对象",
@@ -34,12 +34,8 @@ const PUBLICATION_PREVIEW_ITEMS = [
     { color: "blue", id: "preview-published" }
 ] as const;
 
-interface PublicationPreviewProps {
-    canApplyGraph: boolean;
+interface MaterialPublicationChangesSectionProps {
     detail: GraphMaterialDetailRecord | null;
-    onDeletePrecheck: (contentRef: GraphContentRefRecord) => Promise<GraphDeletionPrecheckRecord>;
-    onPublish: (detail: GraphMaterialDetailRecord) => Promise<void>;
-    onWithdraw: (detail: GraphMaterialDetailRecord) => Promise<void>;
 }
 
 const readMaterialStatusLabel = (detail: GraphMaterialDetailRecord | null) => {
@@ -59,13 +55,11 @@ const readMaterialStatusLabel = (detail: GraphMaterialDetailRecord | null) => {
 const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "请稍后重试。";
 
-export const PublicationPreview = ({
-    canApplyGraph,
-    detail,
-    onDeletePrecheck,
-    onPublish,
-    onWithdraw
-}: PublicationPreviewProps) => {
+export const MaterialPublicationChangesSection = ({
+    detail
+}: MaterialPublicationChangesSectionProps) => {
+    const queryClient = useQueryClient();
+    const canApplyGraph = hasPermission("knowledge:graph:edit");
     const [isConflictResolved, setIsConflictResolved] = useState(false);
     const [isPublishing, setIsPublishing] = useState(false);
     const [isWithdrawing, setIsWithdrawing] = useState(false);
@@ -90,24 +84,55 @@ export const PublicationPreview = ({
     };
 
     const publishMaterial = async () => {
+        if (!detail?.material?.lockVersion) {
+            throw new Error("素材缺少锁版本，无法发布。");
+        }
+        const preview = await service.previewPublication({
+            contentRef: detail.material.contentRef
+        });
+        if (!preview.publishable) {
+            throw new Error(preview.issues[0]?.message ?? "发布预检未通过。");
+        }
+        await service.publishMaterial({
+            conflictDecisions: [],
+            contentRef: preview.materialRef,
+            materialLockVersion: preview.materialLockVersion,
+            previewToken: preview.previewToken
+        });
+        await queryClient.invalidateQueries({ queryKey: ["knowledge", "graph-material"] });
+    };
+
+    const runPublishMaterial = async () => {
         if (!detail) {
             return;
         }
         setIsPublishing(true);
         try {
-            await runMaterialAction(() => onPublish(detail), "素材已发布");
+            await runMaterialAction(publishMaterial, "素材已发布");
         } finally {
             setIsPublishing(false);
         }
     };
 
     const withdrawMaterial = async () => {
+        if (!detail?.material?.lockVersion) {
+            throw new Error("素材缺少锁版本，无法撤回。");
+        }
+        await service.previewWithdrawal({ contentRef: detail.material.contentRef });
+        await service.withdrawMaterial({
+            contentRef: detail.material.contentRef,
+            materialLockVersion: detail.material.lockVersion
+        });
+        await queryClient.invalidateQueries({ queryKey: ["knowledge", "graph-material"] });
+    };
+
+    const runWithdrawMaterial = async () => {
         if (!detail) {
             return;
         }
         setIsWithdrawing(true);
         try {
-            await runMaterialAction(() => onWithdraw(detail), "素材已撤回");
+            await runMaterialAction(withdrawMaterial, "素材已撤回");
         } finally {
             setIsWithdrawing(false);
         }
@@ -121,7 +146,7 @@ export const PublicationPreview = ({
         setIsPrecheckingDeletion(true);
         try {
             await runMaterialAction(async () => {
-                await onDeletePrecheck(contentRef);
+                await service.precheckDeletion({ contentRef });
             }, "删除预检已生成，请在当前发布变更段确认影响。");
         } finally {
             setIsPrecheckingDeletion(false);
@@ -130,13 +155,17 @@ export const PublicationPreview = ({
 
     return (
         <KuzhambuSpace
+            className="knowledge-graph-material-publication-changes-section"
             data-testid="knowledge-graph-material-detail-publication-changes-section"
             orientation="vertical"
             size={12}
-            style={{ width: "100%" }}
         >
             <KuzhambuCard title="发布预览" size="small">
-                <KuzhambuSpace orientation="vertical" size={10} style={{ width: "100%" }}>
+                <KuzhambuSpace
+                    className="knowledge-graph-material-publication-changes-section-content"
+                    orientation="vertical"
+                    size={10}
+                >
                     <KuzhambuDescriptions
                         ariaLabel="素材发布状态"
                         column={3}
@@ -189,7 +218,7 @@ export const PublicationPreview = ({
                             loading={isPublishing}
                             testId="knowledge-graph-material-publish-preview-button"
                             type="primary"
-                            onClick={() => void publishMaterial()}
+                            onClick={() => void runPublishMaterial()}
                         >
                             发布素材
                         </KuzhambuButton>
@@ -197,7 +226,7 @@ export const PublicationPreview = ({
                             disabled={!canApplyGraph || !hasMaterial || isBusy}
                             loading={isWithdrawing}
                             testId="knowledge-graph-material-withdraw-preview-button"
-                            onClick={() => void withdrawMaterial()}
+                            onClick={() => void runWithdrawMaterial()}
                         >
                             撤回素材
                         </KuzhambuButton>

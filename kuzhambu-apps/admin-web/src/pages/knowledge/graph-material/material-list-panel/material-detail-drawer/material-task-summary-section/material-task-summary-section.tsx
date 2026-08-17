@@ -1,6 +1,8 @@
 import { Empty, Progress, Typography } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { hasPermission } from "@/auth/permission-storage";
 import {
+    KuzhambuAlert,
     KuzhambuButton,
     KuzhambuCard,
     KuzhambuDescriptions,
@@ -12,6 +14,8 @@ import type {
     GraphTaskDisposition,
     GraphTaskExecutionStatus
 } from "@/pages/knowledge/graph-material/graph-material-types";
+import * as service from "@/pages/knowledge/graph-material/graph-material-service";
+import "./material-task-summary-section.css";
 
 const { Text } = Typography;
 
@@ -41,7 +45,7 @@ const DISPOSITION_LABELS: Readonly<Record<GraphTaskDisposition, string>> = {
     SUPERSEDED: "已替代"
 };
 
-interface MaterialTaskSummaryPanelProps {
+interface MaterialTaskSummarySectionProps {
     detail: GraphMaterialDetailRecord | null;
 }
 
@@ -54,12 +58,6 @@ const formatTimestamp = (value?: string | null) => {
         return value;
     }
     return date.toLocaleString("zh-CN", { hour12: false });
-};
-
-const buildGraphMaterialTaskUrl = (detail: GraphMaterialDetailRecord) => {
-    const params = new URLSearchParams();
-    params.set("contentRefs", JSON.stringify([detail.source.contentRef]));
-    return `/knowledge/graph-extraction?${params.toString()}`;
 };
 
 const renderTaskStatus = (status: GraphTaskExecutionStatus) => (
@@ -77,8 +75,14 @@ const renderDisposition = (disposition?: GraphTaskDisposition | null) => {
     );
 };
 
-export const MaterialTaskSummaryPanel = ({ detail }: MaterialTaskSummaryPanelProps) => {
-    const navigate = useNavigate();
+export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectionProps) => {
+    const queryClient = useQueryClient();
+    const canExtractMaterial = hasPermission("knowledge:graph:edit");
+    const extractionMutation = useMutation({
+        mutationFn: service.createExtraction,
+        onSuccess: () =>
+            queryClient.invalidateQueries({ queryKey: ["knowledge", "graph-material"] })
+    });
 
     if (!detail) {
         return (
@@ -89,25 +93,31 @@ export const MaterialTaskSummaryPanel = ({ detail }: MaterialTaskSummaryPanelPro
         );
     }
 
-    const latestTask = detail.taskSummary.latestTask;
+    const taskSummary = detail.taskSummary;
+    const latestTask = taskSummary?.latestTask;
+    const extractionTaskId = extractionMutation.data?.id;
 
     return (
         <KuzhambuSpace
+            className="knowledge-graph-material-task-summary-section"
             data-testid="knowledge-graph-material-detail-tasks-section"
             orientation="vertical"
             size={12}
-            style={{ width: "100%" }}
         >
             <KuzhambuCard
                 title="任务摘要"
                 size="small"
                 extra={
                     <KuzhambuButton
-                        ariaLabel={`查看任务 ${detail.source.title}`}
-                        testId="knowledge-graph-material-detail-view-tasks-button"
-                        onClick={() => navigate(buildGraphMaterialTaskUrl(detail))}
+                        ariaLabel={`抽取素材 ${detail.source.title}`}
+                        disabled={!canExtractMaterial || extractionMutation.isPending}
+                        loading={extractionMutation.isPending}
+                        testId="knowledge-graph-material-detail-extract-button"
+                        onClick={() =>
+                            extractionMutation.mutate({ contentRef: detail.source.contentRef })
+                        }
                     >
-                        查看任务
+                        抽取
                     </KuzhambuButton>
                 }
             >
@@ -117,25 +127,47 @@ export const MaterialTaskSummaryPanel = ({ detail }: MaterialTaskSummaryPanelPro
                     items={[
                         {
                             label: "运行中任务",
-                            children: detail.taskSummary.activeTaskCount
+                            children: taskSummary?.activeTaskCount ?? "0"
                         },
                         {
                             label: "待处置候选",
-                            children: detail.taskSummary.pendingReviewTaskCount
+                            children: taskSummary?.pendingReviewTaskCount ?? "0"
                         },
                         {
                             label: "失败任务",
-                            children: detail.taskSummary.failedTaskCount
+                            children: taskSummary?.failedTaskCount ?? "0"
                         }
                     ]}
                     size="small"
                     bordered
                 />
+                {extractionTaskId ? (
+                    <KuzhambuAlert
+                        title={`抽取任务已创建 #${extractionTaskId}`}
+                        type="success"
+                        showIcon
+                    />
+                ) : null}
+                {extractionMutation.error ? (
+                    <KuzhambuAlert
+                        title={
+                            extractionMutation.error instanceof Error
+                                ? extractionMutation.error.message
+                                : "抽取任务创建失败"
+                        }
+                        type="error"
+                        showIcon
+                    />
+                ) : null}
             </KuzhambuCard>
 
             <KuzhambuCard title="最近任务" size="small">
                 {latestTask ? (
-                    <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+                    <KuzhambuSpace
+                        className="knowledge-graph-material-task-summary-section-latest"
+                        orientation="vertical"
+                        size={12}
+                    >
                         <KuzhambuDescriptions
                             ariaLabel="最近任务"
                             column={2}
