@@ -6,13 +6,13 @@
 - Branch: `docs/admin-web-dag-worktree-plan`
 - Area: `kuzhambu-apps/admin-web`
 - Routes: `/knowledge/graph-materials`, `/knowledge/graph-extraction`
-- Source runbook: `docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
+- Source runbook: migrated into this readiness evidence and removed from `docs/30-designs/`
 
 ## Current Status
 
-- Knowledge HTTP service is treated as complete and ready for integration testing.
-- Admin Web graph material and graph task integration is still under development.
-- Current Admin Web evidence covers the frontend service switch, mocked browser E2E, and TypeScript validation. It does not claim a completed real backend browser smoke.
+- Knowledge HTTP service is complete enough for Admin Web end-to-end integration and co-debugging.
+- Knowledge HTTP service implementation is still under active development.
+- Current Admin Web evidence covers the frontend service switch, mocked browser E2E, lint, build, and Vitest validation. It does not claim a completed real backend browser smoke.
 
 ## Validated Frontend Coverage
 
@@ -33,11 +33,12 @@ Executed from `kuzhambu-apps/` unless noted.
 
 | Command | Result |
 | --- | --- |
-| `pnpm --filter kuzhambu-admin-web exec vitest run src/pages/knowledge/graph-material/graph-material-service-contract.test.ts src/pages/knowledge/graph-extraction/graph-extraction-service-contract.test.ts` | Passed, 2 files / 6 tests |
-| `pnpm --filter kuzhambu-admin-web exec vitest run src/pages/knowledge/graph-material/graph-material-page.test.tsx src/pages/knowledge/graph-material/material-detail-drawer/material-detail-drawer.test.tsx` | Passed, 2 files / 16 tests |
-| `pnpm --filter kuzhambu-admin-web exec playwright test e2e/knowledge-graph-material-task.spec.ts --project=mobile-chrome` | Passed, 2 tests |
-| `pnpm --filter kuzhambu-admin-web exec tsc --noEmit` | Passed |
-| `git diff --check` from repo root | Passed |
+| `pnpm --filter ./admin-web exec vitest run src/pages/knowledge/graph-material/graph-material-service-contract.test.ts src/pages/knowledge/graph-material/graph-material-page.test.tsx src/pages/knowledge/graph-material/material-detail-drawer/material-detail-drawer.test.tsx src/pages/knowledge/graph-extraction/graph-extraction-service-contract.test.ts src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx src/pages/knowledge/graph-extraction/graph-extraction-task-table/graph-extraction-task-table.test.tsx` | Passed, 6 files / 39 tests |
+| `pnpm --filter ./admin-web run format:check` | Passed |
+| `pnpm --filter ./admin-web run lint` | Passed |
+| `pnpm --filter ./admin-web run build` | Passed |
+| `pnpm --filter ./admin-web run test` | Passed, 130 files / 493 tests |
+| `git diff --check main...HEAD` from repo root | Passed |
 
 ## Runtime Notes
 
@@ -48,4 +49,4 @@ Executed from `kuzhambu-apps/` unless noted.
 ## Remaining Admin Web Work
 
 - Run the same flows against the real Knowledge HTTP service runtime and attach runtime Network evidence.
-- Remove legacy graph extraction workbench components after `rg` proves no active references remain.
+- Run the same flows against the real Knowledge HTTP service runtime and attach runtime Network evidence after the backend implementation is ready for live smoke.
