@@ -32,11 +32,79 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacade
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ClassicsFacadeImplTest {
+
+    @Test
+    void knowledgeGraphMaterialFacadeShouldPageWorkbenchContentsAndReturnSnapshot() {
+        ClassicsSearchContentApplicationService searchService = mock(ClassicsSearchContentApplicationService.class);
+        ClassicsSearchSourceContent first = new ClassicsSearchSourceContent(
+                "SANCAI_ENTRY",
+                "1001",
+                "SANCAI",
+                "TIANWEN",
+                "天文",
+                "V1",
+                "卷一",
+                "青花龙纹",
+                "摘要",
+                List.of("原文", "译文"),
+                List.of(),
+                "PUBLISHED",
+                "PRIVATE",
+                1,
+                Instant.ofEpochMilli(1),
+                Instant.ofEpochMilli(2));
+        ClassicsSearchSourceContent second = new ClassicsSearchSourceContent(
+                "WANGQI_DOCUMENT",
+                "2001",
+                "WANGQI",
+                "BEIKE",
+                "碑刻",
+                "V2",
+                "卷二",
+                "五经",
+                "摘要",
+                List.of("正文"),
+                List.of(),
+                "PUBLISHED",
+                "PRIVATE",
+                1,
+                Instant.ofEpochMilli(1),
+                Instant.ofEpochMilli(2));
+        when(searchService.listWorkbenchContents()).thenReturn(List.of(first, second));
+        when(searchService.getWorkbenchContent(argThat(
+                        query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId()))))
+                .thenReturn(first);
+        ClassicsFacadeImpl facade = newFacade(mock(ClassicsReportApplicationService.class), searchService);
+
+        var page = facade.pageKnowledgeGraphMaterials(KnowledgeGraphMaterialPageFacadeRequest.builder()
+                .subjectId("operator-1")
+                .contentType("SANCAI_ENTRY")
+                .pageNo(1)
+                .pageSize(10)
+                .build());
+        var snapshot = facade.getKnowledgeGraphMaterialSnapshot(KnowledgeGraphMaterialSnapshotFacadeRequest.builder()
+                .subjectId("operator-1")
+                .contentType("SANCAI_ENTRY")
+                .contentId("1001")
+                .build());
+
+        assertEquals(1L, page.getTotalCount());
+        assertEquals("1001", page.getRecords().get(0).getContentId());
+        assertEquals(true, page.getRecords().get(0).isGraphable());
+        assertEquals("青花龙纹", snapshot.getSource().getTitle());
+        assertEquals("原文\n译文", snapshot.getContentSnapshot());
+        verify(searchService).listWorkbenchContents();
+        verify(searchService)
+                .getWorkbenchContent(argThat(
+                        query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId())));
+    }
 
     @Test
     void summaryShouldDelegateAndMapFacadeResponse() {

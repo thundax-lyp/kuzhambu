@@ -27,14 +27,6 @@
     - 验收点：领域测试覆盖合法/非法转换、版本冲突、重复请求和候选重复应用。
     - 重要度：10/10
 
-- [ ] `classics graph material facade`：提供图谱素材来源 Facade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S3a
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/`、`kuzhambu-classics-application/src/main/java/**/facade/`
-    - 处理动作：提供按当前主体读取的稿件分页、可用性校验和正文快照。
-    - 验收点：Facade 测试证明分页与可见性由 Classics 完成，且不泄露内部实体。
-    - 重要度：10/10
-
 - [ ] `ai graph candidate facade`：提供图谱候选协作 Facade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S3b

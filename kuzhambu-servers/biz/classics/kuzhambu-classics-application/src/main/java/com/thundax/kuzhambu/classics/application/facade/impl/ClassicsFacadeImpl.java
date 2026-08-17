@@ -26,12 +26,16 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacade
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupExecutionFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupTargetsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnapshotFacadeResponse;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -150,6 +154,45 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
 
     @Override
     @Transactional(readOnly = true)
+    public KnowledgeGraphMaterialPageFacadeResponse pageKnowledgeGraphMaterials(
+            KnowledgeGraphMaterialPageFacadeRequest request) {
+        int pageNo = request == null || request.getPageNo() == null ? 1 : Math.max(1, request.getPageNo());
+        int pageSize = request == null || request.getPageSize() == null ? 20 : Math.max(1, request.getPageSize());
+        List<ClassicsSearchSourceContent> filtered = workbenchContents(request).stream()
+                .filter(content -> matchesGraphMaterialFilter(content, request))
+                .toList();
+        int fromIndex = Math.min((pageNo - 1) * pageSize, filtered.size());
+        int toIndex = Math.min(fromIndex + pageSize, filtered.size());
+        return KnowledgeGraphMaterialPageFacadeResponse.builder()
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .totalCount(filtered.size())
+                .records(filtered.subList(fromIndex, toIndex).stream()
+                        .map(classicsFacadeAssembler::toKnowledgeGraphMaterialSource)
+                        .toList())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public KnowledgeGraphMaterialSnapshotFacadeResponse getKnowledgeGraphMaterialSnapshot(
+            KnowledgeGraphMaterialSnapshotFacadeRequest request) {
+        if (request == null || request.getContentType() == null || request.getContentId() == null) {
+            return KnowledgeGraphMaterialSnapshotFacadeResponse.builder().build();
+        }
+        ClassicsSearchSourceContent content = classicsSearchContentApplicationService.getWorkbenchContent(
+                classicsFacadeAssembler.toSearchContentQuery(request.getContentType(), request.getContentId()));
+        if (content == null) {
+            return KnowledgeGraphMaterialSnapshotFacadeResponse.builder().build();
+        }
+        return KnowledgeGraphMaterialSnapshotFacadeResponse.builder()
+                .source(classicsFacadeAssembler.toKnowledgeGraphMaterialSource(content))
+                .contentSnapshot(content.getTextSegments() == null ? "" : String.join("\n", content.getTextSegments()))
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ClassicsQaKnowledgeFacadeResponse getQaKnowledge(ClassicsQaKnowledgeFacadeRequest request) {
         if (request == null
                 || request.getContentType() == null
@@ -210,6 +253,36 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         return knowledge == null
                 ? ClassicsQaKnowledgeFacadeResponse.builder().build()
                 : classicsFacadeAssembler.toQaKnowledgeFacadeResponse(knowledge);
+    }
+
+    private List<ClassicsSearchSourceContent> workbenchContents(KnowledgeGraphMaterialPageFacadeRequest request) {
+        if (request != null && request.getCategoryCode() != null && request.getVolumeCode() != null) {
+            return classicsSearchContentApplicationService.listWorkbenchContents(
+                    classicsFacadeAssembler.toWorkbenchContentQuery(
+                            request.getCategoryCode(), request.getVolumeCode()));
+        }
+        return classicsSearchContentApplicationService.listWorkbenchContents();
+    }
+
+    private boolean matchesGraphMaterialFilter(
+            ClassicsSearchSourceContent content, KnowledgeGraphMaterialPageFacadeRequest request) {
+        if (request == null) {
+            return true;
+        }
+        if (request.getContentType() != null && !request.getContentType().equals(content.getContentType())) {
+            return false;
+        }
+        if (request.getCategoryCode() != null && !request.getCategoryCode().equals(content.getCategoryCode())) {
+            return false;
+        }
+        if (request.getVolumeCode() != null && !request.getVolumeCode().equals(content.getVolumeCode())) {
+            return false;
+        }
+        return request.getKeyword() == null
+                || content.getTitle() != null
+                        && content.getTitle()
+                                .toLowerCase(Locale.ROOT)
+                                .contains(request.getKeyword().toLowerCase(Locale.ROOT));
     }
 
     @Override
