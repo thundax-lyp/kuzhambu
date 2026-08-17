@@ -18,9 +18,9 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { GraphExtractionManuscriptDetail } from "./graph-extraction-manuscript-detail";
 import { GraphExtractionCandidateModal } from "./graph-extraction-manuscript-detail/graph-extraction-candidate-modal";
 import { GraphExtractionManuscriptTree } from "./graph-extraction-manuscript-tree";
-import { GraphExtractionTaskDetail } from "./graph-extraction-task-detail";
 import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
 import * as service from "./graph-extraction-service";
+import { TaskDetailDrawer } from "./task-detail-drawer";
 import { TaskBatchCreatePanel } from "./task-batch-create-panel";
 import { TaskFilters } from "./task-filters";
 import type {
@@ -29,6 +29,7 @@ import type {
 } from "./graph-extraction-service";
 import type {
     GraphContentRefRecord,
+    GraphExtractionTaskDrawerSection,
     GraphExtractionTaskListMode,
     GraphExtractionTaskType,
     GraphTaskDisposition,
@@ -265,8 +266,10 @@ export const GraphExtractionPage = () => {
     );
     const [taskQuery, setTaskQuery] =
         useState<GraphExtractionTaskPageQuery>(readTaskQueryFromSearch);
-    const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
     const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
+    const [activeTaskDetailSection, setActiveTaskDetailSection] =
+        useState<GraphExtractionTaskDrawerSection>("OVERVIEW");
+    const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
     const [taskListDrawerOpen, setTaskListDrawerOpen] = useState(false);
     const [manuscriptDetailDrawerOpen, setManuscriptDetailDrawerOpen] = useState(false);
     const [candidateModalOpen, setCandidateModalOpen] = useState(false);
@@ -314,7 +317,7 @@ export const GraphExtractionPage = () => {
     });
     const taskDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId],
-        queryFn: () => service.getTaskDetail({ taskId: detailTaskId || "" }),
+        queryFn: () => service.getTask({ taskId: detailTaskId || "" }),
         enabled: taskDetailDrawerOpen && detailTaskId !== null,
         retry: false
     });
@@ -537,6 +540,7 @@ export const GraphExtractionPage = () => {
         if (!taskId) {
             return;
         }
+        setActiveTaskDetailSection("OVERVIEW");
         setDetailTaskId(taskId);
         setTaskDetailDrawerOpen(true);
     };
@@ -903,18 +907,13 @@ export const GraphExtractionPage = () => {
                         )}
                     </div>
                 </KuzhambuDrawer>
-                <GraphExtractionTaskDetail
-                    applying={applyTaskMutation.isPending}
-                    canApply={canEditGraph}
+                <TaskDetailDrawer
+                    activeSection={activeTaskDetailSection}
+                    detail={taskDetailQuery.data || null}
                     loading={taskDetailQuery.isLoading}
                     open={taskDetailDrawerOpen}
-                    task={taskDetailQuery.data || null}
-                    onApply={() => {
-                        if (detailTaskId !== null) {
-                            applyTaskMutation.mutate(detailTaskId);
-                        }
-                    }}
                     onClose={() => setTaskDetailDrawerOpen(false)}
+                    onSectionChange={setActiveTaskDetailSection}
                 />
             </KuzhambuSpace>
         </KuzhambuPage>

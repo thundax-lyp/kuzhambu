@@ -43,14 +43,6 @@
     - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
     - 重要度：9/10
 
-- [ ] `AW/graph-extraction drawer shell`：建立任务分段详情抽屉
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/task-detail-drawer/`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-task-detail/`
-    - 处理动作：用 `KuzhambuSegmentedDrawer` 建立任务详情四段容器并接入 `getTask`。
-    - 验收点：测试覆盖 `OVERVIEW`、`EXECUTION`、`CANDIDATE`、`DISPOSITION` 四段可访问。
-    - 重要度：9/10
-
 - [ ] `AW/graph-extraction execution panel`：实现任务执行过程段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`

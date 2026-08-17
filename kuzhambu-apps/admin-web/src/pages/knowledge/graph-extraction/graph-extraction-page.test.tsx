@@ -13,6 +13,60 @@ const serviceMocks = vi.hoisted(() => ({
     applyTaskCandidate: vi.fn(async () => ({ taskId: "9001", status: "APPLIED" })),
     cancelBatchTask: vi.fn(async () => ({ batchJobId: "1001", status: "CANCELLED" })),
     createBatchExtraction: vi.fn(async () => ({ batchId: "batch-001", materials: [] })),
+    getTask: vi.fn(async (request: { taskId: string }) => ({
+        candidate: null,
+        materialStats: null,
+        relatedTasks: [],
+        source: {
+            contentRef: {
+                contentRefId: "1001",
+                contentType: "SANCAI_ENTRY"
+            },
+            contentType: "SANCAI_ENTRY",
+            title: "三才稿件"
+        },
+        stages: [],
+        task:
+            request.taskId === "9001"
+                ? {
+                      aiCandidateId: "7001",
+                      attemptNo: "1",
+                      currentStage: "CANDIDATE_READY",
+                      disposition: "PENDING",
+                      executionStatus: "SUCCEEDED",
+                      id: "9001",
+                      lockVersion: "1",
+                      materialRef: {
+                          contentRefId: "1001",
+                          contentType: "SANCAI_ENTRY"
+                      },
+                      progress: 100,
+                      sourceContentId: "1001",
+                      sourceContentType: "SANCAI_ENTRY",
+                      status: "SUCCEEDED",
+                      taskId: "9001",
+                      taskType: "GRAPH"
+                  }
+                : {
+                      batchJobId: "1001",
+                      attemptNo: "1",
+                      currentStage: "CANDIDATE_READY",
+                      disposition: "PENDING",
+                      executionStatus: "SUCCEEDED",
+                      id: "8008",
+                      lockVersion: "1",
+                      materialRef: {
+                          contentRefId: "1001",
+                          contentType: "SANCAI_ENTRY"
+                      },
+                      progress: 100,
+                      selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
+                      aiCandidateId: "7001",
+                      taskId: "8008",
+                      triggerSource: "QUALITY_REPORT",
+                      status: "SUCCEEDED"
+                  }
+    })),
     getTaskDetail: vi.fn(async (request: { taskId: string }) =>
         request.taskId === "9001"
             ? {
@@ -356,7 +410,7 @@ describe("GraphExtractionPage", () => {
         fireEvent.click(screen.getByRole("button", { name: /查\s*看/u }));
 
         await waitFor(() => {
-            expect(serviceMocks.getTaskDetail).toHaveBeenCalledWith({ taskId: "8008" });
+            expect(serviceMocks.getTask).toHaveBeenCalledWith({ taskId: "8008" });
         });
         expect(await screen.findByText('{"sourceContentIds":[1001,1002]}')).toBeInTheDocument();
     }, 60_000);
