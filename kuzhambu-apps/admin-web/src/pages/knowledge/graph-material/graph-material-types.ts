@@ -44,6 +44,56 @@ export interface GraphMaterialBatchPublicationResult {
     status: "PUBLISHED" | "FAILED";
 }
 
+export interface GraphPublicationIssueRecord {
+    code: string;
+    message: string;
+    severity: "BLOCKING" | "WARNING" | "INFO" | string;
+}
+
+export interface GraphPublicationPreviewObjectRecord {
+    issues?: GraphPublicationIssueRecord[] | null;
+    matchedObjectId?: string | null;
+    matchedObjectLockVersion?: string | null;
+    matchType: "CREATE" | "REUSE" | "CONFLICT" | string;
+    materialObjectId: string;
+}
+
+export interface GraphPublicationPreviewRecord {
+    edges: GraphPublicationPreviewObjectRecord[];
+    issues: GraphPublicationIssueRecord[];
+    materialLockVersion: string;
+    materialRef: GraphContentRefRecord;
+    nodes: GraphPublicationPreviewObjectRecord[];
+    previewToken: string;
+    publishable: boolean;
+}
+
+export interface GraphPublicationConflictDecisionRecord {
+    action: "REUSE_MATCH" | "CREATE_NEW";
+    matchedObjectId?: string;
+    materialObjectId: string;
+    objectType: "NODE" | "EDGE";
+}
+
+export interface GraphPublicationConfirmationRecord {
+    conflictDecisions: GraphPublicationConflictDecisionRecord[];
+    contentRef: GraphContentRefRecord;
+    materialLockVersion: string;
+    previewToken: string;
+}
+
+export interface GraphPublicationResultRecord {
+    contentRef: GraphContentRefRecord;
+    createdEdgeCount: string;
+    createdNodeCount: string;
+    failureMessage?: string | null;
+    issues?: GraphPublicationIssueRecord[] | null;
+    materialStatus: GraphMaterialStatus;
+    reusedEdgeCount: string;
+    reusedNodeCount: string;
+    success: boolean;
+}
+
 export interface GraphMaterialDraftObject {
     id: string;
     name: string;
@@ -146,4 +196,19 @@ export interface GraphBatchWithdrawalPreviewRecord {
 export interface GraphBatchWithdrawalResultRecord {
     batchId?: string | null;
     materials: GraphBatchMaterialResultRecord<GraphMaterialRecord>[];
+}
+
+export interface GraphBatchPublicationPreviewRecord {
+    materials: GraphBatchMaterialResultRecord<GraphPublicationPreviewRecord>[];
+}
+
+export interface GraphBatchPublicationResultRecord {
+    materials: GraphBatchMaterialResultRecord<GraphPublicationResultRecord>[];
+}
+
+export interface GraphDeletionPrecheckRecord {
+    changeId?: string;
+    executable?: boolean;
+    failureMessage?: string | null;
+    issues?: GraphPublicationIssueRecord[] | null;
 }

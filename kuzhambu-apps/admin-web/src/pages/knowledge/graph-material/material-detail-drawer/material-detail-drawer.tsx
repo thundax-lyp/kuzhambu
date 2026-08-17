@@ -8,6 +8,8 @@ import {
 } from "@/components";
 import type { KuzhambuSegmentedDrawerSection } from "@/components";
 import type {
+    GraphContentRefRecord,
+    GraphDeletionPrecheckRecord,
     GraphMaterialDetailRecord,
     GraphMaterialDrawerSection,
     GraphMaterialRecord
@@ -26,8 +28,11 @@ interface MaterialDetailDrawerProps {
     loading?: boolean;
     material: GraphMaterialRecord | null;
     onClose: () => void;
+    onDeletePrecheck: (contentRef: GraphContentRefRecord) => Promise<GraphDeletionPrecheckRecord>;
+    onPublish: (detail: GraphMaterialDetailRecord) => Promise<void>;
     onRetry: () => void;
     onSectionChange: (section: GraphMaterialDrawerSection) => void;
+    onWithdraw: (detail: GraphMaterialDetailRecord) => Promise<void>;
     open: boolean;
 }
 
@@ -45,11 +50,13 @@ export const MaterialDetailDrawer = ({
     loading = false,
     material,
     onClose,
+    onDeletePrecheck,
+    onPublish,
     onRetry,
     onSectionChange,
+    onWithdraw,
     open
 }: MaterialDetailDrawerProps) => {
-    const canApplyGraph = hasPermission("knowledge:graph:apply");
     const canEditGraph = hasPermission("knowledge:graph:edit");
     const activeMaterial = material ?? detail?.material ?? null;
     const sections: Array<KuzhambuSegmentedDrawerSection<GraphMaterialDrawerSection>> = [
@@ -63,7 +70,7 @@ export const MaterialDetailDrawer = ({
                 <div data-testid="knowledge-graph-material-detail-draft-graph-section">
                     {activeMaterial ? (
                         <MaterialDraftCanvas
-                            canApplyGraph={canApplyGraph}
+                            canApplyGraph={canEditGraph}
                             canEditGraph={canEditGraph}
                             detail={detail}
                             material={activeMaterial}
@@ -84,7 +91,15 @@ export const MaterialDetailDrawer = ({
             value: "TASKS"
         },
         {
-            content: <PublicationPreview canApplyGraph={canApplyGraph} detail={detail} />,
+            content: (
+                <PublicationPreview
+                    canApplyGraph={canEditGraph}
+                    detail={detail}
+                    onDeletePrecheck={onDeletePrecheck}
+                    onPublish={onPublish}
+                    onWithdraw={onWithdraw}
+                />
+            ),
             label: "发布变更",
             value: "PUBLICATION_CHANGES"
         }

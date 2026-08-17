@@ -21,7 +21,14 @@ vi.mock("./graph-material-service", () => ({
     createBatchExtraction: vi.fn(),
     getMaterial: vi.fn(),
     pageMaterials: vi.fn(),
+    precheckDeletion: vi.fn(),
+    previewBatchPublication: vi.fn(),
     previewBatchWithdrawal: vi.fn(),
+    previewPublication: vi.fn(),
+    previewWithdrawal: vi.fn(),
+    publishBatch: vi.fn(),
+    publishMaterial: vi.fn(),
+    withdrawMaterial: vi.fn(),
     withdrawBatch: vi.fn()
 }));
 
@@ -156,11 +163,7 @@ describe("GraphMaterialPage", () => {
     });
 
     it("shows batch actions for selected material rows", async () => {
-        replacePermissions([
-            "knowledge:graph:view",
-            "knowledge:graph:edit",
-            "knowledge:graph:apply"
-        ]);
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
         renderPage();
         const user = userEvent.setup();
@@ -173,12 +176,87 @@ describe("GraphMaterialPage", () => {
         expect(screen.getByText("批量动作（2）")).toBeInTheDocument();
     });
 
+    it("publishes selected materials through Knowledge publication preview and publish APIs", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        vi.mocked(service.previewBatchPublication).mockResolvedValue({
+            materials: [
+                {
+                    contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                    result: {
+                        edges: [],
+                        issues: [],
+                        materialLockVersion: "4",
+                        materialRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                        nodes: [],
+                        previewToken: "preview-1002",
+                        publishable: true
+                    },
+                    success: true
+                },
+                {
+                    contentRef: { contentRefId: "1003", contentType: "WANGQI_DOCUMENT" },
+                    failureMessage: "发布预检存在阻塞项。",
+                    success: false
+                }
+            ]
+        });
+        vi.mocked(service.publishBatch).mockResolvedValue({
+            materials: [
+                {
+                    contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                    result: {
+                        contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                        createdEdgeCount: "0",
+                        createdNodeCount: "0",
+                        materialStatus: "PUBLISHED",
+                        reusedEdgeCount: "98",
+                        reusedNodeCount: "64",
+                        success: true
+                    },
+                    success: true
+                }
+            ]
+        });
+        renderPage();
+        const user = userEvent.setup();
+
+        await screen.findByText("三才图会 人物一");
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[2]);
+        await user.click(checkboxes[3]);
+        await user.click(screen.getByTestId("knowledge-graph-material-batch-publish-button"));
+
+        await waitFor(() => {
+            expect(service.previewBatchPublication).toHaveBeenCalledWith({
+                contentRefs: [
+                    { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                    { contentRefId: "1003", contentType: "WANGQI_DOCUMENT" }
+                ]
+            });
+        });
+        expect(service.publishBatch).toHaveBeenCalledWith({
+            materials: [
+                {
+                    conflictDecisions: [],
+                    contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                    materialLockVersion: "4",
+                    previewToken: "preview-1002"
+                }
+            ]
+        });
+        await waitFor(() => {
+            expect(
+                screen.getByTestId("knowledge-graph-material-batch-result-SANCAI_ENTRY:1002")
+            ).toHaveTextContent("已发布");
+        });
+        expect(
+            screen.getByTestId("knowledge-graph-material-batch-result-WANGQI_DOCUMENT:1003")
+        ).toHaveTextContent("发布预检存在阻塞项。");
+    });
+
     it("navigates to extraction tasks with selected contentRefs", async () => {
-        replacePermissions([
-            "knowledge:graph:view",
-            "knowledge:graph:edit",
-            "knowledge:graph:apply"
-        ]);
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
         const { visitedLocations } = renderPage();
         const user = userEvent.setup();

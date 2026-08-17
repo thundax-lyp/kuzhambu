@@ -178,4 +178,98 @@ describe("knowledge graph material service request contracts", () => {
             ]
         });
     });
+
+    it("sends publication preview and publish requests", async () => {
+        installFetchRecorder({
+            edges: [],
+            issues: [],
+            materialLockVersion: "4",
+            materialRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            nodes: [],
+            previewToken: "preview-1002",
+            publishable: true
+        });
+
+        await service.previewPublication({
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+        });
+        expectLastCall("POST", "/knowledge/graph/publication/preview", {
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+        });
+
+        await service.publishMaterial({
+            conflictDecisions: [],
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            materialLockVersion: "4",
+            previewToken: "preview-1002"
+        });
+        expectLastCall("POST", "/knowledge/graph/publication/publish", {
+            conflictDecisions: [],
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            materialLockVersion: "4",
+            previewToken: "preview-1002"
+        });
+    });
+
+    it("sends batch publication preview and publish requests", async () => {
+        installFetchRecorder({
+            materials: []
+        });
+
+        await service.previewBatchPublication({
+            contentRefs: [{ contentRefId: "1002", contentType: "SANCAI_ENTRY" }]
+        });
+        expectLastCall("POST", "/knowledge/graph/publication/batch/preview", {
+            contentRefs: [{ contentRefId: "1002", contentType: "SANCAI_ENTRY" }]
+        });
+
+        await service.publishBatch({
+            materials: [
+                {
+                    conflictDecisions: [],
+                    contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                    materialLockVersion: "4",
+                    previewToken: "preview-1002"
+                }
+            ]
+        });
+        expectLastCall("POST", "/knowledge/graph/publication/batch/publish", {
+            materials: [
+                {
+                    conflictDecisions: [],
+                    contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+                    materialLockVersion: "4",
+                    previewToken: "preview-1002"
+                }
+            ]
+        });
+    });
+
+    it("sends single withdrawal and deletion precheck requests", async () => {
+        installFetchRecorder({});
+
+        await service.previewWithdrawal({
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+        });
+        expectLastCall("POST", "/knowledge/graph/publication/withdrawal/preview", {
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+        });
+
+        await service.withdrawMaterial({
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            materialLockVersion: "4"
+        });
+        expectLastCall("POST", "/knowledge/graph/publication/withdrawal/withdraw", {
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            idempotencyKey: "00000000-0000-4000-8000-000000000001",
+            materialLockVersion: "4"
+        });
+
+        await service.precheckDeletion({
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+        });
+        expectLastCall("POST", "/knowledge/graph/deletion-change/precheck", {
+            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+        });
+    });
 });

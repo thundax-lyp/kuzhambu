@@ -43,6 +43,64 @@ export const mockGraphMaterialService: GraphMaterialService = {
         return result?.result ?? graphBatchExtractionResult.materials[0].result;
     },
     createBatchExtraction: async () => graphBatchExtractionResult,
+    previewPublication: async (command) => ({
+        edges: [],
+        issues: [],
+        materialLockVersion: "4",
+        materialRef: command.contentRef,
+        nodes: [],
+        previewToken: "preview-token",
+        publishable: true
+    }),
+    publishMaterial: async (command) => ({
+        contentRef: command.contentRef,
+        createdEdgeCount: "0",
+        createdNodeCount: "0",
+        materialStatus: "PUBLISHED",
+        reusedEdgeCount: "0",
+        reusedNodeCount: "0",
+        success: true
+    }),
+    previewBatchPublication: async (command) => ({
+        materials: (command.contentRefs ?? []).map((contentRef) => ({
+            contentRef,
+            result: {
+                edges: [],
+                issues: [],
+                materialLockVersion: "4",
+                materialRef: contentRef,
+                nodes: [],
+                previewToken: `preview-${contentRef.contentRefId}`,
+                publishable: true
+            },
+            success: true
+        }))
+    }),
+    publishBatch: async (command) => ({
+        materials: command.materials.map((material) => ({
+            contentRef: material.contentRef,
+            result: {
+                contentRef: material.contentRef,
+                createdEdgeCount: "0",
+                createdNodeCount: "0",
+                materialStatus: "PUBLISHED",
+                reusedEdgeCount: "0",
+                reusedNodeCount: "0",
+                success: true
+            },
+            success: true
+        }))
+    }),
+    previewWithdrawal: async () => ({}),
+    withdrawMaterial: async (command) => ({
+        contentRef: command.contentRef,
+        contentType: command.contentRef.contentType,
+        id: command.contentRef.contentRefId,
+        lockVersion: command.materialLockVersion,
+        status: "DRAFT",
+        title: command.contentRef.contentRefId
+    }),
+    precheckDeletion: async () => ({ executable: true }),
     previewBatchWithdrawal: async () => graphBatchWithdrawalPreview,
     withdrawBatch: async () => graphBatchWithdrawalResult
 };

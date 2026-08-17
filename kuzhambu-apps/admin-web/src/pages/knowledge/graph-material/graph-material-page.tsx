@@ -32,10 +32,12 @@ const toMaterialRowKey = (record: GraphMaterialListRecord) =>
 const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "请稍后重试。";
 
+const EMPTY_MATERIAL_RECORDS: GraphMaterialListRecord[] = [];
+
 export const GraphMaterialPage = () => {
     const navigate = useNavigate();
     const canViewGraph = hasPermission("knowledge:graph:view");
-    const canApplyGraph = hasPermission("knowledge:graph:apply");
+    const canEditGraph = hasPermission("knowledge:graph:edit");
     const [selectedMaterialKeys, setSelectedMaterialKeys] = useState<Key[]>([]);
     const [isBatchPublishing, setIsBatchPublishing] = useState(false);
     const [activeMaterial, setActiveMaterial] = useState<GraphMaterialRecord | null>(null);
@@ -61,7 +63,7 @@ export const GraphMaterialPage = () => {
         queryKey: ["knowledge", "graph-material", "detail", activeMaterial?.contentRef]
     });
     const pageResult = materialPageQuery.data;
-    const records = pageResult?.records ?? [];
+    const records = pageResult?.records ?? EMPTY_MATERIAL_RECORDS;
     const selectedRecords = useMemo(() => {
         const selectedKeys = new Set(selectedMaterialKeys.map(String));
         return records.filter((record) => selectedKeys.has(toMaterialRowKey(record)));
@@ -102,25 +104,76 @@ export const GraphMaterialPage = () => {
             void materialPageQuery.refetch();
         }
     });
-    const publishSelectedMaterials = async (targetRecords: GraphMaterialListRecord[]) => {
+    const publishSelectedMaterials = async (
+        targetRecords: GraphMaterialListRecord[]
+    ): Promise<GraphMaterialBatchPublicationResult[]> => {
+        const recordsWithMaterial = targetRecords.filter((record) => record.material?.id);
+        if (recordsWithMaterial.length === 0) {
+            return [];
+        }
         setIsBatchPublishing(true);
         try {
-            return targetRecords.flatMap((record): GraphMaterialBatchPublicationResult[] => {
-                if (!record.material) {
+            const preview = await service.previewBatchPublication({
+                contentRefs: recordsWithMaterial.map((record) => record.source.contentRef)
+            });
+            const previewFailures: GraphMaterialBatchPublicationResult[] = [];
+            const confirmations = preview.materials.flatMap((item) => {
+                const record = recordsWithMaterial.find(
+                    (candidate) =>
+                        candidate.source.contentRef.contentType === item.contentRef.contentType &&
+                        candidate.source.contentRef.contentRefId === item.contentRef.contentRefId
+                );
+                if (!record?.material?.id) {
+                    return [];
+                }
+                if (!item.success || !item.result?.publishable) {
+                    previewFailures.push({
+                        failureReason:
+                            item.failureMessage ??
+                            item.result?.issues?.[0]?.message ??
+                            "发布预检未通过。",
+                        materialId: record.material.id,
+                        status: "FAILED"
+                    });
                     return [];
                 }
                 return [
                     {
-                        failureReason:
-                            record.material.failedOperation === "PUBLISH"
-                                ? (record.material.failureReason ?? "发布预检未通过。")
-                                : undefined,
-                        materialId: record.material.id,
-                        status:
-                            record.material.failedOperation === "PUBLISH" ? "FAILED" : "PUBLISHED"
+                        conflictDecisions: [],
+                        contentRef: item.result.materialRef,
+                        materialLockVersion: item.result.materialLockVersion,
+                        previewToken: item.result.previewToken
                     }
                 ];
             });
+            if (confirmations.length === 0) {
+                return previewFailures;
+            }
+            const publishResult = await service.publishBatch({ materials: confirmations });
+            const publishedResults = publishResult.materials.flatMap(
+                (item): GraphMaterialBatchPublicationResult[] => {
+                    const record = recordsWithMaterial.find(
+                        (candidate) =>
+                            candidate.source.contentRef.contentType ===
+                                item.contentRef.contentType &&
+                            candidate.source.contentRef.contentRefId ===
+                                item.contentRef.contentRefId
+                    );
+                    if (!record?.material?.id) {
+                        return [];
+                    }
+                    return [
+                        {
+                            failureReason:
+                                item.failureMessage ?? item.result?.failureMessage ?? undefined,
+                            materialId: record.material.id,
+                            status: item.success && item.result?.success ? "PUBLISHED" : "FAILED"
+                        }
+                    ];
+                }
+            );
+            await materialPageQuery.refetch();
+            return [...previewFailures, ...publishedResults];
         } finally {
             setIsBatchPublishing(false);
         }
@@ -167,7 +220,7 @@ export const GraphMaterialPage = () => {
                     />
                 </KuzhambuCard>
                 <MaterialBatchActions
-                    canApplyGraph={canApplyGraph}
+                    canApplyGraph={canEditGraph}
                     extracting={batchExtractionMutation.isPending}
                     publishing={isBatchPublishing}
                     selectedRecords={selectedRecords}
@@ -222,6 +275,36 @@ export const GraphMaterialPage = () => {
                 open={activeMaterial !== null}
                 onClose={closeMaterialDetailDrawer}
                 onRetry={() => void materialDetailQuery.refetch()}
+                onDeletePrecheck={(contentRef) => service.precheckDeletion({ contentRef })}
+                onPublish={async (detail) => {
+                    if (!detail.material?.lockVersion) {
+                        throw new Error("素材缺少锁版本，无法发布。");
+                    }
+                    const preview = await service.previewPublication({
+                        contentRef: detail.material.contentRef
+                    });
+                    if (!preview.publishable) {
+                        throw new Error(preview.issues[0]?.message ?? "发布预检未通过。");
+                    }
+                    await service.publishMaterial({
+                        conflictDecisions: [],
+                        contentRef: preview.materialRef,
+                        materialLockVersion: preview.materialLockVersion,
+                        previewToken: preview.previewToken
+                    });
+                    await Promise.all([materialPageQuery.refetch(), materialDetailQuery.refetch()]);
+                }}
+                onWithdraw={async (detail) => {
+                    if (!detail.material?.lockVersion) {
+                        throw new Error("素材缺少锁版本，无法撤回。");
+                    }
+                    await service.previewWithdrawal({ contentRef: detail.material.contentRef });
+                    await service.withdrawMaterial({
+                        contentRef: detail.material.contentRef,
+                        materialLockVersion: detail.material.lockVersion
+                    });
+                    await Promise.all([materialPageQuery.refetch(), materialDetailQuery.refetch()]);
+                }}
                 onSectionChange={setActiveMaterialSection}
             />
         </KuzhambuPage>

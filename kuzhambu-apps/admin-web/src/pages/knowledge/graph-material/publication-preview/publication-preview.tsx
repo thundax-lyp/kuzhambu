@@ -7,7 +7,11 @@ import {
     KuzhambuSpace,
     KuzhambuTag
 } from "@/components";
-import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material/graph-material-types";
+import type {
+    GraphContentRefRecord,
+    GraphDeletionPrecheckRecord,
+    GraphMaterialDetailRecord
+} from "@/pages/knowledge/graph-material/graph-material-types";
 
 const PREVIEW_TYPE_LABELS = {
     green: "新增对象",
@@ -33,6 +37,9 @@ const PUBLICATION_PREVIEW_ITEMS = [
 interface PublicationPreviewProps {
     canApplyGraph: boolean;
     detail: GraphMaterialDetailRecord | null;
+    onDeletePrecheck: (contentRef: GraphContentRefRecord) => Promise<GraphDeletionPrecheckRecord>;
+    onPublish: (detail: GraphMaterialDetailRecord) => Promise<void>;
+    onWithdraw: (detail: GraphMaterialDetailRecord) => Promise<void>;
 }
 
 const readMaterialStatusLabel = (detail: GraphMaterialDetailRecord | null) => {
@@ -49,15 +56,77 @@ const readMaterialStatusLabel = (detail: GraphMaterialDetailRecord | null) => {
     return statusLabels[detail.material.status];
 };
 
-export const PublicationPreview = ({ canApplyGraph, detail }: PublicationPreviewProps) => {
+const getErrorMessage = (error: unknown) =>
+    error instanceof Error ? error.message : "请稍后重试。";
+
+export const PublicationPreview = ({
+    canApplyGraph,
+    detail,
+    onDeletePrecheck,
+    onPublish,
+    onWithdraw
+}: PublicationPreviewProps) => {
     const [isConflictResolved, setIsConflictResolved] = useState(false);
-    const [isFrozen, setIsFrozen] = useState(false);
-    const [isWithdrawn, setIsWithdrawn] = useState(false);
-    const [hasDeletePrecheck, setHasDeletePrecheck] = useState(false);
+    const [isPublishing, setIsPublishing] = useState(false);
+    const [isWithdrawing, setIsWithdrawing] = useState(false);
+    const [isPrecheckingDeletion, setIsPrecheckingDeletion] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const hasMaterial = Boolean(detail?.material);
     const publishedNodeCount = detail?.materialStats?.publishedNodeCount ?? "0";
     const publishedEdgeCount = detail?.materialStats?.publishedEdgeCount ?? "0";
+    const isBusy = isPublishing || isWithdrawing || isPrecheckingDeletion;
+
+    const runMaterialAction = async (action: () => Promise<void>, message: string) => {
+        setSuccessMessage(null);
+        setErrorMessage(null);
+        try {
+            await action();
+            setSuccessMessage(message);
+        } catch (error) {
+            setErrorMessage(getErrorMessage(error));
+        }
+    };
+
+    const publishMaterial = async () => {
+        if (!detail) {
+            return;
+        }
+        setIsPublishing(true);
+        try {
+            await runMaterialAction(() => onPublish(detail), "素材已发布");
+        } finally {
+            setIsPublishing(false);
+        }
+    };
+
+    const withdrawMaterial = async () => {
+        if (!detail) {
+            return;
+        }
+        setIsWithdrawing(true);
+        try {
+            await runMaterialAction(() => onWithdraw(detail), "素材已撤回");
+        } finally {
+            setIsWithdrawing(false);
+        }
+    };
+
+    const precheckDeletion = async () => {
+        const contentRef = detail?.source.contentRef;
+        if (!contentRef) {
+            return;
+        }
+        setIsPrecheckingDeletion(true);
+        try {
+            await runMaterialAction(async () => {
+                await onDeletePrecheck(contentRef);
+            }, "删除预检已生成，请在当前发布变更段确认影响。");
+        } finally {
+            setIsPrecheckingDeletion(false);
+        }
+    };
 
     return (
         <KuzhambuSpace
@@ -106,44 +175,38 @@ export const PublicationPreview = ({ canApplyGraph, detail }: PublicationPreview
                     {!isConflictResolved ? (
                         <KuzhambuAlert title="存在未解决冲突，发布不可用。" type="error" showIcon />
                     ) : null}
-                    {isFrozen ? <KuzhambuAlert title="发布已冻结" type="info" showIcon /> : null}
-                    {isWithdrawn ? (
-                        <KuzhambuAlert title="素材已撤回" type="warning" showIcon />
+                    {successMessage ? (
+                        <KuzhambuAlert title={successMessage} type="success" showIcon />
                     ) : null}
-                    {hasDeletePrecheck ? (
-                        <KuzhambuAlert
-                            title="删除预检已生成，请在当前发布变更段确认影响。"
-                            type="info"
-                            showIcon
-                        />
+                    {errorMessage ? (
+                        <KuzhambuAlert title={errorMessage} type="error" showIcon />
                     ) : null}
                     <KuzhambuSpace>
                         <KuzhambuButton
                             disabled={
-                                !canApplyGraph ||
-                                !hasMaterial ||
-                                !isConflictResolved ||
-                                isFrozen ||
-                                isWithdrawn
+                                !canApplyGraph || !hasMaterial || !isConflictResolved || isBusy
                             }
+                            loading={isPublishing}
                             testId="knowledge-graph-material-publish-preview-button"
                             type="primary"
-                            onClick={() => setIsFrozen(true)}
+                            onClick={() => void publishMaterial()}
                         >
                             发布素材
                         </KuzhambuButton>
                         <KuzhambuButton
-                            disabled={!canApplyGraph || !hasMaterial || !isFrozen || isWithdrawn}
+                            disabled={!canApplyGraph || !hasMaterial || isBusy}
+                            loading={isWithdrawing}
                             testId="knowledge-graph-material-withdraw-preview-button"
-                            onClick={() => setIsWithdrawn(true)}
+                            onClick={() => void withdrawMaterial()}
                         >
                             撤回素材
                         </KuzhambuButton>
                         <KuzhambuButton
-                            disabled={!canApplyGraph || !hasMaterial}
+                            disabled={!canApplyGraph || !hasMaterial || isBusy}
+                            loading={isPrecheckingDeletion}
                             testId="knowledge-graph-material-delete-precheck-button"
                             danger
-                            onClick={() => setHasDeletePrecheck(true)}
+                            onClick={() => void precheckDeletion()}
                         >
                             删除预检
                         </KuzhambuButton>

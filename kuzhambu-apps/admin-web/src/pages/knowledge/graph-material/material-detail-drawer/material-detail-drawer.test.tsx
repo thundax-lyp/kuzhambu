@@ -9,6 +9,12 @@ import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material
 import type { GraphMaterialDrawerSection } from "@/pages/knowledge/graph-material/graph-material-types";
 import { MaterialDetailDrawer } from "./material-detail-drawer";
 
+const drawerActionMocks = {
+    onDeletePrecheck: vi.fn(async () => ({ executable: true })),
+    onPublish: vi.fn(async () => undefined),
+    onWithdraw: vi.fn(async () => undefined)
+};
+
 vi.mock("@/components/kuzhambu-graph", () => ({
     ["KuzhambuGraph"]: ({ spoList }: { spoList: unknown[] }) => (
         <div data-testid="knowledge-graph-material-canvas-mock">{spoList.length} 条关系</div>
@@ -26,8 +32,11 @@ const renderDrawer = () => {
                 material={detail.material ?? null}
                 open
                 onClose={vi.fn()}
+                onDeletePrecheck={drawerActionMocks.onDeletePrecheck}
+                onPublish={drawerActionMocks.onPublish}
                 onRetry={vi.fn()}
                 onSectionChange={setActiveSection}
+                onWithdraw={drawerActionMocks.onWithdraw}
             />
         );
     };
@@ -66,8 +75,11 @@ const renderSwitchableDrawer = () => {
                     material={detail.material ?? null}
                     open={open}
                     onClose={closeMaterialDetailDrawer}
+                    onDeletePrecheck={drawerActionMocks.onDeletePrecheck}
+                    onPublish={drawerActionMocks.onPublish}
                     onRetry={vi.fn()}
                     onSectionChange={setActiveSection}
+                    onWithdraw={drawerActionMocks.onWithdraw}
                 />
             </>
         );
@@ -83,6 +95,7 @@ describe("MaterialDetailDrawer", () => {
     afterEach(() => {
         cleanup();
         replacePermissions([]);
+        vi.clearAllMocks();
     });
 
     it("renders the four material detail sections", async () => {
@@ -120,11 +133,7 @@ describe("MaterialDetailDrawer", () => {
     });
 
     it("keeps published material draft graph read-only in the drawer section", async () => {
-        replacePermissions([
-            "knowledge:graph:view",
-            "knowledge:graph:edit",
-            "knowledge:graph:apply"
-        ]);
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         renderDrawer();
         const user = userEvent.setup();
 
@@ -143,11 +152,7 @@ describe("MaterialDetailDrawer", () => {
     });
 
     it("keeps publish and withdraw actions in publication changes", async () => {
-        replacePermissions([
-            "knowledge:graph:view",
-            "knowledge:graph:edit",
-            "knowledge:graph:apply"
-        ]);
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         renderDrawer();
         const user = userEvent.setup();
 
@@ -155,19 +160,21 @@ describe("MaterialDetailDrawer", () => {
         await user.click(screen.getByRole("button", { name: "标记冲突已解决" }));
         await user.click(screen.getByRole("button", { name: "发布素材" }));
 
-        expect(screen.getByText("发布已冻结")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(drawerActionMocks.onPublish).toHaveBeenCalledWith(graphMaterialMockDetails[1]);
+        });
+        expect(screen.getByText("素材已发布")).toBeInTheDocument();
 
         await user.click(screen.getByRole("button", { name: "撤回素材" }));
 
+        await waitFor(() => {
+            expect(drawerActionMocks.onWithdraw).toHaveBeenCalledWith(graphMaterialMockDetails[1]);
+        });
         expect(screen.getByText("素材已撤回")).toBeInTheDocument();
     });
 
     it("keeps delete precheck in publication changes instead of task menus", async () => {
-        replacePermissions([
-            "knowledge:graph:view",
-            "knowledge:graph:edit",
-            "knowledge:graph:apply"
-        ]);
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         renderDrawer();
         const user = userEvent.setup();
 
@@ -181,6 +188,12 @@ describe("MaterialDetailDrawer", () => {
         await user.click(screen.getByText("发布变更"));
         await user.click(screen.getByRole("button", { name: "删除预检" }));
 
+        await waitFor(() => {
+            expect(drawerActionMocks.onDeletePrecheck).toHaveBeenCalledWith({
+                contentRefId: "1002",
+                contentType: "SANCAI_ENTRY"
+            });
+        });
         expect(
             screen.getByText("删除预检已生成，请在当前发布变更段确认影响。")
         ).toBeInTheDocument();
