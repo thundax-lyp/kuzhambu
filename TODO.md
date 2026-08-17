@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-material page query`：素材页接入 service 查询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-page.test.tsx`
-    - 处理动作：用 TanStack Query 调用 `pageMaterials` 替换页面内置素材数组。
-    - 验收点：组件测试覆盖加载、空列表、错误恢复和 `material:null` 未初始化素材。
-    - 重要度：9/10
-
 - [ ] `AW/graph-material filters`：实现素材筛选与分页控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
