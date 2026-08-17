@@ -194,13 +194,11 @@ export const GraphWorkbenchPage = () => {
     };
 
     const handleTableChange = (pagination: TablePaginationConfig) => {
-        setQuery((currentQuery) =>
-            buildQuery(
-                filters,
-                pagination.current || 1,
-                pagination.pageSize || currentQuery.pageSize || DEFAULT_PAGE_SIZE
-            )
-        );
+        setQuery((currentQuery) => ({
+            ...currentQuery,
+            pageNo: pagination.current || 1,
+            pageSize: pagination.pageSize || currentQuery.pageSize || DEFAULT_PAGE_SIZE
+        }));
     };
 
     if (!canViewGraph) {

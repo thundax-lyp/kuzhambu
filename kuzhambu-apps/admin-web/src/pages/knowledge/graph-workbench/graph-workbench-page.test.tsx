@@ -134,6 +134,30 @@ describe("GraphWorkbenchPage", () => {
         );
     });
 
+    it("keeps unsubmitted filter drafts out of pagination requests", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        vi.mocked(service.pagePublishedAdjacency).mockResolvedValue({
+            ...adjacencyPage,
+            totalCount: 40,
+            totalPage: 2
+        });
+        const user = userEvent.setup();
+
+        renderWorkbench();
+        await screen.findByText("杜甫");
+        await user.type(screen.getByRole("textbox", { name: "筛选主语关键词" }), "未提交");
+        await user.click(screen.getByTitle("2"));
+
+        await waitFor(() =>
+            expect(vi.mocked(service.pagePublishedAdjacency).mock.calls.at(-1)?.[0]).toMatchObject({
+                pageNo: 2,
+                pageSize: 20,
+                subjectKeyword: null,
+                subjectStatus: "ACTIVE"
+            })
+        );
+    });
+
     it("renders permission state without querying data", () => {
         replacePermissions([]);
 
