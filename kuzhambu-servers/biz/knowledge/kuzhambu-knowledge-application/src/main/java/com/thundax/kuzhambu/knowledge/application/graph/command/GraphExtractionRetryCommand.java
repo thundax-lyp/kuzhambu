@@ -1,5 +1,4 @@
 package com.thundax.kuzhambu.knowledge.application.graph.command;
 
-import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
-
-public record GraphExtractionRetryCommand(ContentRef materialRef, Long failedBatchJobId, Long requestedBy) {}
+public record GraphExtractionRetryCommand(
+        Long taskId, long taskLockVersion, String expectedExecutionStatus, String idempotencyKey) {}

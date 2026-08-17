@@ -19,14 +19,6 @@
     - 验收点：测试证明仅清理指定候选，失败可由调用方重试，Knowledge 无 AI 表访问。
     - 重要度：9/10
 
-- [ ] `knowledge graph task application`：实现图谱提取任务应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S4b
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/**/graph/GraphExtraction*`、`GraphTask*`、`GraphTaskCandidateResolver.java`
-    - 处理动作：实现提取、任务查询、状态动作和候选处置编排。
-    - 验收点：应用测试覆盖批量部分失败、活动任务冲突、候选不可用、分组和输入顺序。
-    - 重要度：10/10
-
 - [ ] `knowledge graph batch withdrawal application`：实现图谱批量撤回
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S4c

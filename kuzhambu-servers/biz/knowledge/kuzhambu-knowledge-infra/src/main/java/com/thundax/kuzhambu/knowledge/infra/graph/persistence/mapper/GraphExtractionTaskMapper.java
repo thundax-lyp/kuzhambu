@@ -67,6 +67,54 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
 
     @Select(
             """
+            <script>
+            select count(*)
+            from knowledge_graph_extraction_task
+            where (#{batchId} is null or batch_id = #{batchId})
+              and (#{executionStatus} is null or execution_status = #{executionStatus})
+              and (#{disposition} is null or disposition = #{disposition})
+              <if test="refs != null and refs.size() > 0">
+                and (content_type, content_ref_id) in
+                <foreach collection="refs" item="ref" open="(" separator="," close=")">
+                  (#{ref.contentType}, #{ref.contentRefId})
+                </foreach>
+              </if>
+            </script>
+            """)
+    long countTasks(
+            @Param("refs") List<GraphExtractionTaskDO> refs,
+            @Param("batchId") String batchId,
+            @Param("executionStatus") String executionStatus,
+            @Param("disposition") String disposition);
+
+    @Select(
+            """
+            <script>
+            select *
+            from knowledge_graph_extraction_task
+            where (#{batchId} is null or batch_id = #{batchId})
+              and (#{executionStatus} is null or execution_status = #{executionStatus})
+              and (#{disposition} is null or disposition = #{disposition})
+              <if test="refs != null and refs.size() > 0">
+                and (content_type, content_ref_id) in
+                <foreach collection="refs" item="ref" open="(" separator="," close=")">
+                  (#{ref.contentType}, #{ref.contentRefId})
+                </foreach>
+              </if>
+            order by requested_at desc, id desc
+            limit #{pageSize} offset #{offset}
+            </script>
+            """)
+    List<GraphExtractionTaskDO> pageTasks(
+            @Param("refs") List<GraphExtractionTaskDO> refs,
+            @Param("batchId") String batchId,
+            @Param("executionStatus") String executionStatus,
+            @Param("disposition") String disposition,
+            @Param("offset") int offset,
+            @Param("pageSize") int pageSize);
+
+    @Select(
+            """
             select * from knowledge_graph_extraction_task
             where purge_after is not null and purge_after <= #{deadline}
             order by purge_after asc, id asc
