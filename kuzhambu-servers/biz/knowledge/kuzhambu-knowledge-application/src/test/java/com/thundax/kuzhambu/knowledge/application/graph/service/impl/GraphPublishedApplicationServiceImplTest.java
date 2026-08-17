@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -13,12 +15,15 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedEdgeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeSplitCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedAdjacencyQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphGovernanceImpactToken;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphGovernanceOperation;
@@ -30,6 +35,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishedAdjacency;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodePropertyId;
@@ -50,6 +56,56 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class GraphPublishedApplicationServiceImplTest {
+
+    @Test
+    void pageAdjacencyShouldKeepIsolatedNodesWithoutImplicitStatusFilters() {
+        Fixture fixture = new Fixture();
+        GraphPublishedNode subject = node(new GraphPublishedNodeId(61L), "主语节点");
+        when(fixture.nodeRepository.pageAdjacency(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        anyBoolean(),
+                        anyInt(),
+                        anyInt()))
+                .thenReturn(PageResult.of(1, 20, 1, List.of(new GraphPublishedAdjacency(subject, null, null))));
+
+        var result = fixture.service.pageAdjacency(
+                new GraphPublishedAdjacencyQuery(
+                        "主语", GraphNodeType.PERSON, null, null, "RELATED_TO", null, null, null, null, null, null, null),
+                new PageQuery(1, 20));
+
+        assertThat(result.getTotalCount()).isEqualTo(1);
+        assertThat(result.getRecords()).singleElement().satisfies(row -> {
+            assertThat(row.subject()).isSameAs(subject);
+            assertThat(row.relation()).isNull();
+            assertThat(row.object()).isNull();
+        });
+        verify(fixture.nodeRepository)
+                .pageAdjacency(
+                        eq("主语"),
+                        eq(GraphNodeType.PERSON),
+                        eq(null),
+                        eq(null),
+                        eq("RELATED_TO"),
+                        eq(null),
+                        eq(null),
+                        eq(null),
+                        eq(null),
+                        eq(null),
+                        eq(null),
+                        eq(true),
+                        eq(1),
+                        eq(20));
+    }
 
     @Test
     void createNodeShouldRecordGovernanceAuditAndManualSource() {

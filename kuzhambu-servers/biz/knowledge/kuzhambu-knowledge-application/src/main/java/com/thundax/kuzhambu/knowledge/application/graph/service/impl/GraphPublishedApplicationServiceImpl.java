@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNodeSplitCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedAdjacencyQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeDeleteQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeDeleteQuery;
@@ -22,6 +23,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNode
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
@@ -145,6 +147,35 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
                 query == null ? null : query.source(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
+    }
+
+    @Override
+    public PageResult<GraphPublishedAdjacencyResult> pageAdjacency(
+            GraphPublishedAdjacencyQuery query, PageQuery pageQuery) {
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        var result = nodeRepository.pageAdjacency(
+                query == null ? null : query.subjectKeyword(),
+                query == null ? null : query.subjectType(),
+                query == null ? GraphPublishedStatus.ACTIVE : query.subjectStatus(),
+                query == null ? null : query.subjectSource(),
+                query == null ? null : query.relationType(),
+                query == null ? GraphPublishedStatus.ACTIVE : query.relationStatus(),
+                query == null ? null : query.relationSource(),
+                query == null ? null : query.objectKeyword(),
+                query == null ? null : query.objectType(),
+                query == null ? null : query.objectStatus(),
+                query == null ? null : query.objectSource(),
+                query == null || query.includeIsolated() == null || query.includeIsolated(),
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
+        return PageResult.of(
+                result.getPageNo(),
+                result.getPageSize(),
+                result.getTotalCount(),
+                result.getRecords().stream()
+                        .map(row -> new GraphPublishedAdjacencyResult(row.subject(), row.relation(), row.object()))
+                        .toList());
     }
 
     @Override

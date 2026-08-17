@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishedAdjacency;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphNodeKey;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeRepository;
@@ -80,6 +81,70 @@ public class GraphPublishedNodeRepositoryImpl implements GraphPublishedNodeRepos
                 .last("limit " + offset(effectivePageNo, effectivePageSize) + ", " + effectivePageSize);
         List<GraphPublishedNode> records = mapper.selectList(pageWrapper).stream()
                 .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+        return PageResult.of(effectivePageNo, effectivePageSize, total, records);
+    }
+
+    @Override
+    public PageResult<GraphPublishedAdjacency> pageAdjacency(
+            String subjectKeyword,
+            GraphNodeType subjectType,
+            GraphPublishedStatus subjectStatus,
+            GraphSourceType subjectSource,
+            String relationType,
+            GraphPublishedStatus relationStatus,
+            GraphSourceType relationSource,
+            String objectKeyword,
+            GraphNodeType objectType,
+            GraphPublishedStatus objectStatus,
+            GraphSourceType objectSource,
+            boolean includeIsolated,
+            int pageNo,
+            int pageSize) {
+        int effectivePageNo = pageNo <= 0 ? 1 : pageNo;
+        int effectivePageSize = pageSize <= 0 ? 10 : pageSize;
+        String subjectTypeValue = subjectType == null ? null : subjectType.value();
+        String subjectStatusValue = subjectStatus == null ? null : subjectStatus.value();
+        String subjectSourceValue = subjectSource == null ? null : subjectSource.value();
+        String relationStatusValue = relationStatus == null ? null : relationStatus.value();
+        String relationSourceValue = relationSource == null ? null : relationSource.value();
+        String objectTypeValue = objectType == null ? null : objectType.value();
+        String objectStatusValue = objectStatus == null ? null : objectStatus.value();
+        String objectSourceValue = objectSource == null ? null : objectSource.value();
+        long total = mapper.countAdjacency(
+                subjectKeyword,
+                subjectTypeValue,
+                subjectStatusValue,
+                subjectSourceValue,
+                relationType,
+                relationStatusValue,
+                relationSourceValue,
+                objectKeyword,
+                objectTypeValue,
+                objectStatusValue,
+                objectSourceValue,
+                includeIsolated);
+        List<GraphPublishedAdjacency> records = mapper
+                .listAdjacency(
+                        subjectKeyword,
+                        subjectTypeValue,
+                        subjectStatusValue,
+                        subjectSourceValue,
+                        relationType,
+                        relationStatusValue,
+                        relationSourceValue,
+                        objectKeyword,
+                        objectTypeValue,
+                        objectStatusValue,
+                        objectSourceValue,
+                        includeIsolated,
+                        offset(effectivePageNo, effectivePageSize),
+                        effectivePageSize)
+                .stream()
+                .map(row -> new GraphPublishedAdjacency(
+                        GraphPersistenceAssembler.toSubjectDomain(row),
+                        GraphPersistenceAssembler.toRelationDomain(row),
+                        GraphPersistenceAssembler.toObjectDomain(row)))
                 .toList();
         return PageResult.of(effectivePageNo, effectivePageSize, total, records);
     }

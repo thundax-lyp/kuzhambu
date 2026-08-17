@@ -48,6 +48,7 @@ import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMa
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialEventDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialNodeDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphMaterialVersionDO;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphPublishedAdjacencyDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphPublishedEdgeDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphPublishedEdgeMaterialDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphPublishedEdgePropertyDO;
@@ -357,6 +358,36 @@ public final class GraphPersistenceAssembler {
                 dataObject.getLockVersion());
     }
 
+    public static GraphPublishedNode toSubjectDomain(GraphPublishedAdjacencyDO dataObject) {
+        if (dataObject == null || dataObject.getSubjectId() == null) {
+            return null;
+        }
+        return new GraphPublishedNode(
+                GraphPublishedNodeIdCodec.toDomain(dataObject.getSubjectId()),
+                GraphNodeKeyCodec.toDomain(dataObject.getSubjectNodeKey()),
+                GraphNodeType.from(dataObject.getSubjectNodeType()),
+                dataObject.getSubjectName(),
+                GraphSourceType.from(dataObject.getSubjectSource()),
+                GraphPublishedStatus.from(dataObject.getSubjectStatus()),
+                dataObject.getSubjectModifiedAt(),
+                dataObject.getSubjectLockVersion());
+    }
+
+    public static GraphPublishedNode toObjectDomain(GraphPublishedAdjacencyDO dataObject) {
+        if (dataObject == null || dataObject.getObjectId() == null) {
+            return null;
+        }
+        return new GraphPublishedNode(
+                GraphPublishedNodeIdCodec.toDomain(dataObject.getObjectId()),
+                GraphNodeKeyCodec.toDomain(dataObject.getObjectNodeKey()),
+                GraphNodeType.from(dataObject.getObjectNodeType()),
+                dataObject.getObjectName(),
+                GraphSourceType.from(dataObject.getObjectSource()),
+                GraphPublishedStatus.from(dataObject.getObjectStatus()),
+                dataObject.getObjectModifiedAt(),
+                dataObject.getObjectLockVersion());
+    }
+
     public static GraphPublishedEdgeDO toObject(GraphPublishedEdge entity) {
         if (entity == null) {
             return null;
@@ -389,6 +420,23 @@ public final class GraphPersistenceAssembler {
                 GraphPublishedStatus.from(dataObject.getStatus()),
                 dataObject.getModifiedAt(),
                 dataObject.getLockVersion());
+    }
+
+    public static GraphPublishedEdge toRelationDomain(GraphPublishedAdjacencyDO dataObject) {
+        if (dataObject == null || dataObject.getRelationId() == null) {
+            return null;
+        }
+        return new GraphPublishedEdge(
+                GraphPublishedEdgeIdCodec.toDomain(dataObject.getRelationId()),
+                GraphEdgeKeyCodec.toDomain(dataObject.getRelationEdgeKey()),
+                GraphPublishedNodeIdCodec.toDomain(dataObject.getRelationSourcePublishedNodeId()),
+                GraphPublishedNodeIdCodec.toDomain(dataObject.getRelationTargetPublishedNodeId()),
+                dataObject.getRelationType(),
+                GraphSourceType.from(dataObject.getRelationSource()),
+                dataObject.getRelationQualifiersJson(),
+                GraphPublishedStatus.from(dataObject.getRelationStatus()),
+                dataObject.getRelationModifiedAt(),
+                dataObject.getRelationLockVersion());
     }
 
     public static GraphPublishedNodePropertyDO toObject(GraphPublishedNodeProperty entity) {
