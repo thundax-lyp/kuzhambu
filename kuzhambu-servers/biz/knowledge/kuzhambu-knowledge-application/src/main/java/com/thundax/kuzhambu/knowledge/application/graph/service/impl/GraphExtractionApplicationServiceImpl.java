@@ -32,7 +32,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaReso
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphTaskCandidateResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
-import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskPageQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -78,7 +78,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     private final GraphExtractionTaskRepository taskRepository;
     private final GraphExtractionTaskDomainService taskDomainService;
     private final GraphTaskCandidateResolver candidateResolver;
-    private final Clock clock;
+    private Clock clock = Clock.systemUTC();
 
     public GraphExtractionApplicationServiceImpl(
             AiFacade aiFacade,
@@ -94,38 +94,6 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             GraphExtractionTaskRepository taskRepository,
             GraphExtractionTaskDomainService taskDomainService,
             GraphTaskCandidateResolver candidateResolver) {
-        this(
-                aiFacade,
-                objectMapper,
-                contentResolver,
-                graphLoader,
-                snapshotSupport,
-                schemaSupport,
-                graphSaver,
-                statsRefresher,
-                documentMerger,
-                materialRepository,
-                taskRepository,
-                taskDomainService,
-                candidateResolver,
-                Clock.systemUTC());
-    }
-
-    GraphExtractionApplicationServiceImpl(
-            AiFacade aiFacade,
-            ObjectMapper objectMapper,
-            GraphMaterialContentResolver contentResolver,
-            GraphMaterialGraphLoader graphLoader,
-            GraphSnapshotResolver snapshotSupport,
-            GraphSchemaResolver schemaSupport,
-            GraphMaterialGraphSaver graphSaver,
-            GraphMaterialStatsRefresher statsRefresher,
-            GraphDocumentMerger documentMerger,
-            GraphMaterialRepository materialRepository,
-            GraphExtractionTaskRepository taskRepository,
-            GraphExtractionTaskDomainService taskDomainService,
-            GraphTaskCandidateResolver candidateResolver,
-            Clock clock) {
         this.aiFacade = aiFacade;
         this.objectMapper = objectMapper;
         this.contentResolver = contentResolver;
@@ -139,7 +107,11 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         this.taskRepository = taskRepository;
         this.taskDomainService = taskDomainService;
         this.candidateResolver = candidateResolver;
-        this.clock = clock;
+    }
+
+    GraphExtractionApplicationServiceImpl useClock(Clock clock) {
+        this.clock = clock == null ? Clock.systemUTC() : clock;
+        return this;
     }
 
     @Override
@@ -200,7 +172,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     }
 
     @Override
-    public PageResult<GraphExtractionTaskResult> pageTasks(GraphTaskPageQuery query, PageQuery pageQuery) {
+    public PageResult<GraphExtractionTaskResult> pageTasks(GraphTaskQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<GraphExtractionTask> page = taskRepository.page(

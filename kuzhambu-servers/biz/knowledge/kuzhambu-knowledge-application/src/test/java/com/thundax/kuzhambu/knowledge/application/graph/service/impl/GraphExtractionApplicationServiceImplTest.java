@@ -53,20 +53,20 @@ class GraphExtractionApplicationServiceImplTest {
     private final GraphTaskCandidateResolver candidateResolver = new GraphTaskCandidateResolver(aiFacade);
 
     private final GraphExtractionApplicationServiceImpl service = new GraphExtractionApplicationServiceImpl(
-            aiFacade,
-            new ObjectMapper(),
-            contentResolver,
-            graphLoader,
-            mock(GraphSnapshotResolver.class),
-            mock(GraphSchemaResolver.class),
-            mock(GraphMaterialGraphSaver.class),
-            statsRefresher,
-            mock(GraphDocumentMerger.class),
-            materialRepository,
-            taskRepository,
-            new GraphExtractionTaskDomainService(),
-            candidateResolver,
-            Clock.fixed(NOW, ZoneOffset.UTC));
+                    aiFacade,
+                    new ObjectMapper(),
+                    contentResolver,
+                    graphLoader,
+                    mock(GraphSnapshotResolver.class),
+                    mock(GraphSchemaResolver.class),
+                    mock(GraphMaterialGraphSaver.class),
+                    statsRefresher,
+                    mock(GraphDocumentMerger.class),
+                    materialRepository,
+                    taskRepository,
+                    new GraphExtractionTaskDomainService(),
+                    candidateResolver)
+            .useClock(Clock.fixed(NOW, ZoneOffset.UTC));
 
     @Test
     void shouldCreateTaskAndRejectDuplicateActiveTask() {

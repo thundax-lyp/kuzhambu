@@ -12,18 +12,17 @@ import org.springframework.stereotype.Component;
 public class GraphMaterialStatsRefresher {
     private final GraphMaterialRepository materialRepository;
     private final GraphMaterialStatsRepository statsRepository;
-    private final Clock clock;
+    private Clock clock = Clock.systemUTC();
 
     public GraphMaterialStatsRefresher(
             GraphMaterialRepository materialRepository, GraphMaterialStatsRepository statsRepository) {
-        this(materialRepository, statsRepository, Clock.systemUTC());
-    }
-
-    GraphMaterialStatsRefresher(
-            GraphMaterialRepository materialRepository, GraphMaterialStatsRepository statsRepository, Clock clock) {
         this.materialRepository = materialRepository;
         this.statsRepository = statsRepository;
-        this.clock = clock;
+    }
+
+    GraphMaterialStatsRefresher useClock(Clock clock) {
+        this.clock = clock == null ? Clock.systemUTC() : clock;
+        return this;
     }
 
     public void refresh(ContentRef materialRef) {

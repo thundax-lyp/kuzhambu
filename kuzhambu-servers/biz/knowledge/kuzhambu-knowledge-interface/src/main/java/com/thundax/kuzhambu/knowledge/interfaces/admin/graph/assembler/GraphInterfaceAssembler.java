@@ -54,7 +54,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNode
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
-import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskPageQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphWithdrawalPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchPublicationResult;
@@ -335,9 +335,9 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
-    public static GraphTaskPageQuery toQuery(@NonNull GraphExtractionRequests.TaskPageRequest request) {
+    public static GraphTaskQuery toQuery(@NonNull GraphExtractionRequests.TaskPageRequest request) {
         Objects.requireNonNull(request, "request");
-        return new GraphTaskPageQuery(
+        return new GraphTaskQuery(
                 request.getKeyword(),
                 request.getContentType(),
                 request.getCategoryCode(),

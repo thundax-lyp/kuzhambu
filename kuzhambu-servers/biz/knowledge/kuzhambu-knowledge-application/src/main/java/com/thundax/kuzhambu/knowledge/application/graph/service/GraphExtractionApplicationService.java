@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionC
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
-import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskPageQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -22,7 +22,7 @@ public interface GraphExtractionApplicationService {
 
     GraphExtractionBatchResult createBatchExtraction(GraphExtractionBatchCommand command);
 
-    PageResult<GraphExtractionTaskResult> pageTasks(GraphTaskPageQuery query, PageQuery pageQuery);
+    PageResult<GraphExtractionTaskResult> pageTasks(GraphTaskQuery query, PageQuery pageQuery);
 
     GraphExtractionTaskDetailResult getTask(GraphTaskDetailQuery query);
 
