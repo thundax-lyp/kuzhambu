@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph migration baseline`：提交图谱素材任务迁移基线
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S0
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-GRAPH-MATERIAL-TASK-BASELINE.md`
-    - 处理动作：记录迁移前统计口径、数据分布和旧调用路径清单。
-    - 验收点：基线文档包含采集时间、数量/状态分布及路径清单，且未修改数据库数据或生产代码。
-    - 重要度：10/10
-
 - [ ] `knowledge graph task schema`：扩展图谱提取任务表结构
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S1a
