@@ -12,6 +12,7 @@ import type {
     GraphMaterialRecord
 } from "@/pages/knowledge/graph-material/graph-material-types";
 import { MaterialOverviewPanel } from "@/pages/knowledge/graph-material/material-overview-panel";
+import { MaterialTaskSummaryPanel } from "@/pages/knowledge/graph-material/material-task-summary-panel";
 
 const { Text } = Typography;
 
@@ -61,11 +62,7 @@ export const MaterialDetailDrawer = ({
             value: "DRAFT_GRAPH"
         },
         {
-            content: (
-                <MaterialDetailPlaceholder testId="knowledge-graph-material-detail-tasks-section">
-                    任务摘要待接入。
-                </MaterialDetailPlaceholder>
-            ),
+            content: <MaterialTaskSummaryPanel detail={detail} />,
             label: "任务",
             value: "TASKS"
         },

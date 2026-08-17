@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { graphMaterialMockDetails } from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
 import type { GraphMaterialDrawerSection } from "@/pages/knowledge/graph-material/graph-material-types";
@@ -22,7 +23,11 @@ const renderDrawer = () => {
             />
         );
     };
-    return render(<Wrapper />);
+    return render(
+        <MemoryRouter>
+            <Wrapper />
+        </MemoryRouter>
+    );
 };
 
 describe("MaterialDetailDrawer", () => {
@@ -44,6 +49,9 @@ describe("MaterialDetailDrawer", () => {
         expect(
             screen.getByTestId("knowledge-graph-material-detail-tasks-section")
         ).toBeInTheDocument();
+        expect(screen.getByText("任务摘要")).toBeInTheDocument();
+        expect(screen.queryByText("任务摘要待接入。")).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "新增对象" })).not.toBeInTheDocument();
 
         await user.click(screen.getByText("发布变更"));
         expect(
