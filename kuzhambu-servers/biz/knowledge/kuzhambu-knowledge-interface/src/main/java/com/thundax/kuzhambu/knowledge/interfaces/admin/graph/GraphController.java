@@ -724,6 +724,24 @@ public class GraphController {
         return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toEdgeData);
     }
 
+    @Operation(summary = "分页查询发布空间单跳邻接表", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "发布邻接分页")
+    @PostMapping("published/adjacency/page")
+    public PageResponse<GraphPublishedResponses.AdjacencyData> publishedAdjacencyPage(
+            @Valid @RequestBody GraphPublishedRequests.PublishedAdjacencyPageRequest request) {
+        var result = publishedService.pageAdjacency(
+                GraphInterfaceAssembler.toQuery(request), pageQuery(request.getPageNo(), request.getPageSize()));
+        return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toAdjacencyData);
+    }
+
     @Operation(summary = "获取发布关系详情", description = "knowledge:graph:view")
     @ApiImplicitParams({
         @ApiImplicitParam(

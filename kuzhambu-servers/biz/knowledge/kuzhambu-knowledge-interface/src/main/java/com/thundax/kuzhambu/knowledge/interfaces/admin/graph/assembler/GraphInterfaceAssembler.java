@@ -30,6 +30,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeM
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedAdjacencyQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeDeleteQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNodeDeleteQuery;
@@ -48,6 +49,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImpo
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
@@ -542,6 +544,25 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphPublishedAdjacencyQuery toQuery(
+            @NonNull GraphPublishedRequests.PublishedAdjacencyPageRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphPublishedAdjacencyQuery(
+                request.getSubjectKeyword(),
+                request.getSubjectType() == null ? null : GraphNodeType.from(request.getSubjectType()),
+                request.getSubjectStatus() == null ? null : GraphPublishedStatus.valueOf(request.getSubjectStatus()),
+                request.getSubjectSource() == null ? null : GraphSourceType.valueOf(request.getSubjectSource()),
+                request.getRelationType(),
+                request.getRelationStatus() == null ? null : GraphPublishedStatus.valueOf(request.getRelationStatus()),
+                request.getRelationSource() == null ? null : GraphSourceType.valueOf(request.getRelationSource()),
+                request.getObjectKeyword(),
+                request.getObjectType() == null ? null : GraphNodeType.from(request.getObjectType()),
+                request.getObjectStatus() == null ? null : GraphPublishedStatus.valueOf(request.getObjectStatus()),
+                request.getObjectSource() == null ? null : GraphSourceType.valueOf(request.getObjectSource()),
+                request.getIncludeIsolated());
+    }
+
+    @NonNull
     public static com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId toNodeId(
             @NonNull String value) {
         Objects.requireNonNull(value, "value");
@@ -603,6 +624,16 @@ public final class GraphInterfaceAssembler {
                 value.getSource().name(),
                 value.getStatus().name(),
                 String.valueOf(value.getLockVersion()));
+    }
+
+    @NonNull
+    public static GraphPublishedResponses.AdjacencyData toAdjacencyData(@NonNull GraphPublishedAdjacencyResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphPublishedResponses.AdjacencyData(
+                toNodeData(value.subject()),
+                value.relation() == null ? null : toEdgeData(value.relation()),
+                value.object() == null ? null : toNodeData(value.object()),
+                value.relation() == null);
     }
 
     @NonNull
