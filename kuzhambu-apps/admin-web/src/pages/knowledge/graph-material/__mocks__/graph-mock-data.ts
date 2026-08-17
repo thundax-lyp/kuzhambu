@@ -318,15 +318,54 @@ const findMaterial = (contentRef: GraphContentRefRecord) =>
             material.contentRef.contentRefId === contentRef.contentRefId
     );
 
+const toMaterialTaskSummary = (
+    task?: GraphExtractionTaskRecord | null
+): GraphMaterialTaskSummaryRecord | null => {
+    if (
+        !task?.id ||
+        !task.materialRef ||
+        !task.lockVersion ||
+        !task.executionStatus ||
+        !task.attemptNo ||
+        task.progress === undefined ||
+        !task.currentStage
+    ) {
+        return null;
+    }
+    return {
+        attemptNo: task.attemptNo,
+        batchId: task.batchId,
+        completedAt:
+            task.completedAt === undefined || task.completedAt === null
+                ? task.completedAt
+                : String(task.completedAt),
+        currentStage: task.currentStage,
+        disposition: task.disposition ?? null,
+        executionStatus: task.executionStatus,
+        failureReason: task.failureReason,
+        id: task.id,
+        lockVersion: task.lockVersion,
+        materialRef: task.materialRef,
+        progress: task.progress,
+        purgeAfter: task.purgeAfter,
+        requestedAt:
+            task.requestedAt === undefined || task.requestedAt === null
+                ? task.requestedAt
+                : String(task.requestedAt)
+    };
+};
+
 export const graphMaterialMockListRecords: GraphMaterialListRecord[] = graphMaterialMockSources.map(
     (source) => {
         const material = findMaterial(source.contentRef) ?? null;
         return {
             latestTask:
-                graphExtractionMockTasks.find(
-                    (task) =>
-                        task.materialRef.contentType === source.contentRef.contentType &&
-                        task.materialRef.contentRefId === source.contentRef.contentRefId
+                toMaterialTaskSummary(
+                    graphExtractionMockTasks.find(
+                        (task) =>
+                            task.materialRef?.contentType === source.contentRef.contentType &&
+                            task.materialRef?.contentRefId === source.contentRef.contentRefId
+                    )
                 ) ?? null,
             material,
             materialStats: graphMaterialMockStats[source.contentRef.contentRefId] ?? null,
@@ -376,21 +415,25 @@ export const graphMaterialMockDetails: GraphMaterialDetailRecord[] =
 
 export const graphExtractionMockTaskDetails: GraphExtractionTaskDetailRecord[] =
     graphExtractionMockTasks.map((task) => {
-        const source = findSource(task.materialRef) ?? graphMaterialMockSources[0];
+        const materialRef = task.materialRef ?? sanciaRef;
+        const source = findSource(materialRef) ?? graphMaterialMockSources[0];
         return {
             candidate: task.id === "7005" ? null : candidatePreview,
-            materialStats: graphMaterialMockStats[task.materialRef.contentRefId] ?? null,
+            materialStats: graphMaterialMockStats[materialRef.contentRefId] ?? null,
             relatedTasks: graphExtractionMockTasks
                 .filter(
                     (relatedTask) =>
                         relatedTask.id !== task.id && relatedTask.batchId === task.batchId
                 )
                 .map((relatedTask) => ({
-                    disposition: relatedTask.disposition,
-                    executionStatus: relatedTask.executionStatus,
-                    id: relatedTask.id,
-                    materialRef: relatedTask.materialRef,
-                    requestedAt: relatedTask.requestedAt
+                    disposition: relatedTask.disposition ?? null,
+                    executionStatus: relatedTask.executionStatus ?? "PENDING",
+                    id: relatedTask.id ?? "",
+                    materialRef: relatedTask.materialRef ?? materialRef,
+                    requestedAt:
+                        relatedTask.requestedAt === undefined || relatedTask.requestedAt === null
+                            ? relatedTask.requestedAt
+                            : String(relatedTask.requestedAt)
                 })),
             source,
             stages: [
@@ -411,11 +454,16 @@ export const graphExtractionMockTaskDetails: GraphExtractionTaskDetailRecord[] =
                     outputSummary: task.resultSummary
                         ? `节点 ${task.resultSummary.nodeCount}，关系 ${task.resultSummary.edgeCount}`
                         : null,
-                    progress: task.progress,
-                    stageCode: task.currentStage,
+                    progress: task.progress ?? 0,
+                    stageCode: task.currentStage ?? "UNKNOWN",
                     stageNo: "2",
                     startedAt: "1723852805000",
-                    status: task.executionStatus === "FAILED" ? "FAILED" : task.executionStatus
+                    status:
+                        task.executionStatus === "FAILED"
+                            ? "FAILED"
+                            : task.executionStatus === "RUNNING"
+                              ? "RUNNING"
+                              : "SUCCEEDED"
                 }
             ],
             task
@@ -427,7 +475,7 @@ export const graphBatchExtractionResult: GraphBatchExtractionResultRecord = {
     materials: [
         {
             contentRef: sanciaRef,
-            result: graphExtractionMockTasks[0],
+            result: toMaterialTaskSummary(graphExtractionMockTasks[0]) ?? undefined,
             success: true
         },
         {
@@ -481,3 +529,21 @@ export const toMockPage = <TRecord>(
     totalCount: records.length,
     totalPage: Math.max(1, Math.ceil(records.length / pageSize))
 });
+
+export const graphMaterialMockData = {
+    batchPublicationResults: [
+        { materialId: "2004", status: "PUBLISHED" },
+        {
+            failureReason: "发布预览存在未解决冲突。",
+            materialId: "2003",
+            status: "FAILED"
+        }
+    ],
+    materials: graphMaterialMockMaterials,
+    publicationPreview: [
+        { color: "green", id: "preview-create", status: "CREATE" },
+        { color: "orange", id: "preview-link", status: "LINK" },
+        { color: "red", id: "preview-conflict", status: "CONFLICT" },
+        { color: "blue", id: "preview-published", status: "PUBLISHED" }
+    ]
+} as const;

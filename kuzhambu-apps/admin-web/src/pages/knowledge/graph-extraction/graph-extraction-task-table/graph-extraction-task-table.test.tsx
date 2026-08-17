@@ -1,10 +1,23 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
 import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
 
-const TASK = {
+const TASK: GraphExtractionTaskRecord = {
+    attemptNo: "1",
     aiCandidateId: "7001",
     batchJobId: "1001",
+    batchId: "1001",
+    currentStage: "CANDIDATE_READY",
+    disposition: "PENDING",
+    executionStatus: "SUCCEEDED",
+    id: "8008",
+    lockVersion: "1",
+    materialRef: {
+        contentRefId: "1001",
+        contentType: "SANCAI_ENTRY"
+    },
+    progress: 100,
     replaceUnconfirmedOnly: true,
     selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
     sourceContentId: "1001",

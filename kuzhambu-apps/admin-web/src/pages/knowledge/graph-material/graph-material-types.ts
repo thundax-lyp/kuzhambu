@@ -25,13 +25,13 @@ export interface GraphSourceRecord {
 }
 
 export interface GraphMaterialRecord {
-    id?: string;
+    id: string;
     contentRef: GraphContentRefRecord;
     title: string;
     contentType: GraphContentType;
     category?: string | null;
     volume?: string | null;
-    status?: GraphMaterialStatus | null;
+    status: GraphMaterialStatus;
     lockVersion?: string | null;
     publishedAt?: string | null;
     failureReason?: string | null;

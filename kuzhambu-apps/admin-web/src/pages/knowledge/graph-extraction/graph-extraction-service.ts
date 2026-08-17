@@ -324,7 +324,10 @@ export const applyCandidate = httpGraphExtractionService.applyCandidate;
 export const discardCandidate = httpGraphExtractionService.discardCandidate;
 export const regenerateTask = httpGraphExtractionService.regenerateTask;
 export const createBatchExtraction = httpGraphExtractionService.createBatchExtraction;
-export const getTaskDetail = httpGraphExtractionService.getTask;
+export const getTaskDetail = async (command: GraphExtractionTaskIdCommand) => {
+    const detail = await httpGraphExtractionService.getTask(command);
+    return detail.task;
+};
 export const applyTaskCandidate = (command: GraphExtractionTaskIdCommand) =>
     httpGraphExtractionService.applyCandidate({
         applyMode: "MERGE",

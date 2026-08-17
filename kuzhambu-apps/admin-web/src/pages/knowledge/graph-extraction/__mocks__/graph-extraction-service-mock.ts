@@ -4,30 +4,13 @@ import {
     graphBatchExtractionResult,
     graphExtractionMockTaskDetails,
     graphExtractionMockTasks,
-    graphMaterialMockListRecords,
     toMockPage
 } from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
-import type { GraphExtractionMaterialGroupRecord } from "@/pages/knowledge/graph-extraction/graph-extraction-types";
 
 const findTask = (taskId: string) => graphExtractionMockTasks.find((task) => task.id === taskId);
 
 export const mockGraphExtractionService: GraphExtractionService = {
     pageTasks: async (query = {}) => {
-        if (query.groupBy === "MATERIAL") {
-            const groups: GraphExtractionMaterialGroupRecord[] = graphMaterialMockListRecords
-                .map((record) => ({
-                    materialStats: record.materialStats,
-                    source: record.source,
-                    tasks: graphExtractionMockTasks.filter(
-                        (task) =>
-                            task.materialRef.contentType === record.source.contentRef.contentType &&
-                            task.materialRef.contentRefId === record.source.contentRef.contentRefId
-                    )
-                }))
-                .filter((group) => group.tasks.length > 0);
-            return toMockPage(groups, query.pageNo, query.pageSize);
-        }
-
         const records = query.batchId
             ? graphExtractionMockTasks.filter((task) => task.batchId === query.batchId)
             : graphExtractionMockTasks;
@@ -43,7 +26,7 @@ export const mockGraphExtractionService: GraphExtractionService = {
         return detail;
     },
     retryTask: async (command) => {
-        const task = findTask(command.taskId);
+        const task = findTask(command.taskId ?? "");
         if (!task || task.lockVersion !== command.taskLockVersion) {
             return {
                 conflict: {
@@ -61,7 +44,7 @@ export const mockGraphExtractionService: GraphExtractionService = {
         };
     },
     cancelTask: async (command) => {
-        const task = findTask(command.taskId);
+        const task = findTask(command.taskId ?? "");
         if (!task) {
             return {
                 conflict: {
@@ -79,7 +62,7 @@ export const mockGraphExtractionService: GraphExtractionService = {
         };
     },
     applyCandidate: async (command) => {
-        const task = findTask(command.taskId);
+        const task = findTask(command.taskId ?? "");
         if (!task || task.disposition !== "PENDING") {
             return {
                 conflict: {
@@ -97,7 +80,7 @@ export const mockGraphExtractionService: GraphExtractionService = {
         };
     },
     discardCandidate: async (command) => {
-        const task = findTask(command.taskId);
+        const task = findTask(command.taskId ?? "");
         if (!task) {
             return {
                 conflict: {
@@ -115,7 +98,7 @@ export const mockGraphExtractionService: GraphExtractionService = {
         };
     },
     regenerateTask: async (command) => {
-        const task = findTask(command.taskId);
+        const task = findTask(command.taskId ?? "");
         if (!task) {
             return {
                 conflict: {

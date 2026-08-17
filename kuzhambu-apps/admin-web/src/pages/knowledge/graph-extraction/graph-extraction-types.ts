@@ -62,9 +62,9 @@ export interface GraphExtractionTaskRecord {
     regeneratedFromTaskId?: string | null;
     supersededByTaskId?: string | null;
     triggeredByTaskId?: string | null;
-    requestedAt?: string | null;
-    completedAt?: string | null;
-    disposedAt?: string | null;
+    requestedAt?: number | string | null;
+    completedAt?: number | string | null;
+    disposedAt?: number | string | null;
     purgeAfter?: string | null;
     aiCallId?: string | null;
     aiCandidateId?: string | null;
