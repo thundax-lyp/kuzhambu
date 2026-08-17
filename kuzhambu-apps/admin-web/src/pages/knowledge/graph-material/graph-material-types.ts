@@ -212,3 +212,15 @@ export interface GraphDeletionPrecheckRecord {
     failureMessage?: string | null;
     issues?: GraphPublicationIssueRecord[] | null;
 }
+
+export type MaterialCatalogNodeType = "all" | "category" | "contentType" | "volume";
+
+export interface MaterialCatalogNode {
+    categoryCode?: string;
+    children?: MaterialCatalogNode[];
+    contentType?: string;
+    key: string;
+    nodeType: MaterialCatalogNodeType;
+    title: string;
+    volumeCode?: string;
+}

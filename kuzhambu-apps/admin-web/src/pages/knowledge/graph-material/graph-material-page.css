@@ -1,3 +1,98 @@
-.knowledge-graph-material-page {
+.graph-material-page {
+    --kuzhambu-page-overflow: visible;
+    --kuzhambu-page-padding: 20px 0 0;
+    --graph-material-ink: var(--text-primary);
+    --graph-material-copy: var(--text-secondary);
+    --graph-material-panel: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+    --graph-material-soft: color-mix(in srgb, var(--surface-soft) 84%, transparent);
+    --graph-material-line: var(--line-subtle);
+    --graph-material-accent: #2563eb;
+    --graph-material-accent-soft: rgba(37, 99, 235, 0.1);
+    --graph-material-accent-line: rgba(37, 99, 235, 0.24);
     min-width: 0;
+}
+
+html[data-theme="dark"] .graph-material-page {
+    --graph-material-accent: #60a5fa;
+    --graph-material-accent-soft: rgba(96, 165, 250, 0.12);
+    --graph-material-accent-line: rgba(96, 165, 250, 0.3);
+}
+
+.graph-material-page-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.graph-material-page-search {
+    width: min(100%, 280px);
+}
+
+.graph-material-alert {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 14px;
+}
+
+.graph-material-work-area {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.graph-material-work-panel {
+    box-sizing: border-box;
+    min-width: 0;
+    padding-left: 4px;
+}
+
+.graph-material-catalog-panel {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 12px;
+    margin-right: 4px;
+    overflow: hidden;
+    padding: 16px;
+    background: var(--graph-material-panel);
+    border: 1px solid var(--graph-material-line);
+    border-radius: 8px;
+}
+
+.graph-material-list-placeholder {
+    display: grid;
+    min-height: 260px;
+    place-items: center;
+    min-width: 0;
+    color: var(--graph-material-copy);
+    background: var(--graph-material-soft);
+    border: 1px dashed var(--graph-material-line);
+    border-radius: 8px;
+}
+
+@media (max-width: 760px) {
+    .graph-material-page-search {
+        width: 100%;
+    }
+
+    .graph-material-work-area {
+        width: 100% !important;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .graph-material-work-area-panel {
+        display: none !important;
+    }
+
+    .graph-material-work-area-dragger {
+        display: none;
+    }
+
+    .graph-material-work-area > .graph-material-work-panel {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 0;
+    }
 }

@@ -11,6 +11,7 @@ describe("MaterialTable", () => {
             <MaterialTable
                 dataSource={[graphMaterialMockListRecords[0]]}
                 onOpenMaterial={onOpenMaterial}
+                onExtract={vi.fn()}
                 onViewTasks={onViewTasks}
             />
         );
@@ -25,13 +26,14 @@ describe("MaterialTable", () => {
             <MaterialTable
                 dataSource={[graphMaterialMockListRecords[3]]}
                 onOpenMaterial={vi.fn()}
+                onExtract={vi.fn()}
                 onViewTasks={vi.fn()}
             />
         );
 
         expect(screen.getByText("明代风俗 婚礼")).toBeInTheDocument();
-        expect(screen.getByText("统计更新中")).toBeInTheDocument();
         expect(screen.getByText("运行中")).toBeInTheDocument();
+        expect(screen.getByText("#7002 · EXTRACTING_RELATIONS · 48%")).toBeInTheDocument();
     });
 
     it("disables task navigation when task permission is missing", () => {
@@ -41,6 +43,7 @@ describe("MaterialTable", () => {
                 canViewTasks={false}
                 dataSource={[graphMaterialMockListRecords[1]]}
                 onOpenMaterial={vi.fn()}
+                onExtract={vi.fn()}
                 onViewTasks={onViewTasks}
             />
         );
@@ -57,6 +60,7 @@ describe("MaterialTable", () => {
             <MaterialTable
                 dataSource={[graphMaterialMockListRecords[1]]}
                 onOpenMaterial={vi.fn()}
+                onExtract={vi.fn()}
                 onViewTasks={onViewTasks}
             />
         );

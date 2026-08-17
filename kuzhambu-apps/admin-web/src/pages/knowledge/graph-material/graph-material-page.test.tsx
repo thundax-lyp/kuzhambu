@@ -67,6 +67,29 @@ const renderPage = () => {
     return { ...view, visitedLocations };
 };
 
+const mockCatalogThenPage = (
+    pageRecords: GraphMaterialListRecord[] = graphMaterialMockListRecords,
+    totalCount = pageRecords.length
+) => {
+    vi.mocked(service.pageMaterials).mockImplementation(async (query) => {
+        if (query?.pageSize === 500) {
+            return toPage(
+                graphMaterialMockListRecords,
+                1,
+                500,
+                graphMaterialMockListRecords.length
+            );
+        }
+        return toPage(pageRecords, query?.pageNo ?? 1, query?.pageSize ?? 20, totalCount);
+    });
+};
+
+const selectCatalogLeaf = async (leafTitle = "卷二") => {
+    const user = userEvent.setup();
+    await user.click(await screen.findByText(leafTitle));
+    return user;
+};
+
 describe("GraphMaterialPage", () => {
     afterEach(() => {
         cleanup();
@@ -74,198 +97,155 @@ describe("GraphMaterialPage", () => {
         vi.clearAllMocks();
     });
 
-    it("shows the material list loading state while querying pageMaterials", async () => {
+    it("shows the material list loading state after selecting a catalog leaf", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockReturnValue(new Promise(() => undefined));
+        vi.mocked(service.pageMaterials).mockImplementation((query) => {
+            if (query?.pageSize === 500) {
+                return Promise.resolve(
+                    toPage(
+                        graphMaterialMockListRecords,
+                        1,
+                        500,
+                        graphMaterialMockListRecords.length
+                    )
+                );
+            }
+            return new Promise(() => undefined);
+        });
         const { container } = renderPage();
 
-        expect(service.pageMaterials).toHaveBeenCalledWith({ pageNo: 1, pageSize: 20 });
-        expect(screen.getByText("素材列表")).toBeInTheDocument();
+        expect(service.pageMaterials).toHaveBeenCalledWith({ pageNo: 1, pageSize: 500 });
+        expect(screen.getByText("请选择左侧目录叶子节点查看素材列表")).toBeInTheDocument();
+        await selectCatalogLeaf();
+
         await waitFor(() => {
+            expect(service.pageMaterials).toHaveBeenLastCalledWith({
+                categoryCode: "人物",
+                contentType: "SANCAI_ENTRY",
+                keyword: undefined,
+                pageNo: 1,
+                pageSize: 20,
+                volumeCode: "卷二"
+            });
             expect(container.querySelector(".ant-spin-spinning")).toBeInTheDocument();
         });
     });
 
-    it("shows table empty state when pageMaterials returns no records", async () => {
+    it("shows table empty state when selected leaf has no material records", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockResolvedValue(toPage([]));
+        mockCatalogThenPage([]);
         renderPage();
+
+        await selectCatalogLeaf();
 
         expect(await screen.findByText("暂无图谱素材")).toBeInTheDocument();
-        expect(screen.getByLabelText("图谱素材复合表格")).toBeInTheDocument();
+        expect(screen.getByLabelText("图谱素材列表")).toBeInTheDocument();
     });
 
-    it("queries pageMaterials with material filter values", async () => {
+    it("queries pageMaterials with selected catalog leaf and search keyword", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        mockCatalogThenPage();
         renderPage();
-        const user = userEvent.setup();
+        const user = await selectCatalogLeaf();
 
-        await screen.findByText("三才图会 人物一");
-        await user.type(screen.getByLabelText("关键字"), "人物");
-        await user.type(screen.getByLabelText("分类"), "person");
-        await user.type(screen.getByLabelText("卷目"), "volume-2");
-        await user.click(screen.getByTestId("knowledge-graph-material-filter-submit-button"));
+        await user.type(screen.getByLabelText("搜索图谱素材"), "人物");
 
         await waitFor(() => {
             expect(service.pageMaterials).toHaveBeenLastCalledWith({
-                categoryCode: "person",
+                categoryCode: "人物",
+                contentType: "SANCAI_ENTRY",
                 keyword: "人物",
                 pageNo: 1,
                 pageSize: 20,
-                volumeCode: "volume-2"
+                volumeCode: "卷二"
             });
         });
     });
 
-    it("queries pageMaterials with pagination values", async () => {
+    it("queries pageMaterials with pagination values inside the selected leaf", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockImplementation(async (query) =>
-            toPage(graphMaterialMockListRecords, query?.pageNo ?? 1, query?.pageSize ?? 20, 50)
-        );
+        mockCatalogThenPage(graphMaterialMockListRecords, 50);
         renderPage();
-        const user = userEvent.setup();
+        const user = await selectCatalogLeaf();
 
         await screen.findByText("三才图会 人物一");
         await user.click(screen.getByRole("listitem", { name: "2" }));
 
         await waitFor(() => {
-            expect(service.pageMaterials).toHaveBeenLastCalledWith({ pageNo: 2, pageSize: 20 });
+            expect(service.pageMaterials).toHaveBeenLastCalledWith({
+                categoryCode: "人物",
+                contentType: "SANCAI_ENTRY",
+                keyword: undefined,
+                pageNo: 2,
+                pageSize: 20,
+                volumeCode: "卷二"
+            });
         });
     });
 
-    it("recovers from pageMaterials error by retrying the query", async () => {
+    it("recovers from selected material list error by retrying the query", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         vi.mocked(service.pageMaterials)
+            .mockResolvedValueOnce(
+                toPage(graphMaterialMockListRecords, 1, 500, graphMaterialMockListRecords.length)
+            )
             .mockRejectedValueOnce(new Error("素材服务暂不可用"))
             .mockResolvedValueOnce(toPage(graphMaterialMockListRecords));
         renderPage();
+
+        await selectCatalogLeaf();
 
         expect(await screen.findByText("素材列表加载失败")).toBeInTheDocument();
         expect(screen.getByText("素材服务暂不可用")).toBeInTheDocument();
 
         const user = userEvent.setup();
-        await user.click(screen.getByRole("button", { name: "重试加载素材列表" }));
+        await user.click(screen.getByRole("button", { name: "重试加载素材" }));
 
         expect(await screen.findByText("三才图会 人物一")).toBeInTheDocument();
-        expect(service.pageMaterials).toHaveBeenCalledTimes(2);
+        expect(service.pageMaterials).toHaveBeenCalledTimes(3);
     });
 
-    it("shows uninitialized material rows in the composite table", async () => {
+    it("shows uninitialized material rows in the leaf material table", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        mockCatalogThenPage();
         renderPage();
+
+        await selectCatalogLeaf("卷一");
 
         expect(await screen.findByText("三才图会 天文一")).toBeInTheDocument();
         expect(screen.getAllByText("未初始化/未抽取").length).toBeGreaterThan(0);
-        expect(screen.getAllByRole("columnheader")).toHaveLength(11);
+        expect(screen.getAllByRole("columnheader")).toHaveLength(4);
         expect(screen.getByRole("button", { name: /打开素材 三才图会 天文一/u })).toBeDisabled();
     });
 
-    it("shows batch actions for selected material rows", async () => {
+    it("creates extraction task for a single material row", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
-        renderPage();
-        const user = userEvent.setup();
-
-        await screen.findByText("三才图会 人物一");
-        const checkboxes = screen.getAllByRole("checkbox");
-        await user.click(checkboxes[2]);
-        await user.click(checkboxes[3]);
-
-        expect(screen.getByText("批量动作（2）")).toBeInTheDocument();
-    });
-
-    it("publishes selected materials through Knowledge publication preview and publish APIs", async () => {
-        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
-        vi.mocked(service.previewBatchPublication).mockResolvedValue({
-            materials: [
-                {
-                    contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-                    result: {
-                        edges: [],
-                        issues: [],
-                        materialLockVersion: "4",
-                        materialRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-                        nodes: [],
-                        previewToken: "preview-1002",
-                        publishable: true
-                    },
-                    success: true
-                },
-                {
-                    contentRef: { contentRefId: "1003", contentType: "WANGQI_DOCUMENT" },
-                    failureMessage: "发布预检存在阻塞项。",
-                    success: false
-                }
-            ]
-        });
-        vi.mocked(service.publishBatch).mockResolvedValue({
-            materials: [
-                {
-                    contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-                    result: {
-                        contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-                        createdEdgeCount: "0",
-                        createdNodeCount: "0",
-                        materialStatus: "PUBLISHED",
-                        reusedEdgeCount: "98",
-                        reusedNodeCount: "64",
-                        success: true
-                    },
-                    success: true
-                }
-            ]
+        mockCatalogThenPage();
+        vi.mocked(service.createBatchExtraction).mockResolvedValue({
+            batchId: "batch-001",
+            materials: []
         });
         renderPage();
-        const user = userEvent.setup();
+        const user = await selectCatalogLeaf();
 
         await screen.findByText("三才图会 人物一");
-        const checkboxes = screen.getAllByRole("checkbox");
-        await user.click(checkboxes[2]);
-        await user.click(checkboxes[3]);
-        await user.click(screen.getByTestId("knowledge-graph-material-batch-publish-button"));
+        await user.click(screen.getByRole("button", { name: "提取 三才图会 人物一" }));
 
         await waitFor(() => {
-            expect(service.previewBatchPublication).toHaveBeenCalledWith({
-                contentRefs: [
-                    { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-                    { contentRefId: "1003", contentType: "WANGQI_DOCUMENT" }
-                ]
+            expect(vi.mocked(service.createBatchExtraction).mock.calls[0]?.[0]).toEqual({
+                contentRefs: [{ contentRefId: "1002", contentType: "SANCAI_ENTRY" }]
             });
         });
-        expect(service.publishBatch).toHaveBeenCalledWith({
-            materials: [
-                {
-                    conflictDecisions: [],
-                    contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-                    materialLockVersion: "4",
-                    previewToken: "preview-1002"
-                }
-            ]
-        });
-        await waitFor(() => {
-            expect(
-                screen.getByTestId("knowledge-graph-material-batch-result-SANCAI_ENTRY:1002")
-            ).toHaveTextContent("已发布");
-        });
-        expect(
-            screen.getByTestId("knowledge-graph-material-batch-result-WANGQI_DOCUMENT:1003")
-        ).toHaveTextContent("发布预检存在阻塞项。");
     });
 
-    it("navigates to extraction tasks with selected contentRefs", async () => {
+    it("navigates to extraction tasks from a single material row", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        mockCatalogThenPage();
         const { visitedLocations } = renderPage();
-        const user = userEvent.setup();
+        const user = await selectCatalogLeaf();
 
         await screen.findByText("三才图会 人物一");
-        const checkboxes = screen.getAllByRole("checkbox");
-        await user.click(checkboxes[1]);
-        await user.click(checkboxes[2]);
-        await user.click(screen.getByTestId("knowledge-graph-material-batch-view-tasks-button"));
+        await user.click(screen.getByRole("button", { name: "查看任务 三才图会 人物一" }));
 
         await waitFor(() => {
             expect(visitedLocations.at(-1)).toMatch(/^\/knowledge\/graph-extraction\?/u);
@@ -273,17 +253,16 @@ describe("GraphMaterialPage", () => {
         const lastLocation = visitedLocations.at(-1) ?? "";
         const params = new URLSearchParams(lastLocation.split("?")[1]);
         expect(JSON.parse(params.get("contentRefs") || "[]")).toEqual([
-            { contentRefId: "1001", contentType: "SANCAI_ENTRY" },
             { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
         ]);
     });
 
     it("clears selected material when the detail drawer closes", async () => {
         replacePermissions(["knowledge:graph:view"]);
-        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        mockCatalogThenPage();
         vi.mocked(service.getMaterial).mockResolvedValue(graphMaterialMockDetails[1]);
         renderPage();
-        const user = userEvent.setup();
+        const user = await selectCatalogLeaf();
 
         await screen.findByText("三才图会 人物一");
         await user.click(screen.getByTestId("knowledge-graph-material-open-2002-link"));
@@ -310,12 +289,12 @@ describe("GraphMaterialPage", () => {
 
     it("recovers from material detail loading error by retrying the query", async () => {
         replacePermissions(["knowledge:graph:view"]);
-        vi.mocked(service.pageMaterials).mockResolvedValue(toPage(graphMaterialMockListRecords));
+        mockCatalogThenPage();
         vi.mocked(service.getMaterial)
             .mockRejectedValueOnce(new Error("素材详情服务暂不可用"))
             .mockResolvedValueOnce(graphMaterialMockDetails[1]);
         renderPage();
-        const user = userEvent.setup();
+        const user = await selectCatalogLeaf();
 
         await screen.findByText("三才图会 人物一");
         await user.click(screen.getByTestId("knowledge-graph-material-open-2002-link"));
