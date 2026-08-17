@@ -9,7 +9,7 @@
 ## Scope and Non-goals
 
 - 只处理三才图会素材。
-- 覆盖工作台、整体治理、素材空间、整体发布/撤回、抽取、删除任务、JSON 导入导出和质量待办。
+- 覆盖工作台、图谱治理、素材管理、提取任务、整体发布/撤回、删除任务、JSON 导入导出和质量待办。
 - 不实现世系图。
 - 不实现 Schema 后台管理或对外暴露 Schema。
 - 不实现发布空间全量导入导出、素材版本管理、正文证据片段定位或发布空间向素材空间自动回写。
@@ -31,6 +31,14 @@ Admin workbench / material workspace / portal material view
 ```
 
 Knowledge 发起图谱抽取必须通过 AI 域 application 协作语义，不得直接调用 Python worker。AI worker 只执行能力，不解析 Knowledge 的业务发布协议。
+
+### Cross-domain Read Composition
+
+素材管理、任务详情和其他图谱页面的 HTTP 接口均归 Knowledge。前端只请求 Knowledge，不得自行调用 Classics 接口后拼装图谱页面。
+
+素材列表由 Knowledge application 按以下顺序组装：先校验 `knowledge:graph:view`，再携带当前主体和筛选条件调用 Classics facade 分页取得可见且可图谱化的稿件，最后按当前页 `ContentRef` 批量读取图谱素材、统计快照和任务摘要。Classics 对内容可见性和生命周期拥有最终决定权；Knowledge 不缓存完整正文或绕过该校验。素材详情、抽取和发布前也必须经 Classics facade 校验来源内容仍可用，并在抽取时冻结内容快照。
+
+跨域 facade 仅返回页面所需的标题、来源类型、卷目/分类、可见性和内容快照等字段。Classics 删除或不可用事件通过异步协作触发 Knowledge 的素材删除/禁用流程；不得跨域访问对端表或由前端执行补偿调用。
 
 ## Schema as Code
 
@@ -62,7 +70,7 @@ Schema 变更必须与代码评审、数据库迁移和现有数据迁移一同�
 | `MaterialGraph` | 一份三才图会素材的一张草稿图、锁定状态及素材侧节点/边编辑。 |
 | `PublishedGraph` | 统一发布节点、边、属性值、人工治理、合并、拆分和删除。 |
 | `GraphPublication` | 单素材整体发布的预览、确认、映射和审计；批量发布只是多个独立 publication 的前端聚合。 |
-| `GraphExtractionTask` | 素材内容快照下的异步抽取、结果合并追加和重试。 |
+| `GraphExtractionTask` | 素材内容快照下的异步抽取、候选处置、原地重试、关联任务和到期清理。 |
 | `MaterialDeletionTask` | 素材删除决策、异步删除和可重试执行。 |
 
 `MaterialGraph` 以 `ContentRef` 为归属，而不是裸 `materialId`。`ContentRef` 为 `(contentType, refId)` 值对象；首期仅接受 `SANCAI_ENTRY`。图谱域定义自己的 `ContentRef` 值对象，与 taxonomy 的内容引用保持相同语义但不跨子域复用实体模型。
@@ -89,12 +97,16 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 
 | Table | Key fields and responsibility |
 | --- | --- |
-| `knowledge_graph_material` | 技术主键 `id`；业务 `content_type + content_ref_id` 唯一；`status`、`published_at`、`current_extraction_task_id`。只保存 `ContentRef` 与图谱状态，不复制正文。 |
+| `knowledge_graph_material` | 技术主键 `id`；业务 `content_type + content_ref_id` 唯一；`status`、`published_at`、`current_extraction_task_id`、`lock_version`。只保存 `ContentRef` 与图谱状态，不复制正文；`current_extraction_task_id` 只指向唯一活动任务。 |
 | `knowledge_graph_material_node` | `material_id`、`node_key`、`node_type`、`name`、`properties_json`；同素材图内 `(material_id, node_key)` 唯一。未能计算 Key 的草稿对象允许 `node_key` 为空。 |
 | `knowledge_graph_material_edge` | `material_id`、两端素材节点、`relation_type`、`qualifiers_json`、`edge_key`；同素材图内 `(material_id, edge_key)` 唯一。未能计算 Key 的草稿关系允许 `edge_key` 为空。 |
-| `knowledge_graph_extraction_task` | `material_id`、`ContentRef` 快照、内容快照、管道版本、当前阶段、状态、进度、结果摘要、失败原因、重试来源任务。阶段级输入/输出、AI 调用和失败原因由 `knowledge_graph_extraction_stage` 保存。 |
+| `knowledge_graph_material_stats` | `material_id` 唯一；草稿节点/关系数、发布贡献节点/关系数、活动/待审核/失败任务数、`stats_revision`、`calculated_at`。它是素材库列表和筛选的读模型，不替代节点、关系和任务明细。 |
+| `knowledge_graph_extraction_task` | `material_id`、`ContentRef`、内容/模型/提示词/Schema 快照、管道版本、`execution_status`、`disposition`、当前阶段、进度、尝试次数、候选/调用引用、结果摘要、失败原因、处置和清理时间、关联任务引用。任务不保存候选载荷。 |
+| `knowledge_graph_extraction_stage` | `extraction_task_id`、阶段顺序、运行状态、输入/输出摘要、AI 调用、失败原因和起止时间。 |
 
 `properties_json` 与 `qualifiers_json` 是开放多值 JSON 载体：草稿写入只校验其为对象，细分属性和值域作为告警而非拒绝条件；它们不替代可查询的 Key、类型和关系字段。
+
+`execution_status` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`；`disposition` 在成功后固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`。运行状态和采纳状态不得复用同一字段。`FAILED -> PENDING` 是同一任务的原地重试，递增 `attempt_no` 并保留尝试历史；重新抽取创建新任务，通过 `regenerated_from_task_id` 关联来源。`batch_id`、`regenerated_from_task_id`、`superseded_by_task_id`、`triggered_by_task_id` 用于任务详情的关联任务读取。
 
 ### Published Space
 
@@ -125,10 +137,15 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 
 ### Extraction and Draft Merge
 
-1. 素材列表发起抽取；应用层校验 `knowledge:graph:edit`、素材属于三才图会且当前为 `DRAFT`。
-2. 读取并固定素材内容快照，经 AI 域创建异步调用，写入 `GraphExtractionTask`。
-3. 回调或轮询成功后，应用层先执行宽松结构校验，再按素材内可计算的有效 Key 合并追加：同 Key 补充属性，不同 Key 新增节点或边；无法计算 Key 或命中质量规则的对象保留为草稿告警，不丢弃抽取结果。
-4. 失败记录原因；重试新建任务并保留历史。已发布素材必须先撤回，不能绕过冻结直接抽取。
+1. 素材管理发起抽取；应用层校验 `knowledge:graph:edit`、素材属于三才图会、当前为 `DRAFT` 且没有 `PENDING` 或 `RUNNING` 任务。
+2. 通过 Classics facade 读取并固定内容快照，以及模型、提示词、变量和输出 Schema 快照；经 AI 域创建异步调用，写入 `GraphExtractionTask`，并将素材的 `current_extraction_task_id` 指向该任务。
+3. 回调或轮询成功后，应用层先执行宽松结构校验并生成 AI 域候选。任务转为 `SUCCEEDED + disposition:PENDING`，清空素材的活动任务指针；候选未处置前不得改变草稿图。
+4. 用户选择 `MERGE` 或 `REPLACE` 时，以素材 `lock_version` 校验当前草稿未被并发修改，再把候选写入草稿图并记录处置结果；选择丢弃则只记录 `DISCARDED`。被后续候选替代的旧候选标记 `SUPERSEDED`。
+5. 失败任务保留冻结输入并可原地重试：递增尝试次数、清空本次运行错误、重置到 `PENDING`；已发布素材必须先撤回，不能绕过冻结直接抽取。正文或运行配置变化时，显式重新抽取创建新任务。
+
+### Task Cleanup
+
+处置终态 `ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED` 和 `SUPERSEDED` 写入 `disposed_at` 与 `purge_after = disposed_at + 7 days`。定时任务仅清理到期的任务和阶段明细；草稿图、发布映射、发布记录、素材统计和最近处置摘要保留。AI 候选、调用和批任务由 AI 域拥有，Knowledge 只能通过 facade 发起同一保留策略下的清理协作，禁止直接删除 AI 表。
 
 ### Publication
 
@@ -180,8 +197,9 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 | Resource | Main operations |
 | --- | --- |
 | `/knowledge/graph/workbench` | 概览统计、最近发布种子、关联边分页、门类图、搜索、对象详情、质量待办。 |
-| `/knowledge/graph/materials` | 素材分页、素材草稿图读取、节点/边 CRUD、JSON 导入导出、抽取任务查看与触发。 |
-| `/knowledge/graph/materials/{id}/publish` | 预览、确认发布、撤回；批量发布请求逐素材返回结果。 |
+| `/knowledge/graph/material` | Classics 可见稿件分页后的素材目录、素材 `SegmentedDrawer`、草稿节点/边 CRUD、JSON 导入导出和批量动作。 |
+| `/knowledge/graph/task` | 单份、整卷和批量抽取任务的创建、处理队列、按素材分组、详情、取消、原地重试、重新抽取、候选预览与处置。 |
+| `/knowledge/graph/publication` | 预览、确认发布、撤回和多素材独立批量发布。 |
 | `/knowledge/graph/published` | 发布节点/边 CRUD、来源、治理记录、合并、拆分、删除。 |
 | `/knowledge/graph/deletion-changes` | 删除前快照、用户决策和结果查询。 |
 | `/knowledge/graph/deletion-tasks` | 删除任务创建、进度、失败原因和重试。 |
@@ -194,10 +212,12 @@ JSON 导入只允许写入未发布素材草稿图。先执行格式和 Schema �
 
 Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 
-- 工作台、整体治理、素材空间、删除列表和变更列表读取使用 `view`。
+- 工作台、图谱治理、素材管理、提取任务，以及素材管理内删除任务和删除变更读取使用 `view`。
 - 草稿 CRUD、抽取、JSON 上传下载、发布、撤回、删除任务、发布空间治理、合并与拆分使用 `edit`。
 
-菜单固定为“知识图谱 / 工作台 / 整体治理 / 素材空间”。素材空间包含素材库和单素材图谱；删除列表、变更列表作为素材空间的任务入口。高风险动作必须展示影响预览、二次确认和操作结果。
+菜单固定为“知识治理 / 知识图谱 / 工作台、图谱治理、素材管理、提取任务”。素材管理包含素材列表、单素材草稿图、删除任务和删除变更入口；删除任务、删除变更不再作为菜单层级。提取任务集中承载单份、整卷和批量抽取的运行状态、候选预览、应用、取消和重生成；候选应用后回到对应素材草稿图。高风险动作必须展示影响预览、二次确认和操作结果。
+
+工作台只读取正式发布空间，用于概览、搜索、局部图浏览、来源追溯与质量待办分流，不提供直接治理写操作。图谱治理只处理发布空间的跨素材节点、关系和人工来源变更；合并、拆分、删除必须先显示影响对象、关系、映射和待处理事项，再允许确认应用。素材管理只处理来源素材、草稿、整体发布/撤回及删除生命周期；提取任务不直接编辑草稿，也不执行发布空间治理。
 
 发布预览在素材画布内完成：绿色新建、橙色关联、红色冲突、蓝色已发布。红色对象点击后在右侧抽屉展示素材对象、候选发布对象、关键差异和动作；存在未决冲突时禁止确认。
 
@@ -215,8 +235,8 @@ Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 ## Verification
 
 - 单元测试：Schema Key 与约束、草稿合并、发布匹配、冲突、乐观锁、属性首选、合并、拆分、撤回和删除决策。
-- 集成测试：发布事务原子性、唯一约束并发、AI 域协作与快照、删除任务幂等重试、素材删除后映射状态、权限拒绝。
-- 前端 E2E：抽取到草稿、发布预览冲突、冻结与撤回、发布治理、删除列表决策、最近发布渐进渲染、200 节点截断与 JSON 导入校验。
+- 集成测试：Classics 可见稿件分页与 Knowledge 批量补齐、发布事务原子性、单素材活动任务互斥、任务原地重试、候选处置、7 天清理、AI 域快照协作、删除任务幂等重试、素材删除后映射状态、权限拒绝。
+- 前端 E2E：素材列表统计快照、素材/任务 `SegmentedDrawer`、任务队列和按素材分组、抽取到草稿、候选合并/覆盖/丢弃、发布预览冲突、冻结与撤回、发布治理、删除列表决策、最近发布渐进渲染、200 节点截断与 JSON 导入校验。
 - 数据迁移验证：迁移前后素材数、节点/边数、映射数和人工治理操作抽样核对；旧入口移除后确认不存在旧模型写入。
 
 ## Related Documents

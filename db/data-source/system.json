@@ -131,10 +131,9 @@
         "知识治理",
         "知识治理/知识图谱",
         "知识治理/知识图谱/工作台",
-        "知识治理/知识图谱/整体治理",
-        "知识治理/知识图谱/素材空间",
-        "知识治理/知识图谱/素材空间/删除变更",
-        "知识治理/知识图谱/素材空间/删除任务",
+        "知识治理/知识图谱/图谱治理",
+        "知识治理/知识图谱/素材管理",
+        "知识治理/知识图谱/提取任务",
         "知识治理/世系图",
         "运营运维",
         "运营运维/健康检查",
@@ -192,10 +191,9 @@
         "知识治理",
         "知识治理/知识图谱",
         "知识治理/知识图谱/工作台",
-        "知识治理/知识图谱/整体治理",
-        "知识治理/知识图谱/素材空间",
-        "知识治理/知识图谱/素材空间/删除变更",
-        "知识治理/知识图谱/素材空间/删除任务",
+        "知识治理/知识图谱/图谱治理",
+        "知识治理/知识图谱/素材管理",
+        "知识治理/知识图谱/提取任务",
         "知识治理/世系图",
         "知识治理/标签配置",
         "知识库",
@@ -750,48 +748,37 @@
               "id": 41,
               "name": "工作台",
               "perms": ["knowledge:graph:view"],
-              "priority": 83,
+              "priority": 80,
               "icon": "submissions",
               "url": "/knowledge/graph-workbench",
               "remarks": "双空间图谱工作台"
             },
             {
               "id": 42,
-              "name": "整体治理",
+              "name": "图谱治理",
               "perms": ["knowledge:graph:view"],
-              "priority": 82,
+              "priority": 81,
               "icon": "book",
               "url": "/knowledge/graph-governance",
               "remarks": "发布空间节点、关系与治理操作"
             },
             {
               "id": 46,
-              "name": "素材空间",
+              "name": "素材管理",
               "perms": ["knowledge:graph:view"],
-              "priority": 81,
+              "priority": 82,
               "icon": "book",
               "url": "/knowledge/graph-materials",
-              "remarks": "素材草稿、发布和删除任务入口",
-              "children": [
-                {
-                  "id": 47,
-                  "name": "删除变更",
-                  "perms": ["knowledge:graph:view"],
-                  "priority": 80,
-                  "icon": "logs",
-                  "url": "/knowledge/graph-deletion-changes",
-                  "remarks": "素材删除前的变更与决策"
-                },
-                {
-                  "id": 48,
-                  "name": "删除任务",
-                  "perms": ["knowledge:graph:view"],
-                  "priority": 79,
-                  "icon": "submissions",
-                  "url": "/knowledge/graph-deletion-tasks",
-                  "remarks": "素材删除任务与失败重试"
-                }
-              ]
+              "remarks": "素材草稿、发布和删除任务入口"
+            },
+            {
+              "id": 47,
+              "name": "提取任务",
+              "perms": ["knowledge:graph:view"],
+              "priority": 83,
+              "icon": "submissions",
+              "url": "/knowledge/graph-extraction",
+              "remarks": "单素材图谱提取任务、候选结果和应用入口"
             }
           ]
         },
