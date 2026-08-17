@@ -33,6 +33,7 @@ describe("MaterialDetailDrawer", () => {
         expect(
             screen.getByTestId("knowledge-graph-material-detail-overview-section")
         ).toBeInTheDocument();
+        expect(screen.getByText("素材来源")).toBeInTheDocument();
 
         await user.click(screen.getByText("草稿图谱"));
         expect(

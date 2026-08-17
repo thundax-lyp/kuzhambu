@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-material overview panel`：实现素材概览段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/material-overview-panel/`
-    - 处理动作：实现素材来源、统计、风险和最近活动展示。
-    - 验收点：`material-overview-panel` 测试覆盖未初始化素材、统计过期和发布素材。
-    - 重要度：8/10
-
 - [ ] `AW/graph-material draft canvas`：改造素材草稿画布段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`

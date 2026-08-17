@@ -11,6 +11,7 @@ import type {
     GraphMaterialDrawerSection,
     GraphMaterialRecord
 } from "@/pages/knowledge/graph-material/graph-material-types";
+import { MaterialOverviewPanel } from "@/pages/knowledge/graph-material/material-overview-panel";
 
 const { Text } = Typography;
 
@@ -46,11 +47,7 @@ export const MaterialDetailDrawer = ({
 }: MaterialDetailDrawerProps) => {
     const sections: Array<KuzhambuSegmentedDrawerSection<GraphMaterialDrawerSection>> = [
         {
-            content: (
-                <MaterialDetailPlaceholder testId="knowledge-graph-material-detail-overview-section">
-                    素材概览待接入。
-                </MaterialDetailPlaceholder>
-            ),
+            content: <MaterialOverviewPanel detail={detail} />,
             label: "概览",
             value: "OVERVIEW"
         },
