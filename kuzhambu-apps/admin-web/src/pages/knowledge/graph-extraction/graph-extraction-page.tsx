@@ -260,7 +260,6 @@ export const GraphExtractionPage = () => {
     const queryClient = useQueryClient();
     const canViewGraph = usePermission("knowledge:graph:view");
     const canEditGraph = usePermission("knowledge:graph:edit");
-    const canApplyGraph = usePermission("knowledge:graph:apply");
     const [handoffRegenerateCommand] = useState<GraphExtractionRegenerateCommand | null>(() =>
         readRegenerateCommandFromSearch()
     );
@@ -804,7 +803,7 @@ export const GraphExtractionPage = () => {
 
                 <GraphExtractionCandidateModal
                     applying={applyWorkbenchCandidateMutation.isPending}
-                    canApply={canApplyGraph}
+                    canApply={canEditGraph}
                     canEdit={canEditGraph}
                     candidate={candidateQuery.data || null}
                     candidateLoading={candidateQuery.isLoading}
@@ -879,7 +878,7 @@ export const GraphExtractionPage = () => {
                         {tasks.length > 0 ? (
                             <GraphExtractionTaskTable
                                 applyingTaskId={applyTaskMutation.variables?.toString() || null}
-                                canApply={canApplyGraph}
+                                canApply={canEditGraph}
                                 canEdit={canEditGraph}
                                 cancellingBatchId={
                                     cancelBatchTaskMutation.variables?.batchJobId || null
@@ -906,7 +905,7 @@ export const GraphExtractionPage = () => {
                 </KuzhambuDrawer>
                 <GraphExtractionTaskDetail
                     applying={applyTaskMutation.isPending}
-                    canApply={canApplyGraph}
+                    canApply={canEditGraph}
                     loading={taskDetailQuery.isLoading}
                     open={taskDetailDrawerOpen}
                     task={taskDetailQuery.data || null}

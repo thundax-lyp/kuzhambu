@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Page, Route } from "@playwright/test";
 
-const ADMIN_PERMISSIONS = ["knowledge:graph:view", "knowledge:graph:edit", "knowledge:graph:apply"];
+const ADMIN_PERMISSIONS = ["knowledge:graph:view", "knowledge:graph:edit"];
 
 type ApiPayload = Record<string, unknown>;
 
