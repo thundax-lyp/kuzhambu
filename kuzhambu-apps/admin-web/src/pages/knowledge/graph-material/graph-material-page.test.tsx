@@ -177,6 +177,7 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
 
 const selectCatalogLeaf = async (leafTitle = "卷二") => {
     const user = userEvent.setup();
+    await user.click(await screen.findByText("三才图会"));
     if (leafTitle === "卷一") {
         await user.click(await screen.findByText("天文"));
     }

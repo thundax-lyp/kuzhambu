@@ -16,8 +16,11 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
@@ -41,7 +44,6 @@ import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialTreeF
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -187,86 +189,18 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
     public KnowledgeGraphMaterialTreeFacadeResponse listKnowledgeGraphMaterialTree(
             KnowledgeGraphMaterialTreeFacadeRequest request) {
         String parentId = request == null ? null : request.getParentId();
-        List<ClassicsSearchSourceContent> contents = classicsSearchContentApplicationService.listWorkbenchContents();
         if (parentId == null || parentId.isBlank() || "root".equals(parentId)) {
-            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
-                    .nodes(contents.stream()
-                            .collect(Collectors.toMap(
-                                    ClassicsSearchSourceContent::getContentType,
-                                    content -> KnowledgeGraphMaterialTreeFacadeResponse.Node.builder()
-                                            .id(treeNodeId("type", content.getContentType()))
-                                            .parentId("root")
-                                            .title(contentTypeLabel(content.getContentType()))
-                                            .nodeType("contentType")
-                                            .contentType(content.getContentType())
-                                            .leaf(false)
-                                            .build(),
-                                    (left, right) -> left,
-                                    LinkedHashMap::new))
-                            .values()
-                            .stream()
-                            .toList())
-                    .build();
+            return listKnowledgeGraphMaterialRootTree();
         }
         String[] parts = parentId.split(":", -1);
         if (parts.length == 2 && "type".equals(parts[0])) {
             String contentType = decodeTreeNodePart(parts[1]);
-            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
-                    .nodes(contents.stream()
-                            .filter(content -> contentType.equals(content.getContentType()))
-                            .filter(content -> content.getCategoryCode() != null
-                                    && !content.getCategoryCode().isBlank())
-                            .collect(Collectors.toMap(
-                                    ClassicsSearchSourceContent::getCategoryCode,
-                                    content -> KnowledgeGraphMaterialTreeFacadeResponse.Node.builder()
-                                            .id(treeNodeId("type", contentType, "category", content.getCategoryCode()))
-                                            .parentId(parentId)
-                                            .title(defaultTitle(content.getCategoryName(), content.getCategoryCode()))
-                                            .nodeType("category")
-                                            .contentType(contentType)
-                                            .categoryCode(content.getCategoryCode())
-                                            .leaf(!hasVolume(contents, contentType, content.getCategoryCode()))
-                                            .build(),
-                                    (left, right) -> left,
-                                    LinkedHashMap::new))
-                            .values()
-                            .stream()
-                            .toList())
-                    .build();
+            return listKnowledgeGraphMaterialCategoryTree(parentId, contentType);
         }
         if (parts.length == 4 && "type".equals(parts[0]) && "category".equals(parts[2])) {
             String contentType = decodeTreeNodePart(parts[1]);
             String categoryCode = decodeTreeNodePart(parts[3]);
-            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
-                    .nodes(contents.stream()
-                            .filter(content -> contentType.equals(content.getContentType()))
-                            .filter(content -> categoryCode.equals(content.getCategoryCode()))
-                            .filter(content -> content.getVolumeCode() != null
-                                    && !content.getVolumeCode().isBlank())
-                            .collect(Collectors.toMap(
-                                    ClassicsSearchSourceContent::getVolumeCode,
-                                    content -> KnowledgeGraphMaterialTreeFacadeResponse.Node.builder()
-                                            .id(treeNodeId(
-                                                    "type",
-                                                    contentType,
-                                                    "category",
-                                                    categoryCode,
-                                                    "volume",
-                                                    content.getVolumeCode()))
-                                            .parentId(parentId)
-                                            .title(defaultTitle(content.getVolumeName(), content.getVolumeCode()))
-                                            .nodeType("volume")
-                                            .contentType(contentType)
-                                            .categoryCode(categoryCode)
-                                            .volumeCode(content.getVolumeCode())
-                                            .leaf(true)
-                                            .build(),
-                                    (left, right) -> left,
-                                    LinkedHashMap::new))
-                            .values()
-                            .stream()
-                            .toList())
-                    .build();
+            return listKnowledgeGraphMaterialVolumeTree(parentId, contentType, categoryCode);
         }
         return KnowledgeGraphMaterialTreeFacadeResponse.builder()
                 .nodes(List.of())
@@ -385,12 +319,100 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                                 .contains(request.getKeyword().toLowerCase(Locale.ROOT));
     }
 
-    private boolean hasVolume(List<ClassicsSearchSourceContent> contents, String contentType, String categoryCode) {
-        return contents.stream()
-                .anyMatch(content -> contentType.equals(content.getContentType())
-                        && categoryCode.equals(content.getCategoryCode())
-                        && content.getVolumeCode() != null
-                        && !content.getVolumeCode().isBlank());
+    private KnowledgeGraphMaterialTreeFacadeResponse listKnowledgeGraphMaterialRootTree() {
+        List<SancaiCategory> categories = sancaiApplicationService.listCategories();
+        if (categories == null || categories.isEmpty()) {
+            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                    .nodes(List.of())
+                    .build();
+        }
+        return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                .nodes(List.of(KnowledgeGraphMaterialTreeFacadeResponse.Node.builder()
+                        .id(treeNodeId("type", ClassicsContentType.SANCAI_ENTRY.value()))
+                        .parentId("root")
+                        .title(contentTypeLabel(ClassicsContentType.SANCAI_ENTRY.value()))
+                        .nodeType("contentType")
+                        .contentType(ClassicsContentType.SANCAI_ENTRY.value())
+                        .leaf(false)
+                        .build()))
+                .build();
+    }
+
+    private KnowledgeGraphMaterialTreeFacadeResponse listKnowledgeGraphMaterialCategoryTree(
+            String parentId, String contentType) {
+        if (!ClassicsContentType.SANCAI_ENTRY.value().equals(contentType)) {
+            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                    .nodes(List.of())
+                    .build();
+        }
+        List<SancaiCategory> categories = sancaiApplicationService.listCategories();
+        if (categories == null || categories.isEmpty()) {
+            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                    .nodes(List.of())
+                    .build();
+        }
+        return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                .nodes(categories.stream()
+                        .filter(category -> category != null && category.getId() != null)
+                        .map(category -> {
+                            String categoryCode =
+                                    String.valueOf(category.getId().value());
+                            return KnowledgeGraphMaterialTreeFacadeResponse.Node.builder()
+                                    .id(treeNodeId("type", contentType, "category", categoryCode))
+                                    .parentId(parentId)
+                                    .title(defaultTitle(category.getTitle(), categoryCode))
+                                    .nodeType("category")
+                                    .contentType(contentType)
+                                    .categoryCode(categoryCode)
+                                    .leaf(!hasSancaiVolumes(category))
+                                    .build();
+                        })
+                        .toList())
+                .build();
+    }
+
+    private KnowledgeGraphMaterialTreeFacadeResponse listKnowledgeGraphMaterialVolumeTree(
+            String parentId, String contentType, String categoryCode) {
+        if (!ClassicsContentType.SANCAI_ENTRY.value().equals(contentType)) {
+            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                    .nodes(List.of())
+                    .build();
+        }
+        Long categoryId = parseContentId(categoryCode);
+        if (categoryId == null) {
+            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                    .nodes(List.of())
+                    .build();
+        }
+        List<SancaiVolume> volumes = sancaiApplicationService.listVolumes(SancaiCategoryIdCodec.toDomain(categoryId));
+        if (volumes == null || volumes.isEmpty()) {
+            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                    .nodes(List.of())
+                    .build();
+        }
+        return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                .nodes(volumes.stream()
+                        .filter(volume -> volume != null && volume.getId() != null)
+                        .map(volume -> {
+                            String volumeCode = String.valueOf(volume.getId().value());
+                            return KnowledgeGraphMaterialTreeFacadeResponse.Node.builder()
+                                    .id(treeNodeId("type", contentType, "category", categoryCode, "volume", volumeCode))
+                                    .parentId(parentId)
+                                    .title(defaultTitle(volume.getTitle(), volumeCode))
+                                    .nodeType("volume")
+                                    .contentType(contentType)
+                                    .categoryCode(categoryCode)
+                                    .volumeCode(volumeCode)
+                                    .leaf(true)
+                                    .build();
+                        })
+                        .toList())
+                .build();
+    }
+
+    private boolean hasSancaiVolumes(SancaiCategory category) {
+        List<SancaiVolume> volumes = sancaiApplicationService.listVolumes(category.getId());
+        return volumes != null && !volumes.isEmpty();
     }
 
     private String contentTypeLabel(String contentType) {

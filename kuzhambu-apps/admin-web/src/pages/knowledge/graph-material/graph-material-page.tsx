@@ -46,22 +46,9 @@ const toCatalogNode = (record: GraphMaterialTreeNodeRecord): MaterialCatalogNode
 
 const loadInitialCatalog = async () => {
     const rootRecords = await service.listMaterialTree({ parentId: ROOT_CATALOG_KEY });
-    const childrenByRootKey = new Map<string, MaterialCatalogNode[]>();
-    await Promise.all(
-        rootRecords
-            .filter((record) => !record.leaf)
-            .map(async (record) => {
-                const childRecords = await service.listMaterialTree({ parentId: record.id });
-                childrenByRootKey.set(record.id, childRecords.map(toCatalogNode));
-            })
-    );
-    const nodes = rootRecords.map((record) => ({
-        ...toCatalogNode(record),
-        children: childrenByRootKey.get(record.id) ?? (record.leaf ? undefined : [])
-    }));
     return {
-        expandedKeys: rootRecords.filter((record) => !record.leaf).map((record) => record.id),
-        nodes
+        expandedKeys: [],
+        nodes: rootRecords.map(toCatalogNode)
     };
 };
 
