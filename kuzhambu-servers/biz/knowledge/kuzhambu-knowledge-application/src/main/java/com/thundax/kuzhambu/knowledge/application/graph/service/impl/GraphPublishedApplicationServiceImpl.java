@@ -154,7 +154,7 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
             GraphPublishedAdjacencyQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
-        var result = nodeRepository.pageAdjacency(
+        var result = nodeRepository.page(
                 query == null ? null : query.subjectKeyword(),
                 query == null ? null : query.subjectType(),
                 query == null ? GraphPublishedStatus.ACTIVE : query.subjectStatus(),

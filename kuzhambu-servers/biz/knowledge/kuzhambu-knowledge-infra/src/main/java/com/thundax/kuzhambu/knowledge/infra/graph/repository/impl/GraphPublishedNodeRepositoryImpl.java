@@ -86,7 +86,7 @@ public class GraphPublishedNodeRepositoryImpl implements GraphPublishedNodeRepos
     }
 
     @Override
-    public PageResult<GraphPublishedAdjacency> pageAdjacency(
+    public PageResult<GraphPublishedAdjacency> page(
             String subjectKeyword,
             GraphNodeType subjectType,
             GraphPublishedStatus subjectStatus,

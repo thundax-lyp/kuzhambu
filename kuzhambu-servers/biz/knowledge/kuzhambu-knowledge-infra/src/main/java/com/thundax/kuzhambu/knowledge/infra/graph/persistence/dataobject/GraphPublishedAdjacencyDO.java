@@ -1,9 +1,13 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject;
 
 import java.time.Instant;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class GraphPublishedAdjacencyDO {
     private Long subjectId;
     private String subjectNodeKey;

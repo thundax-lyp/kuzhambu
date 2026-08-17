@@ -27,7 +27,7 @@ public interface GraphPublishedNodeRepository {
             int pageNo,
             int pageSize);
 
-    PageResult<GraphPublishedAdjacency> pageAdjacency(
+    PageResult<GraphPublishedAdjacency> page(
             String subjectKeyword,
             GraphNodeType subjectType,
             GraphPublishedStatus subjectStatus,

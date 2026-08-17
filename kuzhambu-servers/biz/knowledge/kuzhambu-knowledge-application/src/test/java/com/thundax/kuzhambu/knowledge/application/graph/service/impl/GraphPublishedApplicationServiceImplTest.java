@@ -61,7 +61,7 @@ class GraphPublishedApplicationServiceImplTest {
     void pageAdjacencyShouldKeepIsolatedNodesWithoutImplicitStatusFilters() {
         Fixture fixture = new Fixture();
         GraphPublishedNode subject = node(new GraphPublishedNodeId(61L), "主语节点");
-        when(fixture.nodeRepository.pageAdjacency(
+        when(fixture.nodeRepository.page(
                         any(),
                         any(),
                         any(),
@@ -90,7 +90,7 @@ class GraphPublishedApplicationServiceImplTest {
             assertThat(row.object()).isNull();
         });
         verify(fixture.nodeRepository)
-                .pageAdjacency(
+                .page(
                         eq("主语"),
                         eq(GraphNodeType.PERSON),
                         eq(null),
