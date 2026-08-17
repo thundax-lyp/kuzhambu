@@ -19,14 +19,6 @@
     - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
     - 重要度：9/10
 
-- [ ] `AW/graph-extraction disposition panel`：实现候选处置动作段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/task-disposition-panel/`
-    - 处理动作：按任务状态渲染重试、取消、合并、覆盖、丢弃和重新抽取动作。
-    - 验收点：测试覆盖失败、运行中、成功待审和已处置状态下的按钮可见性。
-    - 重要度：9/10
-
 - [ ] `AW/graph-extraction task mutations`：实现任务 mutation 刷新与冲突处理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
