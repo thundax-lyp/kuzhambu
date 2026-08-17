@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW knowledge graph readiness evidence`：记录真实联调开发中证据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`docs/40-readiness/`
-    - 处理动作：记录 Knowledge HTTP service 完整可联调前提下的 Admin Web 开发中验证结果。
-    - 验收点：readiness 证据覆盖素材页、素材 drawer、任务 drawer、失败重试、候选采用和批量部分失败。
-    - 重要度：8/10
-
 - [ ] `AW legacy graph extraction cleanup`：独立清理旧图谱提取组件和旧 service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
