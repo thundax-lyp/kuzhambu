@@ -83,14 +83,6 @@
     - 验收点：测试覆盖独立删除变更/删除任务菜单不再作为新流程入口。
     - 重要度：9/10
 
-- [ ] `AW/graph-extraction page query`：提取页接入任务队列查询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx`
-    - 处理动作：用 `pageTasks` 替换旧提取工作台数据入口并默认查询全局 flat 任务队列。
-    - 验收点：测试覆盖默认 `groupBy=NONE`、服务端 grouped 模式切换和不在浏览器重组 flat 结果。
-    - 重要度：9/10
-
 - [ ] `AW/graph-extraction filters`：实现任务筛选与分页控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`

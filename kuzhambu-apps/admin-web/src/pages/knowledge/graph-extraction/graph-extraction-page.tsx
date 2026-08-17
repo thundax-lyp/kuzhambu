@@ -9,6 +9,7 @@ import {
     KuzhambuButton,
     KuzhambuAlert,
     KuzhambuDrawer,
+    KuzhambuSegmented,
     KuzhambuTable
 } from "@/components";
 import { isPositiveDecimalId, normalizeId } from "@/types/id";
@@ -25,6 +26,7 @@ import type {
     GraphExtractionTaskPageQuery
 } from "./graph-extraction-service";
 import type {
+    GraphExtractionTaskListMode,
     GraphExtractionTaskType,
     GraphWorkbenchManuscriptNode,
     GraphExtractionTriggerSource,
@@ -146,7 +148,8 @@ export const GraphExtractionPage = () => {
     const [handoffRegenerateCommand] = useState<GraphExtractionRegenerateCommand | null>(() =>
         readRegenerateCommandFromSearch()
     );
-    const [taskQuery] = useState<GraphExtractionTaskPageQuery>({
+    const [taskQuery, setTaskQuery] = useState<GraphExtractionTaskPageQuery>({
+        groupBy: "NONE",
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
@@ -430,6 +433,7 @@ export const GraphExtractionPage = () => {
 
     const tasks = taskPageQuery.data?.records || [];
     const taskTotalCount = taskPageQuery.data?.totalCount || 0;
+    const taskListMode = taskQuery.groupBy ?? "NONE";
     const selectedTreeNodeKey = selectedManuscript?.nodeKey || selectedVolume?.nodeKey || null;
 
     const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId).trim();
@@ -471,6 +475,14 @@ export const GraphExtractionPage = () => {
             return;
         }
         cancelBatchTaskMutation.mutate(task);
+    };
+
+    const changeTaskListMode = (groupBy: GraphExtractionTaskListMode) => {
+        setTaskQuery((currentQuery) => ({
+            ...currentQuery,
+            groupBy,
+            pageNo: DEFAULT_PAGE_NO
+        }));
     };
 
     const resizeWorkArea = useCallback((sizes: number[]) => {
@@ -749,6 +761,22 @@ export const GraphExtractionPage = () => {
                     onClose={() => setTaskListDrawerOpen(false)}
                 >
                     <div className="knowledge-graph-extraction-task-list">
+                        <KuzhambuSegmented<GraphExtractionTaskListMode>
+                            aria-label="任务列表模式"
+                            testId="knowledge-graph-extraction-task-list-mode"
+                            options={[
+                                {
+                                    label: "全局队列",
+                                    value: "NONE"
+                                },
+                                {
+                                    label: "按素材分组",
+                                    value: "MATERIAL"
+                                }
+                            ]}
+                            value={taskListMode}
+                            onChange={changeTaskListMode}
+                        />
                         {tasks.length > 0 ? (
                             <GraphExtractionTaskTable
                                 applyingTaskId={applyTaskMutation.variables?.toString() || null}

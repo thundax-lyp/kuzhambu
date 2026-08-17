@@ -31,26 +31,54 @@ const serviceMocks = vi.hoisted(() => ({
                   status: "SUCCEEDED"
               }
     ),
-    pageTasks: vi.fn(async () => ({
+    pageTasks: vi.fn(async (query?: { groupBy?: string }) => ({
         pageNo: 1,
         pageSize: 20,
-        totalCount: 1,
+        totalCount: query?.groupBy === "MATERIAL" ? 2 : 1,
         totalPage: 1,
-        count: 1,
-        records: [
-            {
-                batchJobId: "1001",
-                triggerSource: "QUALITY_REPORT",
-                selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-                replaceUnconfirmedOnly: true,
-                taskId: "8008",
-                taskType: "GRAPH",
-                status: "SUCCEEDED",
-                sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: "1001",
-                aiCandidateId: "7001"
-            }
-        ]
+        count: query?.groupBy === "MATERIAL" ? 2 : 1,
+        records:
+            query?.groupBy === "MATERIAL"
+                ? [
+                      {
+                          batchJobId: "1001",
+                          triggerSource: "QUALITY_REPORT",
+                          selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
+                          replaceUnconfirmedOnly: true,
+                          taskId: "8008",
+                          taskType: "GRAPH",
+                          status: "SUCCEEDED",
+                          sourceContentType: "SANCAI_ENTRY",
+                          sourceContentId: "1001",
+                          aiCandidateId: "7001"
+                      },
+                      {
+                          batchJobId: "1002",
+                          triggerSource: "MANUAL",
+                          selectionScopeJson: '{"sourceContentIds":[2001]}',
+                          replaceUnconfirmedOnly: false,
+                          taskId: "8010",
+                          taskType: "GRAPH",
+                          status: "FAILED",
+                          sourceContentType: "SANCAI_ENTRY",
+                          sourceContentId: "1001",
+                          aiCandidateId: null
+                      }
+                  ]
+                : [
+                      {
+                          batchJobId: "1001",
+                          triggerSource: "QUALITY_REPORT",
+                          selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
+                          replaceUnconfirmedOnly: true,
+                          taskId: "8008",
+                          taskType: "GRAPH",
+                          status: "SUCCEEDED",
+                          sourceContentType: "SANCAI_ENTRY",
+                          sourceContentId: "1001",
+                          aiCandidateId: "7001"
+                      }
+                  ]
     })),
     regenerateTask: vi.fn(async () => ({ taskId: "9002", taskType: "GRAPH", status: "REQUESTED" }))
 }));
@@ -252,6 +280,7 @@ describe("GraphExtractionPage", () => {
         expect(await screen.findByRole("heading", { name: "知识抽取" })).toBeInTheDocument();
         await waitFor(() => {
             expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
+                groupBy: "NONE",
                 pageNo: 1,
                 pageSize: 20
             });
@@ -275,6 +304,44 @@ describe("GraphExtractionPage", () => {
         });
         expect(await screen.findByText('{"sourceContentIds":[1001,1002]}')).toBeInTheDocument();
     }, 60_000);
+
+    it("uses NONE as the default global flat task queue mode", async () => {
+        renderPage();
+
+        await waitFor(() => {
+            expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
+                groupBy: "NONE",
+                pageNo: 1,
+                pageSize: 20
+            });
+        });
+    });
+
+    it("switches task list mode by requesting server grouped results", async () => {
+        renderPage();
+
+        fireEvent.click(await screen.findByRole("button", { name: "任务列表(1)" }));
+        fireEvent.click(screen.getByText("按素材分组"));
+
+        await waitFor(() => {
+            expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
+                groupBy: "MATERIAL",
+                pageNo: 1,
+                pageSize: 20
+            });
+        });
+        expect(await screen.findByText("8010")).toBeInTheDocument();
+    });
+
+    it("does not regroup flat task results in the browser", async () => {
+        renderPage();
+
+        fireEvent.click(await screen.findByRole("button", { name: "任务列表(1)" }));
+
+        expect(await screen.findByText("8008")).toBeInTheDocument();
+        expect(screen.queryByText("素材：SANCAI_ENTRY / 1001")).not.toBeInTheDocument();
+        expect(screen.queryByText("三才稿件")).not.toBeInTheDocument();
+    });
 
     it("runs manuscript workbench flow with automatic extraction and candidate apply", async () => {
         renderPage();
