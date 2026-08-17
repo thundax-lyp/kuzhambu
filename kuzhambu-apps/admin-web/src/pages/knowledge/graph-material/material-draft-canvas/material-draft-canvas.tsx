@@ -1,3 +1,5 @@
+import { Descriptions, Empty, Typography } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import {
     KuzhambuButton,
     KuzhambuCard,
@@ -5,53 +7,119 @@ import {
     KuzhambuSpace,
     KuzhambuTag
 } from "@/components";
-import type { GraphMaterialDraftObject, GraphMaterialRecord } from "../graph-material-types";
-import { PublicationPreview } from "../publication-preview";
+import type {
+    GraphMaterialDetailRecord,
+    GraphMaterialDraftObject,
+    GraphMaterialRecord
+} from "@/pages/knowledge/graph-material/graph-material-types";
+
+const { Text } = Typography;
 
 interface MaterialDraftCanvasProps {
     canApplyGraph: boolean;
     canEditGraph: boolean;
+    detail: GraphMaterialDetailRecord | null;
     material: GraphMaterialRecord;
-    onClose: () => void;
-    onOpenObject: (objectId: string) => void;
 }
 
-const DRAFT_OBJECTS: GraphMaterialDraftObject[] = [
-    { id: "draft-object-li-bai", name: "李白", type: "人物", sourceText: "字太白，号青莲居士。" },
-    { id: "draft-object-tang-poetry", name: "唐诗", type: "作品分类", sourceText: "唐代诗歌总集。" }
-];
+const toDraftObjects = (detail: GraphMaterialDetailRecord | null): GraphMaterialDraftObject[] =>
+    (detail?.nodes ?? []).map((node) => ({
+        id: node.id,
+        name: node.name,
+        sourceText: String(node.properties.evidence ?? node.source),
+        type: node.nodeType
+    }));
 
 export const MaterialDraftCanvas = ({
     canApplyGraph,
     canEditGraph,
-    material,
-    onClose,
-    onOpenObject
+    detail,
+    material
 }: MaterialDraftCanvasProps) => {
+    const [selectedDraftObjectId, setSelectedDraftObjectId] = useState<string | null>(null);
     const isDraft = material.status === "DRAFT";
+    const isPublished = material.status === "PUBLISHED";
+    const canMutateDraft = isDraft && canEditGraph;
+    const draftObjects = useMemo(() => toDraftObjects(detail), [detail]);
+    const spoList = useMemo(
+        () =>
+            (detail?.edges ?? []).map((edge) => {
+                const sourceNode = detail?.nodes.find((node) => node.id === edge.sourceNodeId);
+                const targetNode = detail?.nodes.find((node) => node.id === edge.targetNodeId);
+                return {
+                    object: targetNode?.name ?? edge.targetNodeId,
+                    predicate: edge.relationType,
+                    subject: sourceNode?.name ?? edge.sourceNodeId
+                };
+            }),
+        [detail]
+    );
+    const selectedDraftObject =
+        draftObjects.find((object) => object.id === selectedDraftObjectId) ?? null;
+
+    useEffect(() => {
+        setSelectedDraftObjectId(null);
+    }, [material.id]);
+
     return (
         <KuzhambuCard
-            title={`素材画布：${material.title}`}
-            extra={<KuzhambuTag>{material.status}</KuzhambuTag>}
+            title={`草稿图谱：${material.title}`}
+            extra={
+                <KuzhambuSpace>
+                    {isPublished ? <KuzhambuTag type="success">只读</KuzhambuTag> : null}
+                    <KuzhambuTag>{material.status}</KuzhambuTag>
+                </KuzhambuSpace>
+            }
         >
             <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
-                <p>正文摘要：本素材用于演示图谱对象、证据和关系草稿的本地 Mock 交互。</p>
-                <KuzhambuGraph
-                    height={300}
-                    spoList={[{ subject: "李白", predicate: "归属", object: "唐诗" }]}
-                />
-                <KuzhambuSpace wrap>
-                    {DRAFT_OBJECTS.map((object) => (
-                        <KuzhambuButton
-                            key={object.id}
-                            testId={`knowledge-graph-material-open-object-${object.id}-button`}
-                            onClick={() => onOpenObject(object.id)}
-                        >
-                            对象：{object.name}
-                        </KuzhambuButton>
-                    ))}
-                </KuzhambuSpace>
-                {isDraft && canEditGraph ? (
+                <Text type="secondary">
+                    草稿图谱仅在素材详情抽屉的草稿图谱段展示。已发布素材保留查看能力，不开放草稿编辑动作。
+                </Text>
+                {spoList.length > 0 ? (
+                    <KuzhambuGraph height={300} spoList={spoList} />
+                ) : (
+                    <Empty
+                        data-testid="knowledge-graph-material-draft-graph-empty"
+                        description="暂无草稿关系"
+                    />
+                )}
+                {draftObjects.length > 0 ? (
+                    <KuzhambuSpace wrap>
+                        {draftObjects.map((object) => (
+                            <KuzhambuButton
+                                key={object.id}
+                                testId={`knowledge-graph-material-open-object-${object.id}-button`}
+                                onClick={() => setSelectedDraftObjectId(object.id)}
+                            >
+                                对象：{object.name}
+                            </KuzhambuButton>
+                        ))}
+                    </KuzhambuSpace>
+                ) : (
+                    <Empty
+                        data-testid="knowledge-graph-material-draft-object-empty"
+                        description="暂无草稿对象"
+                    />
+                )}
+                {selectedDraftObject ? (
+                    <Descriptions
+                        bordered
+                        column={1}
+                        data-testid="knowledge-graph-material-draft-object-detail"
+                        size="small"
+                    >
+                        <Descriptions.Item label="对象名称">
+                            {selectedDraftObject.name}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="对象类型">
+                            {selectedDraftObject.type}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="证据摘录">
+                            {selectedDraftObject.sourceText}
+                        </Descriptions.Item>
+                    </Descriptions>
+                ) : null}
+                {canMutateDraft ? (
                     <KuzhambuSpace wrap>
                         <KuzhambuButton testId="knowledge-graph-material-create-draft-object-button">
                             新增对象
@@ -64,24 +132,9 @@ export const MaterialDraftCanvas = ({
                         </KuzhambuButton>
                     </KuzhambuSpace>
                 ) : null}
-                {material.status === "PUBLISHED" ? (
-                    <KuzhambuSpace>
-                        <KuzhambuTag type="success">发布结果：已成功发布</KuzhambuTag>
-                        <KuzhambuButton
-                            disabled={!canApplyGraph}
-                            testId="knowledge-graph-material-withdraw-button"
-                        >
-                            撤回素材
-                        </KuzhambuButton>
-                    </KuzhambuSpace>
+                {!canApplyGraph && isPublished ? (
+                    <Text type="secondary">当前账号仅可查看。</Text>
                 ) : null}
-                <PublicationPreview canApplyGraph={canApplyGraph} enabled={isDraft} />
-                <KuzhambuButton
-                    testId="knowledge-graph-material-close-draft-canvas-button"
-                    onClick={onClose}
-                >
-                    关闭素材画布
-                </KuzhambuButton>
             </KuzhambuSpace>
         </KuzhambuCard>
     );

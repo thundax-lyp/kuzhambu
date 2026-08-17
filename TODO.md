@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-material draft canvas`：改造素材草稿画布段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/material-draft-canvas/material-draft-canvas.tsx`
-    - 处理动作：将草稿画布限制为素材 drawer 的 `DRAFT_GRAPH` 段并处理已发布只读状态。
-    - 验收点：测试覆盖已发布素材画布只读，且关闭抽屉后不保留旧草稿对象状态。
-    - 重要度：8/10
-
 - [ ] `AW/graph-material publication panel`：改造发布与变更段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`

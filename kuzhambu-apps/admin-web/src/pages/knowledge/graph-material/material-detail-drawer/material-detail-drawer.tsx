@@ -1,4 +1,5 @@
 import { Empty, Spin, Typography } from "antd";
+import { hasPermission } from "@/auth/permission-storage";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -13,6 +14,7 @@ import type {
 } from "@/pages/knowledge/graph-material/graph-material-types";
 import { MaterialOverviewPanel } from "@/pages/knowledge/graph-material/material-overview-panel";
 import { MaterialTaskSummaryPanel } from "@/pages/knowledge/graph-material/material-task-summary-panel";
+import { MaterialDraftCanvas } from "@/pages/knowledge/graph-material/material-draft-canvas";
 
 const { Text } = Typography;
 
@@ -46,6 +48,9 @@ export const MaterialDetailDrawer = ({
     onSectionChange,
     open
 }: MaterialDetailDrawerProps) => {
+    const canApplyGraph = hasPermission("knowledge:graph:apply");
+    const canEditGraph = hasPermission("knowledge:graph:edit");
+    const activeMaterial = material ?? detail?.material ?? null;
     const sections: Array<KuzhambuSegmentedDrawerSection<GraphMaterialDrawerSection>> = [
         {
             content: <MaterialOverviewPanel detail={detail} />,
@@ -54,9 +59,20 @@ export const MaterialDetailDrawer = ({
         },
         {
             content: (
-                <MaterialDetailPlaceholder testId="knowledge-graph-material-detail-draft-graph-section">
-                    草稿图谱待接入。
-                </MaterialDetailPlaceholder>
+                <div data-testid="knowledge-graph-material-detail-draft-graph-section">
+                    {activeMaterial ? (
+                        <MaterialDraftCanvas
+                            canApplyGraph={canApplyGraph}
+                            canEditGraph={canEditGraph}
+                            detail={detail}
+                            material={activeMaterial}
+                        />
+                    ) : (
+                        <MaterialDetailPlaceholder testId="knowledge-graph-material-detail-draft-graph-empty">
+                            素材尚未初始化，暂无草稿图谱。
+                        </MaterialDetailPlaceholder>
+                    )}
+                </div>
             ),
             label: "草稿图谱",
             value: "DRAFT_GRAPH"
