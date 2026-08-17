@@ -193,7 +193,7 @@
 1. 保持领域类型和组件不变，只将 adapter 从 Mock 换为 `postJson` 实现。
 2. 映射 Servers 的正式业务码到已测试的 UI 状态；不要通过字符串 message 判断错误类型。
 3. 浏览器 Network 验证页面只请求 `/knowledge/graph/**`，不请求 Classics、AI 或旧图谱 URL。
-4. 联调前端不得绕过缺失后端接口；接口缺失时保留 Mock 并在 readiness 记录阻塞点。
+4. Knowledge HTTP service 按完整可联调处理；Admin Web 接入仍在开发中，联调证据记录前端当前完成度和剩余前端问题。
 
 **Verify:** 真实环境跑一次素材页、素材 drawer、单项提取、任务 drawer、失败重试、候选采用和批量部分失败；保存 Network 与 E2E 证据。
 
@@ -206,6 +206,26 @@
 5. `Feat(admin-web): 增加图谱任务候选处置抽屉`：W5。
 6. `Feat(admin-web): 接入图谱素材任务服务`：W6。
 7. 旧组件和旧 service 的物理删除单独提交，先用 `rg` 证明无引用。
+
+## Local DAG Worktree Execution
+
+可以用本地 worktree 按 DAG 并行完成，但最多开两条执行线，不做全面 worktree 拆分，避免反复冲突同一组 page shell、service 和 fixture 文件。
+
+固定前置主线：
+
+1. 在当前工作区先完成 W0、Fixed Frontend Types、material/extraction service contract 和 Mock fixture。
+2. 前置主线通过同域 service contract tests 后，再切出两条 worktree 执行线。
+
+两条执行线：
+
+- **Material line:** W2 和 W3。只改 `AW/graph-material/**` 以及必要的素材页集成文件，负责素材列表、筛选、表格、批量动作、素材详情 drawer 和素材 drawer 子面板。
+- **Extraction line:** W4 和 W5。只改 `AW/graph-extraction/**` 以及必要的提取页集成文件，负责任务队列、筛选、任务表格、批量创建、任务详情 drawer、候选预览和处置动作。
+
+合流规则：
+
+1. 先合 Material line，再合 Extraction line；如果两条线都改 shared mock fixture，合流时以 service contract tests 和页面组件测试为准统一数据。
+2. W6、E2E、readiness 证据和旧组件物理删除必须回到主线串行完成。
+3. 每个 TODO 仍按一个独立 commit 收口；worktree 只是并行执行方式，不改变 Required Commit Boundaries 和验证要求。
 
 ## Verification
 
@@ -220,7 +240,7 @@ pnpm --filter kuzhambu-admin-web run test
 pnpm --filter kuzhambu-admin-web run build
 ```
 
-Mock E2E 必须验证：未初始化素材、统计更新中、单项/批量提取、批量部分失败、失败原地重试、取消、候选合并/覆盖/丢弃、候选不可用、版本冲突和来源不可见。真实联调只在 Servers 提供完整接口后执行。
+Mock E2E 必须验证：未初始化素材、统计更新中、单项/批量提取、批量部分失败、失败原地重试、取消、候选合并/覆盖/丢弃、候选不可用、版本冲突和来源不可见。真实联调按 Knowledge HTTP service 完整可联调处理，readiness 记录 Admin Web 开发中验证结果。
 
 ## Closure
 
