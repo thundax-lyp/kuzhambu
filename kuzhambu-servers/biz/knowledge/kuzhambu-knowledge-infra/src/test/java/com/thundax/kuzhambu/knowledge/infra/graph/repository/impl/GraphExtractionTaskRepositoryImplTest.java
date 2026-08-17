@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionEx
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphExtractionTaskMapper;
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,22 @@ class GraphExtractionTaskRepositoryImplTest {
         update.setLockVersion(3L);
         assertEquals(1, repository.updateIfLockVersion(update, 3L));
         verify(mapper).updateIfLockVersion(any(), eq(3L));
+    }
+
+    @Test
+    void purgeableSqlShouldOnlySelectExpiredDisposedTerminalTasks() throws Exception {
+        String sql = selectSql("selectPurgeableBefore", Instant.class, int.class);
+
+        assertEquals(true, sql.contains("purge_after is not null and purge_after <= #{deadline}"));
+        assertEquals(true, sql.contains("execution_status in ('SUCCEEDED', 'CANCELLED')"));
+        assertEquals(true, sql.contains("'DISCARDED'"));
+        assertEquals(true, sql.contains("'SUPERSEDED'"));
+        assertEquals(true, sql.contains("limit #{limit}"));
+    }
+
+    private static String selectSql(String methodName, Class<?>... parameterTypes) throws Exception {
+        Method method = GraphExtractionTaskMapper.class.getMethod(methodName, parameterTypes);
+        return method.getAnnotation(org.apache.ibatis.annotations.Select.class).value()[0];
     }
 
     private static GraphExtractionTaskDO task(Long id, Long materialId, String batchId, Instant purgeAfter) {

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph task cleanup`：清理到期图谱提取任务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S6b
-    - 范围对象：`GraphExtractionTaskCleanupScheduler.java`、`GraphExtractionTaskRepositoryImpl.java`、`AiFacade.java`
-    - 处理动作：协调 AI 清理并删除处置满七天的 Knowledge 任务与阶段。
-    - 验收点：时钟可控测试覆盖边界、清理失败重试及草稿/发布/统计保留。
-    - 重要度：9/10
-
 - [ ] `knowledge graph migration verification`：提交迁移结果对比证据
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-SERVERS.md` S6c

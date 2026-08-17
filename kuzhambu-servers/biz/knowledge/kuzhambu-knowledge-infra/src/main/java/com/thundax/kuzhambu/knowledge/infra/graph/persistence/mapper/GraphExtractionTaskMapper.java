@@ -117,6 +117,8 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
             """
             select * from knowledge_graph_extraction_task
             where purge_after is not null and purge_after <= #{deadline}
+              and execution_status in ('SUCCEEDED', 'CANCELLED')
+              and disposition in ('ADOPTED_MERGE', 'ADOPTED_REPLACE', 'DISCARDED', 'SUPERSEDED')
             order by purge_after asc, id asc
             limit #{limit}
             """)
