@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-extraction task mutations`：实现任务 mutation 刷新与冲突处理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/task-detail-drawer/`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/task-disposition-panel/`
-    - 处理动作：每次任务写操作发送当前 `lockVersion` 和预期状态，并在成功后失效相关 query。
-    - 验收点：测试覆盖版本冲突只刷新不猜测最终状态，且处置成功后按钮消失。
-    - 重要度：9/10
-
 - [ ] `AW knowledge graph service switch`：切换真实 Knowledge HTTP service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`

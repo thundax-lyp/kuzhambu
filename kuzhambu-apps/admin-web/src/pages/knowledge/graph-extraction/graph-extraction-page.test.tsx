@@ -8,11 +8,30 @@ vi.mock("@/components/kuzhambu-graph", () =>
     Object.fromEntries([["KuzhambuGraph", () => <div aria-label="当前图谱关系图" role="img" />]])
 );
 
+const serviceState = vi.hoisted(() => ({
+    taskDisposition: "PENDING"
+}));
+
 const serviceMocks = vi.hoisted(() => ({
     addTask: vi.fn(async () => ({ taskId: "9001", taskType: "GRAPH", status: "REQUESTED" })),
+    applyCandidate: vi.fn(async (): Promise<{
+        conflict?: { code: string; message: string };
+        task?: { disposition?: string; status: string; taskId: string };
+    }> => {
+        serviceState.taskDisposition = "ADOPTED_MERGE";
+        return {
+            task: {
+                taskId: "8008",
+                status: "SUCCEEDED",
+                disposition: "ADOPTED_MERGE"
+            }
+        };
+    }),
     applyTaskCandidate: vi.fn(async () => ({ taskId: "9001", status: "APPLIED" })),
+    cancelTask: vi.fn(async () => ({ task: { taskId: "8008", status: "CANCELLED" } })),
     cancelBatchTask: vi.fn(async () => ({ batchJobId: "1001", status: "CANCELLED" })),
     createBatchExtraction: vi.fn(async () => ({ batchId: "batch-001", materials: [] })),
+    discardCandidate: vi.fn(async () => ({ task: { taskId: "8008", status: "SUCCEEDED" } })),
     getTask: vi.fn(async (request: { taskId: string }) => ({
         candidate: null,
         materialStats: null,
@@ -32,7 +51,7 @@ const serviceMocks = vi.hoisted(() => ({
                       aiCandidateId: "7001",
                       attemptNo: "1",
                       currentStage: "CANDIDATE_READY",
-                      disposition: "PENDING",
+                      disposition: serviceState.taskDisposition,
                       executionStatus: "SUCCEEDED",
                       id: "9001",
                       lockVersion: "1",
@@ -51,7 +70,7 @@ const serviceMocks = vi.hoisted(() => ({
                       batchJobId: "1001",
                       attemptNo: "1",
                       currentStage: "CANDIDATE_READY",
-                      disposition: "PENDING",
+                      disposition: serviceState.taskDisposition,
                       executionStatus: "SUCCEEDED",
                       id: "8008",
                       lockVersion: "1",
@@ -191,7 +210,8 @@ const serviceMocks = vi.hoisted(() => ({
                       }
                   ]
     })),
-    regenerateTask: vi.fn(async () => ({ taskId: "9002", taskType: "GRAPH", status: "REQUESTED" }))
+    regenerateTask: vi.fn(async () => ({ task: { taskId: "9002", status: "PENDING" } })),
+    retryTask: vi.fn(async () => ({ task: { taskId: "8008", status: "PENDING" } }))
 }));
 
 const workbenchServiceMocks = vi.hoisted(() => ({
@@ -371,6 +391,7 @@ describe("GraphExtractionPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.useRealTimers();
+        serviceState.taskDisposition = "PENDING";
         replacePermissions([
             "knowledge:graph:view",
             "knowledge:graph:edit",
@@ -473,6 +494,71 @@ describe("GraphExtractionPage", () => {
         expect(await screen.findByText("任务 8008")).toBeInTheDocument();
         expect(screen.queryByText("素材：SANCAI_ENTRY / 1001")).not.toBeInTheDocument();
         expect(screen.queryByText("三才稿件")).not.toBeInTheDocument();
+    });
+
+    it("sends task lock and expected state before applying candidate from detail drawer", async () => {
+        renderPage();
+
+        fireEvent.click(await screen.findByRole("button", { name: "任务列表(1)" }));
+        fireEvent.click(await screen.findByRole("button", { name: /查\s*看/u }));
+        await waitFor(() => {
+            expect(serviceMocks.getTask).toHaveBeenCalledWith({ taskId: "8008" });
+        });
+
+        fireEvent.click(await screen.findByText("候选处置"));
+        fireEvent.click(await screen.findByRole("button", { name: "合并" }));
+
+        await waitFor(() => {
+            expect(serviceMocks.applyCandidate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    applyMode: "MERGE",
+                    expectedDisposition: "PENDING",
+                    expectedExecutionStatus: "SUCCEEDED",
+                    materialLockVersion: "1",
+                    taskId: "8008",
+                    taskLockVersion: "1"
+                })
+            );
+        });
+        await waitFor(() => {
+            expect(screen.queryByRole("button", { name: "合并" })).not.toBeInTheDocument();
+        });
+        expect(screen.queryByRole("button", { name: "覆盖" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "丢弃" })).not.toBeInTheDocument();
+    });
+
+    it("refreshes detail without guessing final state when task action has conflict", async () => {
+        serviceMocks.applyCandidate.mockResolvedValueOnce({
+            conflict: {
+                code: "GRAPH_TASK_LOCK_CONFLICT",
+                message: "任务版本已变化，请刷新后重试。"
+            }
+        });
+        renderPage();
+
+        fireEvent.click(await screen.findByRole("button", { name: "任务列表(1)" }));
+        fireEvent.click(await screen.findByRole("button", { name: /查\s*看/u }));
+        await waitFor(() => {
+            expect(serviceMocks.getTask).toHaveBeenCalledWith({ taskId: "8008" });
+        });
+
+        fireEvent.click(await screen.findByText("候选处置"));
+        fireEvent.click(await screen.findByRole("button", { name: "合并" }));
+
+        await waitFor(() => {
+            expect(serviceMocks.applyCandidate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    expectedDisposition: "PENDING",
+                    expectedExecutionStatus: "SUCCEEDED",
+                    taskId: "8008",
+                    taskLockVersion: "1"
+                })
+            );
+        });
+        await waitFor(() => {
+            expect(serviceMocks.getTask).toHaveBeenCalledTimes(2);
+        });
+        expect(screen.getByRole("button", { name: "合并" })).toBeInTheDocument();
     });
 
     it("creates batch extraction tasks from selected materials and whole volume", async () => {

@@ -25,6 +25,7 @@ import { TaskBatchCreatePanel } from "./task-batch-create-panel";
 import { TaskFilters } from "./task-filters";
 import type {
     GraphExtractionRegenerateCommand,
+    GraphExtractionTaskStateCommand,
     GraphExtractionTaskPageQuery
 } from "./graph-extraction-service";
 import type {
@@ -255,6 +256,13 @@ type ExtractManuscriptVariables = {
     node: GraphWorkbenchManuscriptNode;
     taskType: GraphExtractionTaskType;
 };
+
+type TaskActionKind = "retry" | "cancel" | "merge" | "replace" | "discard" | "regenerate";
+
+interface TaskActionVariables {
+    kind: TaskActionKind;
+    task: GraphExtractionTaskRecord;
+}
 
 export const GraphExtractionPage = () => {
     const { message: messageApi } = App.useApp();
@@ -525,6 +533,84 @@ export const GraphExtractionPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "批任务取消失败");
+        }
+    });
+    const invalidateTaskActionQueries = async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({
+                queryKey: ["knowledge", "graph-extraction", "tasks"]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["knowledge", "graph-material"]
+            })
+        ]);
+    };
+    const createTaskStateCommand = (
+        task: GraphExtractionTaskRecord,
+        expectedExecutionStatus: GraphTaskExecutionStatus,
+        expectedDisposition?: GraphTaskDisposition
+    ): GraphExtractionTaskStateCommand => ({
+        expectedDisposition,
+        expectedExecutionStatus,
+        replaceUnconfirmedOnly: task.replaceUnconfirmedOnly,
+        requestedBy: task.requestedBy,
+        selectionScopeJson: task.selectionScopeJson,
+        sourceTaskId: task.taskId || task.id,
+        taskId: task.taskId || task.id,
+        taskLockVersion: task.lockVersion,
+        taskType: task.taskType || "GRAPH",
+        triggerSource: task.triggerSource
+    });
+    const taskActionMutation = useMutation({
+        mutationFn: ({ kind, task }: TaskActionVariables) => {
+            switch (kind) {
+                case "retry":
+                    return service.retryTask(createTaskStateCommand(task, "FAILED"));
+                case "cancel":
+                    return service.cancelTask(
+                        createTaskStateCommand(task, task.executionStatus || "RUNNING")
+                    );
+                case "merge":
+                    return service.applyCandidate({
+                        ...createTaskStateCommand(task, "SUCCEEDED", "PENDING"),
+                        applyMode: "MERGE",
+                        materialLockVersion: task.lockVersion
+                    });
+                case "replace":
+                    return service.applyCandidate({
+                        ...createTaskStateCommand(task, "SUCCEEDED", "PENDING"),
+                        applyMode: "REPLACE",
+                        materialLockVersion: task.lockVersion
+                    });
+                case "discard":
+                    return service.discardCandidate(
+                        createTaskStateCommand(task, "SUCCEEDED", "PENDING")
+                    );
+                case "regenerate":
+                    return service.regenerateTask(createTaskStateCommand(task, "SUCCEEDED"));
+            }
+        },
+        onSuccess: async (result, variables) => {
+            await invalidateTaskActionQueries();
+            if (result.conflict) {
+                messageApi.warning(result.conflict.message);
+                return;
+            }
+            const successMessages: Record<TaskActionKind, string> = {
+                cancel: "任务已取消",
+                discard: "候选结果已丢弃",
+                merge: "候选结果已合并",
+                regenerate: "重新抽取任务已创建",
+                replace: "候选结果已覆盖",
+                retry: "任务已重试"
+            };
+            messageApi.success(successMessages[variables.kind]);
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "任务操作失败");
         }
     });
 
@@ -912,7 +998,13 @@ export const GraphExtractionPage = () => {
                     detail={taskDetailQuery.data || null}
                     loading={taskDetailQuery.isLoading}
                     open={taskDetailDrawerOpen}
+                    onCancel={(task) => taskActionMutation.mutate({ kind: "cancel", task })}
                     onClose={() => setTaskDetailDrawerOpen(false)}
+                    onDiscard={(task) => taskActionMutation.mutate({ kind: "discard", task })}
+                    onMerge={(task) => taskActionMutation.mutate({ kind: "merge", task })}
+                    onRegenerate={(task) => taskActionMutation.mutate({ kind: "regenerate", task })}
+                    onReplace={(task) => taskActionMutation.mutate({ kind: "replace", task })}
+                    onRetry={(task) => taskActionMutation.mutate({ kind: "retry", task })}
                     onSectionChange={setActiveTaskDetailSection}
                 />
             </KuzhambuSpace>
