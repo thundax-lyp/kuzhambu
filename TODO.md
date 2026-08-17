@@ -19,14 +19,6 @@
     - 验收点：测试覆盖已发布素材画布只读，且关闭抽屉后不保留旧草稿对象状态。
     - 重要度：8/10
 
-- [ ] `AW/graph-material task summary panel`：实现素材任务摘要段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/material-task-summary-panel/`
-    - 处理动作：实现素材详情中的任务摘要和跳转入口。
-    - 验收点：测试覆盖任务段无草稿编辑控件，且“查看任务”跳转到提取任务并携带素材引用。
-    - 重要度：8/10
-
 - [ ] `AW/graph-material publication panel`：改造发布与变更段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
