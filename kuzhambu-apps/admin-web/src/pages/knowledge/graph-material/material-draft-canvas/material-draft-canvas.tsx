@@ -1,5 +1,5 @@
 import { Descriptions, Empty, Typography } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
     KuzhambuButton,
     KuzhambuCard,
@@ -36,7 +36,10 @@ export const MaterialDraftCanvas = ({
     detail,
     material
 }: MaterialDraftCanvasProps) => {
-    const [selectedDraftObjectId, setSelectedDraftObjectId] = useState<string | null>(null);
+    const [selectedDraftObject, setSelectedDraftObject] = useState<{
+        materialId: string;
+        objectId: string;
+    } | null>(null);
     const isDraft = material.status === "DRAFT";
     const isPublished = material.status === "PUBLISHED";
     const canMutateDraft = isDraft && canEditGraph;
@@ -54,12 +57,10 @@ export const MaterialDraftCanvas = ({
             }),
         [detail]
     );
-    const selectedDraftObject =
-        draftObjects.find((object) => object.id === selectedDraftObjectId) ?? null;
-
-    useEffect(() => {
-        setSelectedDraftObjectId(null);
-    }, [material.id]);
+    const activeDraftObject =
+        selectedDraftObject?.materialId === material.id
+            ? (draftObjects.find((object) => object.id === selectedDraftObject.objectId) ?? null)
+            : null;
 
     return (
         <KuzhambuCard
@@ -89,7 +90,12 @@ export const MaterialDraftCanvas = ({
                             <KuzhambuButton
                                 key={object.id}
                                 testId={`knowledge-graph-material-open-object-${object.id}-button`}
-                                onClick={() => setSelectedDraftObjectId(object.id)}
+                                onClick={() =>
+                                    setSelectedDraftObject({
+                                        materialId: material.id,
+                                        objectId: object.id
+                                    })
+                                }
                             >
                                 对象：{object.name}
                             </KuzhambuButton>
@@ -101,7 +107,7 @@ export const MaterialDraftCanvas = ({
                         description="暂无草稿对象"
                     />
                 )}
-                {selectedDraftObject ? (
+                {activeDraftObject ? (
                     <Descriptions
                         bordered
                         column={1}
@@ -109,13 +115,13 @@ export const MaterialDraftCanvas = ({
                         size="small"
                     >
                         <Descriptions.Item label="对象名称">
-                            {selectedDraftObject.name}
+                            {activeDraftObject.name}
                         </Descriptions.Item>
                         <Descriptions.Item label="对象类型">
-                            {selectedDraftObject.type}
+                            {activeDraftObject.type}
                         </Descriptions.Item>
                         <Descriptions.Item label="证据摘录">
-                            {selectedDraftObject.sourceText}
+                            {activeDraftObject.sourceText}
                         </Descriptions.Item>
                     </Descriptions>
                 ) : null}

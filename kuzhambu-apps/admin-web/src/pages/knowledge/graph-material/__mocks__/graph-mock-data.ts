@@ -1,3 +1,4 @@
+/* eslint-disable local/page-component-no-external-page -- Shared Knowledge graph test fixtures span material and extraction pages. */
 import type { Page } from "@/types/page";
 import type {
     GraphBatchExtractionResultRecord,
@@ -413,6 +414,16 @@ export const graphMaterialMockDetails: GraphMaterialDetailRecord[] =
         }
     }));
 
+const readMockStageStatus = (task: GraphExtractionTaskRecord) => {
+    if (task.executionStatus === "FAILED") {
+        return "FAILED";
+    }
+    if (task.executionStatus === "RUNNING") {
+        return "RUNNING";
+    }
+    return "SUCCEEDED";
+};
+
 export const graphExtractionMockTaskDetails: GraphExtractionTaskDetailRecord[] =
     graphExtractionMockTasks.map((task) => {
         const materialRef = task.materialRef ?? sanciaRef;
@@ -458,12 +469,7 @@ export const graphExtractionMockTaskDetails: GraphExtractionTaskDetailRecord[] =
                     stageCode: task.currentStage ?? "UNKNOWN",
                     stageNo: "2",
                     startedAt: "1723852805000",
-                    status:
-                        task.executionStatus === "FAILED"
-                            ? "FAILED"
-                            : task.executionStatus === "RUNNING"
-                              ? "RUNNING"
-                              : "SUCCEEDED"
+                    status: readMockStageStatus(task)
                 }
             ],
             task
