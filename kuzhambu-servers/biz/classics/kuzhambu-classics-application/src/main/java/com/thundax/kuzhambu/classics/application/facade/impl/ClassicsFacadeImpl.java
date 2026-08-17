@@ -39,6 +39,8 @@ import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnaps
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -160,6 +162,7 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         int pageSize = request == null || request.getPageSize() == null ? 20 : Math.max(1, request.getPageSize());
         List<ClassicsSearchSourceContent> filtered = workbenchContents(request).stream()
                 .filter(content -> matchesGraphMaterialFilter(content, request))
+                .filter(content -> matchesContentRefs(content, request))
                 .toList();
         int fromIndex = Math.min((pageNo - 1) * pageSize, filtered.size());
         int toIndex = Math.min(fromIndex + pageSize, filtered.size());
@@ -283,6 +286,30 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                         && content.getTitle()
                                 .toLowerCase(Locale.ROOT)
                                 .contains(request.getKeyword().toLowerCase(Locale.ROOT));
+    }
+
+    private boolean matchesContentRefs(
+            ClassicsSearchSourceContent content, KnowledgeGraphMaterialPageFacadeRequest request) {
+        if (request == null) {
+            return true;
+        }
+        String contentKey = content.getContentType() + ":" + content.getContentId();
+        Set<String> includedRefs = toRefKeys(request.getContentRefs());
+        if (!includedRefs.isEmpty() && !includedRefs.contains(contentKey)) {
+            return false;
+        }
+        Set<String> excludedRefs = toRefKeys(request.getExcludedContentRefs());
+        return !excludedRefs.contains(contentKey);
+    }
+
+    private Set<String> toRefKeys(List<KnowledgeGraphMaterialPageFacadeRequest.SourceRef> refs) {
+        if (refs == null || refs.isEmpty()) {
+            return Set.of();
+        }
+        return refs.stream()
+                .filter(Objects::nonNull)
+                .map(ref -> ref.getContentType() + ":" + ref.getContentId())
+                .collect(Collectors.toSet());
     }
 
     @Override

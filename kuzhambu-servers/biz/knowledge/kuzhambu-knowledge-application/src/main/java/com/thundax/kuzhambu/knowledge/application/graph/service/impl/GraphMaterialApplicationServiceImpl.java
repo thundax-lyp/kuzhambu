@@ -113,14 +113,22 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
     public PageResult<GraphMaterialPageResult> pageMaterials(GraphMaterialListQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
+        ContentRefFilter refFilter = filteredContentRefs(query);
+        if (hasKnowledgeMaterialFilters(query)
+                && refFilter.includeRefs() != null
+                && refFilter.includeRefs().isEmpty()) {
+            return PageResult.of(effectivePage.getPageNo(), effectivePage.getPageSize(), 0, List.of());
+        }
         var page = classicsFacade.pageKnowledgeGraphMaterials(KnowledgeGraphMaterialPageFacadeRequest.builder()
                 .subjectId(query == null ? null : query.subjectId())
                 .keyword(query == null ? null : query.keyword())
                 .contentType(query == null ? null : query.contentType())
                 .categoryCode(query == null ? null : query.categoryCode())
                 .volumeCode(query == null ? null : query.volumeCode())
-                .pageNo(hasKnowledgeMaterialFilters(query) ? 1 : effectivePage.getPageNo())
-                .pageSize(hasKnowledgeMaterialFilters(query) ? Integer.MAX_VALUE : effectivePage.getPageSize())
+                .contentRefs(toFacadeRefs(refFilter.includeRefs()))
+                .excludedContentRefs(toFacadeRefs(refFilter.excludeRefs()))
+                .pageNo(effectivePage.getPageNo())
+                .pageSize(effectivePage.getPageSize())
                 .build());
         List<KnowledgeGraphMaterialPageFacadeResponse.Source> sources =
                 page.getRecords() == null ? List.of() : page.getRecords();
@@ -159,16 +167,53 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                         query == null ? null : query.taskExecutionStatus(),
                         query == null ? null : query.taskDisposition()))
                 .toList();
+        return PageResult.of(page.getPageNo(), page.getPageSize(), page.getTotalCount(), records);
+    }
+
+    private ContentRefFilter filteredContentRefs(GraphMaterialListQuery query) {
         if (!hasKnowledgeMaterialFilters(query)) {
-            return PageResult.of(page.getPageNo(), page.getPageSize(), page.getTotalCount(), records);
+            return ContentRefFilter.none();
         }
-        int fromIndex = Math.min((effectivePage.getPageNo() - 1) * effectivePage.getPageSize(), records.size());
-        int toIndex = Math.min(fromIndex + effectivePage.getPageSize(), records.size());
-        return PageResult.of(
-                effectivePage.getPageNo(),
-                effectivePage.getPageSize(),
-                records.size(),
-                records.subList(fromIndex, toIndex));
+        List<ContentRef> refs = null;
+        List<ContentRef> excludedRefs = null;
+        if (query.status() != null) {
+            if (query.status() == GraphMaterialStatus.DRAFT) {
+                excludedRefs = materialRepository.listContentRefsByStatuses(List.of(
+                        GraphMaterialStatus.PUBLISHING,
+                        GraphMaterialStatus.PUBLISHED,
+                        GraphMaterialStatus.WITHDRAWING,
+                        GraphMaterialStatus.FAILED));
+            } else {
+                refs = materialRepository.listContentRefsByStatus(query.status());
+            }
+        }
+        if ((query.taskExecutionStatus() != null && !query.taskExecutionStatus().isBlank())
+                || (query.taskDisposition() != null && !query.taskDisposition().isBlank())) {
+            List<ContentRef> taskRefs = extractionTaskRepository.listContentRefsByTaskState(
+                    com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus.from(
+                            query.taskExecutionStatus()),
+                    com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition.from(
+                            query.taskDisposition()));
+            if (refs == null) {
+                refs = taskRefs;
+            } else {
+                java.util.Set<ContentRef> allowedRefs = new java.util.HashSet<>(taskRefs);
+                refs = refs.stream().filter(allowedRefs::contains).toList();
+            }
+        }
+        return new ContentRefFilter(refs, excludedRefs);
+    }
+
+    private List<KnowledgeGraphMaterialPageFacadeRequest.SourceRef> toFacadeRefs(List<ContentRef> refs) {
+        if (refs == null) {
+            return null;
+        }
+        return refs.stream()
+                .map(ref -> KnowledgeGraphMaterialPageFacadeRequest.SourceRef.builder()
+                        .contentType(ref.getContentType())
+                        .contentId(String.valueOf(ref.getContentId()))
+                        .build())
+                .toList();
     }
 
     private boolean hasKnowledgeMaterialFilters(GraphMaterialListQuery query) {
@@ -178,6 +223,12 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                                 && !query.taskExecutionStatus().isBlank()
                         || query.taskDisposition() != null
                                 && !query.taskDisposition().isBlank());
+    }
+
+    private record ContentRefFilter(List<ContentRef> includeRefs, List<ContentRef> excludeRefs) {
+        private static ContentRefFilter none() {
+            return new ContentRefFilter(null, null);
+        }
     }
 
     private boolean matchesMaterialStatus(GraphMaterial material, GraphMaterialStatus status) {

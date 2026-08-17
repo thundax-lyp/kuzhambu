@@ -109,18 +109,19 @@ class GraphMaterialApplicationServiceImplTest {
         GraphExtractionTask matchingTask = latestTask(11L, firstRef);
         GraphExtractionTask unmatchedTask = latestTask(12L, secondRef);
         unmatchedTask.setDisposition(null);
+        when(taskRepository.listContentRefsByTaskState(
+                        GraphExtractionExecutionStatus.SUCCEEDED, GraphExtractionDisposition.PENDING))
+                .thenReturn(List.of(firstRef));
         when(classicsFacade.pageKnowledgeGraphMaterials(any()))
                 .thenReturn(KnowledgeGraphMaterialPageFacadeResponse.builder()
                         .pageNo(1)
                         .pageSize(2)
-                        .totalCount(2)
-                        .records(List.of(source("1001", "素材一"), source("1002", "素材二")))
+                        .totalCount(1)
+                        .records(List.of(source("1001", "素材一")))
                         .build());
-        when(materialRepository.listByContentRefs(List.of(firstRef, secondRef)))
-                .thenReturn(List.of(firstMaterial, secondMaterial));
-        when(statsRepository.listByMaterialIds(List.of(11L, 12L))).thenReturn(List.of());
-        when(taskRepository.listLatestByMaterialIds(List.of(11L, 12L)))
-                .thenReturn(List.of(matchingTask, unmatchedTask));
+        when(materialRepository.listByContentRefs(List.of(firstRef))).thenReturn(List.of(firstMaterial));
+        when(statsRepository.listByMaterialIds(List.of(11L))).thenReturn(List.of());
+        when(taskRepository.listLatestByMaterialIds(List.of(11L))).thenReturn(List.of(matchingTask));
 
         var result = service.pageMaterials(
                 new GraphMaterialListQuery(
@@ -141,17 +142,22 @@ class GraphMaterialApplicationServiceImplTest {
                 new GraphMaterial(11L, firstRef, "素材一", GraphMaterialStatus.PUBLISHED, null, null, null, null, 3L);
         GraphMaterial draftMaterial =
                 new GraphMaterial(12L, secondRef, "素材二", GraphMaterialStatus.DRAFT, null, null, null, null, 3L);
+        when(materialRepository.listContentRefsByStatuses(List.of(
+                        GraphMaterialStatus.PUBLISHING,
+                        GraphMaterialStatus.PUBLISHED,
+                        GraphMaterialStatus.WITHDRAWING,
+                        GraphMaterialStatus.FAILED)))
+                .thenReturn(List.of(firstRef));
         when(classicsFacade.pageKnowledgeGraphMaterials(any()))
                 .thenReturn(KnowledgeGraphMaterialPageFacadeResponse.builder()
                         .pageNo(1)
-                        .pageSize(Integer.MAX_VALUE)
-                        .totalCount(3)
-                        .records(List.of(source("1001", "素材一"), source("1002", "素材二"), source("1003", "素材三")))
+                        .pageSize(1)
+                        .totalCount(2)
+                        .records(List.of(source("1002", "素材二")))
                         .build());
-        when(materialRepository.listByContentRefs(List.of(firstRef, secondRef, thirdRef)))
-                .thenReturn(List.of(publishedMaterial, draftMaterial));
-        when(statsRepository.listByMaterialIds(List.of(11L, 12L))).thenReturn(List.of());
-        when(taskRepository.listLatestByMaterialIds(List.of(11L, 12L))).thenReturn(List.of());
+        when(materialRepository.listByContentRefs(List.of(secondRef))).thenReturn(List.of(draftMaterial));
+        when(statsRepository.listByMaterialIds(List.of(12L))).thenReturn(List.of());
+        when(taskRepository.listLatestByMaterialIds(List.of(12L))).thenReturn(List.of());
 
         var result = service.pageMaterials(
                 new GraphMaterialListQuery(
@@ -221,6 +227,7 @@ class GraphMaterialApplicationServiceImplTest {
                 GraphExtractionDisposition.PENDING,
                 1,
                 4,
+                null,
                 null,
                 9001L,
                 "CANDIDATE_READY",

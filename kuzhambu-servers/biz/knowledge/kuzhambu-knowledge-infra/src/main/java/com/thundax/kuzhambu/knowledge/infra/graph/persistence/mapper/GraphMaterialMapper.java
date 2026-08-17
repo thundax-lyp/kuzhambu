@@ -56,6 +56,29 @@ public interface GraphMaterialMapper extends BaseMapper<GraphMaterialDO> {
             """)
     List<GraphMaterialDO> selectByRefs(@Param("refs") List<GraphMaterialDO> refs);
 
+    @Select(
+            """
+            select content_type, content_ref_id
+            from knowledge_graph_material
+            where status = #{status}
+            order by id asc
+            """)
+    List<GraphMaterialDO> selectRefsByStatus(@Param("status") String status);
+
+    @Select(
+            """
+            <script>
+            select content_type, content_ref_id
+            from knowledge_graph_material
+            where status in
+            <foreach collection="statuses" item="status" open="(" separator="," close=")">
+              #{status}
+            </foreach>
+            order by id asc
+            </script>
+            """)
+    List<GraphMaterialDO> selectRefsByStatuses(@Param("statuses") List<String> statuses);
+
     @Update(
             """
             update knowledge_graph_material

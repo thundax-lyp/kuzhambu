@@ -11,6 +11,10 @@ public interface GraphMaterialRepository {
 
     List<GraphMaterial> listByContentRefs(List<ContentRef> contentRefs);
 
+    List<ContentRef> listContentRefsByStatus(GraphMaterialStatus status);
+
+    List<ContentRef> listContentRefsByStatuses(List<GraphMaterialStatus> statuses);
+
     PageResult<GraphMaterial> page(String keyword, GraphMaterialStatus status, int pageNo, int pageSize);
 
     int insert(GraphMaterial material);
