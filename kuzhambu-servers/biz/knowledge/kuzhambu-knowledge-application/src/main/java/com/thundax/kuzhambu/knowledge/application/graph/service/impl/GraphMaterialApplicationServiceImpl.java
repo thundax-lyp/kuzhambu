@@ -31,6 +31,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQ
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
@@ -126,7 +127,9 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         List<ContentRef> contentRefs = sources.stream().map(this::toContentRef).toList();
         Map<ContentRef, GraphMaterial> materialByRef = materialRepository.listByContentRefs(contentRefs).stream()
                 .collect(Collectors.toMap(GraphMaterial::getContentRef, Function.identity()));
-        List<Long> materialIds = materialByRef.values().stream()
+        List<Long> materialIds = contentRefs.stream()
+                .map(materialByRef::get)
+                .filter(java.util.Objects::nonNull)
                 .map(GraphMaterial::getId)
                 .filter(java.util.Objects::nonNull)
                 .toList();
@@ -154,7 +157,29 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                                             : GraphApplicationAssembler.toExtractionTaskResult(
                                                     latestTaskByMaterialId.get(materialId)));
                         })
+                        .filter(item -> matchesTaskFilters(
+                                item.latestTask(),
+                                query == null ? null : query.taskExecutionStatus(),
+                                query == null ? null : query.taskDisposition()))
                         .toList());
+    }
+
+    private boolean matchesTaskFilters(
+            GraphExtractionTaskResult latestTask, String taskExecutionStatus, String taskDisposition) {
+        if ((taskExecutionStatus == null || taskExecutionStatus.isBlank())
+                && (taskDisposition == null || taskDisposition.isBlank())) {
+            return true;
+        }
+        if (latestTask == null) {
+            return false;
+        }
+        boolean executionMatches = taskExecutionStatus == null
+                || taskExecutionStatus.isBlank()
+                || taskExecutionStatus.equals(latestTask.executionStatus());
+        boolean dispositionMatches = taskDisposition == null
+                || taskDisposition.isBlank()
+                || taskDisposition.equals(latestTask.disposition());
+        return executionMatches && dispositionMatches;
     }
 
     @Override

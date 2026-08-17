@@ -27,6 +27,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialStats;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
@@ -84,7 +85,7 @@ class GraphMaterialApplicationServiceImplTest {
         when(taskRepository.listLatestByMaterialIds(List.of(11L))).thenReturn(List.of(task));
 
         var result = service.pageMaterials(
-                new GraphMaterialListQuery("user-1", "素材", null, "SANCAI_ENTRY", "cat-a", "vol-a"),
+                new GraphMaterialListQuery("user-1", "素材", null, "SANCAI_ENTRY", "cat-a", "vol-a", null, null),
                 new PageQuery(1, 2));
 
         assertThat(result.getRecords()).hasSize(2);
@@ -95,6 +96,39 @@ class GraphMaterialApplicationServiceImplTest {
         assertThat(result.getRecords().get(1).source().contentRef()).isEqualTo(secondRef);
         assertThat(result.getRecords().get(1).material()).isNull();
         verify(materialRepository, never()).getByContentRef(any());
+    }
+
+    @Test
+    void shouldFilterMaterialPageByLatestTaskStatusAndDisposition() {
+        ContentRef firstRef = new ContentRef("SANCAI_ENTRY", 1001L);
+        ContentRef secondRef = new ContentRef("SANCAI_ENTRY", 1002L);
+        GraphMaterial firstMaterial =
+                new GraphMaterial(11L, firstRef, "素材一", GraphMaterialStatus.DRAFT, null, null, null, null, 3L);
+        GraphMaterial secondMaterial =
+                new GraphMaterial(12L, secondRef, "素材二", GraphMaterialStatus.DRAFT, null, null, null, null, 3L);
+        GraphExtractionTask matchingTask = latestTask(11L, firstRef);
+        GraphExtractionTask unmatchedTask = latestTask(12L, secondRef);
+        unmatchedTask.setDisposition(null);
+        when(classicsFacade.pageKnowledgeGraphMaterials(any()))
+                .thenReturn(KnowledgeGraphMaterialPageFacadeResponse.builder()
+                        .pageNo(1)
+                        .pageSize(2)
+                        .totalCount(2)
+                        .records(List.of(source("1001", "素材一"), source("1002", "素材二")))
+                        .build());
+        when(materialRepository.listByContentRefs(List.of(firstRef, secondRef)))
+                .thenReturn(List.of(firstMaterial, secondMaterial));
+        when(statsRepository.listByMaterialIds(List.of(11L, 12L))).thenReturn(List.of());
+        when(taskRepository.listLatestByMaterialIds(List.of(11L, 12L)))
+                .thenReturn(List.of(matchingTask, unmatchedTask));
+
+        var result = service.pageMaterials(
+                new GraphMaterialListQuery(
+                        "user-1", "素材", null, "SANCAI_ENTRY", "cat-a", "vol-a", "SUCCEEDED", "PENDING"),
+                new PageQuery(1, 2));
+
+        assertThat(result.getRecords()).hasSize(1);
+        assertThat(result.getRecords().get(0).source().contentRef()).isEqualTo(firstRef);
     }
 
     @Test
@@ -152,7 +186,7 @@ class GraphMaterialApplicationServiceImplTest {
                 "{}",
                 "{}",
                 GraphExtractionExecutionStatus.SUCCEEDED,
-                null,
+                GraphExtractionDisposition.PENDING,
                 1,
                 4,
                 null,

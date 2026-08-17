@@ -8,4 +8,6 @@ public record GraphMaterialListQuery(
         GraphMaterialStatus status,
         String contentType,
         String categoryCode,
-        String volumeCode) {}
+        String volumeCode,
+        String taskExecutionStatus,
+        String taskDisposition) {}

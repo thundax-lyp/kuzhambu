@@ -56,6 +56,12 @@ public final class GraphMaterialRequests {
         @Size(max = 64)
         private String volumeCode;
 
+        @Pattern(regexp = "PENDING|RUNNING|SUCCEEDED|FAILED|CANCELLED")
+        private String taskExecutionStatus;
+
+        @Pattern(regexp = "PENDING|ADOPTED_MERGE|ADOPTED_REPLACE|DISCARDED|SUPERSEDED")
+        private String taskDisposition;
+
         @Pattern(regexp = "^\\d+$")
         private String pageNo;
 

@@ -8,11 +8,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionDecisionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
@@ -83,6 +85,25 @@ class GraphControllerTest {
         assertThat(command.node().getName()).isEqualTo("张三");
         assertThat(command.node().getPropertiesJson()).contains("identityQualifier");
         assertThat(response.material().contentRef().contentRefId()).isEqualTo("1001");
+    }
+
+    @Test
+    void shouldMapMaterialPageTaskFiltersThroughAssemblerAndApplicationService() {
+        GraphMaterialApplicationService materialService = mock(GraphMaterialApplicationService.class);
+        GraphController controller = controller(materialService);
+        GraphMaterialRequests.MaterialPageRequest request = new GraphMaterialRequests.MaterialPageRequest();
+        request.setTaskExecutionStatus("SUCCEEDED");
+        request.setTaskDisposition("PENDING");
+        request.setPageNo("1");
+        request.setPageSize("10");
+        when(materialService.pageMaterials(any(), any())).thenReturn(PageResult.of(1, 10, 0, List.of()));
+
+        controller.materialPage(request);
+
+        ArgumentCaptor<GraphMaterialListQuery> captor = ArgumentCaptor.forClass(GraphMaterialListQuery.class);
+        verify(materialService).pageMaterials(captor.capture(), any());
+        assertThat(captor.getValue().taskExecutionStatus()).isEqualTo("SUCCEEDED");
+        assertThat(captor.getValue().taskDisposition()).isEqualTo("PENDING");
     }
 
     @Test

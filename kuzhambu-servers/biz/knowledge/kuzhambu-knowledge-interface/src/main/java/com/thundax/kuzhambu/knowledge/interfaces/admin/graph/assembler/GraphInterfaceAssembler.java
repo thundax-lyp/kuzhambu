@@ -156,7 +156,9 @@ public final class GraphInterfaceAssembler {
                                 request.getStatus()),
                 request.getContentType(),
                 request.getCategoryCode(),
-                request.getVolumeCode());
+                request.getVolumeCode(),
+                request.getTaskExecutionStatus(),
+                request.getTaskDisposition());
     }
 
     @NonNull
