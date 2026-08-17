@@ -43,6 +43,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQ
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedAdjacencyQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeDeleteQuery;
@@ -71,6 +72,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChan
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
@@ -178,6 +180,12 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphMaterialTreeQuery toQuery(@NonNull GraphMaterialRequests.MaterialTreeRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialTreeQuery(request.getParentId());
+    }
+
+    @NonNull
     public static GraphMaterialResponses.ContentRefData toContentRefData(@NonNull ContentRef value) {
         Objects.requireNonNull(value, "value");
         return new GraphMaterialResponses.ContentRefData(value.getContentType(), String.valueOf(value.getContentId()));
@@ -278,6 +286,21 @@ public final class GraphInterfaceAssembler {
                 toNullableMaterialData(value),
                 toNullableMaterialStatsData(value.materialStats()),
                 toNullableTaskData(value.latestTask()));
+    }
+
+    @NonNull
+    public static GraphMaterialResponses.MaterialTreeNodeData toMaterialTreeNodeData(
+            @NonNull GraphMaterialTreeNodeResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphMaterialResponses.MaterialTreeNodeData(
+                value.id(),
+                value.parentId(),
+                value.title(),
+                value.nodeType(),
+                value.contentType(),
+                value.categoryCode(),
+                value.volumeCode(),
+                value.leaf());
     }
 
     @NonNull

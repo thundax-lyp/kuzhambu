@@ -20,6 +20,7 @@ interface MaterialCatalogPanelProps {
     nodes: MaterialCatalogNode[];
     selectedKey: string;
     onExpandedKeysChange: (keys: string[]) => void;
+    onLoadChildren: (node: MaterialCatalogNode) => Promise<void>;
     onRefresh: () => void;
     onSelectNode: (node: MaterialCatalogNode) => void;
 }
@@ -38,6 +39,7 @@ const flattenNodes = (nodes: MaterialCatalogNode[]): MaterialCatalogNode[] => {
 const toTreeData = (nodes: MaterialCatalogNode[]): DataNode[] =>
     nodes.map((node) => ({
         children: node.children ? toTreeData(node.children) : undefined,
+        isLeaf: node.leaf,
         key: node.key,
         title: (
             <span className="graph-material-catalog-tree-title">
@@ -56,6 +58,7 @@ export const MaterialCatalogPanel = ({
     nodes,
     selectedKey,
     onExpandedKeysChange,
+    onLoadChildren,
     onRefresh,
     onSelectNode
 }: MaterialCatalogPanelProps) => {
@@ -75,6 +78,10 @@ export const MaterialCatalogPanel = ({
                 selectedKeys={[selectedKey]}
                 treeData={treeData}
                 onExpand={(keys: Key[]) => onExpandedKeysChange(keys.map(String))}
+                loadData={(treeNode) => {
+                    const selectedNode = nodeByKey.get(String(treeNode.key));
+                    return selectedNode ? onLoadChildren(selectedNode) : Promise.resolve();
+                }}
                 onSelect={(keys) => {
                     const selectedNode = nodeByKey.get(String(keys[0] ?? ""));
                     if (selectedNode) {

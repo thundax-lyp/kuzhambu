@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialTreeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnapshotFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
@@ -31,12 +32,14 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQ
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialSourceResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
@@ -168,6 +171,26 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                         query == null ? null : query.taskDisposition()))
                 .toList();
         return PageResult.of(page.getPageNo(), page.getPageSize(), page.getTotalCount(), records);
+    }
+
+    @Override
+    public List<GraphMaterialTreeNodeResult> listMaterialTree(GraphMaterialTreeQuery query) {
+        var response = classicsFacade.listKnowledgeGraphMaterialTree(KnowledgeGraphMaterialTreeFacadeRequest.builder()
+                .parentId(query == null ? null : query.parentId())
+                .build());
+        return response == null || response.getNodes() == null
+                ? List.of()
+                : response.getNodes().stream()
+                        .map(node -> new GraphMaterialTreeNodeResult(
+                                node.getId(),
+                                node.getParentId(),
+                                node.getTitle(),
+                                node.getNodeType(),
+                                node.getContentType(),
+                                node.getCategoryCode(),
+                                node.getVolumeCode(),
+                                node.isLeaf()))
+                        .toList();
     }
 
     private ContentRefFilter filteredContentRefs(GraphMaterialListQuery query) {

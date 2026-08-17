@@ -213,6 +213,24 @@ public class GraphController {
         return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toMaterialPageData);
     }
 
+    @Operation(summary = "查询图谱素材树", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "图谱素材树")
+    @PostMapping("material/tree/list")
+    public List<GraphMaterialResponses.MaterialTreeNodeData> materialTreeList(
+            @Valid @RequestBody GraphMaterialRequests.MaterialTreeRequest request) {
+        return materialService.listMaterialTree(GraphInterfaceAssembler.toQuery(request)).stream()
+                .map(GraphInterfaceAssembler::toMaterialTreeNodeData)
+                .toList();
+    }
+
     @Operation(summary = "获取图谱素材画布", description = "knowledge:graph:view")
     @ApiImplicitParams({
         @ApiImplicitParam(

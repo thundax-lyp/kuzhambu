@@ -220,7 +220,19 @@ export interface MaterialCatalogNode {
     children?: MaterialCatalogNode[];
     contentType?: string;
     key: string;
+    leaf: boolean;
     nodeType: MaterialCatalogNodeType;
     title: string;
     volumeCode?: string;
+}
+
+export interface GraphMaterialTreeNodeRecord {
+    categoryCode?: string | null;
+    contentType?: string | null;
+    id: string;
+    leaf: boolean;
+    nodeType: MaterialCatalogNodeType;
+    parentId?: string | null;
+    title: string;
+    volumeCode?: string | null;
 }

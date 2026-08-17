@@ -10,7 +10,7 @@ import {
     graphMaterialMockListRecords
 } from "./__mocks__/graph-mock-data";
 import { GraphMaterialPage } from "./graph-material-page";
-import type { GraphMaterialListRecord } from "./graph-material-types";
+import type { GraphMaterialListRecord, GraphMaterialTreeNodeRecord } from "./graph-material-types";
 import * as service from "./graph-material-service";
 
 vi.mock("@/components/kuzhambu-graph", () => ({
@@ -20,6 +20,7 @@ vi.mock("@/components/kuzhambu-graph", () => ({
 vi.mock("./graph-material-service", () => ({
     createBatchExtraction: vi.fn(),
     getMaterial: vi.fn(),
+    listMaterialTree: vi.fn(),
     pageMaterials: vi.fn(),
     precheckDeletion: vi.fn(),
     previewBatchPublication: vi.fn(),
@@ -71,21 +72,117 @@ const mockCatalogThenPage = (
     pageRecords: GraphMaterialListRecord[] = graphMaterialMockListRecords,
     totalCount = pageRecords.length
 ) => {
+    vi.mocked(service.listMaterialTree).mockImplementation(async (query) => {
+        return materialTreeNodesByParentId[query?.parentId || "root"] || [];
+    });
     vi.mocked(service.pageMaterials).mockImplementation(async (query) => {
-        if (query?.pageSize === 500) {
-            return toPage(
-                graphMaterialMockListRecords,
-                1,
-                500,
-                graphMaterialMockListRecords.length
-            );
-        }
         return toPage(pageRecords, query?.pageNo ?? 1, query?.pageSize ?? 20, totalCount);
     });
 };
 
+const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]> = {
+    root: [
+        {
+            contentType: "SANCAI_ENTRY",
+            id: "type:SANCAI_ENTRY",
+            leaf: false,
+            nodeType: "contentType",
+            parentId: "root",
+            title: "三才图会"
+        },
+        {
+            contentType: "WANGQI_DOCUMENT",
+            id: "type:WANGQI_DOCUMENT",
+            leaf: false,
+            nodeType: "contentType",
+            parentId: "root",
+            title: "王祺文献"
+        },
+        {
+            contentType: "MING_CUSTOMS",
+            id: "type:MING_CUSTOMS",
+            leaf: false,
+            nodeType: "contentType",
+            parentId: "root",
+            title: "明代风俗"
+        }
+    ],
+    "type:SANCAI_ENTRY": [
+        {
+            categoryCode: "天文",
+            contentType: "SANCAI_ENTRY",
+            id: "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87",
+            leaf: false,
+            nodeType: "category",
+            parentId: "type:SANCAI_ENTRY",
+            title: "天文"
+        },
+        {
+            categoryCode: "人物",
+            contentType: "SANCAI_ENTRY",
+            id: "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9",
+            leaf: false,
+            nodeType: "category",
+            parentId: "type:SANCAI_ENTRY",
+            title: "人物"
+        }
+    ],
+    "type:WANGQI_DOCUMENT": [
+        {
+            categoryCode: "方志",
+            contentType: "WANGQI_DOCUMENT",
+            id: "type:WANGQI_DOCUMENT:category:%E6%96%B9%E5%BF%97",
+            leaf: false,
+            nodeType: "category",
+            parentId: "type:WANGQI_DOCUMENT",
+            title: "方志"
+        }
+    ],
+    "type:MING_CUSTOMS": [
+        {
+            categoryCode: "风俗",
+            contentType: "MING_CUSTOMS",
+            id: "type:MING_CUSTOMS:category:%E9%A3%8E%E4%BF%97",
+            leaf: false,
+            nodeType: "category",
+            parentId: "type:MING_CUSTOMS",
+            title: "风俗"
+        }
+    ],
+    "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87": [
+        {
+            categoryCode: "天文",
+            contentType: "SANCAI_ENTRY",
+            id: "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87:volume:%E5%8D%B7%E4%B8%80",
+            leaf: true,
+            nodeType: "volume",
+            parentId: "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87",
+            title: "卷一",
+            volumeCode: "卷一"
+        }
+    ],
+    "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9": [
+        {
+            categoryCode: "人物",
+            contentType: "SANCAI_ENTRY",
+            id: "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9:volume:%E5%8D%B7%E4%BA%8C",
+            leaf: true,
+            nodeType: "volume",
+            parentId: "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9",
+            title: "卷二",
+            volumeCode: "卷二"
+        }
+    ]
+};
+
 const selectCatalogLeaf = async (leafTitle = "卷二") => {
     const user = userEvent.setup();
+    if (leafTitle === "卷一") {
+        await user.click(await screen.findByText("天文"));
+    }
+    if (leafTitle === "卷二") {
+        await user.click(await screen.findByText("人物"));
+    }
     await user.click(await screen.findByText(leafTitle));
     return user;
 };
@@ -99,22 +196,15 @@ describe("GraphMaterialPage", () => {
 
     it("shows the material list loading state after selecting a catalog leaf", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        vi.mocked(service.pageMaterials).mockImplementation((query) => {
-            if (query?.pageSize === 500) {
-                return Promise.resolve(
-                    toPage(
-                        graphMaterialMockListRecords,
-                        1,
-                        500,
-                        graphMaterialMockListRecords.length
-                    )
-                );
-            }
+        vi.mocked(service.listMaterialTree).mockImplementation(async (query) => {
+            return materialTreeNodesByParentId[query?.parentId || "root"] || [];
+        });
+        vi.mocked(service.pageMaterials).mockImplementation(() => {
             return new Promise(() => undefined);
         });
         const { container } = renderPage();
 
-        expect(service.pageMaterials).toHaveBeenCalledWith({ pageNo: 1, pageSize: 500 });
+        expect(service.listMaterialTree).toHaveBeenCalledWith({ parentId: "root" });
         expect(screen.getByText("请选择左侧目录叶子节点查看素材列表")).toBeInTheDocument();
         await selectCatalogLeaf();
 
@@ -162,6 +252,29 @@ describe("GraphMaterialPage", () => {
         });
     });
 
+    it("loads catalog children by parentId when expanding tree nodes", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        mockCatalogThenPage([graphMaterialMockListRecords[1]]);
+        renderPage();
+
+        await selectCatalogLeaf("卷二");
+
+        expect(await screen.findByText("三才图会 人物一")).toBeInTheDocument();
+        expect(service.listMaterialTree).toHaveBeenCalledWith({ parentId: "root" });
+        expect(service.listMaterialTree).toHaveBeenCalledWith({ parentId: "type:SANCAI_ENTRY" });
+        expect(service.listMaterialTree).toHaveBeenCalledWith({
+            parentId: "type:SANCAI_ENTRY:category:%E4%BA%BA%E7%89%A9"
+        });
+        expect(service.pageMaterials).toHaveBeenLastCalledWith({
+            categoryCode: "人物",
+            contentType: "SANCAI_ENTRY",
+            keyword: undefined,
+            pageNo: 1,
+            pageSize: 20,
+            volumeCode: "卷二"
+        });
+    });
+
     it("queries pageMaterials with pagination values inside the selected leaf", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         mockCatalogThenPage(graphMaterialMockListRecords, 50);
@@ -185,10 +298,10 @@ describe("GraphMaterialPage", () => {
 
     it("recovers from selected material list error by retrying the query", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        vi.mocked(service.listMaterialTree).mockImplementation(async (query) => {
+            return materialTreeNodesByParentId[query?.parentId || "root"] || [];
+        });
         vi.mocked(service.pageMaterials)
-            .mockResolvedValueOnce(
-                toPage(graphMaterialMockListRecords, 1, 500, graphMaterialMockListRecords.length)
-            )
             .mockRejectedValueOnce(new Error("素材服务暂不可用"))
             .mockResolvedValueOnce(toPage(graphMaterialMockListRecords));
         renderPage();
@@ -202,7 +315,7 @@ describe("GraphMaterialPage", () => {
         await user.click(screen.getByRole("button", { name: "重试加载素材" }));
 
         expect(await screen.findByText("三才图会 人物一")).toBeInTheDocument();
-        expect(service.pageMaterials).toHaveBeenCalledTimes(3);
+        expect(service.pageMaterials).toHaveBeenCalledTimes(2);
     });
 
     it("shows uninitialized material rows in the leaf material table", async () => {

@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeReq
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialTreeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupExecutionFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupTargetsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
@@ -21,6 +22,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeRe
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnapshotFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialTreeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -492,6 +494,14 @@ class CleanupApplicationServiceImplTest {
         public KnowledgeGraphMaterialPageFacadeResponse pageKnowledgeGraphMaterials(
                 KnowledgeGraphMaterialPageFacadeRequest request) {
             return KnowledgeGraphMaterialPageFacadeResponse.builder().build();
+        }
+
+        @Override
+        public KnowledgeGraphMaterialTreeFacadeResponse listKnowledgeGraphMaterialTree(
+                KnowledgeGraphMaterialTreeFacadeRequest request) {
+            return KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                    .nodes(List.of())
+                    .build();
         }
 
         @Override

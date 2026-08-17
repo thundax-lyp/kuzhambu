@@ -15,6 +15,7 @@ import type {
     GraphMaterialDrawerSection,
     GraphMaterialListRecord,
     MaterialCatalogNode,
+    GraphMaterialTreeNodeRecord,
     GraphMaterialRecord
 } from "./graph-material-types";
 import "./graph-material-page.css";
@@ -23,91 +24,45 @@ const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "请稍后重试。";
 
 const EMPTY_MATERIAL_RECORDS: GraphMaterialListRecord[] = [];
+const EMPTY_CATALOG_NODES: MaterialCatalogNode[] = [];
 const SEARCH_DEBOUNCE_MS = 500;
-const ROOT_CATALOG_KEY = "all";
-const CATALOG_PAGE_SIZE = 500;
-
-const SOURCE_TYPE_LABELS: Readonly<Record<string, string>> = {
-    MING_CUSTOMS: "明代风俗",
-    SANCAI_ENTRY: "三才图会",
-    WANGQI_DOCUMENT: "王祺文献"
-};
-
-const readSourceTypeLabel = (contentType: string) => SOURCE_TYPE_LABELS[contentType] || contentType;
+const ROOT_CATALOG_KEY = "root";
 
 const normalizeKeyword = (value: string) => {
     const keyword = value.trim();
     return keyword || undefined;
 };
 
-const sanitizeCatalogKeyPart = (value: string) => encodeURIComponent(value);
+const toCatalogNode = (record: GraphMaterialTreeNodeRecord): MaterialCatalogNode => ({
+    categoryCode: record.categoryCode ?? undefined,
+    children: record.leaf ? undefined : [],
+    contentType: record.contentType ?? undefined,
+    key: record.id,
+    leaf: record.leaf,
+    nodeType: record.nodeType,
+    title: record.title,
+    volumeCode: record.volumeCode ?? undefined
+});
 
-const buildMaterialCatalogNodes = (records: GraphMaterialListRecord[]): MaterialCatalogNode[] => {
-    const root: MaterialCatalogNode = {
-        key: ROOT_CATALOG_KEY,
-        nodeType: "all",
-        title: "全部素材"
+const loadInitialCatalog = async () => {
+    const rootRecords = await service.listMaterialTree({ parentId: ROOT_CATALOG_KEY });
+    const childrenByRootKey = new Map<string, MaterialCatalogNode[]>();
+    await Promise.all(
+        rootRecords
+            .filter((record) => !record.leaf)
+            .map(async (record) => {
+                const childRecords = await service.listMaterialTree({ parentId: record.id });
+                childrenByRootKey.set(record.id, childRecords.map(toCatalogNode));
+            })
+    );
+    const nodes = rootRecords.map((record) => ({
+        ...toCatalogNode(record),
+        children: childrenByRootKey.get(record.id) ?? (record.leaf ? undefined : [])
+    }));
+    return {
+        expandedKeys: rootRecords.filter((record) => !record.leaf).map((record) => record.id),
+        nodes
     };
-    const typeNodes = new Map<string, MaterialCatalogNode>();
-
-    records.forEach((record) => {
-        const { contentType } = record.source;
-        const typeKey = `type:${sanitizeCatalogKeyPart(contentType)}`;
-        let typeNode = typeNodes.get(typeKey);
-        if (!typeNode) {
-            typeNode = {
-                children: [],
-                contentType,
-                key: typeKey,
-                nodeType: "contentType",
-                title: readSourceTypeLabel(contentType)
-            };
-            typeNodes.set(typeKey, typeNode);
-        }
-
-        const categoryCode = record.source.category?.trim();
-        const volumeCode = record.source.volume?.trim();
-        if (!categoryCode) {
-            return;
-        }
-
-        const categoryKey = `${typeKey}:category:${sanitizeCatalogKeyPart(categoryCode)}`;
-        let categoryNode = typeNode.children?.find((node) => node.key === categoryKey);
-        if (!categoryNode) {
-            categoryNode = {
-                categoryCode,
-                children: [],
-                contentType,
-                key: categoryKey,
-                nodeType: "category",
-                title: categoryCode
-            };
-            typeNode.children?.push(categoryNode);
-        }
-
-        if (!volumeCode) {
-            return;
-        }
-
-        const volumeKey = `${categoryKey}:volume:${sanitizeCatalogKeyPart(volumeCode)}`;
-        if (!categoryNode.children?.some((node) => node.key === volumeKey)) {
-            categoryNode.children?.push({
-                categoryCode,
-                contentType,
-                key: volumeKey,
-                nodeType: "volume",
-                title: volumeCode,
-                volumeCode
-            });
-        }
-    });
-
-    return [
-        {
-            ...root,
-            children: Array.from(typeNodes.values())
-        }
-    ];
 };
 
 const findCatalogNode = (
@@ -126,11 +81,20 @@ const findCatalogNode = (
     return undefined;
 };
 
-const collectExpandableCatalogKeys = (nodes: MaterialCatalogNode[]): string[] =>
-    nodes.flatMap((node) => [
-        ...(node.children?.length ? [node.key] : []),
-        ...collectExpandableCatalogKeys(node.children || [])
-    ]);
+const attachCatalogChildren = (
+    nodes: MaterialCatalogNode[],
+    parentKey: string,
+    children: MaterialCatalogNode[]
+): MaterialCatalogNode[] =>
+    nodes.map((node) => {
+        if (node.key === parentKey) {
+            return { ...node, children };
+        }
+        if (!node.children?.length) {
+            return node;
+        }
+        return { ...node, children: attachCatalogChildren(node.children, parentKey, children) };
+    });
 
 const toCatalogQuery = (
     node: MaterialCatalogNode,
@@ -153,13 +117,7 @@ const isSamePageQuery = (left: GraphMaterialPageQuery, right: GraphMaterialPageQ
     left.pageSize === right.pageSize &&
     left.volumeCode === right.volumeCode;
 
-const isLeafCatalogNode = (node?: MaterialCatalogNode) => {
-    return Boolean(
-        node &&
-        (node.nodeType === "category" || node.nodeType === "volume") &&
-        (!node.children || node.children.length === 0)
-    );
-};
+const isLeafCatalogNode = (node?: MaterialCatalogNode) => Boolean(node?.leaf);
 
 export const GraphMaterialPage = () => {
     const navigate = useNavigate();
@@ -168,6 +126,9 @@ export const GraphMaterialPage = () => {
     const [searchText, setSearchText] = useState("");
     const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
     const [selectedCatalogKey, setSelectedCatalogKey] = useState(ROOT_CATALOG_KEY);
+    const [loadedCatalogNodes, setLoadedCatalogNodes] = useState<MaterialCatalogNode[] | null>(
+        null
+    );
     const [catalogExpandedKeys, setCatalogExpandedKeys] = useState<string[] | null>(null);
     const [activeMaterial, setActiveMaterial] = useState<GraphMaterialRecord | null>(null);
     const [activeMaterialSection, setActiveMaterialSection] =
@@ -178,19 +139,14 @@ export const GraphMaterialPage = () => {
     });
     const materialCatalogQuery = useQuery({
         enabled: canViewGraph,
-        queryFn: () =>
-            service.pageMaterials({
-                pageNo: DEFAULT_PAGE_NO,
-                pageSize: CATALOG_PAGE_SIZE
-            }),
+        queryFn: loadInitialCatalog,
         queryKey: ["knowledge", "graph-material", "catalog"]
     });
-    const catalogRecords = materialCatalogQuery.data?.records ?? EMPTY_MATERIAL_RECORDS;
-    const catalogNodes = useMemo(() => buildMaterialCatalogNodes(catalogRecords), [catalogRecords]);
-    const defaultCatalogExpandedKeys = useMemo(
-        () => collectExpandableCatalogKeys(catalogNodes),
-        [catalogNodes]
+    const catalogNodes = useMemo(
+        () => loadedCatalogNodes ?? materialCatalogQuery.data?.nodes ?? EMPTY_CATALOG_NODES,
+        [loadedCatalogNodes, materialCatalogQuery.data?.nodes]
     );
+    const defaultCatalogExpandedKeys = materialCatalogQuery.data?.expandedKeys ?? [];
     const visibleCatalogExpandedKeys = catalogExpandedKeys ?? defaultCatalogExpandedKeys;
     const selectedCatalogNode = useMemo(
         () => findCatalogNode(catalogNodes, selectedCatalogKey),
@@ -240,6 +196,25 @@ export const GraphMaterialPage = () => {
     const updateQuery = (nextQuery: GraphMaterialPageQuery) => {
         setQuery(nextQuery);
     };
+    const refreshCatalog = async () => {
+        setLoadedCatalogNodes(null);
+        setCatalogExpandedKeys(null);
+        await materialCatalogQuery.refetch();
+    };
+    const loadCatalogChildren = async (node: MaterialCatalogNode) => {
+        if (node.leaf || node.children?.length) {
+            return;
+        }
+        const childRecords = await service.listMaterialTree({ parentId: node.key });
+        const childNodes = childRecords.map(toCatalogNode);
+        setLoadedCatalogNodes((currentNodes) =>
+            attachCatalogChildren(
+                currentNodes ?? materialCatalogQuery.data?.nodes ?? [],
+                node.key,
+                childNodes
+            )
+        );
+    };
     const batchExtractionMutation = useMutation({
         mutationFn: service.createBatchExtraction,
         onSuccess: () => {
@@ -286,7 +261,7 @@ export const GraphMaterialPage = () => {
                     <KuzhambuButton
                         testId="knowledge-graph-material-refresh-button"
                         icon={<ReloadOutlined />}
-                        onClick={() => void materialCatalogQuery.refetch()}
+                        onClick={() => void refreshCatalog()}
                     >
                         刷新
                     </KuzhambuButton>
@@ -302,7 +277,7 @@ export const GraphMaterialPage = () => {
                             size="small"
                             onClick={() =>
                                 void (materialCatalogQuery.isError
-                                    ? materialCatalogQuery.refetch()
+                                    ? refreshCatalog()
                                     : materialPageQuery.refetch())
                             }
                         >
@@ -337,7 +312,8 @@ export const GraphMaterialPage = () => {
                             nodes={catalogNodes}
                             selectedKey={selectedCatalogKey}
                             onExpandedKeysChange={setCatalogExpandedKeys}
-                            onRefresh={() => void materialCatalogQuery.refetch()}
+                            onLoadChildren={loadCatalogChildren}
+                            onRefresh={() => void refreshCatalog()}
                             onSelectNode={(node) => {
                                 setSelectedCatalogKey(node.key);
                                 if (isLeafCatalogNode(node)) {
@@ -348,6 +324,16 @@ export const GraphMaterialPage = () => {
                                             query.pageSize || DEFAULT_PAGE_SIZE
                                         )
                                     );
+                                } else {
+                                    setCatalogExpandedKeys((currentKeys) =>
+                                        Array.from(
+                                            new Set([
+                                                ...(currentKeys ?? visibleCatalogExpandedKeys),
+                                                node.key
+                                            ])
+                                        )
+                                    );
+                                    void loadCatalogChildren(node);
                                 }
                             }}
                         />

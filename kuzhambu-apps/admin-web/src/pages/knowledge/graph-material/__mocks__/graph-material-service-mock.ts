@@ -10,6 +10,45 @@ import {
 } from "./graph-mock-data";
 
 export const mockGraphMaterialService: GraphMaterialService = {
+    listMaterialTree: async (query = {}) => {
+        if (!query.parentId || query.parentId === "root") {
+            return [
+                {
+                    contentType: "SANCAI_ENTRY",
+                    id: "type:SANCAI_ENTRY",
+                    leaf: false,
+                    nodeType: "contentType",
+                    parentId: "root",
+                    title: "三才图会"
+                }
+            ];
+        }
+        if (query.parentId === "type:SANCAI_ENTRY") {
+            return [
+                {
+                    categoryCode: "天文",
+                    contentType: "SANCAI_ENTRY",
+                    id: "type:SANCAI_ENTRY:category:%E5%A4%A9%E6%96%87",
+                    leaf: false,
+                    nodeType: "category",
+                    parentId: "type:SANCAI_ENTRY",
+                    title: "天文"
+                }
+            ];
+        }
+        return [
+            {
+                categoryCode: "天文",
+                contentType: "SANCAI_ENTRY",
+                id: `${query.parentId}:volume:%E5%8D%B7%E4%B8%80`,
+                leaf: true,
+                nodeType: "volume",
+                parentId: query.parentId,
+                title: "卷一",
+                volumeCode: "卷一"
+            }
+        ];
+    },
     pageMaterials: async (query = {}) => {
         const keyword = query.keyword?.trim();
         const records = keyword

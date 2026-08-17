@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeReq
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialTreeFacadeRequest;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -94,13 +96,32 @@ class ClassicsFacadeImplTest {
                 .contentType("SANCAI_ENTRY")
                 .contentId("1001")
                 .build());
+        var rootNodes = facade.listKnowledgeGraphMaterialTree(KnowledgeGraphMaterialTreeFacadeRequest.builder()
+                .parentId("root")
+                .build());
+        var categoryNodes = facade.listKnowledgeGraphMaterialTree(KnowledgeGraphMaterialTreeFacadeRequest.builder()
+                .parentId("type:SANCAI_ENTRY")
+                .build());
+        var volumeNodes = facade.listKnowledgeGraphMaterialTree(KnowledgeGraphMaterialTreeFacadeRequest.builder()
+                .parentId("type:SANCAI_ENTRY:category:TIANWEN")
+                .build());
 
         assertEquals(1L, page.getTotalCount());
         assertEquals("1001", page.getRecords().get(0).getContentId());
         assertEquals(true, page.getRecords().get(0).isGraphable());
         assertEquals("青花龙纹", snapshot.getSource().getTitle());
         assertEquals("原文\n译文", snapshot.getContentSnapshot());
-        verify(searchService).listWorkbenchContents();
+        assertEquals("type:SANCAI_ENTRY", rootNodes.getNodes().get(0).getId());
+        assertEquals("三才图会", rootNodes.getNodes().get(0).getTitle());
+        assertEquals(
+                "type:SANCAI_ENTRY:category:TIANWEN",
+                categoryNodes.getNodes().get(0).getId());
+        assertEquals(false, categoryNodes.getNodes().get(0).isLeaf());
+        assertEquals(
+                "type:SANCAI_ENTRY:category:TIANWEN:volume:V1",
+                volumeNodes.getNodes().get(0).getId());
+        assertEquals(true, volumeNodes.getNodes().get(0).isLeaf());
+        verify(searchService, times(4)).listWorkbenchContents();
         verify(searchService)
                 .getWorkbenchContent(argThat(
                         query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId())));

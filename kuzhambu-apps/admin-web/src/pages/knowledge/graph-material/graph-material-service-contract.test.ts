@@ -109,6 +109,13 @@ describe("knowledge graph material service request contracts", () => {
             volumeCode: "vol-001"
         });
 
+        await service.listMaterialTree({
+            parentId: "type:SANCAI_ENTRY:category:astronomy"
+        });
+        expectLastCall("POST", "/knowledge/graph/material/tree/list", {
+            parentId: "type:SANCAI_ENTRY:category:astronomy"
+        });
+
         await service.getMaterial({
             contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
         });

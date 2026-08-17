@@ -13,6 +13,7 @@ import type {
     GraphMaterialListRecord,
     GraphMaterialRecord,
     GraphMaterialStatus,
+    GraphMaterialTreeNodeRecord,
     GraphPublicationConfirmationRecord,
     GraphPublicationPreviewRecord,
     GraphPublicationResultRecord,
@@ -21,6 +22,7 @@ import type {
 } from "./graph-material-types";
 
 const MATERIAL_PAGE_PATH = "/knowledge/graph/material/page";
+const MATERIAL_TREE_PATH = "/knowledge/graph/material/tree/list";
 const MATERIAL_GET_PATH = "/knowledge/graph/material/get";
 const EXTRACTION_CREATE_PATH = "/knowledge/graph/material/extraction/create";
 const BATCH_EXTRACTION_CREATE_PATH = "/knowledge/graph/task/batch/create";
@@ -106,6 +108,10 @@ export interface GraphMaterialContentRefCommand {
     contentRef: GraphContentRefRecord;
 }
 
+export interface GraphMaterialTreeQuery {
+    parentId?: string;
+}
+
 export interface GraphMaterialBatchExtractionCommand {
     contentRefs?: GraphContentRefRecord[];
     volumeCode?: string;
@@ -133,6 +139,7 @@ export interface GraphMaterialService {
         command: GraphMaterialContentRefCommand
     ) => Promise<GraphBatchExtractionResultRecord["materials"][number]["result"]>;
     getMaterial: (command: GraphMaterialContentRefCommand) => Promise<GraphMaterialDetailRecord>;
+    listMaterialTree: (query?: GraphMaterialTreeQuery) => Promise<GraphMaterialTreeNodeRecord[]>;
     pageMaterials: (query?: GraphMaterialPageQuery) => Promise<Page<GraphMaterialListRecord>>;
     precheckDeletion: (
         command: GraphMaterialContentRefCommand
@@ -205,6 +212,10 @@ export const httpGraphMaterialService: GraphMaterialService = {
         });
         return toPage(page);
     },
+    listMaterialTree: (query = {}) =>
+        postJson<GraphMaterialTreeNodeRecord[], GraphMaterialTreeQuery>(MATERIAL_TREE_PATH, {
+            body: query
+        }),
     getMaterial: (command) =>
         postJson<GraphMaterialDetailRecord, GraphContentRefCommand>(MATERIAL_GET_PATH, {
             body: command
@@ -304,6 +315,7 @@ export const httpGraphMaterialService: GraphMaterialService = {
 };
 
 export const pageMaterials = httpGraphMaterialService.pageMaterials;
+export const listMaterialTree = httpGraphMaterialService.listMaterialTree;
 export const getMaterial = httpGraphMaterialService.getMaterial;
 export const createExtraction = httpGraphMaterialService.createExtraction;
 export const createBatchExtraction = httpGraphMaterialService.createBatchExtraction;

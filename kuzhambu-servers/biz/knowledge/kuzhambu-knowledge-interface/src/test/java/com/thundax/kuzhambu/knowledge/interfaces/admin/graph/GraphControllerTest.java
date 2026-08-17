@@ -18,8 +18,10 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdr
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionDecisionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
@@ -65,6 +67,7 @@ class GraphControllerTest {
     @Test
     void shouldKeepReadAndWritePermissionsOnAdminEndpoints() throws Exception {
         assertThat(permission("materialPage")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("materialTreeList")).isEqualTo("knowledge:graph:view");
         assertThat(permission("materialGet")).isEqualTo("knowledge:graph:view");
         assertThat(permission("materialNodeCreate")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("taskPage")).isEqualTo("knowledge:graph:view");
@@ -124,6 +127,33 @@ class GraphControllerTest {
         verify(materialService).pageMaterials(captor.capture(), any());
         assertThat(captor.getValue().taskExecutionStatus()).isEqualTo("SUCCEEDED");
         assertThat(captor.getValue().taskDisposition()).isEqualTo("PENDING");
+    }
+
+    @Test
+    void shouldMapMaterialTreeParentIdThroughAssemblerAndApplicationService() {
+        GraphMaterialApplicationService materialService = mock(GraphMaterialApplicationService.class);
+        GraphController controller = controller(materialService);
+        GraphMaterialRequests.MaterialTreeRequest request = new GraphMaterialRequests.MaterialTreeRequest();
+        request.setParentId("type:SANCAI_ENTRY:category:TIANWEN");
+        when(materialService.listMaterialTree(any()))
+                .thenReturn(List.of(new GraphMaterialTreeNodeResult(
+                        "type:SANCAI_ENTRY:category:TIANWEN:volume:V1",
+                        "type:SANCAI_ENTRY:category:TIANWEN",
+                        "卷一",
+                        "volume",
+                        "SANCAI_ENTRY",
+                        "TIANWEN",
+                        "V1",
+                        true)));
+
+        var response = controller.materialTreeList(request);
+
+        ArgumentCaptor<GraphMaterialTreeQuery> captor = ArgumentCaptor.forClass(GraphMaterialTreeQuery.class);
+        verify(materialService).listMaterialTree(captor.capture());
+        assertThat(captor.getValue().parentId()).isEqualTo("type:SANCAI_ENTRY:category:TIANWEN");
+        assertThat(response).hasSize(1);
+        assertThat(response.get(0).id()).isEqualTo("type:SANCAI_ENTRY:category:TIANWEN:volume:V1");
+        assertThat(response.get(0).leaf()).isTrue();
     }
 
     @Test
