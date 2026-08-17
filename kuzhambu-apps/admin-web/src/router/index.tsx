@@ -138,7 +138,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "knowledge/graph",
-                            element: <RefinementPage />
+                            element: <Navigate to="/knowledge/graph-materials" replace />
                         },
                         {
                             path: "knowledge/graph-workbench",

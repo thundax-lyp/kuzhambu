@@ -1,8 +1,14 @@
-import { Table, Tag } from "antd";
-import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { Typography } from "antd";
+import { KuzhambuSpace, KuzhambuTable, KuzhambuTag } from "@/components";
 import { normalizeId } from "@/types/id";
-import type { ColumnsType } from "antd/es/table";
+import type {
+    KuzhambuTableColumn,
+    KuzhambuTableRowActionOption,
+    KuzhambuTagType
+} from "@/components";
 import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
+
+const { Text } = Typography;
 
 interface GraphExtractionTaskTableProps {
     applyingTaskId?: string | null;
@@ -18,18 +24,86 @@ interface GraphExtractionTaskTableProps {
     onRegenerate: (task: GraphExtractionTaskRecord) => void;
 }
 
-const readStatusColor = (status?: string | null) => {
+const readExecutionStatusType = (status?: string | null): KuzhambuTagType => {
     switch (status) {
-        case "APPLIED":
-            return "green";
-        case "FAILED":
-            return "red";
         case "SUCCEEDED":
-            return "blue";
+            return "success";
+        case "FAILED":
+            return "danger";
+        case "RUNNING":
+            return "info";
+        case "PENDING":
+            return "warning";
+        case "CANCELLED":
+            return "neutral";
         default:
-            return "default";
+            return "neutral";
     }
 };
+
+const readDispositionType = (disposition?: string | null): KuzhambuTagType => {
+    switch (disposition) {
+        case "ADOPTED_MERGE":
+        case "ADOPTED_REPLACE":
+            return "success";
+        case "DISCARDED":
+        case "SUPERSEDED":
+            return "warning";
+        case "PENDING":
+            return "info";
+        default:
+            return "neutral";
+    }
+};
+
+const readTaskExecutionStatus = (task: GraphExtractionTaskRecord) =>
+    task.executionStatus || task.status || "UNKNOWN";
+
+const readMaterialLabel = (task: GraphExtractionTaskRecord) => {
+    const materialRef = task.materialRef;
+    const contentType = materialRef?.contentType || task.sourceContentType || "-";
+    const contentRefId = materialRef?.contentRefId || task.sourceContentId || "-";
+    return `${contentType} / ${contentRefId}`;
+};
+
+const readResultSummary = (task: GraphExtractionTaskRecord) => {
+    const summary = task.resultSummary;
+    if (!summary) {
+        return "-";
+    }
+    return `节点 ${summary.nodeCount}，关系 ${summary.edgeCount}，告警 ${summary.warningCount}`;
+};
+
+const readFailureReason = (task: GraphExtractionTaskRecord) =>
+    task.failureReason || task.errorMessage || task.errorType || "-";
+
+const readRelatedTasks = (task: GraphExtractionTaskRecord) => {
+    const relatedItems = [
+        task.batchId ? `批次 ${task.batchId}` : null,
+        task.batchJobId ? `批任务 ${task.batchJobId}` : null,
+        task.parentTaskId ? `父任务 ${task.parentTaskId}` : null,
+        task.triggeredByTaskId ? `触发 ${task.triggeredByTaskId}` : null,
+        task.regeneratedFromTaskId ? `重生成自 ${task.regeneratedFromTaskId}` : null,
+        task.supersededByTaskId ? `替代为 ${task.supersededByTaskId}` : null
+    ].filter((item): item is string => Boolean(item));
+
+    return relatedItems.length > 0 ? relatedItems.join("；") : "-";
+};
+
+const isTaskRunning = (task: GraphExtractionTaskRecord) => {
+    const status = readTaskExecutionStatus(task);
+    return status === "PENDING" || status === "RUNNING";
+};
+
+const isTaskFailed = (task: GraphExtractionTaskRecord) =>
+    readTaskExecutionStatus(task) === "FAILED";
+
+const canApplyTask = (task: GraphExtractionTaskRecord) =>
+    Boolean(task.aiCandidateId || task.candidateId) &&
+    readTaskExecutionStatus(task) === "SUCCEEDED" &&
+    task.disposition === "PENDING";
+
+const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId || task.id);
 
 export const GraphExtractionTaskTable = ({
     applyingTaskId,
@@ -44,99 +118,146 @@ export const GraphExtractionTaskTable = ({
     onOpenDetail,
     onRegenerate
 }: GraphExtractionTaskTableProps) => {
-    const columns: ColumnsType<GraphExtractionTaskRecord> = [
+    const columns: KuzhambuTableColumn<GraphExtractionTaskRecord>[] = [
         {
-            dataIndex: "taskId",
-            key: "taskId",
-            title: "任务号"
-        },
-        {
-            dataIndex: "taskType",
-            key: "taskType",
-            title: "类型"
-        },
-        {
-            dataIndex: "batchJobId",
-            key: "batchJobId",
-            title: "批次号"
-        },
-        {
-            dataIndex: "triggerSource",
-            key: "triggerSource",
-            title: "触发来源"
-        },
-        {
-            dataIndex: "status",
-            key: "status",
-            render: (status?: string | null) => (
-                <Tag color={readStatusColor(status)}>{status || "-"}</Tag>
+            key: "material",
+            render: (_, task) => (
+                <KuzhambuSpace orientation="vertical" size={2}>
+                    <Text strong>{readMaterialLabel(task)}</Text>
+                    <Text type="secondary">任务 {readTaskId(task) || "-"}</Text>
+                </KuzhambuSpace>
             ),
-            title: "状态"
+            title: "任务素材"
         },
         {
-            dataIndex: "sourceContentType",
-            key: "sourceContentType",
-            title: "来源类型"
+            key: "executionStatus",
+            render: (_, task) => (
+                <KuzhambuTag type={readExecutionStatusType(readTaskExecutionStatus(task))}>
+                    {readTaskExecutionStatus(task)}
+                </KuzhambuTag>
+            ),
+            title: "运行状态",
+            width: 112
         },
         {
-            dataIndex: "sourceContentId",
-            key: "sourceContentId",
-            title: "来源ID"
+            dataIndex: "disposition",
+            key: "disposition",
+            render: (disposition?: string | null) => (
+                <KuzhambuTag type={readDispositionType(disposition)}>
+                    {disposition || "-"}
+                </KuzhambuTag>
+            ),
+            title: "采纳状态",
+            width: 128
         },
         {
-            dataIndex: "aiCandidateId",
-            key: "aiCandidateId",
-            title: "候选ID"
+            key: "stage",
+            render: (_, task) => `${task.currentStage || "-"} / ${task.progress ?? 0}%`,
+            title: "阶段",
+            width: 168
+        },
+        {
+            dataIndex: "attemptNo",
+            key: "attemptNo",
+            title: "尝试",
+            width: 80
+        },
+        {
+            dataIndex: "selectionScopeJson",
+            ellipsis: true,
+            key: "inputSummary",
+            render: (selectionScopeJson?: string | null) => selectionScopeJson || "-",
+            title: "输入摘要",
+            width: 220
+        },
+        {
+            key: "resultSummary",
+            render: (_, task) => readResultSummary(task),
+            title: "结果摘要",
+            width: 190
+        },
+        {
+            key: "failureReason",
+            ellipsis: true,
+            render: (_, task) => readFailureReason(task),
+            title: "失败原因",
+            width: 180
+        },
+        {
+            key: "relatedTasks",
+            ellipsis: true,
+            render: (_, task) => readRelatedTasks(task),
+            title: "关联任务",
+            width: 220
+        },
+        {
+            dataIndex: "purgeAfter",
+            key: "purgeAfter",
+            render: (purgeAfter?: string | null) => purgeAfter || "-",
+            title: "清理时间",
+            width: 160
         },
         {
             key: "actions",
-            render: (_, task) => (
-                <KuzhambuSpaceCompact>
-                    <KuzhambuButton
-                        testId="knowledge-graph-extraction-graph-extraction-task-view-button"
-                        onClick={() => onOpenDetail(task)}
-                    >
-                        查看
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-graph-extraction-graph-extraction-task-action-button"
-                        disabled={!canEdit}
-                        loading={regeneratingTaskId === task.taskId}
-                        onClick={() => onRegenerate(task)}
-                    >
-                        重生成
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-graph-extraction-graph-extraction-task-action-button-2"
-                        disabled={!canEdit || !task.batchJobId}
-                        loading={cancellingBatchId === task.batchJobId}
-                        onClick={() => onCancelBatch(task)}
-                    >
-                        取消批任务
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-graph-extraction-graph-extraction-task-action-button-3"
-                        type="primary"
-                        disabled={!canApply || !task.aiCandidateId || task.status === "APPLIED"}
-                        loading={applyingTaskId === task.taskId}
-                        onClick={() => onApply(task)}
-                    >
-                        应用
-                    </KuzhambuButton>
-                </KuzhambuSpaceCompact>
-            ),
-            title: "操作"
+            options: (task) => {
+                const taskId = readTaskId(task);
+                const actions: KuzhambuTableRowActionOption<GraphExtractionTaskRecord>[] = [
+                    {
+                        key: "view",
+                        text: "查看",
+                        ariaLabel: `查看任务 ${taskId}`,
+                        testId: "knowledge-graph-extraction-graph-extraction-task-view-button",
+                        onClick: () => onOpenDetail(task)
+                    }
+                ];
+
+                if (isTaskFailed(task)) {
+                    actions.push({
+                        key: "retry",
+                        text: "重试",
+                        ariaLabel: `重试任务 ${taskId}`,
+                        testId: "knowledge-graph-extraction-graph-extraction-task-retry-button",
+                        disabled: !canEdit || regeneratingTaskId === taskId,
+                        onClick: () => onRegenerate(task)
+                    });
+                }
+
+                if (isTaskRunning(task)) {
+                    actions.push({
+                        key: "cancel",
+                        text: "取消",
+                        ariaLabel: `取消任务 ${taskId}`,
+                        testId: "knowledge-graph-extraction-graph-extraction-task-cancel-button",
+                        disabled:
+                            !canEdit || !task.batchJobId || cancellingBatchId === task.batchJobId,
+                        onClick: () => onCancelBatch(task)
+                    });
+                }
+
+                if (canApplyTask(task)) {
+                    actions.push({
+                        key: "apply",
+                        text: "应用",
+                        ariaLabel: `应用任务 ${taskId}`,
+                        testId: "knowledge-graph-extraction-graph-extraction-task-apply-button",
+                        disabled: !canApply || applyingTaskId === taskId,
+                        onClick: () => onApply(task)
+                    });
+                }
+
+                return actions;
+            }
         }
     ];
 
     return (
-        <Table<GraphExtractionTaskRecord>
-            aria-label="知识抽取表格"
+        <KuzhambuTable<GraphExtractionTaskRecord>
+            ariaLabel="知识抽取表格"
             columns={columns}
             dataSource={tasks}
             loading={loading}
             pagination={false}
-            rowKey={(task) => normalizeId(task.taskId)}
+            rowKey={readTaskId}
         />
     );
 };

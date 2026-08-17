@@ -1,55 +1,196 @@
-import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import type { Key } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
 import {
     KuzhambuAlert,
     KuzhambuButton,
     KuzhambuCard,
-    KuzhambuList,
-    KuzhambuListItem,
-    KuzhambuListMeta,
     KuzhambuPage,
-    KuzhambuSpace,
-    KuzhambuTag
+    KuzhambuSpace
 } from "@/components";
-import { graphMaterialMockData } from "./__mocks__/graph-mock-data";
-import { BatchPublicationPanel } from "./batch-publication-panel";
-import { MaterialDraftCanvas } from "./material-draft-canvas";
-import { MaterialObjectDrawer } from "./material-object-drawer";
-import type { GraphMaterialRecord, GraphMaterialStatus } from "./graph-material-types";
+import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { MaterialBatchActions } from "./material-batch-actions";
+import { MaterialDetailDrawer } from "./material-detail-drawer";
+import { MaterialFilters } from "./material-filters";
+import { MaterialTable } from "./material-table";
+import * as service from "./graph-material-service";
+import type { GraphMaterialPageQuery } from "./graph-material-service";
+import type {
+    GraphContentRefRecord,
+    GraphMaterialBatchPublicationResult,
+    GraphMaterialDrawerSection,
+    GraphMaterialListRecord,
+    GraphMaterialRecord
+} from "./graph-material-types";
 import "./graph-material-page.css";
 
-const STATUS_LABELS: Record<GraphMaterialStatus, string> = {
-    DRAFT: "草稿",
-    PUBLISHING: "发布中",
-    PUBLISHED: "已发布",
-    WITHDRAWING: "撤回中",
-    FAILED: "失败"
-};
+const toMaterialRowKey = (record: GraphMaterialListRecord) =>
+    `${record.source.contentRef.contentType}:${record.source.contentRef.contentRefId}`;
 
-const STATUS_TYPES: Record<
-    GraphMaterialStatus,
-    "neutral" | "info" | "success" | "warning" | "danger"
-> = {
-    DRAFT: "neutral",
-    PUBLISHING: "info",
-    PUBLISHED: "success",
-    WITHDRAWING: "warning",
-    FAILED: "danger"
-};
+const getErrorMessage = (error: unknown) =>
+    error instanceof Error ? error.message : "请稍后重试。";
 
-const canEditDraft = (status: GraphMaterialStatus) => status === "DRAFT" || status === "FAILED";
+const EMPTY_MATERIAL_RECORDS: GraphMaterialListRecord[] = [];
 
 export const GraphMaterialPage = () => {
+    const navigate = useNavigate();
     const canViewGraph = hasPermission("knowledge:graph:view");
     const canEditGraph = hasPermission("knowledge:graph:edit");
-    const canApplyGraph = hasPermission("knowledge:graph:apply");
-    const [isMockFailure, setIsMockFailure] = useState(false);
-    const [isMockEmpty, setIsMockEmpty] = useState(false);
-    const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
-    const [isBatchPanelOpen, setIsBatchPanelOpen] = useState(false);
+    const [selectedMaterialKeys, setSelectedMaterialKeys] = useState<Key[]>([]);
+    const [isBatchPublishing, setIsBatchPublishing] = useState(false);
     const [activeMaterial, setActiveMaterial] = useState<GraphMaterialRecord | null>(null);
-    const [activeObjectId, setActiveObjectId] = useState<string | null>(null);
-    const materials = graphMaterialMockData.materials as readonly GraphMaterialRecord[];
+    const [activeMaterialSection, setActiveMaterialSection] =
+        useState<GraphMaterialDrawerSection>("OVERVIEW");
+    const [query, setQuery] = useState<GraphMaterialPageQuery>({
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize: DEFAULT_PAGE_SIZE
+    });
+    const materialPageQuery = useQuery({
+        enabled: canViewGraph,
+        queryFn: () => service.pageMaterials(query),
+        queryKey: ["knowledge", "graph-material", "page", query]
+    });
+    const materialDetailQuery = useQuery({
+        enabled: activeMaterial !== null,
+        queryFn: () => {
+            if (!activeMaterial) {
+                throw new Error("未选择素材");
+            }
+            return service.getMaterial({ contentRef: activeMaterial.contentRef });
+        },
+        queryKey: ["knowledge", "graph-material", "detail", activeMaterial?.contentRef]
+    });
+    const pageResult = materialPageQuery.data;
+    const records = pageResult?.records ?? EMPTY_MATERIAL_RECORDS;
+    const selectedRecords = useMemo(() => {
+        const selectedKeys = new Set(selectedMaterialKeys.map(String));
+        return records.filter((record) => selectedKeys.has(toMaterialRowKey(record)));
+    }, [records, selectedMaterialKeys]);
+    const totalCount = pageResult?.totalCount ?? pageResult?.count ?? 0;
+    const isInitialError = materialPageQuery.isError && records.length === 0;
+    const updateQuery = (nextQuery: GraphMaterialPageQuery) => {
+        setSelectedMaterialKeys([]);
+        setQuery(nextQuery);
+    };
+    const batchExtractionMutation = useMutation({
+        mutationFn: service.createBatchExtraction,
+        onSuccess: () => {
+            void materialPageQuery.refetch();
+        }
+    });
+    const batchWithdrawalMutation = useMutation({
+        mutationFn: async (targetRecords: GraphMaterialListRecord[]) => {
+            const materialsToWithdraw = targetRecords.flatMap((record) =>
+                record.material?.lockVersion
+                    ? [
+                          {
+                              contentRef: record.source.contentRef,
+                              materialLockVersion: record.material.lockVersion
+                          }
+                      ]
+                    : []
+            );
+            if (materialsToWithdraw.length === 0) {
+                return { materials: [] };
+            }
+            await service.previewBatchWithdrawal({
+                contentRefs: materialsToWithdraw.map((material) => material.contentRef)
+            });
+            return service.withdrawBatch({ materials: materialsToWithdraw });
+        },
+        onSuccess: () => {
+            void materialPageQuery.refetch();
+        }
+    });
+    const publishSelectedMaterials = async (
+        targetRecords: GraphMaterialListRecord[]
+    ): Promise<GraphMaterialBatchPublicationResult[]> => {
+        const recordsWithMaterial = targetRecords.filter((record) => record.material?.id);
+        if (recordsWithMaterial.length === 0) {
+            return [];
+        }
+        setIsBatchPublishing(true);
+        try {
+            const preview = await service.previewBatchPublication({
+                contentRefs: recordsWithMaterial.map((record) => record.source.contentRef)
+            });
+            const previewFailures: GraphMaterialBatchPublicationResult[] = [];
+            const confirmations = preview.materials.flatMap((item) => {
+                const record = recordsWithMaterial.find(
+                    (candidate) =>
+                        candidate.source.contentRef.contentType === item.contentRef.contentType &&
+                        candidate.source.contentRef.contentRefId === item.contentRef.contentRefId
+                );
+                if (!record?.material?.id) {
+                    return [];
+                }
+                if (!item.success || !item.result?.publishable) {
+                    previewFailures.push({
+                        failureReason:
+                            item.failureMessage ??
+                            item.result?.issues?.[0]?.message ??
+                            "发布预检未通过。",
+                        materialId: record.material.id,
+                        status: "FAILED"
+                    });
+                    return [];
+                }
+                return [
+                    {
+                        conflictDecisions: [],
+                        contentRef: item.result.materialRef,
+                        materialLockVersion: item.result.materialLockVersion,
+                        previewToken: item.result.previewToken
+                    }
+                ];
+            });
+            if (confirmations.length === 0) {
+                return previewFailures;
+            }
+            const publishResult = await service.publishBatch({ materials: confirmations });
+            const publishedResults = publishResult.materials.flatMap(
+                (item): GraphMaterialBatchPublicationResult[] => {
+                    const record = recordsWithMaterial.find(
+                        (candidate) =>
+                            candidate.source.contentRef.contentType ===
+                                item.contentRef.contentType &&
+                            candidate.source.contentRef.contentRefId ===
+                                item.contentRef.contentRefId
+                    );
+                    if (!record?.material?.id) {
+                        return [];
+                    }
+                    return [
+                        {
+                            failureReason:
+                                item.failureMessage ?? item.result?.failureMessage ?? undefined,
+                            materialId: record.material.id,
+                            status: item.success && item.result?.success ? "PUBLISHED" : "FAILED"
+                        }
+                    ];
+                }
+            );
+            await materialPageQuery.refetch();
+            return [...previewFailures, ...publishedResults];
+        } finally {
+            setIsBatchPublishing(false);
+        }
+    };
+    const viewSelectedTasks = (contentRefs: GraphContentRefRecord[]) => {
+        const params = new URLSearchParams();
+        params.set("contentRefs", JSON.stringify(contentRefs));
+        navigate(`/knowledge/graph-extraction?${params.toString()}`);
+    };
+    const openMaterialDetailDrawer = (material: GraphMaterialRecord) => {
+        setActiveMaterial(material);
+        setActiveMaterialSection("OVERVIEW");
+    };
+    const closeMaterialDetailDrawer = () => {
+        setActiveMaterial(null);
+        setActiveMaterialSection("OVERVIEW");
+    };
 
     if (!canViewGraph) {
         return (
@@ -70,153 +211,102 @@ export const GraphMaterialPage = () => {
             title="图谱素材库"
         >
             <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
-                <KuzhambuSpace>
-                    <KuzhambuButton
-                        testId="knowledge-graph-material-toggle-mock-empty-button"
-                        onClick={() => setIsMockEmpty((value) => !value)}
-                    >
-                        {isMockEmpty ? "恢复素材列表" : "模拟空态"}
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-graph-material-toggle-mock-failure-button"
-                        onClick={() => setIsMockFailure((value) => !value)}
-                    >
-                        {isMockFailure ? "恢复模拟数据" : "模拟加载失败"}
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        disabled={selectedMaterialIds.length === 0 || !canApplyGraph}
-                        testId="knowledge-graph-material-open-batch-publication-button"
-                        onClick={() => setIsBatchPanelOpen(true)}
-                    >
-                        批量发布（{selectedMaterialIds.length}）
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-                {isMockFailure ? (
-                    <KuzhambuAlert title="素材库 Mock 数据加载失败" type="error" showIcon />
+                <KuzhambuCard title="素材筛选">
+                    <MaterialFilters
+                        loading={materialPageQuery.isFetching}
+                        totalCount={totalCount}
+                        value={query}
+                        onChange={updateQuery}
+                    />
+                </KuzhambuCard>
+                <MaterialBatchActions
+                    canApplyGraph={canEditGraph}
+                    extracting={batchExtractionMutation.isPending}
+                    publishing={isBatchPublishing}
+                    selectedRecords={selectedRecords}
+                    withdrawing={batchWithdrawalMutation.isPending}
+                    onExtract={(contentRefs) =>
+                        batchExtractionMutation.mutateAsync({ contentRefs })
+                    }
+                    onPublish={publishSelectedMaterials}
+                    onViewTasks={viewSelectedTasks}
+                    onWithdraw={(targetRecords) =>
+                        batchWithdrawalMutation.mutateAsync(targetRecords)
+                    }
+                />
+                {materialPageQuery.isError ? (
+                    <KuzhambuAlert
+                        action={
+                            <KuzhambuButton
+                                testId="knowledge-graph-material-retry-page-button"
+                                size="small"
+                                onClick={() => void materialPageQuery.refetch()}
+                            >
+                                重试加载素材列表
+                            </KuzhambuButton>
+                        }
+                        description={getErrorMessage(materialPageQuery.error)}
+                        title="素材列表加载失败"
+                        type="error"
+                        showIcon
+                    />
                 ) : null}
-                {!isMockFailure && isMockEmpty ? (
-                    <KuzhambuAlert title="暂无图谱素材" type="info" showIcon />
-                ) : null}
-                {!isMockFailure && !isMockEmpty ? (
+                {!isInitialError ? (
                     <KuzhambuCard title="素材列表">
-                        <KuzhambuList
-                            ariaLabel="图谱素材列表"
-                            bordered
-                            dataSource={[...materials]}
-                            itemKey={(material) => material.id}
-                            renderItem={(material) => (
-                                <GraphMaterialListItem
-                                    canEditGraph={canEditGraph}
-                                    material={material}
-                                    onOpen={() => setActiveMaterial(material)}
-                                />
-                            )}
+                        <MaterialTable
+                            canOpenMaterial={canViewGraph}
+                            canViewTasks={canViewGraph}
+                            dataSource={records}
+                            loading={materialPageQuery.isLoading}
+                            onOpenMaterial={openMaterialDetailDrawer}
+                            onSelectionChange={(keys) => setSelectedMaterialKeys(keys)}
+                            onViewTasks={navigate}
+                            selectedRowKeys={selectedMaterialKeys}
                         />
                     </KuzhambuCard>
                 ) : null}
-                {!isMockFailure && !isMockEmpty ? (
-                    <KuzhambuCard title="批量发布选择">
-                        <KuzhambuSpace wrap>
-                            {materials.map((material) => (
-                                <KuzhambuButton
-                                    key={material.id}
-                                    testId={`knowledge-graph-material-select-${material.id}-button`}
-                                    type={
-                                        selectedMaterialIds.includes(material.id)
-                                            ? "primary"
-                                            : "default"
-                                    }
-                                    onClick={() =>
-                                        setSelectedMaterialIds((currentIds) =>
-                                            currentIds.includes(material.id)
-                                                ? currentIds.filter((id) => id !== material.id)
-                                                : [...currentIds, material.id]
-                                        )
-                                    }
-                                >
-                                    {selectedMaterialIds.includes(material.id) ? "已选择" : "选择"}{" "}
-                                    {material.title}
-                                </KuzhambuButton>
-                            ))}
-                        </KuzhambuSpace>
-                    </KuzhambuCard>
-                ) : null}
-                {activeMaterial ? (
-                    <MaterialDraftCanvas
-                        canApplyGraph={canApplyGraph}
-                        canEditGraph={canEditGraph}
-                        material={activeMaterial}
-                        onClose={() => {
-                            setActiveMaterial(null);
-                            setActiveObjectId(null);
-                        }}
-                        onOpenObject={setActiveObjectId}
-                    />
-                ) : null}
             </KuzhambuSpace>
-            <BatchPublicationPanel
-                materials={selectedMaterialIds
-                    .map((id) => materials.find((material) => material.id === id))
-                    .filter((material): material is GraphMaterialRecord => material !== undefined)}
-                results={graphMaterialMockData.batchPublicationResults}
-                canApplyGraph={canApplyGraph}
-                onClose={() => setIsBatchPanelOpen(false)}
-                open={isBatchPanelOpen}
-            />
-            <MaterialObjectDrawer
-                objectId={activeObjectId}
-                onClose={() => setActiveObjectId(null)}
-                open={activeObjectId !== null}
+            <MaterialDetailDrawer
+                activeSection={activeMaterialSection}
+                detail={materialDetailQuery.data ?? null}
+                error={materialDetailQuery.error}
+                loading={materialDetailQuery.isFetching}
+                material={activeMaterial}
+                open={activeMaterial !== null}
+                onClose={closeMaterialDetailDrawer}
+                onRetry={() => void materialDetailQuery.refetch()}
+                onDeletePrecheck={(contentRef) => service.precheckDeletion({ contentRef })}
+                onPublish={async (detail) => {
+                    if (!detail.material?.lockVersion) {
+                        throw new Error("素材缺少锁版本，无法发布。");
+                    }
+                    const preview = await service.previewPublication({
+                        contentRef: detail.material.contentRef
+                    });
+                    if (!preview.publishable) {
+                        throw new Error(preview.issues[0]?.message ?? "发布预检未通过。");
+                    }
+                    await service.publishMaterial({
+                        conflictDecisions: [],
+                        contentRef: preview.materialRef,
+                        materialLockVersion: preview.materialLockVersion,
+                        previewToken: preview.previewToken
+                    });
+                    await Promise.all([materialPageQuery.refetch(), materialDetailQuery.refetch()]);
+                }}
+                onWithdraw={async (detail) => {
+                    if (!detail.material?.lockVersion) {
+                        throw new Error("素材缺少锁版本，无法撤回。");
+                    }
+                    await service.previewWithdrawal({ contentRef: detail.material.contentRef });
+                    await service.withdrawMaterial({
+                        contentRef: detail.material.contentRef,
+                        materialLockVersion: detail.material.lockVersion
+                    });
+                    await Promise.all([materialPageQuery.refetch(), materialDetailQuery.refetch()]);
+                }}
+                onSectionChange={setActiveMaterialSection}
             />
         </KuzhambuPage>
     );
 };
-
-interface GraphMaterialListItemProps {
-    canEditGraph: boolean;
-    material: GraphMaterialRecord;
-    onOpen: () => void;
-}
-
-const GraphMaterialListItem = ({ canEditGraph, material, onOpen }: GraphMaterialListItemProps) => (
-    <KuzhambuListItem
-        extra={
-            <KuzhambuSpace>
-                <KuzhambuTag type={STATUS_TYPES[material.status]}>
-                    {STATUS_LABELS[material.status]}
-                </KuzhambuTag>
-                {canEditGraph && canEditDraft(material.status) ? (
-                    <KuzhambuButton
-                        testId={`knowledge-graph-material-extract-${material.id}-button`}
-                        size="small"
-                    >
-                        发起抽取任务
-                    </KuzhambuButton>
-                ) : null}
-                <KuzhambuButton
-                    testId={`knowledge-graph-material-open-${material.id}-button`}
-                    size="small"
-                    onClick={onOpen}
-                >
-                    打开素材
-                </KuzhambuButton>
-            </KuzhambuSpace>
-        }
-    >
-        <KuzhambuListMeta
-            title={material.title}
-            description={
-                material.failureReason ? (
-                    <KuzhambuAlert
-                        title={material.failureReason}
-                        type="error"
-                        showIcon
-                        closable={false}
-                    />
-                ) : (
-                    `状态：${STATUS_LABELS[material.status]}`
-                )
-            }
-        />
-    </KuzhambuListItem>
-);

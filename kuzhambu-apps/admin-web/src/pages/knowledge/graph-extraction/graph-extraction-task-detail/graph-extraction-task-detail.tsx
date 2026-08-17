@@ -12,7 +12,7 @@ interface GraphExtractionTaskDetailProps {
     onClose: () => void;
 }
 
-const formatTimestamp = (value?: number | null) => {
+const formatTimestamp = (value?: number | string | null) => {
     if (!value) {
         return "-";
     }
