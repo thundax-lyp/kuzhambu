@@ -15,6 +15,7 @@ import type {
 import { MaterialOverviewPanel } from "@/pages/knowledge/graph-material/material-overview-panel";
 import { MaterialTaskSummaryPanel } from "@/pages/knowledge/graph-material/material-task-summary-panel";
 import { MaterialDraftCanvas } from "@/pages/knowledge/graph-material/material-draft-canvas";
+import { PublicationPreview } from "@/pages/knowledge/graph-material/publication-preview";
 
 const { Text } = Typography;
 
@@ -83,11 +84,7 @@ export const MaterialDetailDrawer = ({
             value: "TASKS"
         },
         {
-            content: (
-                <MaterialDetailPlaceholder testId="knowledge-graph-material-detail-publication-changes-section">
-                    发布变更待接入。
-                </MaterialDetailPlaceholder>
-            ),
+            content: <PublicationPreview canApplyGraph={canApplyGraph} detail={detail} />,
             label: "发布变更",
             value: "PUBLICATION_CHANGES"
         }
