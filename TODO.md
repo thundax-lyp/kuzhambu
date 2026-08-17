@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AW/graph-material table`：实现素材复合表格
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/material-table/`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-material/graph-material-page.tsx`
-    - 处理动作：实现素材标题、来源、统计、状态、任务摘要、候选处置、发布贡献、风险和最近变更列。
-    - 验收点：`material-table` 测试覆盖未初始化、统计更新中、权限不足和“查看任务”携带 `contentRefs` 跳转。
-    - 重要度：9/10
-
 - [ ] `AW/graph-material batch actions`：实现素材批量动作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-MATERIAL-TASK-ADMIN-WEB.md`
