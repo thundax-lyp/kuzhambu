@@ -81,5 +81,6 @@ describe("TaskDetailDrawer", () => {
         expect(
             screen.getByTestId("knowledge-graph-extraction-task-detail-disposition-section")
         ).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "合并" })).toBeInTheDocument();
     });
 });

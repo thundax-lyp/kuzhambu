@@ -3,9 +3,11 @@ import { KuzhambuSegmentedDrawer, KuzhambuSpace } from "@/components";
 import type { KuzhambuSegmentedDrawerSection } from "@/components";
 import type {
     GraphExtractionTaskDetailRecord,
-    GraphExtractionTaskDrawerSection
+    GraphExtractionTaskDrawerSection,
+    GraphExtractionTaskRecord
 } from "../graph-extraction-types";
 import { TaskCandidatePanel } from "../task-candidate-panel";
+import { TaskDispositionPanel } from "../task-disposition-panel";
 import { TaskExecutionPanel } from "../task-execution-panel";
 
 const { Text } = Typography;
@@ -14,7 +16,13 @@ interface TaskDetailDrawerProps {
     activeSection: GraphExtractionTaskDrawerSection;
     detail: GraphExtractionTaskDetailRecord | null;
     loading?: boolean;
+    onCancel?: (task: GraphExtractionTaskRecord) => void;
     onClose: () => void;
+    onDiscard?: (task: GraphExtractionTaskRecord) => void;
+    onMerge?: (task: GraphExtractionTaskRecord) => void;
+    onRegenerate?: (task: GraphExtractionTaskRecord) => void;
+    onReplace?: (task: GraphExtractionTaskRecord) => void;
+    onRetry?: (task: GraphExtractionTaskRecord) => void;
     onSectionChange: (section: GraphExtractionTaskDrawerSection) => void;
     open: boolean;
 }
@@ -43,7 +51,13 @@ export const TaskDetailDrawer = ({
     detail,
     loading = false,
     open,
+    onCancel,
     onClose,
+    onDiscard,
+    onMerge,
+    onRegenerate,
+    onReplace,
+    onRetry,
     onSectionChange
 }: TaskDetailDrawerProps) => {
     const task = detail?.task ?? null;
@@ -108,9 +122,15 @@ export const TaskDetailDrawer = ({
         },
         {
             content: (
-                <TaskDetailPlaceholder testId="knowledge-graph-extraction-task-detail-disposition-section">
-                    候选处置面板待接入。
-                </TaskDetailPlaceholder>
+                <TaskDispositionPanel
+                    detail={detail}
+                    onCancel={onCancel}
+                    onDiscard={onDiscard}
+                    onMerge={onMerge}
+                    onRegenerate={onRegenerate}
+                    onReplace={onReplace}
+                    onRetry={onRetry}
+                />
             ),
             label: "候选处置",
             value: "DISPOSITION"
