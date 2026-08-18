@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBa
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
+import java.util.List;
 
 public interface GraphExtractionApplicationService {
 
@@ -29,6 +30,8 @@ public interface GraphExtractionApplicationService {
     GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command);
 
     int syncActiveTasks();
+
+    int syncActiveTasks(List<Long> materialIds);
 
     GraphExtractionTaskResult cancelTask(GraphExtractionCancelCommand command);
 

@@ -148,7 +148,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                 .map(GraphMaterial::getId)
                 .filter(java.util.Objects::nonNull)
                 .toList();
-        extractionApplicationService.syncActiveTasks();
+        extractionApplicationService.syncActiveTasks(materialIds);
         Map<Long, GraphMaterialStats> statsByMaterialId =
                 materialStatsRepository.listByMaterialIds(materialIds).stream()
                         .collect(Collectors.toMap(GraphMaterialStats::getMaterialId, Function.identity()));

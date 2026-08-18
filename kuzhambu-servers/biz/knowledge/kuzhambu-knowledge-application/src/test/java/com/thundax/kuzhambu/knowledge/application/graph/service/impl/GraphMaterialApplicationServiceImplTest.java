@@ -104,7 +104,7 @@ class GraphMaterialApplicationServiceImplTest {
         assertThat(result.getRecords().get(1).source().contentRef()).isEqualTo(secondRef);
         assertThat(result.getRecords().get(1).material()).isNull();
         verify(materialRepository, never()).getByContentRef(any());
-        verify(extractionApplicationService).syncActiveTasks();
+        verify(extractionApplicationService).syncActiveTasks(List.of(11L));
     }
 
     @Test
@@ -263,6 +263,7 @@ class GraphMaterialApplicationServiceImplTest {
                 9001L,
                 "CANDIDATE_READY",
                 100,
+                null,
                 "idem-1",
                 null,
                 null,

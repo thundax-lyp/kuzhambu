@@ -184,6 +184,7 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
                 candidate_id = #{row.candidateId},
                 current_stage = #{row.currentStage},
                 progress = #{row.progress},
+                failure_reason = #{row.failureReason},
                 regenerated_from_task_id = #{row.regeneratedFromTaskId},
                 superseded_by_task_id = #{row.supersededByTaskId},
                 triggered_by_task_id = #{row.triggeredByTaskId},

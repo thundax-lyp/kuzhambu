@@ -32,6 +32,7 @@ public class GraphExtractionTask {
     private Long candidateId;
     private String currentStage;
     private int progress;
+    private String failureReason;
     private String idempotencyKey;
     private GraphExtractionTaskId regeneratedFromTaskId;
     private GraphExtractionTaskId supersededByTaskId;
@@ -57,9 +58,10 @@ public class GraphExtractionTask {
         this.completedAt = completedAt;
     }
 
-    public void fail(String stage, Instant completedAt) {
+    public void fail(String stage, String failureReason, Instant completedAt) {
         requireExecutionStatus(GraphExtractionExecutionStatus.RUNNING, "Only running graph extraction tasks can fail");
         currentStage = stage;
+        this.failureReason = failureReason;
         executionStatus = GraphExtractionExecutionStatus.FAILED;
         this.completedAt = completedAt;
     }
@@ -68,6 +70,7 @@ public class GraphExtractionTask {
         requireExecutionStatus(GraphExtractionExecutionStatus.FAILED, "Only failed graph extraction tasks can retry");
         executionStatus = GraphExtractionExecutionStatus.PENDING;
         currentStage = null;
+        failureReason = null;
         progress = 0;
         completedAt = null;
         attemptNo++;

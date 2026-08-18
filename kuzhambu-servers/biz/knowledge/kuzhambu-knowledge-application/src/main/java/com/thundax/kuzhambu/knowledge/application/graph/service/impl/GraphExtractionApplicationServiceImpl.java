@@ -57,8 +57,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class GraphExtractionApplicationServiceImpl implements GraphExtractionApplicationService {
@@ -80,6 +82,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     private final GraphExtractionTaskRepository taskRepository;
     private final GraphExtractionTaskOperator taskOperator;
     private final GraphTaskCandidateResolver candidateResolver;
+    private final TransactionTemplate batchItemTransactionTemplate;
     private Clock clock = Clock.systemUTC();
 
     public GraphExtractionApplicationServiceImpl(
@@ -95,7 +98,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             GraphMaterialRepository materialRepository,
             GraphExtractionTaskRepository taskRepository,
             GraphExtractionTaskOperator taskOperator,
-            GraphTaskCandidateResolver candidateResolver) {
+            GraphTaskCandidateResolver candidateResolver,
+            PlatformTransactionManager transactionManager) {
         this.aiFacade = aiFacade;
         this.objectMapper = objectMapper;
         this.contentResolver = contentResolver;
@@ -109,6 +113,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         this.taskRepository = taskRepository;
         this.taskOperator = taskOperator;
         this.candidateResolver = candidateResolver;
+        this.batchItemTransactionTemplate = new TransactionTemplate(transactionManager);
+        this.batchItemTransactionTemplate.setPropagationBehavior(Propagation.REQUIRES_NEW.value());
     }
 
     GraphExtractionApplicationServiceImpl useClock(Clock clock) {
@@ -166,9 +172,10 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         List<GraphExtractionTaskResult> results = new java.util.ArrayList<>();
         for (int index = 0; index < materialRefs.size(); index++) {
             ContentRef materialRef = materialRefs.get(index);
+            String itemIdempotencyKey = batchId + ":" + index;
             try {
-                results.add(createExtraction(new GraphExtractionCommand(
-                        materialRef, batchId + ":" + index, batchId, command == null ? null : command.requestedBy())));
+                results.add(batchItemTransactionTemplate.execute(status -> createExtraction(new GraphExtractionCommand(
+                        materialRef, itemIdempotencyKey, batchId, command == null ? null : command.requestedBy()))));
             } catch (BizException ex) {
                 results.add(new GraphExtractionTaskResult(
                         null,
@@ -181,6 +188,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                         null,
                         null,
                         0,
+                        ex.getMessage(),
                         Instant.now(clock),
                         Instant.now(clock),
                         null,
@@ -253,6 +261,18 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     public int syncActiveTasks() {
         return syncTasksWithStatus(GraphExtractionExecutionStatus.PENDING, 100)
                 + syncTasksWithStatus(GraphExtractionExecutionStatus.RUNNING, 100);
+    }
+
+    @Override
+    public int syncActiveTasks(List<Long> materialIds) {
+        if (materialIds == null || materialIds.isEmpty()) {
+            return 0;
+        }
+        return taskRepository.listLatestByMaterialIds(materialIds).stream()
+                .filter(this::active)
+                .map(this::syncTaskFromAi)
+                .mapToInt(task -> 1)
+                .sum();
     }
 
     @Override
@@ -393,6 +413,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 null,
                 "QUEUED",
                 0,
+                null,
                 idempotencyKey,
                 null,
                 null,
@@ -561,6 +582,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 task.getCandidateId(),
                 task.getCurrentStage(),
                 task.getProgress(),
+                task.getFailureReason(),
                 task.getRequestedAt(),
                 task.getCompletedAt(),
                 task.getDisposedAt(),
@@ -584,7 +606,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         switch (batch.getStatus()) {
             case "RUNNING" -> startPendingTask(task);
             case "SUCCEEDED", "PARTIAL" -> succeedTaskFromAi(task);
-            case "FAILED" -> failTaskFromAi(task, batch.getCompletedAt());
+            case "FAILED" -> failTaskFromAi(task, batch);
             case "CANCELLED" -> cancelTaskFromAi(task, batch.getCompletedAt());
             default -> {
                 return task;
@@ -625,16 +647,22 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         AiCandidateFacadeDto candidate = aiFacade.getLatestCandidateByBatch(task.getAiBatchId());
         if (candidate == null || candidate.getCandidateId() == null) {
             startPendingTask(task);
-            task.fail("CANDIDATE_UNAVAILABLE", Instant.now(clock));
+            task.fail("CANDIDATE_UNAVAILABLE", "AI batch completed without a candidate", Instant.now(clock));
             return;
         }
         startPendingTask(task);
         task.succeed(candidate.getCandidateId(), "CANDIDATE_READY", 100, Instant.now(clock));
     }
 
-    private void failTaskFromAi(GraphExtractionTask task, Instant completedAt) {
+    private void failTaskFromAi(GraphExtractionTask task, AiBatchJobFacadeResponse batch) {
         startPendingTask(task);
-        task.fail("FAILED", completedAt == null ? Instant.now(clock) : completedAt);
+        task.fail(
+                "FAILED",
+                batch.getFailureSummaryJson() == null
+                                || batch.getFailureSummaryJson().isBlank()
+                        ? "AI batch execution failed"
+                        : batch.getFailureSummaryJson(),
+                batch.getCompletedAt() == null ? Instant.now(clock) : batch.getCompletedAt());
     }
 
     private void cancelTaskFromAi(GraphExtractionTask task, Instant completedAt) {

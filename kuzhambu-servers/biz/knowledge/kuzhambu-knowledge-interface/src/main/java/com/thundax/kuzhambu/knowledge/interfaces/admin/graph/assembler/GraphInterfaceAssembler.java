@@ -534,7 +534,7 @@ public final class GraphInterfaceAssembler {
                 value.currentStage(),
                 string(value.candidateId()),
                 null,
-                null,
+                value.failureReason(),
                 value.batchId(),
                 null,
                 null,

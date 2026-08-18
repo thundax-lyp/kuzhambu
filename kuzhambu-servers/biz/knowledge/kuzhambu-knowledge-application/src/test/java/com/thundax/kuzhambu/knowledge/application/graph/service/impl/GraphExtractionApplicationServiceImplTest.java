@@ -42,10 +42,26 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.SimpleTransactionStatus;
 
 class GraphExtractionApplicationServiceImplTest {
 
     private static final Instant NOW = Instant.parse("2026-08-17T00:00:00Z");
+    private static final PlatformTransactionManager TRANSACTION_MANAGER = new PlatformTransactionManager() {
+        @Override
+        public TransactionStatus getTransaction(TransactionDefinition definition) {
+            return new SimpleTransactionStatus();
+        }
+
+        @Override
+        public void commit(TransactionStatus status) {}
+
+        @Override
+        public void rollback(TransactionStatus status) {}
+    };
 
     private final AiFacade aiFacade = mock(AiFacade.class);
     private final GraphMaterialContentResolver contentResolver = mock(GraphMaterialContentResolver.class);
@@ -68,7 +84,8 @@ class GraphExtractionApplicationServiceImplTest {
                     materialRepository,
                     taskRepository,
                     new GraphExtractionTaskOperator(),
-                    candidateResolver)
+                    candidateResolver,
+                    TRANSACTION_MANAGER)
             .useClock(Clock.fixed(NOW, ZoneOffset.UTC));
 
     @Test
@@ -197,6 +214,28 @@ class GraphExtractionApplicationServiceImplTest {
 
         assertThat(result.task().executionStatus()).isEqualTo("FAILED");
         assertThat(result.task().currentStage()).isEqualTo("CANDIDATE_UNAVAILABLE");
+        assertThat(result.task().failureReason()).isEqualTo("AI batch completed without a candidate");
+    }
+
+    @Test
+    void shouldExposeAiBatchFailureSummaryOnTask() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setAiBatchId(9001L);
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(aiFacade.getBatchJob(9001L))
+                .thenReturn(AiBatchJobFacadeResponse.builder()
+                        .batchId(9001L)
+                        .status("FAILED")
+                        .failureSummaryJson("worker timeout")
+                        .completedAt(NOW)
+                        .build());
+
+        var result = service.getTask(new GraphTaskDetailQuery(7001L));
+
+        assertThat(result.task().executionStatus()).isEqualTo("FAILED");
+        assertThat(result.task().failureReason()).isEqualTo("worker timeout");
     }
 
     @Test
@@ -313,6 +352,7 @@ class GraphExtractionApplicationServiceImplTest {
                 null,
                 "QUEUED",
                 0,
+                null,
                 "idem-1",
                 null,
                 null,
