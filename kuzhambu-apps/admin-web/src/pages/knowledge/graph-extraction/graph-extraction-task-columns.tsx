@@ -1,23 +1,10 @@
-import { Pagination, Popover, Typography } from "antd";
-import { KuzhambuSpace, KuzhambuTable, KuzhambuTag } from "@/components";
+import { Popover, Typography } from "antd";
+import { KuzhambuTag } from "@/components";
 import { normalizeId } from "@/types/id";
-import { PAGE_SIZE_OPTIONS } from "@/types/page";
 import type { KuzhambuTableColumn, KuzhambuTagType } from "@/components";
-import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
+import type { GraphExtractionTaskRecord } from "./graph-extraction-types";
 
 const { Text } = Typography;
-
-interface GraphExtractionTaskTableProps {
-    canRetry?: boolean;
-    loading?: boolean;
-    pageNo?: number;
-    pageSize?: number;
-    retryingTaskId?: string | null;
-    tasks: GraphExtractionTaskRecord[];
-    total?: number;
-    onPageChange?: (pageNo: number, pageSize: number) => void;
-    onRetry: (task: GraphExtractionTaskRecord) => void;
-}
 
 const readExecutionStatusType = (status?: string | null): KuzhambuTagType => {
     switch (status) {
@@ -72,50 +59,17 @@ const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId 
 const isTaskFailed = (task: GraphExtractionTaskRecord) =>
     readTaskExecutionStatus(task) === "FAILED";
 
-export const GraphExtractionTaskTable = ({
-    canRetry = false,
-    loading = false,
-    pageNo = 1,
-    pageSize = 20,
-    retryingTaskId = null,
-    tasks,
-    total = 0,
-    onPageChange = () => undefined,
-    onRetry
-}: GraphExtractionTaskTableProps) => {
-    const columns = createGraphExtractionTaskColumns({ canRetry, onRetry, retryingTaskId });
-
-    return (
-        <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
-            <KuzhambuTable<GraphExtractionTaskRecord>
-                ariaLabel="知识抽取表格"
-                columns={columns}
-                dataSource={tasks}
-                loading={loading}
-                pagination={false}
-                rowKey={readTaskId}
-            />
-            <Pagination
-                current={pageNo}
-                pageSize={pageSize}
-                pageSizeOptions={PAGE_SIZE_OPTIONS}
-                showSizeChanger
-                showTotal={(count) => `共 ${count} 个任务`}
-                total={total}
-                onChange={onPageChange}
-            />
-        </KuzhambuSpace>
-    );
-};
+interface GraphExtractionTaskColumnOptions {
+    canRetry?: boolean;
+    retryingTaskId?: string | null;
+    onRetry: (task: GraphExtractionTaskRecord) => void;
+}
 
 export const createGraphExtractionTaskColumns = ({
     canRetry = false,
     onRetry,
     retryingTaskId = null
-}: Pick<
-    GraphExtractionTaskTableProps,
-    "canRetry" | "onRetry" | "retryingTaskId"
->): KuzhambuTableColumn<GraphExtractionTaskRecord>[] => [
+}: GraphExtractionTaskColumnOptions): KuzhambuTableColumn<GraphExtractionTaskRecord>[] => [
     {
         key: "material",
         render: (_, task) => <Text strong>{readMaterialTitle(task)}</Text>,

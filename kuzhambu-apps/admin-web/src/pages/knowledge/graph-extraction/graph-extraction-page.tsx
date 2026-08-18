@@ -20,7 +20,7 @@ import type {
 import {
     createGraphExtractionTaskColumns,
     graphExtractionTaskRowKey
-} from "./graph-extraction-task-table";
+} from "./graph-extraction-task-columns";
 import type {
     GraphContentRefRecord,
     GraphExtractionTaskRecord,
@@ -104,21 +104,19 @@ const DISPOSITION_OPTIONS = [
     { label: "已替代", value: "SUPERSEDED" }
 ];
 
+type GraphExtractionTaskFilters = Pick<
+    GraphExtractionTaskPageQuery,
+    "disposition" | "executionStatus" | "keyword"
+>;
+
 const createTaskStateCommand = (
     task: GraphExtractionTaskRecord,
-    expectedExecutionStatus: GraphTaskExecutionStatus,
-    expectedDisposition?: GraphTaskDisposition
+    expectedExecutionStatus: GraphTaskExecutionStatus
 ): GraphExtractionTaskStateCommand => ({
-    expectedDisposition,
     expectedExecutionStatus,
-    replaceUnconfirmedOnly: task.replaceUnconfirmedOnly,
-    requestedBy: task.requestedBy,
-    selectionScopeJson: task.selectionScopeJson,
     sourceTaskId: task.taskId || task.id,
     taskId: task.taskId || task.id,
-    taskLockVersion: task.lockVersion,
-    taskType: task.taskType || "GRAPH",
-    triggerSource: task.triggerSource
+    taskLockVersion: task.lockVersion
 });
 
 const readTaskQueryFromSearch = (): GraphExtractionTaskPageQuery => {
@@ -152,7 +150,7 @@ export const GraphExtractionPage = () => {
     const [taskQuery, setTaskQuery] = useState<GraphExtractionTaskPageQuery>(() =>
         readTaskQueryFromSearch()
     );
-    const [filters, setFilters] = useState(() => ({
+    const [filters, setFilters] = useState<GraphExtractionTaskFilters>(() => ({
         disposition: taskQuery.disposition,
         executionStatus: taskQuery.executionStatus,
         keyword: taskQuery.keyword
@@ -272,7 +270,7 @@ export const GraphExtractionPage = () => {
             columns={createGraphExtractionTaskColumns({
                 canRetry: canEditGraph,
                 retryingTaskId: retryTaskMutation.variables
-                    ? String(retryTaskMutation.variables.taskId || retryTaskMutation.variables.id)
+                    ? String(retryTaskMutation.variables.taskId)
                     : null,
                 onRetry: (task) => retryTaskMutation.mutate(task)
             })}

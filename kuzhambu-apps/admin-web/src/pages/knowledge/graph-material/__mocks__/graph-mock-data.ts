@@ -12,11 +12,7 @@ import type {
     GraphMaterialTaskSummaryRecord,
     GraphSourceRecord
 } from "@/pages/knowledge/graph-material/graph-material-types";
-import type {
-    GraphCandidatePreviewRecord,
-    GraphExtractionTaskDetailRecord,
-    GraphExtractionTaskRecord
-} from "@/pages/knowledge/graph-extraction/graph-extraction-types";
+import type { GraphExtractionTaskRecord } from "@/pages/knowledge/graph-extraction/graph-extraction-types";
 
 const sanciaRef: GraphContentRefRecord = {
     contentRefId: "1001",
@@ -238,73 +234,6 @@ export const graphExtractionMockTasks: GraphExtractionTaskRecord[] = [
     }
 ];
 
-const candidatePreview: GraphCandidatePreviewRecord = {
-    candidateId: "8001",
-    diff: [
-        {
-            candidateObjectId: "candidate-node-1",
-            changeType: "ADD",
-            objectType: "NODE"
-        },
-        {
-            candidateObjectId: "candidate-node-2",
-            changedFields: ["name"],
-            changeType: "UPDATE",
-            draftObjectId: "node-2",
-            objectType: "NODE"
-        },
-        {
-            candidateObjectId: "candidate-edge-1",
-            changeType: "REMOVE",
-            draftObjectId: "edge-1",
-            objectType: "EDGE"
-        },
-        {
-            candidateObjectId: "candidate-edge-2",
-            changeType: "CONFLICT",
-            objectType: "EDGE",
-            issues: [
-                {
-                    code: "RELATION_TARGET_UNRESOLVED",
-                    message: "关系目标无法匹配草稿节点。",
-                    severity: "WARNING"
-                }
-            ]
-        }
-    ],
-    edges: [
-        {
-            candidateObjectId: "candidate-edge-2",
-            qualifiers: { evidence: "卷一正文" },
-            relationType: "LOCATED_IN",
-            sourceCandidateNodeId: "candidate-node-1",
-            targetCandidateNodeId: "candidate-node-2"
-        }
-    ],
-    issues: [
-        {
-            code: "LOW_CONFIDENCE_RELATION",
-            message: "部分关系置信度较低。",
-            severity: "WARNING"
-        }
-    ],
-    nodes: [
-        {
-            candidateObjectId: "candidate-node-1",
-            name: "张三",
-            nodeType: "PERSON",
-            properties: { aliases: ["子某"] }
-        },
-        {
-            candidateObjectId: "candidate-node-2",
-            name: "洛阳",
-            nodeType: "PLACE",
-            properties: {}
-        }
-    ],
-    dispositionRecord: null
-};
-
 const findSource = (contentRef: GraphContentRefRecord) =>
     graphMaterialMockSources.find(
         (source) =>
@@ -434,68 +363,6 @@ export const graphMaterialMockDetails: GraphMaterialDetailRecord[] =
             totalTaskCount: record.latestTask ? "1" : "0"
         }
     }));
-
-const readMockStageStatus = (task: GraphExtractionTaskRecord) => {
-    if (task.executionStatus === "FAILED") {
-        return "FAILED";
-    }
-    if (task.executionStatus === "RUNNING") {
-        return "RUNNING";
-    }
-    return "SUCCEEDED";
-};
-
-export const graphExtractionMockTaskDetails: GraphExtractionTaskDetailRecord[] =
-    graphExtractionMockTasks.map((task) => {
-        const materialRef = task.materialRef ?? sanciaRef;
-        const source = findSource(materialRef) ?? graphMaterialMockSources[0];
-        return {
-            candidate: task.id === "7005" ? null : candidatePreview,
-            materialStats: graphMaterialMockStats[materialRef.contentRefId] ?? null,
-            relatedTasks: graphExtractionMockTasks
-                .filter(
-                    (relatedTask) =>
-                        relatedTask.id !== task.id && relatedTask.batchId === task.batchId
-                )
-                .map((relatedTask) => ({
-                    disposition: relatedTask.disposition ?? null,
-                    executionStatus: relatedTask.executionStatus ?? "PENDING",
-                    id: relatedTask.id ?? "",
-                    materialRef: relatedTask.materialRef ?? materialRef,
-                    requestedAt:
-                        relatedTask.requestedAt === undefined || relatedTask.requestedAt === null
-                            ? relatedTask.requestedAt
-                            : String(relatedTask.requestedAt)
-                })),
-            source,
-            stages: [
-                {
-                    completedAt: "1723852805000",
-                    inputSummary: "读取素材正文和既有草稿图谱。",
-                    outputSummary: "完成素材快照准备。",
-                    progress: 100,
-                    stageCode: "SNAPSHOT",
-                    stageNo: "1",
-                    startedAt: "1723852800000",
-                    status: "SUCCEEDED"
-                },
-                {
-                    completedAt: task.executionStatus === "RUNNING" ? null : "1723852810000",
-                    failureReason: task.failureReason,
-                    inputSummary: "提交图谱提取能力执行。",
-                    outputSummary: task.resultSummary
-                        ? `节点 ${task.resultSummary.nodeCount}，关系 ${task.resultSummary.edgeCount}`
-                        : null,
-                    progress: task.progress ?? 0,
-                    stageCode: task.currentStage ?? "UNKNOWN",
-                    stageNo: "2",
-                    startedAt: "1723852805000",
-                    status: readMockStageStatus(task)
-                }
-            ],
-            task
-        };
-    });
 
 export const graphBatchExtractionResult: GraphBatchExtractionResultRecord = {
     batchId: "batch-001",
