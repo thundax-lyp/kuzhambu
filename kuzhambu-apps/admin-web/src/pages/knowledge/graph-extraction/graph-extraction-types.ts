@@ -14,9 +14,7 @@ export type {
     GraphTaskExecutionStatus
 };
 
-export type GraphExtractionTaskDrawerSection =
-    "OVERVIEW" | "EXECUTION" | "CANDIDATE" | "DISPOSITION";
-export type GraphExtractionTaskListMode = "NONE" | "MATERIAL";
+export type GraphExtractionTaskDrawerSection = "OVERVIEW" | "EXECUTION" | "CANDIDATE";
 export type GraphCandidateDiffChangeType = "ADD" | "UPDATE" | "REMOVE" | "CONFLICT";
 export type GraphExtractionStageStatus = "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "SKIPPED";
 export type GraphCandidateObjectType = "NODE" | "EDGE";
@@ -49,6 +47,8 @@ export interface GraphExtractionResultSummaryRecord {
 export interface GraphExtractionTaskRecord {
     id: string;
     materialRef: GraphContentRefRecord;
+    materialTitle?: string | null;
+    categoryName?: string | null;
     lockVersion: string;
     executionStatus: GraphTaskExecutionStatus;
     disposition: GraphTaskDisposition | null;

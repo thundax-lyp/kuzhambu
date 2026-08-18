@@ -1,27 +1,22 @@
-import { Typography } from "antd";
+import { Pagination, Popover, Typography } from "antd";
 import { KuzhambuSpace, KuzhambuTable, KuzhambuTag } from "@/components";
 import { normalizeId } from "@/types/id";
-import type {
-    KuzhambuTableColumn,
-    KuzhambuTableRowActionOption,
-    KuzhambuTagType
-} from "@/components";
+import { PAGE_SIZE_OPTIONS } from "@/types/page";
+import type { KuzhambuTableColumn, KuzhambuTagType } from "@/components";
 import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
 
 const { Text } = Typography;
 
 interface GraphExtractionTaskTableProps {
-    applyingTaskId?: string | null;
-    cancellingBatchId?: string | null;
-    canApply?: boolean;
-    canEdit?: boolean;
+    canRetry?: boolean;
     loading?: boolean;
-    regeneratingTaskId?: string | null;
+    pageNo?: number;
+    pageSize?: number;
+    retryingTaskId?: string | null;
     tasks: GraphExtractionTaskRecord[];
-    onApply: (task: GraphExtractionTaskRecord) => void;
-    onCancelBatch: (task: GraphExtractionTaskRecord) => void;
-    onOpenDetail: (task: GraphExtractionTaskRecord) => void;
-    onRegenerate: (task: GraphExtractionTaskRecord) => void;
+    total?: number;
+    onPageChange?: (pageNo: number, pageSize: number) => void;
+    onRetry: (task: GraphExtractionTaskRecord) => void;
 }
 
 const readExecutionStatusType = (status?: string | null): KuzhambuTagType => {
@@ -66,16 +61,16 @@ const readMaterialLabel = (task: GraphExtractionTaskRecord) => {
     return `${contentType} / ${contentRefId}`;
 };
 
-const readResultSummary = (task: GraphExtractionTaskRecord) => {
-    const summary = task.resultSummary;
-    if (!summary) {
+const readFailureReason = (task: GraphExtractionTaskRecord) =>
+    task.failureReason || task.errorMessage || task.errorType || "暂无失败原因";
+
+const formatTimestamp = (value?: number | string | null) => {
+    if (!value) {
         return "-";
     }
-    return `节点 ${summary.nodeCount}，关系 ${summary.edgeCount}，告警 ${summary.warningCount}`;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("zh-CN", { hour12: false });
 };
-
-const readFailureReason = (task: GraphExtractionTaskRecord) =>
-    task.failureReason || task.errorMessage || task.errorType || "-";
 
 const readRelatedTasks = (task: GraphExtractionTaskRecord) => {
     const relatedItems = [
@@ -90,52 +85,55 @@ const readRelatedTasks = (task: GraphExtractionTaskRecord) => {
     return relatedItems.length > 0 ? relatedItems.join("；") : "-";
 };
 
-const isTaskRunning = (task: GraphExtractionTaskRecord) => {
-    const status = readTaskExecutionStatus(task);
-    return status === "PENDING" || status === "RUNNING";
-};
-
+const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId || task.id);
 const isTaskFailed = (task: GraphExtractionTaskRecord) =>
     readTaskExecutionStatus(task) === "FAILED";
 
-const canApplyTask = (task: GraphExtractionTaskRecord) =>
-    Boolean(task.aiCandidateId || task.candidateId) &&
-    readTaskExecutionStatus(task) === "SUCCEEDED" &&
-    task.disposition === "PENDING";
-
-const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId || task.id);
-
 export const GraphExtractionTaskTable = ({
-    applyingTaskId,
-    cancellingBatchId = null,
-    canApply = false,
-    canEdit = false,
+    canRetry = false,
     loading = false,
-    regeneratingTaskId = null,
+    pageNo = 1,
+    pageSize = 20,
+    retryingTaskId = null,
     tasks,
-    onApply,
-    onCancelBatch,
-    onOpenDetail,
-    onRegenerate
+    total = 0,
+    onPageChange = () => undefined,
+    onRetry
 }: GraphExtractionTaskTableProps) => {
     const columns: KuzhambuTableColumn<GraphExtractionTaskRecord>[] = [
         {
             key: "material",
             render: (_, task) => (
                 <KuzhambuSpace orientation="vertical" size={2}>
-                    <Text strong>{readMaterialLabel(task)}</Text>
+                    <Text strong>{task.materialTitle || readMaterialLabel(task)}</Text>
                     <Text type="secondary">任务 {readTaskId(task) || "-"}</Text>
                 </KuzhambuSpace>
             ),
             title: "任务素材"
         },
         {
-            key: "executionStatus",
+            key: "categoryName",
             render: (_, task) => (
-                <KuzhambuTag type={readExecutionStatusType(readTaskExecutionStatus(task))}>
-                    {readTaskExecutionStatus(task)}
-                </KuzhambuTag>
+                <KuzhambuTag type="neutral">{task.categoryName || "-"}</KuzhambuTag>
             ),
+            title: "素材分类",
+            width: 140
+        },
+        {
+            key: "executionStatus",
+            render: (_, task) => {
+                const status = readTaskExecutionStatus(task);
+                const statusTag = (
+                    <KuzhambuTag type={readExecutionStatusType(status)}>{status}</KuzhambuTag>
+                );
+                return status === "FAILED" ? (
+                    <Popover content={readFailureReason(task)} title="失败原因">
+                        {statusTag}
+                    </Popover>
+                ) : (
+                    statusTag
+                );
+            },
             title: "运行状态",
             width: 112
         },
@@ -163,24 +161,9 @@ export const GraphExtractionTaskTable = ({
             width: 80
         },
         {
-            dataIndex: "selectionScopeJson",
-            ellipsis: true,
-            key: "inputSummary",
-            render: (selectionScopeJson?: string | null) => selectionScopeJson || "-",
-            title: "输入摘要",
-            width: 220
-        },
-        {
-            key: "resultSummary",
-            render: (_, task) => readResultSummary(task),
-            title: "结果摘要",
-            width: 190
-        },
-        {
-            key: "failureReason",
-            ellipsis: true,
-            render: (_, task) => readFailureReason(task),
-            title: "失败原因",
+            key: "completedAt",
+            render: (_, task) => formatTimestamp(task.completedAt || task.requestedAt),
+            title: "最后执行时间",
             width: 180
         },
         {
@@ -199,65 +182,41 @@ export const GraphExtractionTaskTable = ({
         },
         {
             key: "actions",
-            options: (task) => {
-                const taskId = readTaskId(task);
-                const actions: KuzhambuTableRowActionOption<GraphExtractionTaskRecord>[] = [
-                    {
-                        key: "view",
-                        text: "查看",
-                        ariaLabel: `查看任务 ${taskId}`,
-                        testId: "knowledge-graph-extraction-graph-extraction-task-view-button",
-                        onClick: () => onOpenDetail(task)
-                    }
-                ];
-
-                if (isTaskFailed(task)) {
-                    actions.push({
-                        key: "retry",
-                        text: "重试",
-                        ariaLabel: `重试任务 ${taskId}`,
-                        testId: "knowledge-graph-extraction-graph-extraction-task-retry-button",
-                        disabled: !canEdit || regeneratingTaskId === taskId,
-                        onClick: () => onRegenerate(task)
-                    });
-                }
-
-                if (isTaskRunning(task)) {
-                    actions.push({
-                        key: "cancel",
-                        text: "取消",
-                        ariaLabel: `取消任务 ${taskId}`,
-                        testId: "knowledge-graph-extraction-graph-extraction-task-cancel-button",
-                        disabled:
-                            !canEdit || !task.batchJobId || cancellingBatchId === task.batchJobId,
-                        onClick: () => onCancelBatch(task)
-                    });
-                }
-
-                if (canApplyTask(task)) {
-                    actions.push({
-                        key: "apply",
-                        text: "应用",
-                        ariaLabel: `应用任务 ${taskId}`,
-                        testId: "knowledge-graph-extraction-graph-extraction-task-apply-button",
-                        disabled: !canApply || applyingTaskId === taskId,
-                        onClick: () => onApply(task)
-                    });
-                }
-
-                return actions;
-            }
+            options: (task) =>
+                isTaskFailed(task)
+                    ? [
+                          {
+                              key: "retry",
+                              text: "重试",
+                              ariaLabel: `重试任务 ${readTaskId(task)}`,
+                              testId: "knowledge-graph-extraction-graph-extraction-task-retry-button",
+                              disabled: !canRetry || retryingTaskId === readTaskId(task),
+                              onClick: () => onRetry(task)
+                          }
+                      ]
+                    : []
         }
     ];
 
     return (
-        <KuzhambuTable<GraphExtractionTaskRecord>
-            ariaLabel="知识抽取表格"
-            columns={columns}
-            dataSource={tasks}
-            loading={loading}
-            pagination={false}
-            rowKey={readTaskId}
-        />
+        <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+            <KuzhambuTable<GraphExtractionTaskRecord>
+                ariaLabel="知识抽取表格"
+                columns={columns}
+                dataSource={tasks}
+                loading={loading}
+                pagination={false}
+                rowKey={readTaskId}
+            />
+            <Pagination
+                current={pageNo}
+                pageSize={pageSize}
+                pageSizeOptions={PAGE_SIZE_OPTIONS}
+                showSizeChanger
+                showTotal={(count) => `共 ${count} 个任务`}
+                total={total}
+                onChange={onPageChange}
+            />
+        </KuzhambuSpace>
     );
 };

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { GraphExtractionPage } from "./graph-extraction-page";
@@ -238,123 +238,11 @@ describe("GraphExtractionPage", () => {
         expect(screen.queryByText("请选择左侧卷目查看稿件")).not.toBeInTheDocument();
     });
 
-    it("loads task filters from batchId and contentRefs search params", async () => {
-        window.history.pushState(
-            {},
-            "",
-            `/knowledge/graph-extraction?batchId=batch-001&contentRefs=${encodeURIComponent(
-                JSON.stringify([{ contentType: "SANCAI_ENTRY", contentRefId: "1001" }])
-            )}`
-        );
-
+    it("only exposes retry for failed tasks", async () => {
         renderPage();
 
-        await waitFor(() => {
-            expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
-                batchId: "batch-001",
-                contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }],
-                groupBy: "NONE",
-                pageNo: 1,
-                pageSize: 20
-            });
-        });
-    });
-
-    it("switches task list mode by requesting server grouped results", async () => {
-        renderPage();
-
-        fireEvent.click(await screen.findByText("按素材分组"));
-
-        await waitFor(() => {
-            expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
-                groupBy: "MATERIAL",
-                pageNo: 1,
-                pageSize: 20
-            });
-        });
-        expect(await screen.findByText("任务 8010")).toBeInTheDocument();
-    });
-
-    it("sends task lock and expected state before applying candidate from detail drawer", async () => {
-        renderPage();
-
-        fireEvent.click(await screen.findByRole("button", { name: /查\s*看/u }));
-        await waitFor(() => {
-            expect(serviceMocks.getTask).toHaveBeenCalledWith({ taskId: "8008" });
-        });
-
-        fireEvent.click(await screen.findByText("候选处置"));
-        fireEvent.click(await screen.findByRole("button", { name: "合并" }));
-
-        await waitFor(() => {
-            expect(serviceMocks.getMaterial).toHaveBeenCalledWith({
-                contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
-            });
-            expect(serviceMocks.applyCandidate).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    applyMode: "MERGE",
-                    expectedDisposition: "PENDING",
-                    expectedExecutionStatus: "SUCCEEDED",
-                    materialLockVersion: "4",
-                    taskId: "8008",
-                    taskLockVersion: "1"
-                })
-            );
-        });
-    });
-
-    it("refreshes detail without guessing final state when task action has conflict", async () => {
-        serviceMocks.applyCandidate.mockResolvedValueOnce({
-            conflict: {
-                code: "GRAPH_TASK_LOCK_CONFLICT",
-                message: "任务版本已变化，请刷新后重试。"
-            }
-        });
-        renderPage();
-
-        fireEvent.click(await screen.findByRole("button", { name: /查\s*看/u }));
-        await waitFor(() => {
-            expect(serviceMocks.getTask).toHaveBeenCalledWith({ taskId: "8008" });
-        });
-
-        fireEvent.click(await screen.findByText("候选处置"));
-        fireEvent.click(await screen.findByRole("button", { name: "合并" }));
-
-        await waitFor(() => {
-            expect(serviceMocks.applyCandidate).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    expectedDisposition: "PENDING",
-                    expectedExecutionStatus: "SUCCEEDED",
-                    taskId: "8008",
-                    taskLockVersion: "1"
-                })
-            );
-        });
-        await waitFor(() => {
-            expect(serviceMocks.getTask).toHaveBeenCalledTimes(2);
-        });
-        expect(screen.getByRole("button", { name: "合并" })).toBeInTheDocument();
-    });
-
-    it("creates batch extraction tasks from contentRefs search params", async () => {
-        window.history.pushState(
-            {},
-            "",
-            `/knowledge/graph-extraction?contentRefs=${encodeURIComponent(
-                JSON.stringify([{ contentType: "SANCAI_ENTRY", contentRefId: "1001" }])
-            )}`
-        );
-        renderPage();
-
-        fireEvent.click(
-            await screen.findByTestId("knowledge-graph-extraction-batch-create-selected-button")
-        );
-
-        await waitFor(() => {
-            expect(serviceMocks.createBatchExtraction).toHaveBeenCalledWith({
-                contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
-            });
-        });
+        expect(screen.queryByRole("button", { name: "查看任务 8008" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "重试任务 8008" })).not.toBeInTheDocument();
     });
 
     it("does not load task data without graph queue permission", async () => {
@@ -373,47 +261,5 @@ describe("GraphExtractionPage", () => {
 
         expect(await screen.findByText("无权查看知识抽取任务")).toBeInTheDocument();
         expect(serviceMocks.pageTasks).not.toHaveBeenCalled();
-    });
-
-    it("submits refinement handoff regenerate payload from search params", async () => {
-        window.history.pushState(
-            {},
-            "",
-            "/knowledge/graph-extraction?regenerate=1&taskType=GRAPH&sourceTaskId=88&triggerSource=REFINEMENT_APPLIED&replaceUnconfirmedOnly=true&selectionScopeJson=%7B%22sourceContentIds%22%3A%5B1001%5D%7D"
-        );
-        renderPage();
-
-        expect(await screen.findByText("精修应用后的图谱重生成参数已载入")).toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole("button", { name: "提交重生成" }));
-
-        await waitFor(() => {
-            expect(serviceMocks.regenerateTask).toHaveBeenCalled();
-            const regenerateCalls = serviceMocks.regenerateTask.mock.calls as unknown as Array<
-                [unknown]
-            >;
-            expect(regenerateCalls[0]?.[0]).toEqual({
-                replaceUnconfirmedOnly: true,
-                selectionScopeJson: '{"sourceContentIds":[1001]}',
-                sourceTaskId: "88",
-                taskType: "GRAPH",
-                triggerSource: "REFINEMENT_APPLIED"
-            });
-        });
-    });
-
-    it("ignores invalid refinement handoff source task id", async () => {
-        window.history.pushState(
-            {},
-            "",
-            "/knowledge/graph-extraction?regenerate=1&taskType=GRAPH&sourceTaskId=abc&triggerSource=REFINEMENT_APPLIED"
-        );
-        renderPage();
-
-        await waitFor(() => {
-            expect(screen.queryByText("精修应用后的图谱重生成参数已载入")).not.toBeInTheDocument();
-        });
-        expect(screen.queryByRole("button", { name: "提交重生成" })).not.toBeInTheDocument();
-        expect(serviceMocks.regenerateTask).not.toHaveBeenCalled();
     });
 });

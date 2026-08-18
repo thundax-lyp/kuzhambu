@@ -19,11 +19,9 @@ const TASK: GraphExtractionTaskRecord = {
     },
     progress: 100,
     replaceUnconfirmedOnly: true,
-    resultSummary: {
-        edgeCount: 3,
-        nodeCount: 2,
-        warningCount: 1
-    },
+    categoryName: "天文",
+    completedAt: "2026-08-18T08:03:00Z",
+    materialTitle: "三才图会稿件",
     selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
     sourceContentId: "1001",
     sourceContentType: "SANCAI_ENTRY",
@@ -75,81 +73,48 @@ const FAILED_TASK: GraphExtractionTaskRecord = {
 };
 
 describe("GraphExtractionTaskTable", () => {
-    it("renders material task columns and dispatches available actions", () => {
-        const onApply = vi.fn();
-        const onCancelBatch = vi.fn();
-        const onOpenDetail = vi.fn();
-        const onRegenerate = vi.fn();
+    it("renders task material metadata and only dispatches retry for failed tasks", () => {
+        const onRetry = vi.fn();
 
-        render(
-            <GraphExtractionTaskTable
-                canApply
-                canEdit
-                tasks={[TASK]}
-                onApply={onApply}
-                onCancelBatch={onCancelBatch}
-                onOpenDetail={onOpenDetail}
-                onRegenerate={onRegenerate}
-            />
-        );
+        render(<GraphExtractionTaskTable canRetry tasks={[TASK]} onRetry={onRetry} />);
 
         expect(screen.getAllByText("任务素材")[0]).toBeInTheDocument();
         expect(screen.getAllByText("运行状态")[0]).toBeInTheDocument();
         expect(screen.getAllByText("采纳状态")[0]).toBeInTheDocument();
         expect(screen.getAllByText("阶段")[0]).toBeInTheDocument();
-        expect(screen.getAllByText("输入摘要")[0]).toBeInTheDocument();
-        expect(screen.getAllByText("结果摘要")[0]).toBeInTheDocument();
-        expect(screen.getAllByText("失败原因")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("素材分类")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("最后执行时间")[0]).toBeInTheDocument();
         expect(screen.getAllByText("关联任务")[0]).toBeInTheDocument();
         expect(screen.getAllByText("清理时间")[0]).toBeInTheDocument();
-        expect(screen.getByText("SANCAI_ENTRY / 1001")).toBeInTheDocument();
+        expect(screen.getByText("三才图会稿件")).toBeInTheDocument();
+        expect(screen.getByText("天文")).toBeInTheDocument();
         expect(screen.getByText("CANDIDATE_READY / 100%")).toBeInTheDocument();
-        expect(screen.getByText("节点 2，关系 3，告警 1")).toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole("button", { name: "查看任务 8008" }));
-        fireEvent.click(screen.getByRole("button", { name: "应用任务 8008" }));
-
-        expect(onOpenDetail).toHaveBeenCalledWith(TASK);
-        expect(onApply).toHaveBeenCalledWith(TASK);
-        expect(onRegenerate).not.toHaveBeenCalled();
-        expect(onCancelBatch).not.toHaveBeenCalled();
+        expect(screen.queryByRole("button", { name: "查看任务 8008" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "重试任务 8008" })).not.toBeInTheDocument();
+        expect(onRetry).not.toHaveBeenCalled();
     });
 
     it("shows cancel for running tasks and retry for failed tasks", () => {
-        const onApply = vi.fn();
-        const onCancelBatch = vi.fn();
-        const onOpenDetail = vi.fn();
-        const onRegenerate = vi.fn();
+        const onRetry = vi.fn();
 
         render(
             <GraphExtractionTaskTable
-                canApply
-                canEdit
+                canRetry
                 tasks={[RUNNING_TASK, FAILED_TASK]}
-                onApply={onApply}
-                onCancelBatch={onCancelBatch}
-                onOpenDetail={onOpenDetail}
-                onRegenerate={onRegenerate}
+                onRetry={onRetry}
             />
         );
 
-        expect(screen.getByRole("button", { name: "取消任务 8009" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "取消任务 8009" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "重试任务 8009" })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "重试任务 8010" })).toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "取消任务 8010" })).not.toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole("button", { name: "取消任务 8009" }));
         fireEvent.click(screen.getByRole("button", { name: "重试任务 8010" }));
 
-        expect(onCancelBatch).toHaveBeenCalledWith(RUNNING_TASK);
-        expect(onRegenerate).toHaveBeenCalledWith(FAILED_TASK);
+        expect(onRetry).toHaveBeenCalledWith(FAILED_TASK);
     });
 
     it("uses id when taskId is absent from Knowledge task records", () => {
-        const onApply = vi.fn();
-        const onCancelBatch = vi.fn();
-        const onOpenDetail = vi.fn();
-        const onRegenerate = vi.fn();
+        const onRetry = vi.fn();
         const taskWithoutLegacyTaskId = {
             ...TASK,
             taskId: null
@@ -157,19 +122,13 @@ describe("GraphExtractionTaskTable", () => {
 
         render(
             <GraphExtractionTaskTable
-                canApply
-                canEdit
-                applyingTaskId="8008"
+                canRetry
                 tasks={[taskWithoutLegacyTaskId]}
-                onApply={onApply}
-                onCancelBatch={onCancelBatch}
-                onOpenDetail={onOpenDetail}
-                onRegenerate={onRegenerate}
+                onRetry={onRetry}
             />
         );
 
         expect(screen.getByText("任务 8008")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "查看任务 8008" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "应用任务 8008" })).toBeDisabled();
+        expect(screen.queryByRole("button", { name: "查看任务 8008" })).not.toBeInTheDocument();
     });
 });

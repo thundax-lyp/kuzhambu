@@ -1,49 +1,23 @@
-import { UnorderedListOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Empty } from "antd";
-import { useMemo, useState } from "react";
+import { App, Empty, Input } from "antd";
+import { useState } from "react";
 import { usePermission } from "@/auth/hooks/use-permission";
-import {
-    KuzhambuAlert,
-    KuzhambuButton,
-    KuzhambuCard,
-    KuzhambuDrawer,
-    KuzhambuPage,
-    KuzhambuSegmented,
-    KuzhambuSpace
-} from "@/components";
-import { normalizeId } from "@/types/id";
+import { KuzhambuAlert, KuzhambuListPage, KuzhambuPage, KuzhambuSelect } from "@/components";
+import type { KuzhambuListPageFilterField } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./graph-extraction-service";
 import type {
-    GraphExtractionRegenerateCommand,
     GraphExtractionTaskPageQuery,
     GraphExtractionTaskStateCommand
 } from "./graph-extraction-service";
 import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
-import { TaskBatchCreatePanel } from "./task-batch-create-panel";
-import { TaskDetailDrawer } from "./task-detail-drawer";
-import { TaskFilters } from "./task-filters";
 import type {
     GraphContentRefRecord,
-    GraphExtractionTaskDrawerSection,
-    GraphExtractionTaskListMode,
     GraphExtractionTaskRecord,
-    GraphExtractionTriggerSource,
     GraphTaskDisposition,
     GraphTaskExecutionStatus
 } from "./graph-extraction-types";
 import "./graph-extraction-page.css";
-
-const REFINEMENT_APPLIED_TRIGGER_SOURCE: GraphExtractionTriggerSource = "REFINEMENT_APPLIED";
-
-type TaskActionKind = "retry" | "cancel" | "merge" | "replace" | "discard" | "regenerate";
-
-interface TaskActionVariables {
-    kind: TaskActionKind;
-    materialLockVersion?: string;
-    task: GraphExtractionTaskRecord;
-}
 
 const normalizeSearchParam = (value: string | null) => {
     const text = value?.trim();
@@ -56,13 +30,6 @@ const readPositiveIntegerSearchParam = (value: string | null, fallback: number) 
         return fallback;
     }
     return numberValue;
-};
-
-const readBooleanSearchParam = (value: string | null, fallback: boolean) => {
-    if (value === null) {
-        return fallback;
-    }
-    return value === "true" || value === "1";
 };
 
 const parseContentRefsJson = (value: string | null): GraphContentRefRecord[] | undefined => {
@@ -111,6 +78,39 @@ const compactTaskQuery = (query: GraphExtractionTaskPageQuery): GraphExtractionT
         Object.entries(query).filter(([, value]) => value !== undefined)
     ) as GraphExtractionTaskPageQuery;
 
+const EXECUTION_STATUS_OPTIONS = [
+    { label: "待执行", value: "PENDING" },
+    { label: "运行中", value: "RUNNING" },
+    { label: "已成功", value: "SUCCEEDED" },
+    { label: "已失败", value: "FAILED" },
+    { label: "已取消", value: "CANCELLED" }
+];
+
+const DISPOSITION_OPTIONS = [
+    { label: "待采纳", value: "PENDING" },
+    { label: "合并采纳", value: "ADOPTED_MERGE" },
+    { label: "替换采纳", value: "ADOPTED_REPLACE" },
+    { label: "已丢弃", value: "DISCARDED" },
+    { label: "已替代", value: "SUPERSEDED" }
+];
+
+const createTaskStateCommand = (
+    task: GraphExtractionTaskRecord,
+    expectedExecutionStatus: GraphTaskExecutionStatus,
+    expectedDisposition?: GraphTaskDisposition
+): GraphExtractionTaskStateCommand => ({
+    expectedDisposition,
+    expectedExecutionStatus,
+    replaceUnconfirmedOnly: task.replaceUnconfirmedOnly,
+    requestedBy: task.requestedBy,
+    selectionScopeJson: task.selectionScopeJson,
+    sourceTaskId: task.taskId || task.id,
+    taskId: task.taskId || task.id,
+    taskLockVersion: task.lockVersion,
+    taskType: task.taskType || "GRAPH",
+    triggerSource: task.triggerSource
+});
+
 const readTaskQueryFromSearch = (): GraphExtractionTaskPageQuery => {
     const defaultQuery: GraphExtractionTaskPageQuery = {
         groupBy: "NONE",
@@ -134,47 +134,6 @@ const readTaskQueryFromSearch = (): GraphExtractionTaskPageQuery => {
     });
 };
 
-const readHandoffRegenerateCommand = (): GraphExtractionRegenerateCommand | null => {
-    if (typeof window === "undefined") {
-        return null;
-    }
-    const params = new URLSearchParams(window.location.search);
-    if (!readBooleanSearchParam(params.get("regenerate"), false)) {
-        return null;
-    }
-    const sourceTaskId = normalizeSearchParam(params.get("sourceTaskId"));
-    if (!sourceTaskId || !/^\d+$/u.test(sourceTaskId)) {
-        return null;
-    }
-    return {
-        replaceUnconfirmedOnly: readBooleanSearchParam(params.get("replaceUnconfirmedOnly"), true),
-        selectionScopeJson: normalizeSearchParam(params.get("selectionScopeJson")),
-        sourceTaskId,
-        taskType: normalizeSearchParam(params.get("taskType")) ?? "GRAPH",
-        triggerSource:
-            normalizeSearchParam(params.get("triggerSource")) ?? REFINEMENT_APPLIED_TRIGGER_SOURCE
-    };
-};
-
-const createTaskStateCommand = (
-    task: GraphExtractionTaskRecord,
-    expectedExecutionStatus: GraphTaskExecutionStatus,
-    expectedDisposition?: GraphTaskDisposition
-): GraphExtractionTaskStateCommand => ({
-    expectedDisposition,
-    expectedExecutionStatus,
-    replaceUnconfirmedOnly: task.replaceUnconfirmedOnly,
-    requestedBy: task.requestedBy,
-    selectionScopeJson: task.selectionScopeJson,
-    sourceTaskId: task.taskId || task.id,
-    taskId: task.taskId || task.id,
-    taskLockVersion: task.lockVersion,
-    taskType: task.taskType || "GRAPH",
-    triggerSource: task.triggerSource
-});
-
-const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId || task.id).trim();
-
 export const GraphExtractionPage = () => {
     const { message } = App.useApp();
     const queryClient = useQueryClient();
@@ -183,12 +142,11 @@ export const GraphExtractionPage = () => {
     const [taskQuery, setTaskQuery] = useState<GraphExtractionTaskPageQuery>(() =>
         readTaskQueryFromSearch()
     );
-    const [taskListDrawerOpen, setTaskListDrawerOpen] = useState(false);
-    const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
-    const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
-    const [activeTaskDetailSection, setActiveTaskDetailSection] =
-        useState<GraphExtractionTaskDrawerSection>("OVERVIEW");
-    const handoffRegenerateCommand = useMemo(() => readHandoffRegenerateCommand(), []);
+    const [filters, setFilters] = useState(() => ({
+        disposition: taskQuery.disposition,
+        executionStatus: taskQuery.executionStatus,
+        keyword: taskQuery.keyword
+    }));
     const canUseTaskQueue = canViewGraph;
 
     const taskPageQuery = useQuery({
@@ -197,144 +155,75 @@ export const GraphExtractionPage = () => {
         queryKey: ["knowledge", "graph-extraction", "tasks", taskQuery],
         retry: false
     });
-    const taskDetailQuery = useQuery({
-        enabled: taskDetailDrawerOpen && detailTaskId !== null,
-        queryFn: () => service.getTask({ taskId: detailTaskId || "" }),
-        queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId],
-        retry: false
-    });
-    const invalidateTaskQueries = async () => {
-        await Promise.all([
-            queryClient.invalidateQueries({
+    const retryTaskMutation = useMutation({
+        mutationFn: (task: GraphExtractionTaskRecord) =>
+            service.retryTask(createTaskStateCommand(task, "FAILED")),
+        onSuccess: async (result) => {
+            await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "graph-extraction", "tasks"]
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId]
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["knowledge", "graph-material"]
-            })
-        ]);
-    };
-    const taskActionMutation = useMutation({
-        mutationFn: ({ kind, materialLockVersion, task }: TaskActionVariables) => {
-            switch (kind) {
-                case "retry":
-                    return service.retryTask(createTaskStateCommand(task, "FAILED"));
-                case "cancel":
-                    return service.cancelTask(
-                        createTaskStateCommand(task, task.executionStatus || "RUNNING")
-                    );
-                case "merge":
-                    if (!materialLockVersion) {
-                        throw new Error("素材缺少锁版本，请刷新任务详情后重试。");
-                    }
-                    return service.applyCandidate({
-                        ...createTaskStateCommand(task, "SUCCEEDED", "PENDING"),
-                        applyMode: "MERGE",
-                        materialLockVersion
-                    });
-                case "replace":
-                    if (!materialLockVersion) {
-                        throw new Error("素材缺少锁版本，请刷新任务详情后重试。");
-                    }
-                    return service.applyCandidate({
-                        ...createTaskStateCommand(task, "SUCCEEDED", "PENDING"),
-                        applyMode: "REPLACE",
-                        materialLockVersion
-                    });
-                case "discard":
-                    return service.discardCandidate(
-                        createTaskStateCommand(task, "SUCCEEDED", "PENDING")
-                    );
-                case "regenerate":
-                    return service.regenerateTask(createTaskStateCommand(task, "SUCCEEDED"));
-            }
-        },
-        onSuccess: async (result, variables) => {
-            await invalidateTaskQueries();
+            });
             if (result.conflict) {
                 message.warning(result.conflict.message);
                 return;
             }
-            const successMessages: Record<TaskActionKind, string> = {
-                cancel: "任务已取消",
-                discard: "候选结果已丢弃",
-                merge: "候选结果已合并",
-                regenerate: "重新抽取任务已创建",
-                replace: "候选结果已覆盖",
-                retry: "任务已重试"
-            };
-            message.success(successMessages[variables.kind]);
+            message.success("任务已重试");
         },
         onError: (error) => {
-            message.error(error instanceof Error ? error.message : "任务操作失败");
+            message.error(error instanceof Error ? error.message : "任务重试失败");
         }
     });
-    const regenerateTaskMutation = useMutation({
-        mutationFn: service.regenerateTask,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: ["knowledge", "graph-extraction", "tasks"]
-            });
-            message.success("重生成任务已创建");
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "重生成任务创建失败");
-        }
-    });
-
     const tasks = taskPageQuery.data?.records || [];
     const taskTotalCount = taskPageQuery.data?.totalCount || 0;
-    const taskListMode = taskQuery.groupBy ?? "NONE";
-    const changeTaskListMode = (groupBy: GraphExtractionTaskListMode) => {
-        setTaskQuery((currentQuery) => ({
-            ...currentQuery,
-            groupBy,
-            pageNo: DEFAULT_PAGE_NO
-        }));
-    };
-    const openTaskDetailDrawer = (task: GraphExtractionTaskRecord) => {
-        const taskId = readTaskId(task);
-        if (!taskId) {
-            return;
+    const hasActiveFilters = Boolean(
+        taskQuery.keyword || taskQuery.executionStatus || taskQuery.disposition
+    );
+    const filterFields: KuzhambuListPageFilterField[] = [
+        {
+            label: "素材标题",
+            name: "keyword",
+            render: () => (
+                <Input
+                    allowClear
+                    placeholder="请输入素材标题"
+                    value={filters.keyword}
+                    onChange={(event) =>
+                        setFilters((currentFilters) => ({
+                            ...currentFilters,
+                            keyword: event.target.value || undefined
+                        }))
+                    }
+                />
+            )
+        },
+        {
+            label: "运行状态",
+            name: "executionStatus",
+            render: () => (
+                <KuzhambuSelect
+                    allowClear
+                    options={EXECUTION_STATUS_OPTIONS}
+                    value={filters.executionStatus}
+                    onChange={(executionStatus) =>
+                        setFilters((currentFilters) => ({ ...currentFilters, executionStatus }))
+                    }
+                />
+            )
+        },
+        {
+            label: "采纳状态",
+            name: "disposition",
+            render: () => (
+                <KuzhambuSelect
+                    allowClear
+                    options={DISPOSITION_OPTIONS}
+                    value={filters.disposition}
+                    onChange={(disposition) =>
+                        setFilters((currentFilters) => ({ ...currentFilters, disposition }))
+                    }
+                />
+            )
         }
-        setActiveTaskDetailSection("OVERVIEW");
-        setDetailTaskId(taskId);
-        setTaskDetailDrawerOpen(true);
-    };
-    const loadMaterialLockVersion = async (task: GraphExtractionTaskRecord) => {
-        const materialDetail = await service.getMaterial({ contentRef: task.materialRef });
-        const materialLockVersion = materialDetail.material?.lockVersion;
-        if (!materialLockVersion) {
-            throw new Error("素材缺少锁版本，请刷新素材后重试。");
-        }
-        return materialLockVersion;
-    };
-    const mutateCandidateApplyTask = (
-        kind: "merge" | "replace",
-        task: GraphExtractionTaskRecord
-    ) => {
-        const taskId = readTaskId(task);
-        if (!taskId) {
-            return;
-        }
-        void loadMaterialLockVersion(task)
-            .then((materialLockVersion) => {
-                taskActionMutation.mutate({
-                    kind,
-                    materialLockVersion,
-                    task
-                });
-            })
-            .catch((error) => {
-                message.error(error instanceof Error ? error.message : "素材锁版本加载失败");
-            });
-    };
-    const applyTask = (task: GraphExtractionTaskRecord) => {
-        mutateCandidateApplyTask("merge", task);
-    };
-
+    ];
     if (!canUseTaskQueue) {
         return (
             <KuzhambuPage
@@ -347,141 +236,60 @@ export const GraphExtractionPage = () => {
         );
     }
 
-    const taskListContent = (
-        <div className="knowledge-graph-extraction-task-list">
-            <KuzhambuSegmented<GraphExtractionTaskListMode>
-                aria-label="任务列表模式"
-                options={[
-                    {
-                        label: "全局队列",
-                        value: "NONE"
-                    },
-                    {
-                        label: "按素材分组",
-                        value: "MATERIAL"
-                    }
-                ]}
-                testId="knowledge-graph-extraction-task-list-mode"
-                value={taskListMode}
-                onChange={changeTaskListMode}
-            />
-            <TaskFilters
-                loading={taskPageQuery.isLoading}
-                query={taskQuery}
-                total={taskTotalCount}
-                onChange={setTaskQuery}
-            />
-            {tasks.length > 0 ? (
-                <GraphExtractionTaskTable
-                    applyingTaskId={
-                        taskActionMutation.variables
-                            ? readTaskId(taskActionMutation.variables.task)
-                            : null
-                    }
-                    canApply={canEditGraph}
-                    canEdit={canEditGraph}
-                    cancellingBatchId={null}
-                    loading={taskPageQuery.isLoading}
-                    regeneratingTaskId={
-                        taskActionMutation.variables
-                            ? readTaskId(taskActionMutation.variables.task)
-                            : null
-                    }
-                    tasks={tasks}
-                    onApply={applyTask}
-                    onCancelBatch={(task) => taskActionMutation.mutate({ kind: "cancel", task })}
-                    onOpenDetail={openTaskDetailDrawer}
-                    onRegenerate={(task) => taskActionMutation.mutate({ kind: "regenerate", task })}
-                />
-            ) : (
-                <Empty
-                    className="knowledge-graph-extraction-task-empty"
-                    description="当前还没有抽取任务。"
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
-            )}
-        </div>
-    );
-
     return (
-        <KuzhambuPage
-            actions={
-                <KuzhambuButton
-                    ariaLabel={`任务列表(${taskTotalCount})`}
-                    icon={<UnorderedListOutlined />}
-                    testId="knowledge-graph-extraction-task-list-button"
-                    type="primary"
-                    onClick={() => setTaskListDrawerOpen(true)}
-                >
-                    任务列表({taskTotalCount})
-                </KuzhambuButton>
-            }
-            className="graph-extraction-page knowledge-graph-extraction-page"
-            description="统一管理 Knowledge 抽取任务、候选结果和正式应用动作。"
-            title="知识抽取"
-        >
-            <KuzhambuSpace
-                className="knowledge-graph-extraction-layout"
-                orientation="vertical"
-                size={16}
-            >
-                {handoffRegenerateCommand ? (
-                    <KuzhambuAlert
-                        action={
-                            <KuzhambuButton
-                                disabled={!canEditGraph}
-                                loading={regenerateTaskMutation.isPending}
-                                testId="knowledge-graph-extraction-regenerate-handoff-button"
-                                onClick={() =>
-                                    regenerateTaskMutation.mutate(handoffRegenerateCommand)
-                                }
-                            >
-                                提交重生成
-                            </KuzhambuButton>
+        <KuzhambuListPage
+            content={
+                tasks.length > 0 ? (
+                    <GraphExtractionTaskTable
+                        canRetry={canEditGraph}
+                        loading={taskPageQuery.isLoading}
+                        pageNo={taskQuery.pageNo ?? DEFAULT_PAGE_NO}
+                        pageSize={taskQuery.pageSize ?? DEFAULT_PAGE_SIZE}
+                        retryingTaskId={
+                            retryTaskMutation.variables
+                                ? String(
+                                      retryTaskMutation.variables.taskId ||
+                                          retryTaskMutation.variables.id
+                                  )
+                                : null
                         }
-                        className="knowledge-graph-extraction-banner"
-                        showIcon
-                        title="精修应用后的图谱重生成参数已载入"
-                        type="warning"
+                        tasks={tasks}
+                        total={taskTotalCount}
+                        onPageChange={(pageNo, pageSize) =>
+                            setTaskQuery((currentQuery) => ({ ...currentQuery, pageNo, pageSize }))
+                        }
+                        onRetry={(task) => retryTaskMutation.mutate(task)}
                     />
-                ) : null}
-
-                <KuzhambuCard title="任务队列">{taskListContent}</KuzhambuCard>
-                <TaskBatchCreatePanel
-                    canCreate={canEditGraph}
-                    contentRefs={taskQuery.contentRefs ?? []}
-                    volumeCode={taskQuery.volumeCode}
-                    volumeTitle={taskQuery.volumeCode}
-                    onCreated={async () => {
-                        await queryClient.invalidateQueries({
-                            queryKey: ["knowledge", "graph-extraction", "tasks"]
-                        });
-                    }}
-                />
-            </KuzhambuSpace>
-            <KuzhambuDrawer
-                open={taskListDrawerOpen}
-                size="large"
-                testId="knowledge-graph-extraction-task-list-drawer"
-                title="任务列表"
-                onClose={() => setTaskListDrawerOpen(false)}
-            >
-                {taskListContent}
-            </KuzhambuDrawer>
-            <TaskDetailDrawer
-                activeSection={activeTaskDetailSection}
-                detail={taskDetailQuery.data || null}
-                loading={taskDetailQuery.isLoading}
-                open={taskDetailDrawerOpen}
-                onCancel={(task) => taskActionMutation.mutate({ kind: "cancel", task })}
-                onClose={() => setTaskDetailDrawerOpen(false)}
-                onDiscard={(task) => taskActionMutation.mutate({ kind: "discard", task })}
-                onMerge={(task) => mutateCandidateApplyTask("merge", task)}
-                onRegenerate={(task) => taskActionMutation.mutate({ kind: "regenerate", task })}
-                onReplace={(task) => mutateCandidateApplyTask("replace", task)}
-                onRetry={(task) => taskActionMutation.mutate({ kind: "retry", task })}
-                onSectionChange={setActiveTaskDetailSection}
-            />
-        </KuzhambuPage>
+                ) : (
+                    <Empty
+                        className="knowledge-graph-extraction-task-empty"
+                        description="当前还没有抽取任务。"
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    />
+                )
+            }
+            description="查看 Knowledge 抽取任务的运行状态和结果。"
+            enableFilter
+            filterActive={hasActiveFilters}
+            filterFields={filterFields}
+            pageClassName="graph-extraction-page knowledge-graph-extraction-page"
+            subjectName="知识抽取任务"
+            title="知识抽取"
+            onFilterApply={() =>
+                setTaskQuery((currentQuery) => ({
+                    ...currentQuery,
+                    ...filters,
+                    pageNo: DEFAULT_PAGE_NO
+                }))
+            }
+            onFilterReset={() => {
+                setFilters({});
+                setTaskQuery({
+                    groupBy: "NONE",
+                    pageNo: DEFAULT_PAGE_NO,
+                    pageSize: taskQuery.pageSize ?? DEFAULT_PAGE_SIZE
+                });
+            }}
+        />
     );
 };
