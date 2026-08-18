@@ -3,10 +3,11 @@ import type { Page } from "@/types/page";
 import type {
     GraphContentRefRecord,
     GraphContentType,
+    GraphExtractionTaskActionResultRecord,
+    GraphExtractionTaskRecord,
     GraphTaskDisposition,
     GraphTaskExecutionStatus
 } from "./graph-extraction-types";
-import type { GraphExtractionTaskRecord } from "./graph-extraction-types";
 
 const TASK_PAGE_PATH = "/knowledge/graph/task/page";
 const TASK_RETRY_PATH = "/knowledge/graph/task/retry";
@@ -40,16 +41,6 @@ export interface GraphExtractionService {
     retryTask: (
         command: GraphExtractionTaskStateCommand
     ) => Promise<GraphExtractionTaskActionResultRecord>;
-}
-
-export interface GraphExtractionTaskActionResultRecord {
-    conflict?: GraphExtractionTaskConflictRecord;
-    task?: GraphExtractionTaskRecord;
-}
-
-export interface GraphExtractionTaskConflictRecord {
-    code: "GRAPH_TASK_LOCK_CONFLICT" | "GRAPH_TASK_STATE_CONFLICT" | "GRAPH_TASK_ACTIVE_EXISTS";
-    message: string;
 }
 
 const createIdempotencyKey = () => {

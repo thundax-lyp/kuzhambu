@@ -42,3 +42,13 @@ export interface GraphExtractionTaskRecord {
     status?: string | null;
     taskId?: string | null;
 }
+
+export interface GraphExtractionTaskConflictRecord {
+    code: "GRAPH_TASK_LOCK_CONFLICT" | "GRAPH_TASK_STATE_CONFLICT" | "GRAPH_TASK_ACTIVE_EXISTS";
+    message: string;
+}
+
+export interface GraphExtractionTaskActionResultRecord {
+    conflict?: GraphExtractionTaskConflictRecord;
+    task?: GraphExtractionTaskRecord;
+}

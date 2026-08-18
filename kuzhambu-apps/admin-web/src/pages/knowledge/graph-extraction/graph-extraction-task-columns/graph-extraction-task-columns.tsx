@@ -2,7 +2,7 @@ import { Popover, Typography } from "antd";
 import { KuzhambuTag } from "@/components";
 import { normalizeId } from "@/types/id";
 import type { KuzhambuTableColumn, KuzhambuTagType } from "@/components";
-import type { GraphExtractionTaskRecord } from "./graph-extraction-types";
+import type { GraphExtractionTaskRecord } from "@/pages/knowledge/graph-extraction/graph-extraction-types";
 
 const { Text } = Typography;
 

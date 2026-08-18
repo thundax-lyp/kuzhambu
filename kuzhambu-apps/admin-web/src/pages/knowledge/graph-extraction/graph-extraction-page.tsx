@@ -24,7 +24,6 @@ import {
 import type {
     GraphContentRefRecord,
     GraphExtractionTaskRecord,
-    GraphTaskDisposition,
     GraphTaskExecutionStatus
 } from "./graph-extraction-types";
 import "./graph-extraction-page.css";
