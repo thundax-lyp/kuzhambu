@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { graphMaterialMockListRecords } from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
+import { graphMaterialMockListRecords } from "@/test/fixtures/graph-material-fixtures";
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
 import { MaterialListPanel } from "./material-list-panel";
 

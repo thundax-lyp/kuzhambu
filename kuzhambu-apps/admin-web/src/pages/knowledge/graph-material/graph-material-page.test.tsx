@@ -8,7 +8,7 @@ import type { Page } from "@/types/page";
 import {
     graphMaterialMockDetails,
     graphMaterialMockListRecords
-} from "./__mocks__/graph-mock-data";
+} from "@/test/fixtures/graph-material-fixtures";
 import { GraphMaterialPage } from "./graph-material-page";
 import type { GraphMaterialListRecord, GraphMaterialTreeNodeRecord } from "./graph-material-types";
 import * as service from "./graph-material-service";

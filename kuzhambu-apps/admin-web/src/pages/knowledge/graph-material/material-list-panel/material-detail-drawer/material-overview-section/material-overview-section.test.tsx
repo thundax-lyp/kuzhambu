@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { graphMaterialMockDetails } from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
+import { graphMaterialMockDetails } from "@/test/fixtures/graph-material-fixtures";
 import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material/graph-material-types";
 import { MaterialOverviewSection } from "./material-overview-section";
 

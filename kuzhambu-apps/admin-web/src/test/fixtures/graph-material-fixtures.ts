@@ -1,4 +1,3 @@
-/* eslint-disable local/page-component-no-external-page -- Shared Knowledge graph test fixtures span material and extraction pages. */
 import type { Page } from "@/types/page";
 import type {
     GraphBatchExtractionResultRecord,
@@ -233,13 +232,6 @@ export const graphExtractionMockTasks: GraphExtractionTaskRecord[] = [
         resultSummary: { edgeCount: 0, nodeCount: 0, warningCount: 1 }
     }
 ];
-
-const findSource = (contentRef: GraphContentRefRecord) =>
-    graphMaterialMockSources.find(
-        (source) =>
-            source.contentRef.contentType === contentRef.contentType &&
-            source.contentRef.contentRefId === contentRef.contentRefId
-    );
 
 const findMaterial = (contentRef: GraphContentRefRecord) =>
     graphMaterialMockMaterials.find(

@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { replacePermissions } from "@/auth/permission-storage";
-import { graphMaterialMockDetails } from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
+import { graphMaterialMockDetails } from "@/test/fixtures/graph-material-fixtures";
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
 import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material/graph-material-types";
 import { MaterialTaskSummarySection } from "./material-task-summary-section";

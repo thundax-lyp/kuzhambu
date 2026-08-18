@@ -9,7 +9,7 @@ import { replacePermissions } from "@/auth/permission-storage";
 import {
     graphMaterialMockDetails,
     graphMaterialMockListRecords
-} from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
+} from "@/test/fixtures/graph-material-fixtures";
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
 import { MaterialDetailDrawer } from "./material-detail-drawer";
 
