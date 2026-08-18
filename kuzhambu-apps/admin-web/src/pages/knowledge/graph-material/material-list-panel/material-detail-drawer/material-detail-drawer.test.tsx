@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { App as AntdApp } from "antd";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { replacePermissions } from "@/auth/permission-storage";
 import {
@@ -46,9 +47,11 @@ const renderDrawer = () => {
     };
     return render(
         <QueryClientProvider client={queryClient}>
-            <MemoryRouter>
-                <Wrapper />
-            </MemoryRouter>
+            <AntdApp>
+                <MemoryRouter>
+                    <Wrapper />
+                </MemoryRouter>
+            </AntdApp>
         </QueryClientProvider>
     );
 };
@@ -83,9 +86,11 @@ const renderSwitchableDrawer = () => {
     };
     return render(
         <QueryClientProvider client={queryClient}>
-            <MemoryRouter>
-                <Wrapper />
-            </MemoryRouter>
+            <AntdApp>
+                <MemoryRouter>
+                    <Wrapper />
+                </MemoryRouter>
+            </AntdApp>
         </QueryClientProvider>
     );
 };
@@ -221,6 +226,32 @@ describe("MaterialDetailDrawer", () => {
             });
         });
         expect(screen.getByText("素材已撤回")).toBeInTheDocument();
+    });
+
+    it("refreshes material detail after creating an extraction task", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        vi.mocked(service.createExtraction).mockResolvedValue({
+            attemptNo: "1",
+            currentStage: "已提交",
+            disposition: "PENDING",
+            executionStatus: "PENDING",
+            id: "7101",
+            lockVersion: "1",
+            materialRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            progress: 0
+        });
+        renderDrawer();
+        const user = userEvent.setup();
+
+        await user.click(screen.getByText("任务"));
+        await waitFor(() => {
+            expect(service.getMaterial).toHaveBeenCalledTimes(1);
+        });
+        await user.click(screen.getByTestId("knowledge-graph-material-detail-extract-button"));
+
+        await waitFor(() => {
+            expect(service.getMaterial).toHaveBeenCalledTimes(2);
+        });
     });
 
     it("keeps delete precheck in publication changes instead of task menus", async () => {

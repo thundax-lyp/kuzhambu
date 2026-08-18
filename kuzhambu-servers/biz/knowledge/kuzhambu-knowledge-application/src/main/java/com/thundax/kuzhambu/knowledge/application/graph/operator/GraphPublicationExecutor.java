@@ -320,6 +320,7 @@ public class GraphPublicationExecutor {
         edgeMaterialRepository.deleteByMaterial(command.materialRef());
         nodeMaterialRepository.deleteByMaterial(command.materialRef());
         material.withdraw();
+        material.refreshStatus(graph.nodes().isEmpty());
         updateMaterial(material, command.materialLockVersion() + 1);
         return material;
     }

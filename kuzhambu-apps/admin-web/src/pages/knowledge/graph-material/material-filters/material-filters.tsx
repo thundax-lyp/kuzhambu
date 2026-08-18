@@ -27,6 +27,7 @@ const SOURCE_TYPE_OPTIONS = [
 
 const MATERIAL_STATUS_OPTIONS = [
     { label: "草稿", value: "DRAFT" },
+    { label: "待发布", value: "READY" },
     { label: "发布中", value: "PUBLISHING" },
     { label: "已发布", value: "PUBLISHED" },
     { label: "撤回中", value: "WITHDRAWING" },

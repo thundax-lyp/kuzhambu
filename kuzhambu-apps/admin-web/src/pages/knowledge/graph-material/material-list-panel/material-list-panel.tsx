@@ -2,12 +2,13 @@ import { useMutation } from "@tanstack/react-query";
 import type { Key } from "react";
 import { useMemo, useState } from "react";
 import { RobotOutlined } from "@ant-design/icons";
-import { Typography } from "antd";
+import { App, Typography } from "antd";
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
 import { MaterialDetailDrawer } from "./material-detail-drawer";
 import type {
     GraphContentRefRecord,
     GraphMaterialListRecord,
+    GraphMaterialRecord,
     GraphMaterialStatus,
     GraphTaskDisposition,
     GraphTaskExecutionStatus
@@ -25,6 +26,7 @@ const { Text } = Typography;
 
 const STATUS_LABELS: Readonly<Record<GraphMaterialStatus, string>> = {
     DRAFT: "草稿",
+    READY: "待发布",
     FAILED: "失败",
     PUBLISHED: "已发布",
     PUBLISHING: "发布中",
@@ -32,9 +34,10 @@ const STATUS_LABELS: Readonly<Record<GraphMaterialStatus, string>> = {
 };
 
 const STATUS_TYPES: Readonly<
-    Record<GraphMaterialStatus, "neutral" | "info" | "success" | "warning" | "danger">
+    Record<GraphMaterialStatus, "accent" | "info" | "success" | "warning" | "danger">
 > = {
-    DRAFT: "neutral",
+    DRAFT: "accent",
+    READY: "info",
     FAILED: "danger",
     PUBLISHED: "success",
     PUBLISHING: "info",
@@ -54,7 +57,7 @@ const TASK_STATUS_TYPES: Readonly<
 > = {
     CANCELLED: "neutral",
     FAILED: "danger",
-    PENDING: "neutral",
+    PENDING: "warning",
     RUNNING: "info",
     SUCCEEDED: "success"
 };
@@ -68,13 +71,26 @@ const DISPOSITION_LABELS: Readonly<Record<GraphTaskDisposition, string>> = {
 };
 
 const DEFAULT_COLUMN_WIDTHS = {
-    actions: 180,
-    status: 130,
-    taskSummary: 190
+    status: 80,
+    taskSummary: 160
 };
 
 const readRecordKey = (record: GraphMaterialListRecord) =>
     `${record.source.contentRef.contentType}:${record.source.contentRef.contentRefId}`;
+
+const hasActiveExtractionTask = (record: GraphMaterialListRecord) =>
+    record.latestTask?.executionStatus === "PENDING" ||
+    record.latestTask?.executionStatus === "RUNNING";
+
+const publicationActionFor = (material?: GraphMaterialRecord | null) => {
+    if (!material || material.status === "PUBLISHING" || material.status === "WITHDRAWING") {
+        return null;
+    }
+    if (material.status === "PUBLISHED") {
+        return "withdraw";
+    }
+    return material.status === "READY" ? "publish" : null;
+};
 
 interface MaterialListPanelProps {
     canExtractMaterial?: boolean;
@@ -93,14 +109,133 @@ export const MaterialListPanel = ({
     pagination,
     showPlaceholder = false
 }: MaterialListPanelProps) => {
+    const { message: messageApi } = App.useApp();
     const [activeRecord, setActiveRecord] = useState<GraphMaterialListRecord | null>(null);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const batchExtractionMutation = useMutation({
         mutationFn: service.createBatchExtraction,
-        onSuccess: () => {
+        onSuccess: (result) => {
             setSelectedRowKeys([]);
             void onRefreshMaterials();
+            const failures = result.materials.filter((material) => !material.success);
+            if (failures.length === 0) {
+                messageApi.success(`已创建 ${result.materials.length} 个抽取任务`);
+                return;
+            }
+            const failureSummary = failures
+                .map(
+                    (material) =>
+                        `${material.contentRef.contentType} #${material.contentRef.contentRefId}：${material.failureMessage ?? "创建失败"}`
+                )
+                .join("；");
+            messageApi.warning(
+                `已创建 ${result.materials.length - failures.length} 个任务，${failureSummary}`
+            );
         }
+    });
+    const publicationMutation = useMutation({
+        mutationFn: async (record: GraphMaterialListRecord) => {
+            if (!record.material) {
+                throw new Error("素材尚未初始化，无法发布。");
+            }
+            if (publicationActionFor(record.material) === "withdraw") {
+                await service.previewWithdrawal({ contentRef: record.material.contentRef });
+                return service.withdrawMaterial({
+                    contentRef: record.material.contentRef,
+                    materialLockVersion: record.material.lockVersion ?? ""
+                });
+            }
+            const preview = await service.previewPublication({
+                contentRef: record.material.contentRef
+            });
+            if (!preview.publishable) {
+                throw new Error(preview.issues[0]?.message ?? "发布预检未通过。");
+            }
+            return service.publishMaterial({
+                conflictDecisions: [],
+                contentRef: preview.materialRef,
+                materialLockVersion: preview.materialLockVersion,
+                previewToken: preview.previewToken
+            });
+        },
+        onSuccess: (_, record) => {
+            messageApi.success(
+                publicationActionFor(record.material) === "withdraw" ? "素材已撤销" : "素材已发布"
+            );
+            void onRefreshMaterials();
+        },
+        onError: (error) =>
+            messageApi.error(error instanceof Error ? error.message : "素材发布操作失败")
+    });
+    const batchPublicationMutation = useMutation({
+        mutationFn: async ({
+            action,
+            records
+        }: {
+            action: "publish" | "withdraw";
+            records: GraphMaterialListRecord[];
+        }) => {
+            const materials = records
+                .map((record) => record.material)
+                .filter(
+                    (material): material is GraphMaterialRecord =>
+                        material !== null && material !== undefined
+                );
+            if (materials.length !== records.length) {
+                throw new Error("存在未初始化素材，无法执行批量发布操作。");
+            }
+            if (action === "withdraw") {
+                const preview = await service.previewBatchWithdrawal({
+                    contentRefs: materials.map((material) => material.contentRef)
+                });
+                const blocked = preview.materials.find((item) => !item.success);
+                if (blocked) {
+                    throw new Error(blocked.failureMessage ?? "存在无法撤销的素材。");
+                }
+                return service.withdrawBatch({
+                    materials: materials.map((material) => ({
+                        contentRef: material.contentRef,
+                        materialLockVersion: material.lockVersion ?? ""
+                    }))
+                });
+            }
+            const preview = await service.previewBatchPublication({
+                contentRefs: materials.map((material) => material.contentRef)
+            });
+            const blocked = preview.materials.find(
+                (item) => !item.success || !item.result?.publishable
+            );
+            if (blocked) {
+                throw new Error(blocked.failureMessage ?? "存在未通过预检的素材，无法批量发布。");
+            }
+            return service.publishBatch({
+                materials: preview.materials.flatMap((item) => {
+                    const result = item.result;
+                    return result
+                        ? [
+                              {
+                                  conflictDecisions: [],
+                                  contentRef: result.materialRef,
+                                  materialLockVersion: result.materialLockVersion,
+                                  previewToken: result.previewToken
+                              }
+                          ]
+                        : [];
+                })
+            });
+        },
+        onSuccess: (result, variables) => {
+            const failures = result.materials.filter((material) => !material.success);
+            messageApi[failures.length === 0 ? "success" : "warning"](
+                failures.length === 0
+                    ? `${variables.action === "publish" ? "发布" : "撤销"} ${result.materials.length} 个素材成功`
+                    : `${variables.action === "publish" ? "发布" : "撤销"}完成，${failures.length} 个素材失败`
+            );
+            setSelectedRowKeys([]);
+            void onRefreshMaterials();
+        },
+        onError: (error) =>
+            messageApi.error(error instanceof Error ? error.message : "批量发布操作失败")
     });
     const recordByKey = useMemo(
         () =>
@@ -115,36 +250,46 @@ export const MaterialListPanel = ({
     const selectedRecords = selectedRowKeys
         .map((key) => recordByKey.get(String(key)))
         .filter((record): record is GraphMaterialListRecord => record !== undefined);
+    const extractableSelectedRecords = selectedRecords.filter(
+        (record) => !hasActiveExtractionTask(record)
+    );
+    const canPublishSelectedMaterials =
+        selectedRecords.length > 0 &&
+        selectedRecords.every((record) => publicationActionFor(record.material) === "publish");
+    const canWithdrawSelectedMaterials =
+        selectedRecords.length > 0 &&
+        selectedRecords.every((record) => publicationActionFor(record.material) === "withdraw");
     const closeMaterialDetailDrawer = () => {
         setActiveRecord(null);
     };
     const extractMaterial = (contentRef: GraphContentRefRecord) =>
         batchExtractionMutation.mutateAsync({ contentRefs: [contentRef] });
     const extractSelectedMaterials = () => {
+        const skippedCount = selectedRecords.length - extractableSelectedRecords.length;
+        if (skippedCount > 0) {
+            messageApi.info(`${skippedCount} 个素材已有执行中的提取任务，已跳过。`);
+        }
         void batchExtractionMutation.mutateAsync({
-            contentRefs: selectedRecords.map((record) => record.source.contentRef)
+            contentRefs: extractableSelectedRecords.map((record) => record.source.contentRef)
         });
     };
     const columns: KuzhambuTableProps<GraphMaterialListRecord>["columns"] = [
         {
             title: "标题",
             key: "title",
-            render: (_, record) =>
-                record.material ? (
-                    <a
-                        href="#"
-                        aria-label={`打开素材 ${record.source.title}`}
-                        data-testid={`knowledge-graph-material-open-${record.material.id}-link`}
-                        onClick={(event) => {
-                            event.preventDefault();
-                            setActiveRecord(record);
-                        }}
-                    >
-                        {record.source.title}
-                    </a>
-                ) : (
-                    <Text strong>{record.source.title}</Text>
-                )
+            render: (_, record) => (
+                <a
+                    href="#"
+                    aria-label={`打开素材 ${record.source.title}`}
+                    data-testid={`knowledge-graph-material-open-${record.source.contentRef.contentRefId}-link`}
+                    onClick={(event) => {
+                        event.preventDefault();
+                        setActiveRecord(record);
+                    }}
+                >
+                    {record.source.title}
+                </a>
+            )
         },
         {
             title: "发布",
@@ -183,7 +328,6 @@ export const MaterialListPanel = ({
         },
         {
             key: "actions",
-            width: DEFAULT_COLUMN_WIDTHS.actions,
             options: (record) => [
                 {
                     key: "view",
@@ -197,8 +341,21 @@ export const MaterialListPanel = ({
                     text: "提取",
                     testId: "knowledge-graph-material-extract-button",
                     ariaLabel: `提取 ${record.source.title}`,
-                    disabled: !canExtractMaterial,
+                    disabled: !canExtractMaterial || hasActiveExtractionTask(record),
                     onClick: () => void extractMaterial(record.source.contentRef)
+                },
+                {
+                    key: "publication",
+                    text: publicationActionFor(record.material) === "withdraw" ? "撤回" : "发布",
+                    ariaLabel:
+                        publicationActionFor(record.material) === "withdraw"
+                            ? `撤回素材 ${record.source.title}`
+                            : `发布素材 ${record.source.title}`,
+                    disabled:
+                        !canExtractMaterial ||
+                        publicationMutation.isPending ||
+                        publicationActionFor(record.material) === null,
+                    onClick: () => publicationMutation.mutate(record)
                 }
             ]
         }
@@ -215,22 +372,47 @@ export const MaterialListPanel = ({
                     ariaLabel="图谱素材列表"
                     batchActionBar={{
                         actions: (
-                            <KuzhambuButton
-                                disabled={!canExtractMaterial || selectedRecords.length === 0}
-                                icon={<RobotOutlined />}
-                                loading={batchExtractionMutation.isPending}
-                                testId="knowledge-graph-material-batch-extract-button"
-                                type="primary"
-                                onClick={extractSelectedMaterials}
-                            >
-                                批量提取
-                            </KuzhambuButton>
+                            <KuzhambuSpace>
+                                <KuzhambuButton
+                                    disabled={
+                                        !canExtractMaterial ||
+                                        extractableSelectedRecords.length === 0
+                                    }
+                                    icon={<RobotOutlined />}
+                                    loading={batchExtractionMutation.isPending}
+                                    testId="knowledge-graph-material-batch-extract-button"
+                                    type="primary"
+                                    onClick={extractSelectedMaterials}
+                                >
+                                    批量提取
+                                </KuzhambuButton>
+                                {canPublishSelectedMaterials || canWithdrawSelectedMaterials ? (
+                                    <KuzhambuButton
+                                        disabled={
+                                            !canExtractMaterial ||
+                                            batchPublicationMutation.isPending
+                                        }
+                                        loading={batchPublicationMutation.isPending}
+                                        testId="knowledge-graph-material-batch-publication-button"
+                                        onClick={() =>
+                                            batchPublicationMutation.mutate({
+                                                action: canWithdrawSelectedMaterials
+                                                    ? "withdraw"
+                                                    : "publish",
+                                                records: selectedRecords
+                                            })
+                                        }
+                                    >
+                                        {canWithdrawSelectedMaterials ? "批量撤回" : "批量发布"}
+                                    </KuzhambuButton>
+                                ) : null}
+                            </KuzhambuSpace>
                         ),
                         selectedCount: selectedRowKeys.length
                     }}
                     columns={columns}
                     dataSource={dataSource}
-                    loading={loading}
+                    loading={loading || batchExtractionMutation.isPending}
                     pagination={pagination}
                     rowKey={readRecordKey}
                     rowSelection={{

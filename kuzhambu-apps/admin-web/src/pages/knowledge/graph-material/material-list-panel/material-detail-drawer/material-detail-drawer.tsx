@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Spin, Typography } from "antd";
+import { Spin } from "antd";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -18,8 +18,6 @@ import { MaterialOverviewSection } from "./material-overview-section";
 import { MaterialPublicationChangesSection } from "./material-publication-changes-section";
 import { MaterialTaskSummarySection } from "./material-task-summary-section";
 import "./material-detail-drawer.css";
-
-const { Text } = Typography;
 
 interface MaterialDetailDrawerProps {
     record: GraphMaterialListRecord | null;
@@ -67,7 +65,6 @@ export const MaterialDetailDrawer = ({ record, onClose }: MaterialDetailDrawerPr
     const open = record !== null;
     const title =
         record?.material?.title ?? detail?.source.title ?? record?.source.title ?? "素材详情";
-    const sourceContentRef = detail?.source.contentRef ?? record?.source.contentRef ?? null;
     const closeDrawer = () => {
         setActiveSectionState({ contentRefKey: null, section: "OVERVIEW" });
         onClose();
@@ -124,10 +121,6 @@ export const MaterialDetailDrawer = ({ record, onClose }: MaterialDetailDrawerPr
                 orientation="vertical"
                 size={12}
             >
-                <Text type="secondary">
-                    {sourceContentRef?.contentType ?? "-"} / #
-                    {sourceContentRef?.contentRefId ?? "-"}
-                </Text>
                 {error ? (
                     <KuzhambuAlert
                         action={

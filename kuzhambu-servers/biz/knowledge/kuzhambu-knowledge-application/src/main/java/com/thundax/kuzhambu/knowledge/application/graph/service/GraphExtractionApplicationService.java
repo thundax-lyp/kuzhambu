@@ -28,7 +28,7 @@ public interface GraphExtractionApplicationService {
 
     GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command);
 
-    int syncActiveTasks(int limit);
+    int syncActiveTasks();
 
     GraphExtractionTaskResult cancelTask(GraphExtractionCancelCommand command);
 

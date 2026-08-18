@@ -1,6 +1,7 @@
 export type GraphContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS" | string;
 
-export type GraphMaterialStatus = "DRAFT" | "PUBLISHING" | "PUBLISHED" | "WITHDRAWING" | "FAILED";
+export type GraphMaterialStatus =
+    "DRAFT" | "READY" | "PUBLISHING" | "PUBLISHED" | "WITHDRAWING" | "FAILED";
 
 export type GraphTaskExecutionStatus = "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
 

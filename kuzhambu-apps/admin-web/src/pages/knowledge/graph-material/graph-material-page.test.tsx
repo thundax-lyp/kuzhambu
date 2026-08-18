@@ -160,7 +160,6 @@ const materialTreeNodesByParentId: Record<string, GraphMaterialTreeNodeRecord[]>
 
 const selectCatalogLeaf = async (leafTitle = "卷二") => {
     const user = userEvent.setup();
-    await user.click(await screen.findByText("三才图会"));
     if (leafTitle === "卷一") {
         await user.click(await screen.findByText("天文"));
     }
@@ -203,6 +202,18 @@ describe("GraphMaterialPage", () => {
             });
             expect(container.querySelector(".ant-spin-spinning")).toBeInTheDocument();
         });
+    });
+
+    it("expands first-level catalog nodes after the initial catalog load", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        mockCatalogThenPage();
+        renderPage();
+
+        expect(await screen.findByText("人物")).toBeInTheDocument();
+        expect(service.listMaterialTree).toHaveBeenCalledWith({ parentId: "root" });
+        expect(service.listMaterialTree).toHaveBeenCalledWith({ parentId: "type:SANCAI_ENTRY" });
+        expect(service.listMaterialTree).toHaveBeenCalledWith({ parentId: "type:WANGQI_DOCUMENT" });
+        expect(service.listMaterialTree).toHaveBeenCalledWith({ parentId: "type:MING_CUSTOMS" });
     });
 
     it("shows table empty state when selected leaf has no material records", async () => {

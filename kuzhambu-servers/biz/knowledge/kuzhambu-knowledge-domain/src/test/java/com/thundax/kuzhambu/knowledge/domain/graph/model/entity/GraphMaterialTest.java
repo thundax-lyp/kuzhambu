@@ -15,11 +15,13 @@ import org.junit.jupiter.api.Test;
 class GraphMaterialTest {
 
     @Test
-    void requireEditableShouldAllowOnlyDraft() {
+    void requireEditableShouldAllowDraftAndReady() {
         GraphMaterial material = material(GraphMaterialStatus.DRAFT);
 
         material.requireEditable();
 
+        assertTrue(material.editable());
+        material.setStatus(GraphMaterialStatus.READY);
         assertTrue(material.editable());
         material.setStatus(GraphMaterialStatus.PUBLISHED);
         assertFalse(material.editable());
@@ -33,8 +35,19 @@ class GraphMaterialTest {
     }
 
     @Test
-    void publishShouldMoveDraftThroughPublishingAndSetPublishedAt() {
+    void refreshStatusShouldReflectWhetherTheDraftHasNodes() {
         GraphMaterial material = material(GraphMaterialStatus.DRAFT);
+
+        material.refreshStatus(false);
+        assertEquals(GraphMaterialStatus.READY, material.getStatus());
+
+        material.refreshStatus(true);
+        assertEquals(GraphMaterialStatus.DRAFT, material.getStatus());
+    }
+
+    @Test
+    void publishShouldMoveReadyThroughPublishingAndSetPublishedAt() {
+        GraphMaterial material = material(GraphMaterialStatus.READY);
         Instant completedAt = Instant.parse("2026-08-13T00:00:00Z");
 
         material.startPublishing();
@@ -62,7 +75,7 @@ class GraphMaterialTest {
 
     @Test
     void publishFailureShouldRecordFailedOperationAndRetryToDraft() {
-        GraphMaterial material = material(GraphMaterialStatus.DRAFT);
+        GraphMaterial material = material(GraphMaterialStatus.READY);
 
         material.startPublishing();
         material.failPublication("schema invalid");
@@ -97,13 +110,14 @@ class GraphMaterialTest {
     }
 
     @Test
-    void statusPersistentValuesShouldBeFixedFiveStateValues() {
+    void statusPersistentValuesShouldIncludeReady() {
         assertEquals("DRAFT", GraphMaterialStatus.DRAFT.value());
+        assertEquals("READY", GraphMaterialStatus.READY.value());
         assertEquals("PUBLISHING", GraphMaterialStatus.PUBLISHING.value());
         assertEquals("PUBLISHED", GraphMaterialStatus.PUBLISHED.value());
         assertEquals("WITHDRAWING", GraphMaterialStatus.WITHDRAWING.value());
         assertEquals("FAILED", GraphMaterialStatus.FAILED.value());
-        assertThrows(IllegalArgumentException.class, () -> GraphMaterialStatus.from("READY"));
+        assertEquals(GraphMaterialStatus.READY, GraphMaterialStatus.from("READY"));
     }
 
     @Test

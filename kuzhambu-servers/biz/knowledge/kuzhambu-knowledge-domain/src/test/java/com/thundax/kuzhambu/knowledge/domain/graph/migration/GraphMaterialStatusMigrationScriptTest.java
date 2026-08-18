@@ -24,7 +24,7 @@ class GraphMaterialStatusMigrationScriptTest {
     }
 
     @Test
-    void migrationShouldAddFailureFieldsAndRewriteReadyToDraft() throws IOException {
+    void migrationShouldAddFailureFieldsAndPromoteNonEmptyDraftsToReady() throws IOException {
         String migration = Files.readString(repoRoot().resolve("scripts/migrate-graph-material-status.sql"));
 
         assertTrue(
@@ -34,7 +34,8 @@ class GraphMaterialStatusMigrationScriptTest {
                     ADD COLUMN failure_reason varchar(1024) DEFAULT NULL AFTER published_at,
                     ADD COLUMN failed_operation varchar(16) DEFAULT NULL AFTER failure_reason;
                 """));
-        assertTrue(migration.contains("UPDATE knowledge_graph_material SET status = 'DRAFT' WHERE status = 'READY';"));
+        assertTrue(migration.contains("SET status = 'READY'"));
+        assertTrue(migration.contains("WHERE node.material_id = material.id"));
     }
 
     private static Path repoRoot() {

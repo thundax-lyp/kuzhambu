@@ -244,10 +244,9 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     }
 
     @Override
-    public int syncActiveTasks(int limit) {
-        int pageSize = limit <= 0 ? 100 : limit;
-        return syncTasksWithStatus(GraphExtractionExecutionStatus.PENDING, pageSize)
-                + syncTasksWithStatus(GraphExtractionExecutionStatus.RUNNING, pageSize);
+    public int syncActiveTasks() {
+        return syncTasksWithStatus(GraphExtractionExecutionStatus.PENDING, 100)
+                + syncTasksWithStatus(GraphExtractionExecutionStatus.RUNNING, 100);
     }
 
     @Override

@@ -52,7 +52,7 @@ public class GraphExtractionTaskCleanupScheduler {
 
     @Scheduled(fixedDelayString = "${kuzhambu.knowledge.graph.task-sync-delay-ms:60000}")
     public int syncActiveTasks() {
-        return extractionService.syncActiveTasks(DEFAULT_LIMIT);
+        return extractionService.syncActiveTasks();
     }
 
     private boolean cleanupOne(GraphExtractionTask task) {

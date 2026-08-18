@@ -1,4 +1,5 @@
-import { Empty, Progress, Typography } from "antd";
+import { App, Empty, Progress, Typography } from "antd";
+import { RobotOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { hasPermission } from "@/auth/permission-storage";
 import {
@@ -32,7 +33,7 @@ const TASK_STATUS_TYPES: Readonly<
 > = {
     CANCELLED: "neutral",
     FAILED: "danger",
-    PENDING: "neutral",
+    PENDING: "warning",
     RUNNING: "info",
     SUCCEEDED: "success"
 };
@@ -64,6 +65,9 @@ const renderTaskStatus = (status: GraphTaskExecutionStatus) => (
     <KuzhambuTag type={TASK_STATUS_TYPES[status]}>{TASK_STATUS_LABELS[status]}</KuzhambuTag>
 );
 
+const hasActiveExtractionTask = (status?: GraphTaskExecutionStatus) =>
+    status === "PENDING" || status === "RUNNING";
+
 const renderDisposition = (disposition?: GraphTaskDisposition | null) => {
     if (!disposition) {
         return <Text type="secondary">-</Text>;
@@ -76,12 +80,18 @@ const renderDisposition = (disposition?: GraphTaskDisposition | null) => {
 };
 
 export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectionProps) => {
+    const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const canExtractMaterial = hasPermission("knowledge:graph:edit");
     const extractionMutation = useMutation({
         mutationFn: service.createExtraction,
-        onSuccess: () =>
-            queryClient.invalidateQueries({ queryKey: ["knowledge", "graph-material"] })
+        onSuccess: async (task) => {
+            await queryClient.refetchQueries({
+                queryKey: ["knowledge", "graph-material"],
+                type: "active"
+            });
+            messageApi.success(`抽取任务已创建 #${task?.id ?? "-"}`);
+        }
     });
 
     if (!detail) {
@@ -95,7 +105,6 @@ export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectio
 
     const taskSummary = detail.taskSummary;
     const latestTask = taskSummary?.latestTask;
-    const extractionTaskId = extractionMutation.data?.id;
 
     return (
         <KuzhambuSpace
@@ -110,9 +119,15 @@ export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectio
                 extra={
                     <KuzhambuButton
                         ariaLabel={`抽取素材 ${detail.source.title}`}
-                        disabled={!canExtractMaterial || extractionMutation.isPending}
+                        disabled={
+                            !canExtractMaterial ||
+                            extractionMutation.isPending ||
+                            hasActiveExtractionTask(latestTask?.executionStatus)
+                        }
+                        icon={<RobotOutlined />}
                         loading={extractionMutation.isPending}
                         testId="knowledge-graph-material-detail-extract-button"
+                        type="primary"
                         onClick={() =>
                             extractionMutation.mutate({ contentRef: detail.source.contentRef })
                         }
@@ -141,13 +156,6 @@ export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectio
                     size="small"
                     bordered
                 />
-                {extractionTaskId ? (
-                    <KuzhambuAlert
-                        title={`抽取任务已创建 #${extractionTaskId}`}
-                        type="success"
-                        showIcon
-                    />
-                ) : null}
                 {extractionMutation.error ? (
                     <KuzhambuAlert
                         title={

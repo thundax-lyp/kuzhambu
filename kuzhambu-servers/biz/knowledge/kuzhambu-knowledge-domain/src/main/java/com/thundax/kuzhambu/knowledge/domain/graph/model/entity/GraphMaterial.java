@@ -42,7 +42,7 @@ public class GraphMaterial {
     }
 
     public boolean editable() {
-        return status == GraphMaterialStatus.DRAFT;
+        return status == GraphMaterialStatus.DRAFT || status == GraphMaterialStatus.READY;
     }
 
     public void requireEditable() {
@@ -52,8 +52,8 @@ public class GraphMaterial {
     }
 
     public void requirePublishable() {
-        if (status != GraphMaterialStatus.DRAFT) {
-            throw new DomainException("Only draft graph materials can publish");
+        if (status != GraphMaterialStatus.READY) {
+            throw new DomainException("Only ready graph materials can publish");
         }
     }
 
@@ -70,9 +70,10 @@ public class GraphMaterial {
     }
 
     public void refreshStatus(boolean graphEmpty) {
-        if (status != GraphMaterialStatus.DRAFT) {
+        if (!editable()) {
             return;
         }
+        status = graphEmpty ? GraphMaterialStatus.DRAFT : GraphMaterialStatus.READY;
         clearFailure();
     }
 

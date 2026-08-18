@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { App as AntdApp } from "antd";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { replacePermissions } from "@/auth/permission-storage";
 import { graphMaterialMockDetails } from "@/pages/knowledge/graph-material/__mocks__/graph-mock-data";
@@ -17,7 +18,9 @@ const renderPanel = (detail: GraphMaterialDetailRecord | null) => {
     });
     render(
         <QueryClientProvider client={queryClient}>
-            <MaterialTaskSummarySection detail={detail} />
+            <AntdApp>
+                <MaterialTaskSummarySection detail={detail} />
+            </AntdApp>
         </QueryClientProvider>
     );
 };
@@ -37,6 +40,10 @@ describe("MaterialTaskSummarySection", () => {
         expect(screen.getByText("最近任务")).toBeInTheDocument();
         expect(screen.getByText("7002")).toBeInTheDocument();
         expect(screen.getByText("运行中")).toBeInTheDocument();
+        expect(screen.getByTestId("knowledge-graph-material-detail-extract-button")).toHaveClass(
+            "ant-btn-primary"
+        );
+        expect(screen.getByTestId("knowledge-graph-material-detail-extract-button")).toBeDisabled();
         expect(screen.queryByRole("button", { name: "新增对象" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "抽取草稿" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "导入草稿" })).not.toBeInTheDocument();
@@ -63,6 +70,6 @@ describe("MaterialTaskSummarySection", () => {
                 contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
             });
         });
-        expect(screen.getByText("抽取任务已创建 #7101")).toBeInTheDocument();
+        expect(await screen.findByText("抽取任务已创建 #7101")).toBeInTheDocument();
     });
 });

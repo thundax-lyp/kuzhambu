@@ -23,6 +23,7 @@ const SOURCE_TYPE_LABELS: Readonly<Record<string, string>> = {
 
 const MATERIAL_STATUS_LABELS: Readonly<Record<GraphMaterialStatus, string>> = {
     DRAFT: "草稿",
+    READY: "待发布",
     FAILED: "失败",
     PUBLISHED: "已发布",
     PUBLISHING: "发布中",
@@ -30,9 +31,10 @@ const MATERIAL_STATUS_LABELS: Readonly<Record<GraphMaterialStatus, string>> = {
 };
 
 const MATERIAL_STATUS_TYPES: Readonly<
-    Record<GraphMaterialStatus, "neutral" | "info" | "success" | "warning" | "danger">
+    Record<GraphMaterialStatus, "accent" | "info" | "success" | "warning" | "danger">
 > = {
-    DRAFT: "neutral",
+    DRAFT: "accent",
+    READY: "info",
     FAILED: "danger",
     PUBLISHED: "success",
     PUBLISHING: "info",

@@ -70,8 +70,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplicationService {
 
-    private static final int TASK_SYNC_LIMIT = 100;
-
     private final GraphMaterialRepository materialRepository;
     private final ClassicsFacade classicsFacade;
     private final GraphMaterialStatsRepository materialStatsRepository;
@@ -150,7 +148,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                 .map(GraphMaterial::getId)
                 .filter(java.util.Objects::nonNull)
                 .toList();
-        extractionApplicationService.syncActiveTasks(TASK_SYNC_LIMIT);
+        extractionApplicationService.syncActiveTasks();
         Map<Long, GraphMaterialStats> statsByMaterialId =
                 materialStatsRepository.listByMaterialIds(materialIds).stream()
                         .collect(Collectors.toMap(GraphMaterialStats::getMaterialId, Function.identity()));

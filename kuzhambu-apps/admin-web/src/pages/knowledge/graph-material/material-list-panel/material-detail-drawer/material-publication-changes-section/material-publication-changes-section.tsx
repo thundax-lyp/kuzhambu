@@ -44,6 +44,7 @@ const readMaterialStatusLabel = (detail: GraphMaterialDetailRecord | null) => {
     }
     const statusLabels = {
         DRAFT: "草稿",
+        READY: "待发布",
         FAILED: "失败",
         PUBLISHED: "已发布",
         PUBLISHING: "发布中",

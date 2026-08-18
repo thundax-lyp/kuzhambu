@@ -44,8 +44,8 @@ class GraphPublicationExecutorTest {
     @Test
     void publishShouldRequireDecisionForEachPreviewConflict() {
         Fixture fixture = new Fixture();
-        GraphMaterial material = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.DRAFT, null, 0L);
-        GraphMaterial statusMaterial = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.DRAFT, null, 0L);
+        GraphMaterial material = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.READY, null, 0L);
+        GraphMaterial statusMaterial = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.READY, null, 0L);
         GraphMaterialNode materialNode = new GraphMaterialNode(
                 new GraphMaterialNodeId(11L),
                 fixture.ref,
