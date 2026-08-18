@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { GraphExtractionPage } from "./graph-extraction-page";
@@ -129,6 +129,7 @@ const serviceMocks = vi.hoisted(() => ({
                               contentRefId: "1001",
                               contentType: "SANCAI_ENTRY"
                           },
+                          materialTitle: "三才稿件",
                           progress: 100,
                           selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
                           status: "SUCCEEDED",
@@ -150,6 +151,7 @@ const serviceMocks = vi.hoisted(() => ({
                               contentRefId: "1002",
                               contentType: "SANCAI_ENTRY"
                           },
+                          materialTitle: "三才图会续编",
                           progress: 60,
                           selectionScopeJson: '{"sourceContentIds":[2001]}',
                           status: "FAILED",
@@ -172,6 +174,7 @@ const serviceMocks = vi.hoisted(() => ({
                               contentRefId: "1001",
                               contentType: "SANCAI_ENTRY"
                           },
+                          materialTitle: "三才稿件",
                           progress: 100,
                           selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
                           status: "SUCCEEDED",
@@ -234,11 +237,24 @@ describe("GraphExtractionPage", () => {
                 pageSize: 20
             });
         });
-        expect(await screen.findByText("任务 8008")).toBeInTheDocument();
+        expect(await screen.findByText("三才稿件")).toBeInTheDocument();
         expect(screen.getByText("素材标题")).toBeInTheDocument();
         expect(screen.getAllByText("运行状态")[0]).toBeInTheDocument();
         expect(screen.getAllByText("采纳状态")[0]).toBeInTheDocument();
         expect(screen.queryByText("请选择左侧卷目查看稿件")).not.toBeInTheDocument();
+    });
+
+    it("refreshes the task list", async () => {
+        renderPage();
+
+        await screen.findByText("三才稿件");
+        expect(serviceMocks.pageTasks).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByTestId("knowledge-graph-extraction-refresh-button"));
+
+        await waitFor(() => {
+            expect(serviceMocks.pageTasks).toHaveBeenCalledTimes(2);
+        });
     });
 
     it("only exposes retry for failed tasks", async () => {

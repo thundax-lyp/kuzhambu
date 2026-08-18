@@ -1,8 +1,15 @@
+import { ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Input } from "antd";
 import { useState } from "react";
 import { usePermission } from "@/auth/hooks/use-permission";
-import { KuzhambuAlert, KuzhambuListPage, KuzhambuPage, KuzhambuSelect } from "@/components";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuPage,
+    KuzhambuSelect
+} from "@/components";
 import type { KuzhambuListPageFilterField } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./graph-extraction-service";
@@ -244,8 +251,19 @@ export const GraphExtractionPage = () => {
             description="查看 Knowledge 抽取任务的运行状态和结果。"
             enableFilter
             filterActive={hasActiveFilters}
-            filterDefaultOpen
             filterFields={filterFields}
+            pageActions={
+                <KuzhambuButton
+                    icon={<ReloadOutlined />}
+                    loading={taskPageQuery.isFetching}
+                    testId="knowledge-graph-extraction-refresh-button"
+                    onClick={() => {
+                        void taskPageQuery.refetch();
+                    }}
+                >
+                    刷新
+                </KuzhambuButton>
+            }
             pageClassName="graph-extraction-page knowledge-graph-extraction-page"
             rowKey={graphExtractionTaskRowKey}
             subjectName="知识抽取任务"

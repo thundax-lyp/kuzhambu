@@ -54,12 +54,7 @@ const readDispositionType = (disposition?: string | null): KuzhambuTagType => {
 const readTaskExecutionStatus = (task: GraphExtractionTaskRecord) =>
     task.executionStatus || task.status || "UNKNOWN";
 
-const readMaterialLabel = (task: GraphExtractionTaskRecord) => {
-    const materialRef = task.materialRef;
-    const contentType = materialRef?.contentType || task.sourceContentType || "-";
-    const contentRefId = materialRef?.contentRefId || task.sourceContentId || "-";
-    return `${contentType} / ${contentRefId}`;
-};
+const readMaterialTitle = (task: GraphExtractionTaskRecord) => task.materialTitle?.trim() || "-";
 
 const readFailureReason = (task: GraphExtractionTaskRecord) =>
     task.failureReason || task.errorMessage || task.errorType || "暂无失败原因";
@@ -68,21 +63,9 @@ const formatTimestamp = (value?: number | string | null) => {
     if (!value) {
         return "-";
     }
-    const date = new Date(value);
+    const timestamp = typeof value === "string" && /^\d+$/.test(value) ? Number(value) : value;
+    const date = new Date(timestamp);
     return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("zh-CN", { hour12: false });
-};
-
-const readRelatedTasks = (task: GraphExtractionTaskRecord) => {
-    const relatedItems = [
-        task.batchId ? `批次 ${task.batchId}` : null,
-        task.batchJobId ? `批任务 ${task.batchJobId}` : null,
-        task.parentTaskId ? `父任务 ${task.parentTaskId}` : null,
-        task.triggeredByTaskId ? `触发 ${task.triggeredByTaskId}` : null,
-        task.regeneratedFromTaskId ? `重生成自 ${task.regeneratedFromTaskId}` : null,
-        task.supersededByTaskId ? `替代为 ${task.supersededByTaskId}` : null
-    ].filter((item): item is string => Boolean(item));
-
-    return relatedItems.length > 0 ? relatedItems.join("；") : "-";
 };
 
 const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId || task.id);
@@ -135,19 +118,14 @@ export const createGraphExtractionTaskColumns = ({
 >): KuzhambuTableColumn<GraphExtractionTaskRecord>[] => [
     {
         key: "material",
-        render: (_, task) => (
-            <KuzhambuSpace orientation="vertical" size={2}>
-                <Text strong>{task.materialTitle || readMaterialLabel(task)}</Text>
-                <Text type="secondary">任务 {readTaskId(task) || "-"}</Text>
-            </KuzhambuSpace>
-        ),
+        render: (_, task) => <Text strong>{readMaterialTitle(task)}</Text>,
         title: "任务素材"
     },
     {
         key: "categoryName",
         render: (_, task) => <KuzhambuTag type="neutral">{task.categoryName || "-"}</KuzhambuTag>,
         title: "素材分类",
-        width: 140
+        width: 120
     },
     {
         key: "executionStatus",
@@ -165,7 +143,7 @@ export const createGraphExtractionTaskColumns = ({
             );
         },
         title: "运行状态",
-        width: 112
+        width: 120
     },
     {
         dataIndex: "disposition",
@@ -174,19 +152,13 @@ export const createGraphExtractionTaskColumns = ({
             <KuzhambuTag type={readDispositionType(disposition)}>{disposition || "-"}</KuzhambuTag>
         ),
         title: "采纳状态",
-        width: 128
-    },
-    {
-        key: "stage",
-        render: (_, task) => `${task.currentStage || "-"} / ${task.progress ?? 0}%`,
-        title: "阶段",
-        width: 168
+        width: 140
     },
     {
         dataIndex: "attemptNo",
         key: "attemptNo",
         title: "尝试",
-        width: 80
+        width: 60
     },
     {
         key: "completedAt",
@@ -195,31 +167,17 @@ export const createGraphExtractionTaskColumns = ({
         width: 180
     },
     {
-        key: "relatedTasks",
-        ellipsis: true,
-        render: (_, task) => readRelatedTasks(task),
-        title: "关联任务",
-        width: 220
-    },
-    {
-        dataIndex: "purgeAfter",
-        key: "purgeAfter",
-        render: (purgeAfter?: string | null) => purgeAfter || "-",
-        title: "清理时间",
-        width: 160
-    },
-    {
         key: "actions",
         options: (task) =>
-            isTaskFailed(task)
+            canRetry
                 ? [
                       {
-                          key: "retry",
-                          text: "重试",
                           ariaLabel: `重试任务 ${readTaskId(task)}`,
+                          disabled: !isTaskFailed(task) || retryingTaskId === readTaskId(task),
+                          key: "retry",
+                          onClick: () => onRetry(task),
                           testId: "knowledge-graph-extraction-graph-extraction-task-retry-button",
-                          disabled: !canRetry || retryingTaskId === readTaskId(task),
-                          onClick: () => onRetry(task)
+                          text: "重试"
                       }
                   ]
                 : []

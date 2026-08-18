@@ -81,16 +81,12 @@ describe("GraphExtractionTaskTable", () => {
         expect(screen.getAllByText("任务素材")[0]).toBeInTheDocument();
         expect(screen.getAllByText("运行状态")[0]).toBeInTheDocument();
         expect(screen.getAllByText("采纳状态")[0]).toBeInTheDocument();
-        expect(screen.getAllByText("阶段")[0]).toBeInTheDocument();
         expect(screen.getAllByText("素材分类")[0]).toBeInTheDocument();
         expect(screen.getAllByText("最后执行时间")[0]).toBeInTheDocument();
-        expect(screen.getAllByText("关联任务")[0]).toBeInTheDocument();
-        expect(screen.getAllByText("清理时间")[0]).toBeInTheDocument();
         expect(screen.getByText("三才图会稿件")).toBeInTheDocument();
         expect(screen.getByText("天文")).toBeInTheDocument();
-        expect(screen.getByText("CANDIDATE_READY / 100%")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "查看任务 8008" })).not.toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "重试任务 8008" })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "重试任务 8008" })).toBeDisabled();
         expect(onRetry).not.toHaveBeenCalled();
     });
 
@@ -105,8 +101,7 @@ describe("GraphExtractionTaskTable", () => {
             />
         );
 
-        expect(screen.queryByRole("button", { name: "取消任务 8009" })).not.toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "重试任务 8009" })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "重试任务 8009" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "重试任务 8010" })).toBeInTheDocument();
         fireEvent.click(screen.getByRole("button", { name: "重试任务 8010" }));
 
@@ -128,7 +123,20 @@ describe("GraphExtractionTaskTable", () => {
             />
         );
 
-        expect(screen.getByText("任务 8008")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "查看任务 8008" })).not.toBeInTheDocument();
+    });
+
+    it("does not expose a technical content reference when the material title is unavailable", () => {
+        const onRetry = vi.fn();
+
+        render(
+            <GraphExtractionTaskTable
+                tasks={[{ ...TASK, materialTitle: null }]}
+                onRetry={onRetry}
+            />
+        );
+
+        expect(screen.getByText("-")).toBeInTheDocument();
+        expect(screen.queryByText("SANCAI_ENTRY / 1001")).not.toBeInTheDocument();
     });
 });
