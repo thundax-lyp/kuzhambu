@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGr
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyncQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
@@ -104,7 +105,7 @@ class GraphMaterialApplicationServiceImplTest {
         assertThat(result.getRecords().get(1).source().contentRef()).isEqualTo(secondRef);
         assertThat(result.getRecords().get(1).material()).isNull();
         verify(materialRepository, never()).getByContentRef(any());
-        verify(extractionApplicationService).syncActiveTasks(List.of(11L));
+        verify(extractionApplicationService).syncActiveTasks(new GraphActiveTaskSyncQuery(List.of(11L)));
     }
 
     @Test

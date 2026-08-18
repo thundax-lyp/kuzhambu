@@ -27,6 +27,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGr
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyncQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
@@ -148,7 +149,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                 .map(GraphMaterial::getId)
                 .filter(java.util.Objects::nonNull)
                 .toList();
-        extractionApplicationService.syncActiveTasks(materialIds);
+        extractionApplicationService.syncActiveTasks(new GraphActiveTaskSyncQuery(materialIds));
         Map<Long, GraphMaterialStats> statsByMaterialId =
                 materialStatsRepository.listByMaterialIds(materialIds).stream()
                         .collect(Collectors.toMap(GraphMaterialStats::getMaterialId, Function.identity()));

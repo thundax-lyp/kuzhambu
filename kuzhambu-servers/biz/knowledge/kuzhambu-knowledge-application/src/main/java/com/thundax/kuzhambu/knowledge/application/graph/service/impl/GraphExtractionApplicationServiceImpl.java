@@ -33,6 +33,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialSt
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphTaskCandidateResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyncQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
@@ -264,7 +265,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     }
 
     @Override
-    public int syncActiveTasks(List<Long> materialIds) {
+    public int syncActiveTasks(GraphActiveTaskSyncQuery query) {
+        List<Long> materialIds = query == null ? null : query.materialIds();
         if (materialIds == null || materialIds.isEmpty()) {
             return 0;
         }
