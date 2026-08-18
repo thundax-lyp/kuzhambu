@@ -184,6 +184,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                         Instant.now(clock),
                         Instant.now(clock),
                         null,
+                        null,
                         null));
             }
         }
@@ -194,7 +195,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     public PageResult<GraphExtractionTaskResult> pageTasks(GraphTaskQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
-        PageResult<GraphExtractionTask> page = taskRepository.page(
+        var page = taskRepository.pageWithMaterialTitle(
                 query == null ? null : query.contentRefs(),
                 query == null ? null : query.batchId(),
                 GraphExtractionExecutionStatus.from(query == null ? null : query.executionStatus()),
@@ -206,8 +207,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 page.getPageSize(),
                 page.getTotalCount(),
                 page.getRecords().stream()
-                        .map(this::syncTaskFromAi)
-                        .map(this::toTaskResult)
+                        .map(item -> toTaskResult(syncTaskFromAi(item.task()), item.materialTitle()))
                         .toList());
     }
 
@@ -541,6 +541,10 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     }
 
     private GraphExtractionTaskResult toTaskResult(GraphExtractionTask task) {
+        return toTaskResult(task, null);
+    }
+
+    private GraphExtractionTaskResult toTaskResult(GraphExtractionTask task, String materialTitle) {
         if (task == null) {
             return null;
         }
@@ -560,7 +564,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 task.getRequestedAt(),
                 task.getCompletedAt(),
                 task.getDisposedAt(),
-                task.getPurgeAfter());
+                task.getPurgeAfter(),
+                materialTitle);
     }
 
     private GraphExtractionTask syncTaskFromAi(GraphExtractionTask task) {

@@ -64,7 +64,8 @@ public final class GraphApplicationAssembler {
                 task.getRequestedAt(),
                 task.getCompletedAt(),
                 task.getDisposedAt(),
-                task.getPurgeAfter());
+                task.getPurgeAfter(),
+                null);
     }
 
     public static GraphPublishedNodeDetailResult toNodeDetail(

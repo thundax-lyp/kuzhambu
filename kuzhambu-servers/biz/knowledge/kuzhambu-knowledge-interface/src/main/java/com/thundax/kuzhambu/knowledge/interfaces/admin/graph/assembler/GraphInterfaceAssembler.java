@@ -512,6 +512,7 @@ public final class GraphInterfaceAssembler {
         return new GraphExtractionResponses.TaskData(
                 string(value.taskId()),
                 toNullableContentRefData(value.contentRef()),
+                value.materialTitle(),
                 String.valueOf(value.lockVersion()),
                 value.executionStatus(),
                 value.disposition(),

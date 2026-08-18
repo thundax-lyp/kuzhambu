@@ -5,12 +5,14 @@ import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTaskWithMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphExtractionTaskPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskWithMaterialDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphExtractionTaskMapper;
 import java.time.Instant;
 import java.util.List;
@@ -102,6 +104,44 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
                         effectivePageSize)
                 .stream()
                 .map(GraphExtractionTaskPersistenceAssembler::toDomain)
+                .toList();
+        return PageResult.of(effectivePageNo, effectivePageSize, total, records);
+    }
+
+    @Override
+    public PageResult<GraphExtractionTaskWithMaterial> pageWithMaterialTitle(
+            List<ContentRef> contentRefs,
+            String batchId,
+            GraphExtractionExecutionStatus executionStatus,
+            GraphExtractionDisposition disposition,
+            int pageNo,
+            int pageSize) {
+        int effectivePageNo = pageNo <= 0 ? 1 : pageNo;
+        int effectivePageSize = pageSize <= 0 ? 10 : pageSize;
+        List<GraphExtractionTaskDO> refs = contentRefs == null
+                ? List.of()
+                : contentRefs.stream()
+                        .map(ref -> {
+                            GraphExtractionTaskDO row = new GraphExtractionTaskDO();
+                            row.setContentType(ContentRefCodec.toContentType(ref));
+                            row.setContentRefId(ContentRefCodec.toValue(ref));
+                            return row;
+                        })
+                        .toList();
+        String statusValue = executionStatus == null ? null : executionStatus.value();
+        String dispositionValue = disposition == null ? null : disposition.value();
+        long total = mapper.countTasks(refs, batchId, statusValue, dispositionValue);
+        List<GraphExtractionTaskWithMaterial> records = mapper
+                .pageTasksWithMaterialTitle(
+                        refs,
+                        batchId,
+                        statusValue,
+                        dispositionValue,
+                        (effectivePageNo - 1) * effectivePageSize,
+                        effectivePageSize)
+                .stream()
+                .map((GraphExtractionTaskWithMaterialDO row) -> new GraphExtractionTaskWithMaterial(
+                        GraphExtractionTaskPersistenceAssembler.toDomain(row), row.getMaterialTitle()))
                 .toList();
         return PageResult.of(effectivePageNo, effectivePageSize, total, records);
     }

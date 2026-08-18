@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskWithMaterialDO;
 import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -120,6 +121,37 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
             </script>
             """)
     List<GraphExtractionTaskDO> pageTasks(
+            @Param("refs") List<GraphExtractionTaskDO> refs,
+            @Param("batchId") String batchId,
+            @Param("executionStatus") String executionStatus,
+            @Param("disposition") String disposition,
+            @Param("offset") int offset,
+            @Param("pageSize") int pageSize);
+
+    @Select(
+            """
+            <script>
+            select t.*, coalesce(material_by_id.content_title_snapshot, material_by_content.content_title_snapshot)
+                as material_title
+            from knowledge_graph_extraction_task t
+            left join knowledge_graph_material material_by_id on material_by_id.id = t.material_id
+            left join knowledge_graph_material material_by_content
+                on material_by_content.content_type = t.content_type
+                and material_by_content.content_ref_id = t.content_ref_id
+            where (#{batchId} is null or t.batch_id = #{batchId})
+              and (#{executionStatus} is null or t.execution_status = #{executionStatus})
+              and (#{disposition} is null or t.disposition = #{disposition})
+              <if test="refs != null and refs.size() > 0">
+                and (t.content_type, t.content_ref_id) in
+                <foreach collection="refs" item="ref" open="(" separator="," close=")">
+                  (#{ref.contentType}, #{ref.contentRefId})
+                </foreach>
+              </if>
+            order by t.requested_at desc, t.id desc
+            limit #{pageSize} offset #{offset}
+            </script>
+            """)
+    List<GraphExtractionTaskWithMaterialDO> pageTasksWithMaterialTitle(
             @Param("refs") List<GraphExtractionTaskDO> refs,
             @Param("batchId") String batchId,
             @Param("executionStatus") String executionStatus,
