@@ -25,6 +25,7 @@ const MATERIAL_PAGE_PATH = "/knowledge/graph/material/page";
 const MATERIAL_TREE_PATH = "/knowledge/graph/material/tree/list";
 const MATERIAL_GET_PATH = "/knowledge/graph/material/get";
 const EXTRACTION_CREATE_PATH = "/knowledge/graph/material/extraction/create";
+const CANDIDATE_MERGE_PATH = "/knowledge/graph/task/candidate/apply";
 const BATCH_EXTRACTION_CREATE_PATH = "/knowledge/graph/task/batch/create";
 const PUBLICATION_PREVIEW_PATH = "/knowledge/graph/publication/preview";
 const PUBLICATION_PUBLISH_PATH = "/knowledge/graph/publication/publish";
@@ -41,6 +42,12 @@ interface GraphContentRefCommand {
 }
 
 interface GraphExtractionCreateCommand extends GraphContentRefCommand {
+    idempotencyKey: string;
+}
+
+interface GraphCandidateApplyPayloadCommand extends GraphMaterialCandidateApplyCommand {
+    expectedDisposition: "PENDING";
+    expectedExecutionStatus: "SUCCEEDED";
     idempotencyKey: string;
 }
 
@@ -108,6 +115,13 @@ export interface GraphMaterialContentRefCommand {
     contentRef: GraphContentRefRecord;
 }
 
+export interface GraphMaterialCandidateApplyCommand {
+    applyMode: "MERGE" | "REPLACE";
+    materialLockVersion: string;
+    taskId: string;
+    taskLockVersion: string;
+}
+
 export interface GraphMaterialTreeQuery {
     parentId?: string;
 }
@@ -140,6 +154,7 @@ export interface GraphMaterialService {
     ) => Promise<GraphBatchExtractionResultRecord["materials"][number]["result"]>;
     getMaterial: (command: GraphMaterialContentRefCommand) => Promise<GraphMaterialDetailRecord>;
     listMaterialTree: (query?: GraphMaterialTreeQuery) => Promise<GraphMaterialTreeNodeRecord[]>;
+    applyCandidate: (command: GraphMaterialCandidateApplyCommand) => Promise<unknown>;
     pageMaterials: (query?: GraphMaterialPageQuery) => Promise<Page<GraphMaterialListRecord>>;
     precheckDeletion: (
         command: GraphMaterialContentRefCommand
@@ -227,6 +242,15 @@ export const httpGraphMaterialService: GraphMaterialService = {
         >(EXTRACTION_CREATE_PATH, {
             body: {
                 ...command,
+                idempotencyKey: createIdempotencyKey()
+            }
+        }),
+    applyCandidate: (command) =>
+        postJson<unknown, GraphCandidateApplyPayloadCommand>(CANDIDATE_MERGE_PATH, {
+            body: {
+                ...command,
+                expectedDisposition: "PENDING",
+                expectedExecutionStatus: "SUCCEEDED",
                 idempotencyKey: createIdempotencyKey()
             }
         }),
@@ -319,6 +343,7 @@ export const listMaterialTree = httpGraphMaterialService.listMaterialTree;
 export const getMaterial = httpGraphMaterialService.getMaterial;
 export const createExtraction = httpGraphMaterialService.createExtraction;
 export const createBatchExtraction = httpGraphMaterialService.createBatchExtraction;
+export const applyCandidate = httpGraphMaterialService.applyCandidate;
 export const previewPublication = httpGraphMaterialService.previewPublication;
 export const publishMaterial = httpGraphMaterialService.publishMaterial;
 export const previewBatchPublication = httpGraphMaterialService.previewBatchPublication;

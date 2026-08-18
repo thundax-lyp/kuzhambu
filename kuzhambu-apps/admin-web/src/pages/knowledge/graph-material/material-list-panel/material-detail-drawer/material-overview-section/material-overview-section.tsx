@@ -1,19 +1,17 @@
-import { Empty, Typography } from "antd";
+import { Empty } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import {
+    KuzhambuButton,
     KuzhambuCard,
     KuzhambuDescriptions,
     KuzhambuSpace,
-    KuzhambuTag,
-    KuzhambuTimeline
+    KuzhambuTag
 } from "@/components";
 import type {
     GraphMaterialDetailRecord,
-    GraphMaterialStatus,
-    GraphTaskExecutionStatus
+    GraphMaterialStatus
 } from "@/pages/knowledge/graph-material/graph-material-types";
 import "./material-overview-section.css";
-
-const { Text } = Typography;
 
 const SOURCE_TYPE_LABELS: Readonly<Record<string, string>> = {
     MING_CUSTOMS: "明代风俗",
@@ -41,28 +39,11 @@ const MATERIAL_STATUS_TYPES: Readonly<
     WITHDRAWING: "warning"
 };
 
-const TASK_STATUS_LABELS: Readonly<Record<GraphTaskExecutionStatus, string>> = {
-    CANCELLED: "已取消",
-    FAILED: "已失败",
-    PENDING: "待执行",
-    RUNNING: "运行中",
-    SUCCEEDED: "已成功"
-};
-
 interface MaterialOverviewSectionProps {
     detail: GraphMaterialDetailRecord | null;
+    refreshing?: boolean;
+    onRefresh?: () => void;
 }
-
-const formatTimestamp = (value?: string | null) => {
-    if (!value) {
-        return "-";
-    }
-    const timestamp = Number(value);
-    if (Number.isNaN(timestamp)) {
-        return value;
-    }
-    return new Date(timestamp).toLocaleString("zh-CN", { hour12: false });
-};
 
 const readSourceTypeLabel = (contentType: string) => SOURCE_TYPE_LABELS[contentType] || contentType;
 
@@ -77,38 +58,11 @@ const readMaterialStatus = (detail: GraphMaterialDetailRecord) => {
     );
 };
 
-const buildRecentActivityItems = (detail: GraphMaterialDetailRecord) => {
-    const items = [];
-    const latestTask = detail.taskSummary?.latestTask;
-    if (latestTask) {
-        items.push({
-            children: (
-                <KuzhambuSpace orientation="vertical" size={2}>
-                    <Text>
-                        最近任务 #{latestTask.id} / {TASK_STATUS_LABELS[latestTask.executionStatus]}
-                    </Text>
-                    <Text type="secondary">
-                        {latestTask.currentStage}，进度 {latestTask.progress}%，请求于{" "}
-                        {formatTimestamp(latestTask.requestedAt)}
-                    </Text>
-                </KuzhambuSpace>
-            )
-        });
-    }
-    if (detail.material?.publishedAt) {
-        items.push({
-            children: <Text>最近发布于 {formatTimestamp(detail.material.publishedAt)}</Text>
-        });
-    }
-    if (detail.materialStats?.calculatedAt) {
-        items.push({
-            children: <Text>统计计算于 {formatTimestamp(detail.materialStats.calculatedAt)}</Text>
-        });
-    }
-    return items;
-};
-
-export const MaterialOverviewSection = ({ detail }: MaterialOverviewSectionProps) => {
+export const MaterialOverviewSection = ({
+    detail,
+    refreshing = false,
+    onRefresh
+}: MaterialOverviewSectionProps) => {
     if (!detail) {
         return (
             <Empty
@@ -118,8 +72,6 @@ export const MaterialOverviewSection = ({ detail }: MaterialOverviewSectionProps
         );
     }
 
-    const recentActivityItems = buildRecentActivityItems(detail);
-
     return (
         <KuzhambuSpace
             className="knowledge-graph-material-overview-section"
@@ -127,6 +79,14 @@ export const MaterialOverviewSection = ({ detail }: MaterialOverviewSectionProps
             orientation="vertical"
             size={12}
         >
+            <KuzhambuButton
+                icon={<ReloadOutlined />}
+                loading={refreshing}
+                testId="knowledge-graph-material-detail-refresh-button"
+                onClick={onRefresh}
+            >
+                刷新素材详情
+            </KuzhambuButton>
             <KuzhambuCard title="素材来源" size="small">
                 <KuzhambuDescriptions
                     ariaLabel="素材来源"
@@ -152,41 +112,21 @@ export const MaterialOverviewSection = ({ detail }: MaterialOverviewSectionProps
                     column={3}
                     items={[
                         {
-                            label: "草稿节点",
-                            children: detail.materialStats?.draftNodeCount ?? "0"
+                            label: "节点数",
+                            children: String(detail.nodes.length)
                         },
                         {
-                            label: "草稿关系",
-                            children: detail.materialStats?.draftEdgeCount ?? "0"
+                            label: "边数",
+                            children: String(detail.edges.length)
                         },
                         {
-                            label: "发布贡献",
-                            children: detail.materialStats?.publicationContributionCount ?? "0"
-                        },
-                        {
-                            label: "已发布节点",
-                            children: detail.materialStats?.publishedNodeCount ?? "0"
-                        },
-                        {
-                            label: "已发布关系",
-                            children: detail.materialStats?.publishedEdgeCount ?? "0"
-                        },
-                        { label: "统计版本", children: detail.materialStats?.statsRevision ?? "-" }
+                            label: "任务数",
+                            children: detail.taskSummary?.totalTaskCount ?? "0"
+                        }
                     ]}
                     size="small"
                     bordered
                 />
-            </KuzhambuCard>
-
-            <KuzhambuCard title="最近活动" size="small">
-                {recentActivityItems.length > 0 ? (
-                    <KuzhambuTimeline
-                        testId="knowledge-graph-material-overview-activity"
-                        items={recentActivityItems}
-                    />
-                ) : (
-                    <Text type="secondary">暂无活动</Text>
-                )}
             </KuzhambuCard>
         </KuzhambuSpace>
     );

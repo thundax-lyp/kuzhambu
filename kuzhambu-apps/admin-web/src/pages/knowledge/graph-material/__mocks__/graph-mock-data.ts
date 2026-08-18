@@ -389,6 +389,26 @@ export const graphMaterialMockDetails: GraphMaterialDetailRecord[] =
         ],
         material: record.material,
         materialStats: record.materialStats,
+        latestTaskCandidate: record.latestTask
+            ? {
+                  candidateId: `candidate-${record.latestTask.id}`,
+                  resultFormat: "GRAPH_DOCUMENT_V1",
+                  resultSummaryJson: JSON.stringify({
+                      edges: [
+                          {
+                              id: "edge-1",
+                              relationType: "MENTIONS",
+                              sourceId: "node-1",
+                              targetId: "node-2"
+                          }
+                      ],
+                      nodes: [
+                          { id: "node-1", name: record.source.title },
+                          { id: "node-2", name: record.source.category ?? "未知分类" }
+                      ]
+                  })
+              }
+            : null,
         nodes: [
             {
                 id: `node-${record.source.contentRef.contentRefId}-1`,
@@ -410,7 +430,8 @@ export const graphMaterialMockDetails: GraphMaterialDetailRecord[] =
             activeTaskCount: record.materialStats?.activeTaskCount ?? "0",
             failedTaskCount: record.materialStats?.failedTaskCount ?? "0",
             latestTask: record.latestTask,
-            pendingReviewTaskCount: record.materialStats?.pendingReviewTaskCount ?? "0"
+            pendingReviewTaskCount: record.materialStats?.pendingReviewTaskCount ?? "0",
+            totalTaskCount: record.latestTask ? "1" : "0"
         }
     }));
 

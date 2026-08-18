@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
@@ -250,11 +251,20 @@ public class GraphController {
         var tasks = extractionService.pageTasks(
                 new GraphTaskQuery(null, null, null, null, List.of(query.materialRef()), null, null, null, null),
                 new PageQuery(1, 50));
+        var latestTaskCandidate =
+                tasks.getRecords().isEmpty() || tasks.getRecords().get(0).candidateId() == null
+                        ? null
+                        : extractionService
+                                .getTask(new GraphTaskDetailQuery(
+                                        tasks.getRecords().get(0).taskId()))
+                                .candidate();
         return GraphInterfaceAssembler.toDetailData(
                 result,
                 tasks.getRecords().stream()
                         .map(GraphInterfaceAssembler::toTaskData)
-                        .toList());
+                        .toList(),
+                tasks.getTotalCount(),
+                latestTaskCandidate);
     }
 
     @Operation(summary = "创建图谱素材提取任务", description = "knowledge:graph:edit")

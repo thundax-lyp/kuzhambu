@@ -82,6 +82,7 @@ public final class GraphMaterialResponses {
             String activeTaskCount,
             String pendingReviewTaskCount,
             String failedTaskCount,
+            String totalTaskCount,
             com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses.TaskData
                     latestTask) {}
 
@@ -93,7 +94,8 @@ public final class GraphMaterialResponses {
             List<NodeData> nodes,
             List<EdgeData> edges,
             TaskSummaryData taskSummary,
-            List<GraphExtractionResponses.TaskData> extractionTasks) {}
+            List<GraphExtractionResponses.TaskData> extractionTasks,
+            GraphExtractionResponses.CandidatePreviewData latestTaskCandidate) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record ChangeImpactData(

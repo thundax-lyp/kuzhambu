@@ -52,7 +52,8 @@ export const mockGraphExtractionService: GraphExtractionService = {
                 activeTaskCount: "0",
                 failedTaskCount: "0",
                 latestTask: null,
-                pendingReviewTaskCount: detail.task.disposition === "PENDING" ? "1" : "0"
+                pendingReviewTaskCount: detail.task.disposition === "PENDING" ? "1" : "0",
+                totalTaskCount: "0"
             }
         };
     },

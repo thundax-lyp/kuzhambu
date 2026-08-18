@@ -8,8 +8,7 @@ export type GraphTaskExecutionStatus = "PENDING" | "RUNNING" | "SUCCEEDED" | "FA
 export type GraphTaskDisposition =
     "PENDING" | "ADOPTED_MERGE" | "ADOPTED_REPLACE" | "DISCARDED" | "SUPERSEDED";
 
-export type GraphMaterialDrawerSection =
-    "OVERVIEW" | "DRAFT_GRAPH" | "TASKS" | "PUBLICATION_CHANGES";
+export type GraphMaterialDrawerSection = "OVERVIEW" | "DRAFT_GRAPH" | "TASKS";
 
 export interface GraphContentRefRecord {
     contentType: GraphContentType;
@@ -163,12 +162,20 @@ export interface GraphMaterialDetailRecord {
     edges: GraphMaterialEdgeRecord[];
     taskSummary?: GraphMaterialTaskSummarySnapshotRecord | null;
     extractionTasks?: GraphMaterialTaskSummaryRecord[];
+    latestTaskCandidate?: GraphExtractionCandidatePreviewRecord | null;
+}
+
+export interface GraphExtractionCandidatePreviewRecord {
+    candidateId: string;
+    resultFormat: string;
+    resultSummaryJson: string;
 }
 
 export interface GraphMaterialTaskSummarySnapshotRecord {
     activeTaskCount: string;
     pendingReviewTaskCount: string;
     failedTaskCount: string;
+    totalTaskCount: string;
     latestTask?: GraphMaterialTaskSummaryRecord | null;
 }
 

@@ -82,6 +82,7 @@ export const mockGraphMaterialService: GraphMaterialService = {
         return result?.result ?? graphBatchExtractionResult.materials[0].result;
     },
     createBatchExtraction: async () => graphBatchExtractionResult,
+    applyCandidate: async () => ({}),
     previewPublication: async (command) => ({
         edges: [],
         issues: [],

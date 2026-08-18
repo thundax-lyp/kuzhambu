@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.operator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.Error;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphDocumentDto;
@@ -32,7 +33,7 @@ public class GraphSnapshotResolver {
     }
 
     public GraphDocumentDto parseCandidate(String resultPayload) {
-        return parseAndValidate(resultPayload);
+        return parseAndValidate(resultPayload, true);
     }
 
     public String serialize(GraphMaterialGraph graph) {
@@ -48,11 +49,18 @@ public class GraphSnapshotResolver {
     }
 
     private GraphDocumentDto parseAndValidate(String graphJson) {
+        return parseAndValidate(graphJson, false);
+    }
+
+    private GraphDocumentDto parseAndValidate(String graphJson, boolean candidatePayload) {
         if (graphJson == null || graphJson.trim().isEmpty()) {
             throw new BizException("Graph document JSON is required");
         }
         try {
             JsonNode jsonNode = objectMapper.readTree(graphJson);
+            if (candidatePayload && jsonNode instanceof ObjectNode objectNode) {
+                objectNode.remove("warnings");
+            }
             List<Error> errors = schemaProvider.schema().validate(jsonNode);
             if (!errors.isEmpty()) {
                 throw new BizException("Graph document JSON does not match schema");

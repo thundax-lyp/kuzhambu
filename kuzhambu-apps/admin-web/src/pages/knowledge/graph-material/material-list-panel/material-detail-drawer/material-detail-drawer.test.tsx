@@ -139,7 +139,7 @@ describe("MaterialDetailDrawer", () => {
         );
     });
 
-    it("renders the four material detail sections", async () => {
+    it("renders the three material detail sections", async () => {
         renderDrawer();
         const user = userEvent.setup();
 
@@ -148,7 +148,7 @@ describe("MaterialDetailDrawer", () => {
         ).toBeInTheDocument();
         expect(await screen.findByText("素材来源")).toBeInTheDocument();
 
-        await user.click(screen.getByText("草稿图谱"));
+        await user.click(screen.getByText("知识图谱"));
         expect(
             screen.getByTestId("knowledge-graph-material-detail-draft-graph-section")
         ).toBeInTheDocument();
@@ -162,15 +162,7 @@ describe("MaterialDetailDrawer", () => {
         expect(screen.queryByText("任务摘要待接入。")).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "新增对象" })).not.toBeInTheDocument();
 
-        await user.click(screen.getByText("发布变更"));
-        expect(
-            screen.getByTestId("knowledge-graph-material-detail-publication-changes-section")
-        ).toBeInTheDocument();
-        expect(screen.getByText("发布预览")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "发布素材" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "撤回素材" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "删除预检" })).toBeInTheDocument();
-        expect(screen.queryByText("发布变更待接入。")).not.toBeInTheDocument();
+        expect(screen.queryByText("发布变更")).not.toBeInTheDocument();
     });
 
     it("keeps published material draft graph read-only in the drawer section", async () => {
@@ -178,7 +170,7 @@ describe("MaterialDetailDrawer", () => {
         renderDrawer();
         const user = userEvent.setup();
 
-        await user.click(screen.getByText("草稿图谱"));
+        await user.click(screen.getByText("知识图谱"));
 
         expect(screen.getByText("草稿图谱：三才图会 人物一")).toBeInTheDocument();
         expect(screen.getByText("只读")).toBeInTheDocument();
@@ -190,42 +182,6 @@ describe("MaterialDetailDrawer", () => {
         expect(screen.queryByRole("button", { name: "导入草稿" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "撤回素材" })).not.toBeInTheDocument();
         expect(screen.queryByText("发布预览")).not.toBeInTheDocument();
-    });
-
-    it("keeps publish and withdraw actions in publication changes", async () => {
-        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
-        renderDrawer();
-        const user = userEvent.setup();
-
-        await user.click(screen.getByText("发布变更"));
-        await user.click(screen.getByRole("button", { name: "标记冲突已解决" }));
-        await user.click(screen.getByRole("button", { name: "发布素材" }));
-
-        await waitFor(() => {
-            expect(service.previewPublication).toHaveBeenCalledWith({
-                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
-            });
-            expect(service.publishMaterial).toHaveBeenCalledWith({
-                conflictDecisions: [],
-                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-                materialLockVersion: "4",
-                previewToken: "preview-token"
-            });
-        });
-        expect(screen.getByText("素材已发布")).toBeInTheDocument();
-
-        await user.click(screen.getByRole("button", { name: "撤回素材" }));
-
-        await waitFor(() => {
-            expect(service.previewWithdrawal).toHaveBeenCalledWith({
-                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
-            });
-            expect(service.withdrawMaterial).toHaveBeenCalledWith({
-                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-                materialLockVersion: "4"
-            });
-        });
-        expect(screen.getByText("素材已撤回")).toBeInTheDocument();
     });
 
     it("refreshes material detail after creating an extraction task", async () => {
@@ -254,7 +210,19 @@ describe("MaterialDetailDrawer", () => {
         });
     });
 
-    it("keeps delete precheck in publication changes instead of task menus", async () => {
+    it("refreshes all drawer detail data from the overview", async () => {
+        renderDrawer();
+        const user = userEvent.setup();
+
+        await screen.findByTestId("knowledge-graph-material-detail-refresh-button");
+        await user.click(screen.getByTestId("knowledge-graph-material-detail-refresh-button"));
+
+        await waitFor(() => {
+            expect(service.getMaterial).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    it("does not expose deletion actions in the material detail drawer", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         renderDrawer();
         const user = userEvent.setup();
@@ -266,20 +234,7 @@ describe("MaterialDetailDrawer", () => {
         expect(screen.queryByRole("button", { name: "删除任务" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "删除预检" })).not.toBeInTheDocument();
 
-        await user.click(screen.getByText("发布变更"));
-        await user.click(screen.getByRole("button", { name: "删除预检" }));
-
-        await waitFor(() => {
-            expect(service.precheckDeletion).toHaveBeenCalledWith({
-                contentRef: {
-                    contentRefId: "1002",
-                    contentType: "SANCAI_ENTRY"
-                }
-            });
-        });
-        expect(
-            screen.getByText("删除预检已生成，请在当前发布变更段确认影响。")
-        ).toBeInTheDocument();
+        expect(screen.queryByText("发布变更")).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "删除变更" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "删除任务" })).not.toBeInTheDocument();
     });
@@ -289,7 +244,7 @@ describe("MaterialDetailDrawer", () => {
         renderSwitchableDrawer();
         const user = userEvent.setup();
 
-        await user.click(screen.getByText("草稿图谱"));
+        await user.click(screen.getByText("知识图谱"));
         await user.click(
             screen.getByTestId("knowledge-graph-material-open-object-node-1004-1-button")
         );
@@ -305,7 +260,7 @@ describe("MaterialDetailDrawer", () => {
         });
 
         await user.click(screen.getByRole("button", { name: "打开已发布素材" }));
-        await user.click(screen.getByText("草稿图谱"));
+        await user.click(screen.getByText("知识图谱"));
 
         expect(screen.getByText("草稿图谱：三才图会 人物一")).toBeInTheDocument();
         expect(

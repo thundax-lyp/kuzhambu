@@ -15,7 +15,6 @@ import type {
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
 import { MaterialDraftGraphSection } from "./material-draft-graph-section";
 import { MaterialOverviewSection } from "./material-overview-section";
-import { MaterialPublicationChangesSection } from "./material-publication-changes-section";
 import { MaterialTaskSummarySection } from "./material-task-summary-section";
 import "./material-detail-drawer.css";
 
@@ -75,24 +74,25 @@ export const MaterialDetailDrawer = ({ record, onClose }: MaterialDetailDrawerPr
 
     const sections: Array<KuzhambuSegmentedDrawerSection<GraphMaterialDrawerSection>> = [
         {
-            content: <MaterialOverviewSection detail={detail} />,
+            content: (
+                <MaterialOverviewSection
+                    detail={detail}
+                    refreshing={materialDetailQuery.isRefetching}
+                    onRefresh={() => void materialDetailQuery.refetch()}
+                />
+            ),
             label: "概览",
             value: "OVERVIEW"
         },
         {
             content: <MaterialDraftGraphSection detail={detail} />,
-            label: "草稿图谱",
+            label: "知识图谱",
             value: "DRAFT_GRAPH"
         },
         {
             content: <MaterialTaskSummarySection detail={detail} />,
             label: "任务",
             value: "TASKS"
-        },
-        {
-            content: <MaterialPublicationChangesSection detail={detail} />,
-            label: "发布变更",
-            value: "PUBLICATION_CHANGES"
         }
     ];
 

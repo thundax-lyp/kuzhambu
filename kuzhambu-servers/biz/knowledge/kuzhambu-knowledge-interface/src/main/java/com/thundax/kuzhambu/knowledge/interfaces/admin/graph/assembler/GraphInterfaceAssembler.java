@@ -322,6 +322,23 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphMaterialResponses.DetailData toDetailData(
             @NonNull GraphMaterialResult value, @NonNull List<GraphExtractionResponses.TaskData> extractionTasks) {
+        return toDetailData(value, extractionTasks, extractionTasks.size(), null);
+    }
+
+    @NonNull
+    public static GraphMaterialResponses.DetailData toDetailData(
+            @NonNull GraphMaterialResult value,
+            @NonNull List<GraphExtractionResponses.TaskData> extractionTasks,
+            long taskCount) {
+        return toDetailData(value, extractionTasks, taskCount, null);
+    }
+
+    @NonNull
+    public static GraphMaterialResponses.DetailData toDetailData(
+            @NonNull GraphMaterialResult value,
+            @NonNull List<GraphExtractionResponses.TaskData> extractionTasks,
+            long taskCount,
+            GraphExtractionCandidatePreviewResult latestTaskCandidate) {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(extractionTasks, "extractionTasks");
         return new GraphMaterialResponses.DetailData(
@@ -334,16 +351,18 @@ public final class GraphInterfaceAssembler {
                 value.edges().stream()
                         .map(GraphInterfaceAssembler::toMaterialEdgeData)
                         .toList(),
-                toTaskSummaryData(value),
-                extractionTasks);
+                toTaskSummaryData(value, taskCount),
+                extractionTasks,
+                toNullableCandidateData(latestTaskCandidate));
     }
 
-    private static GraphMaterialResponses.TaskSummaryData toTaskSummaryData(GraphMaterialResult value) {
+    private static GraphMaterialResponses.TaskSummaryData toTaskSummaryData(GraphMaterialResult value, long taskCount) {
         var stats = value.materialStats();
         return new GraphMaterialResponses.TaskSummaryData(
                 stats == null ? "0" : String.valueOf(stats.getActiveTaskCount()),
                 stats == null ? "0" : String.valueOf(stats.getPendingReviewTaskCount()),
                 stats == null ? "0" : String.valueOf(stats.getFailedTaskCount()),
+                String.valueOf(taskCount),
                 toNullableTaskData(value.taskSummary()));
     }
 

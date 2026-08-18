@@ -19,8 +19,11 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDel
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionCandidatePreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
@@ -167,13 +170,34 @@ class GraphControllerTest {
                                 1,
                                 1L,
                                 null,
-                                null,
+                                8001L,
                                 "完成",
                                 100,
                                 Instant.now(),
                                 Instant.now(),
                                 null,
                                 null))));
+        when(extractionService.getTask(any()))
+                .thenReturn(new GraphExtractionTaskDetailResult(
+                        new GraphExtractionTaskResult(
+                                7001L,
+                                contentRef,
+                                "SUCCEEDED",
+                                "PENDING",
+                                1,
+                                1L,
+                                null,
+                                8001L,
+                                "完成",
+                                100,
+                                Instant.now(),
+                                Instant.now(),
+                                null,
+                                null),
+                        List.of(),
+                        List.of(),
+                        new GraphExtractionCandidatePreviewResult(
+                                8001L, "GRAPH_DOCUMENT_V1", "{\"nodes\":[],\"edges\":[]}")));
 
         var response = controller.materialGet(request);
 
@@ -185,6 +209,13 @@ class GraphControllerTest {
                 .extracting(task -> task.id())
                 .isEqualTo("7001");
         assertThat(response.taskSummary().activeTaskCount()).isEqualTo("0");
+        assertThat(response.taskSummary().totalTaskCount()).isEqualTo("1");
+        assertThat(response.latestTaskCandidate())
+                .extracting(candidate -> candidate.candidateId(), candidate -> candidate.resultFormat())
+                .containsExactly("8001", "GRAPH_DOCUMENT_V1");
+        ArgumentCaptor<GraphTaskDetailQuery> detailCaptor = ArgumentCaptor.forClass(GraphTaskDetailQuery.class);
+        verify(extractionService).getTask(detailCaptor.capture());
+        assertThat(detailCaptor.getValue().taskId()).isEqualTo(7001L);
     }
 
     @Test

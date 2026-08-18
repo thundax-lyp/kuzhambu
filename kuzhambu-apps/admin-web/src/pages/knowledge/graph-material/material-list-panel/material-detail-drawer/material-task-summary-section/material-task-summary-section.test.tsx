@@ -9,7 +9,16 @@ import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material
 import { MaterialTaskSummarySection } from "./material-task-summary-section";
 
 vi.mock("@/pages/knowledge/graph-material/graph-material-service", () => ({
-    createExtraction: vi.fn()
+    createExtraction: vi.fn(),
+    applyCandidate: vi.fn()
+}));
+
+vi.mock("@/components/kuzhambu-graph", () => ({
+    ["KuzhambuGraph"]: ({ spoList }: { spoList: Array<{ predicate: string }> }) => (
+        <div data-testid="knowledge-graph-material-candidate-canvas-mock">
+            {spoList.length} 条关系：{spoList.map((item) => item.predicate).join("、")}
+        </div>
+    )
 }));
 
 const renderPanel = (detail: GraphMaterialDetailRecord | null) => {
@@ -38,8 +47,15 @@ describe("MaterialTaskSummarySection", () => {
         expect(screen.getByText("任务摘要")).toBeInTheDocument();
         expect(screen.getByText("运行中任务")).toBeInTheDocument();
         expect(screen.getByText("最近任务")).toBeInTheDocument();
+        expect(screen.getByText("抽取结果预览")).toBeInTheDocument();
+        expect(screen.getByText("抽取节点")).toBeInTheDocument();
+        expect(screen.getByText("抽取边")).toBeInTheDocument();
+        expect(
+            screen.getByTestId("knowledge-graph-material-candidate-canvas-mock")
+        ).toHaveTextContent("1 条关系：提及");
         expect(screen.getByText("7002")).toBeInTheDocument();
         expect(screen.getByText("运行中")).toBeInTheDocument();
+        expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
         expect(screen.getByTestId("knowledge-graph-material-detail-extract-button")).toHaveClass(
             "ant-btn-primary"
         );
@@ -71,5 +87,41 @@ describe("MaterialTaskSummarySection", () => {
             });
         });
         expect(await screen.findByText("抽取任务已创建 #7101")).toBeInTheDocument();
+    });
+
+    it("merges a completed pending candidate into the material graph", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        vi.mocked(service.applyCandidate).mockResolvedValue({});
+        const task = {
+            ...graphMaterialMockDetails[1].taskSummary!.latestTask!,
+            disposition: "PENDING" as const,
+            executionStatus: "SUCCEEDED" as const
+        };
+        const detail = {
+            ...graphMaterialMockDetails[1],
+            extractionTasks: [task],
+            taskSummary: {
+                ...graphMaterialMockDetails[1].taskSummary!,
+                latestTask: task
+            }
+        };
+        renderPanel(detail);
+
+        fireEvent.click(
+            screen.getByTestId("knowledge-graph-material-detail-merge-candidate-button")
+        );
+
+        await waitFor(() => {
+            expect(service.applyCandidate).toHaveBeenCalledWith({
+                applyMode: "MERGE",
+                materialLockVersion: detail.material!.lockVersion,
+                taskId: task.id,
+                taskLockVersion: task.lockVersion
+            });
+        });
+        expect(
+            screen.getByTestId("knowledge-graph-material-detail-replace-candidate-button")
+        ).toBeEnabled();
+        expect(await screen.findByText("抽取结果已合并到知识图谱")).toBeInTheDocument();
     });
 });

@@ -28,16 +28,17 @@ describe("MaterialOverviewSection", () => {
 
         expect(screen.getByText("三才图会 天文一")).toBeInTheDocument();
         expect(screen.getByText("未初始化")).toBeInTheDocument();
-        expect(screen.getByText("暂无活动")).toBeInTheDocument();
+        expect(screen.queryByText("最近活动")).not.toBeInTheDocument();
     });
 
-    it("renders published material statistics and recent activity", () => {
+    it("renders published material node, edge, and task counts", () => {
         renderPanel(graphMaterialMockDetails[1]);
 
         expect(screen.getByText("已发布")).toBeInTheDocument();
-        expect(screen.getByText("发布贡献")).toBeInTheDocument();
-        expect(screen.getByText("162")).toBeInTheDocument();
-        expect(screen.getByText(/最近发布于/u)).toBeInTheDocument();
+        expect(screen.getByText("节点数")).toBeInTheDocument();
+        expect(screen.getByText("边数")).toBeInTheDocument();
+        expect(screen.getByText("任务数")).toBeInTheDocument();
+        expect(screen.queryByText("最近活动")).not.toBeInTheDocument();
         expect(screen.queryByText("未初始化")).not.toBeInTheDocument();
     });
 });

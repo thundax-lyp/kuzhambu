@@ -105,7 +105,8 @@ const serviceMocks = vi.hoisted(() => ({
             activeTaskCount: "0",
             failedTaskCount: "0",
             latestTask: null,
-            pendingReviewTaskCount: "0"
+            pendingReviewTaskCount: "0",
+            totalTaskCount: "0"
         }
     })),
     pageTasks: vi.fn(async (query?: { groupBy?: string }) => ({
