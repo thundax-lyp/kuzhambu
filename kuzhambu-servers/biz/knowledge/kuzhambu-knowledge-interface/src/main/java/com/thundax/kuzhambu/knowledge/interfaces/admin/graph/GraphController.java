@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialDeletionApplicationService;
@@ -244,9 +245,16 @@ public class GraphController {
     @PostMapping("material/get")
     public GraphMaterialResponses.DetailData materialGet(
             @Valid @RequestBody GraphMaterialRequests.ContentRefRequest request) {
-        var result = materialService.getMaterialGraph(
-                GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId()));
-        return GraphInterfaceAssembler.toDetailData(result, List.of());
+        var query = GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId());
+        var result = materialService.getMaterialGraph(query);
+        var tasks = extractionService.pageTasks(
+                new GraphTaskQuery(null, null, null, null, List.of(query.materialRef()), null, null, null, null),
+                new PageQuery(1, 50));
+        return GraphInterfaceAssembler.toDetailData(
+                result,
+                tasks.getRecords().stream()
+                        .map(GraphInterfaceAssembler::toTaskData)
+                        .toList());
     }
 
     @Operation(summary = "创建图谱素材提取任务", description = "knowledge:graph:edit")

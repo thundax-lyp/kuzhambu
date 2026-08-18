@@ -104,7 +104,7 @@ export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectio
     }
 
     const taskSummary = detail.taskSummary;
-    const latestTask = taskSummary?.latestTask;
+    const latestTask = detail.extractionTasks?.[0] ?? taskSummary?.latestTask;
 
     return (
         <KuzhambuSpace

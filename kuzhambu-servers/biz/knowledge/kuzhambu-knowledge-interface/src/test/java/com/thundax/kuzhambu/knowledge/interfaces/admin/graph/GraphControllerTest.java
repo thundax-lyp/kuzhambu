@@ -19,7 +19,9 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDel
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
@@ -127,6 +129,62 @@ class GraphControllerTest {
         verify(materialService).pageMaterials(captor.capture(), any());
         assertThat(captor.getValue().taskExecutionStatus()).isEqualTo("SUCCEEDED");
         assertThat(captor.getValue().taskDisposition()).isEqualTo("PENDING");
+    }
+
+    @Test
+    void shouldLoadMaterialTaskSummaryAndTaskRecordsForMaterialDetail() {
+        GraphMaterialApplicationService materialService = mock(GraphMaterialApplicationService.class);
+        GraphExtractionApplicationService extractionService = mock(GraphExtractionApplicationService.class);
+        GraphController controller = new GraphController(
+                mock(GraphWorkbenchApplicationService.class),
+                materialService,
+                extractionService,
+                mock(GraphPublicationApplicationService.class),
+                mock(GraphPublishedApplicationService.class),
+                mock(GraphMaterialDeletionApplicationService.class));
+        ContentRef contentRef = new ContentRef("SANCAI_ENTRY", 1001L);
+        GraphMaterialRequests.ContentRefRequest request = new GraphMaterialRequests.ContentRefRequest();
+        request.setContentType(contentRef.getContentType());
+        request.setContentRefId(String.valueOf(contentRef.getContentId()));
+        when(materialService.getMaterialGraph(any()))
+                .thenReturn(new GraphMaterialResult(
+                        null,
+                        new GraphMaterial(contentRef, "三才图会", GraphMaterialStatus.DRAFT, null, 7),
+                        null,
+                        List.of(),
+                        List.of(),
+                        null));
+        when(extractionService.pageTasks(any(), any()))
+                .thenReturn(PageResult.of(
+                        1,
+                        50,
+                        1,
+                        List.of(new GraphExtractionTaskResult(
+                                7001L,
+                                contentRef,
+                                "SUCCEEDED",
+                                "PENDING",
+                                1,
+                                1L,
+                                null,
+                                null,
+                                "完成",
+                                100,
+                                Instant.now(),
+                                Instant.now(),
+                                null,
+                                null))));
+
+        var response = controller.materialGet(request);
+
+        ArgumentCaptor<GraphTaskQuery> captor = ArgumentCaptor.forClass(GraphTaskQuery.class);
+        verify(extractionService).pageTasks(captor.capture(), any());
+        assertThat(captor.getValue().contentRefs()).containsExactly(contentRef);
+        assertThat(response.extractionTasks())
+                .singleElement()
+                .extracting(task -> task.id())
+                .isEqualTo("7001");
+        assertThat(response.taskSummary().activeTaskCount()).isEqualTo("0");
     }
 
     @Test

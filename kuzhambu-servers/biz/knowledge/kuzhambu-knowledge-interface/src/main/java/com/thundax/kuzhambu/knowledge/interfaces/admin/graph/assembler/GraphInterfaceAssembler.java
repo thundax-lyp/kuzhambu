@@ -321,7 +321,7 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphMaterialResponses.DetailData toDetailData(
-            @NonNull GraphMaterialResult value, @NonNull List<GraphMaterialResponses.TaskData> extractionTasks) {
+            @NonNull GraphMaterialResult value, @NonNull List<GraphExtractionResponses.TaskData> extractionTasks) {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(extractionTasks, "extractionTasks");
         return new GraphMaterialResponses.DetailData(
@@ -334,8 +334,17 @@ public final class GraphInterfaceAssembler {
                 value.edges().stream()
                         .map(GraphInterfaceAssembler::toMaterialEdgeData)
                         .toList(),
-                toNullableTaskData(value.taskSummary()),
+                toTaskSummaryData(value),
                 extractionTasks);
+    }
+
+    private static GraphMaterialResponses.TaskSummaryData toTaskSummaryData(GraphMaterialResult value) {
+        var stats = value.materialStats();
+        return new GraphMaterialResponses.TaskSummaryData(
+                stats == null ? "0" : String.valueOf(stats.getActiveTaskCount()),
+                stats == null ? "0" : String.valueOf(stats.getPendingReviewTaskCount()),
+                stats == null ? "0" : String.valueOf(stats.getFailedTaskCount()),
+                toNullableTaskData(value.taskSummary()));
     }
 
     @NonNull
