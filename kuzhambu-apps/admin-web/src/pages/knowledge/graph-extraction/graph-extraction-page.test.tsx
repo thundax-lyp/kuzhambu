@@ -4,6 +4,10 @@ import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { GraphExtractionPage } from "./graph-extraction-page";
 
+const serviceState = vi.hoisted(() => ({
+    executionStatus: "SUCCEEDED"
+}));
+
 const serviceMocks = vi.hoisted(() => ({
     pageTasks: vi.fn(async (query?: { groupBy?: string }) => ({
         count: query?.groupBy === "MATERIAL" ? 2 : 1,
@@ -14,7 +18,7 @@ const serviceMocks = vi.hoisted(() => ({
                 attemptNo: "1",
                 currentStage: "CANDIDATE_READY",
                 disposition: "PENDING",
-                executionStatus: "SUCCEEDED",
+                executionStatus: serviceState.executionStatus,
                 id: "8008",
                 lockVersion: "1",
                 materialRef: {
@@ -60,6 +64,7 @@ const renderPage = () => {
 describe("GraphExtractionPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        serviceState.executionStatus = "SUCCEEDED";
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
     });
 
@@ -83,6 +88,8 @@ describe("GraphExtractionPage", () => {
         expect(screen.getByText("素材标题")).toBeInTheDocument();
         expect(screen.getAllByText("运行状态")[0]).toBeInTheDocument();
         expect(screen.getAllByText("采纳状态")[0]).toBeInTheDocument();
+        expect(screen.getByText("已成功")).toBeInTheDocument();
+        expect(screen.getByText("待采纳")).toBeInTheDocument();
         expect(screen.queryByText("请选择左侧卷目查看稿件")).not.toBeInTheDocument();
     });
 
@@ -104,6 +111,32 @@ describe("GraphExtractionPage", () => {
 
         expect(screen.queryByRole("button", { name: "查看任务 8008" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "重试任务 8008" })).not.toBeInTheDocument();
+    });
+
+    it("retries a failed task and refreshes the task list", async () => {
+        serviceState.executionStatus = "FAILED";
+        renderPage();
+
+        fireEvent.click(await screen.findByRole("button", { name: "重试任务 8008" }));
+
+        await waitFor(() => {
+            expect(serviceMocks.retryTask).toHaveBeenCalledWith({
+                expectedExecutionStatus: "FAILED",
+                sourceTaskId: "8008",
+                taskId: "8008",
+                taskLockVersion: "1"
+            });
+            expect(serviceMocks.pageTasks).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    it("does not render an empty action column without edit permission", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        renderPage();
+
+        await screen.findByText("三才稿件");
+
+        expect(screen.queryByRole("columnheader", { name: "操作" })).not.toBeInTheDocument();
     });
 
     it("does not load task data without graph queue permission", async () => {
