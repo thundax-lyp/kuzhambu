@@ -110,13 +110,6 @@ const toCatalogQuery = (node: MaterialCatalogNode, pageSize: number): GraphMater
     return query;
 };
 
-const isSamePageQuery = (left: GraphMaterialPageQuery, right: GraphMaterialPageQuery) =>
-    left.categoryCode === right.categoryCode &&
-    left.contentType === right.contentType &&
-    left.pageNo === right.pageNo &&
-    left.pageSize === right.pageSize &&
-    left.volumeCode === right.volumeCode;
-
 const isLeafCatalogNode = (node?: MaterialCatalogNode) => Boolean(node?.leaf);
 
 export const GraphMaterialPage = () => {
@@ -282,6 +275,13 @@ export const GraphMaterialPage = () => {
                 </Splitter.Panel>
                 <Splitter.Panel className="graph-material-work-panel">
                     <MaterialListPanel
+                        key={[
+                            query.categoryCode,
+                            query.contentType,
+                            query.pageNo,
+                            query.pageSize,
+                            query.volumeCode
+                        ].join(":")}
                         canEditGraph={canEditGraph}
                         dataSource={records}
                         loading={materialPageQuery.isLoading}

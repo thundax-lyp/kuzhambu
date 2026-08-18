@@ -1,13 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import type { Key } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { RobotOutlined } from "@ant-design/icons";
 import { App, Typography } from "antd";
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
 import { buildReuseConflictDecisions } from "@/pages/knowledge/graph-material/graph-publication-conflicts";
 import { MaterialDetailDrawer } from "./material-detail-drawer";
 import type {
-    GraphContentRefRecord,
     GraphMaterialListRecord,
     GraphMaterialRecord,
     GraphMaterialStatus,
@@ -91,6 +90,29 @@ const publicationActionFor = (material?: GraphMaterialRecord | null) => {
         return "withdraw";
     }
     return material.status === "READY" ? "publish" : null;
+};
+
+const readSelectedPublicationAction = (
+    canPublishSelectedMaterials: boolean,
+    canWithdrawSelectedMaterials: boolean
+) => {
+    if (canWithdrawSelectedMaterials) {
+        return "withdraw";
+    }
+    if (canPublishSelectedMaterials) {
+        return "publish";
+    }
+    return null;
+};
+
+const readBatchPublicationDisabledReason = (canEditGraph: boolean, selectedRecordCount: number) => {
+    if (!canEditGraph) {
+        return "需要图谱编辑权限";
+    }
+    if (selectedRecordCount === 0) {
+        return "请先选择素材";
+    }
+    return "仅可对状态一致且可发布或可撤回的素材执行批量操作";
 };
 
 interface MaterialListPanelProps {
@@ -275,28 +297,20 @@ export const MaterialListPanel = ({
     const canWithdrawSelectedMaterials =
         selectedRecords.length > 0 &&
         selectedRecords.every((record) => publicationActionFor(record.material) === "withdraw");
-    const selectedPublicationAction = canWithdrawSelectedMaterials
-        ? "withdraw"
-        : canPublishSelectedMaterials
-          ? "publish"
-          : null;
-    const batchPublicationDisabledReason = !canEditGraph
-        ? "需要图谱编辑权限"
-        : selectedRecords.length === 0
-          ? "请先选择素材"
-          : "仅可对状态一致且可发布或可撤回的素材执行批量操作";
+    const selectedPublicationAction = readSelectedPublicationAction(
+        canPublishSelectedMaterials,
+        canWithdrawSelectedMaterials
+    );
+    const batchPublicationDisabledReason = readBatchPublicationDisabledReason(
+        canEditGraph,
+        selectedRecords.length
+    );
     const isTableMutating =
         batchExtractionMutation.isPending ||
         retryExtractionMutation.isPending ||
         publicationMutation.isPending ||
         batchPublicationMutation.isPending;
 
-    useEffect(() => {
-        setSelectedRowKeys((currentKeys) => {
-            const availableKeys = currentKeys.filter((key) => recordByKey.has(String(key)));
-            return availableKeys.length === currentKeys.length ? currentKeys : availableKeys;
-        });
-    }, [recordByKey]);
     const closeMaterialDetailDrawer = () => {
         setActiveRecord(null);
     };
