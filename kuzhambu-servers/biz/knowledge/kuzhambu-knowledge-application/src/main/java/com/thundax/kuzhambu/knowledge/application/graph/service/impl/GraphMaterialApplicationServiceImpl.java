@@ -41,6 +41,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResu
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialSourceResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
@@ -69,10 +70,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplicationService {
 
+    private static final int TASK_SYNC_LIMIT = 100;
+
     private final GraphMaterialRepository materialRepository;
     private final ClassicsFacade classicsFacade;
     private final GraphMaterialStatsRepository materialStatsRepository;
     private final GraphExtractionTaskRepository extractionTaskRepository;
+    private final GraphExtractionApplicationService extractionApplicationService;
     private final GraphMaterialNodeRepository nodeRepository;
     private final GraphMaterialEdgeRepository edgeRepository;
     private final GraphMaterialContentResolver contentResolver;
@@ -88,6 +92,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
             ClassicsFacade classicsFacade,
             GraphMaterialStatsRepository materialStatsRepository,
             GraphExtractionTaskRepository extractionTaskRepository,
+            GraphExtractionApplicationService extractionApplicationService,
             GraphMaterialNodeRepository nodeRepository,
             GraphMaterialEdgeRepository edgeRepository,
             GraphMaterialContentResolver contentResolver,
@@ -101,6 +106,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         this.classicsFacade = classicsFacade;
         this.materialStatsRepository = materialStatsRepository;
         this.extractionTaskRepository = extractionTaskRepository;
+        this.extractionApplicationService = extractionApplicationService;
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
         this.contentResolver = contentResolver;
@@ -144,6 +150,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                 .map(GraphMaterial::getId)
                 .filter(java.util.Objects::nonNull)
                 .toList();
+        extractionApplicationService.syncActiveTasks(TASK_SYNC_LIMIT);
         Map<Long, GraphMaterialStats> statsByMaterialId =
                 materialStatsRepository.listByMaterialIds(materialIds).stream()
                         .collect(Collectors.toMap(GraphMaterialStats::getMaterialId, Function.identity()));

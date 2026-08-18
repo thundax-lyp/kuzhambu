@@ -228,8 +228,26 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         requireExpectedStatus(task, command.expectedExecutionStatus());
         taskOperator.retry(task);
         updateTask(task, command.taskLockVersion());
+        GraphMaterial material = materialRepository.getByContentRef(task.getContentRef());
+        if (material == null) {
+            throw new BizException("Graph material does not exist");
+        }
+        material.setCurrentExtractionTaskId(task.getId());
+        updateMaterial(material);
+        AiBatchJobActionFacadeResponse aiBatch = aiFacade.submitKnowledgeGraphExtraction(extractionRequest(task, null));
+        if (aiBatch != null && aiBatch.getBatchId() != null) {
+            task.setAiBatchId(aiBatch.getBatchId());
+            updateTask(task, task.getLockVersion());
+        }
         statsRefresher.refresh(task.getContentRef());
         return toTaskResult(task);
+    }
+
+    @Override
+    public int syncActiveTasks(int limit) {
+        int pageSize = limit <= 0 ? 100 : limit;
+        return syncTasksWithStatus(GraphExtractionExecutionStatus.PENDING, pageSize)
+                + syncTasksWithStatus(GraphExtractionExecutionStatus.RUNNING, pageSize);
     }
 
     @Override
@@ -381,12 +399,25 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
 
     private KnowledgeGraphExtractionJobFacadeRequest extractionRequest(
             ContentRef materialRef, GraphMaterialContentSnapshotDto snapshot, Long requestedBy) {
+        return extractionRequest(materialRef, snapshot.title(), snapshotJson(snapshot), requestedBy);
+    }
+
+    private KnowledgeGraphExtractionJobFacadeRequest extractionRequest(GraphExtractionTask task, Long requestedBy) {
+        return extractionRequest(
+                task.getContentRef(),
+                snapshotTitle(task.getContentSnapshotJson()),
+                task.getContentSnapshotJson(),
+                requestedBy);
+    }
+
+    private KnowledgeGraphExtractionJobFacadeRequest extractionRequest(
+            ContentRef materialRef, String title, String snapshotJson, Long requestedBy) {
         return KnowledgeGraphExtractionJobFacadeRequest.builder()
                 .scope(AI_SCOPE)
                 .contentType(ContentRefCodec.toContentType(materialRef))
                 .contentId(ContentRefCodec.toValue(materialRef))
-                .contentTitle(snapshot.title())
-                .contentSnapshotJson(snapshotJson(snapshot))
+                .contentTitle(title)
+                .contentSnapshotJson(snapshotJson)
                 .requestedBy(requestedBy)
                 .build();
     }
@@ -462,6 +493,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                     "graph.task.lock-conflict",
                     "Graph extraction task lock version mismatch");
         }
+        task.setLockVersion(expectedLockVersion + 1);
     }
 
     private void requireExpectedStatus(GraphExtractionTask task, String expectedStatus) {
@@ -558,6 +590,13 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         return task;
     }
 
+    private int syncTasksWithStatus(GraphExtractionExecutionStatus status, int limit) {
+        return taskRepository.page(null, null, status, null, 1, limit).getRecords().stream()
+                .map(this::syncTaskFromAi)
+                .mapToInt(task -> 1)
+                .sum();
+    }
+
     private void startPendingTask(GraphExtractionTask task) {
         if (task.getExecutionStatus() == GraphExtractionExecutionStatus.PENDING) {
             task.start();
@@ -587,6 +626,14 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             return objectMapper.writeValueAsString(snapshot);
         } catch (JsonProcessingException ex) {
             throw new BizException("Graph extraction content snapshot cannot be serialized");
+        }
+    }
+
+    private String snapshotTitle(String snapshotJson) {
+        try {
+            return objectMapper.readTree(snapshotJson).path("title").asText();
+        } catch (JsonProcessingException ex) {
+            throw new BizException("Graph extraction content snapshot cannot be read");
         }
     }
 

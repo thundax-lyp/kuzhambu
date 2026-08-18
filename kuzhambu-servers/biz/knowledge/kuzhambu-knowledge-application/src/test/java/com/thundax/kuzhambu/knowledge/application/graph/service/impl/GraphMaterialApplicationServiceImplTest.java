@@ -28,6 +28,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotRe
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialStats;
@@ -50,6 +51,8 @@ class GraphMaterialApplicationServiceImplTest {
     private final ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
     private final GraphMaterialStatsRepository statsRepository = mock(GraphMaterialStatsRepository.class);
     private final GraphExtractionTaskRepository taskRepository = mock(GraphExtractionTaskRepository.class);
+    private final GraphExtractionApplicationService extractionApplicationService =
+            mock(GraphExtractionApplicationService.class);
     private final GraphMaterialNodeRepository nodeRepository = mock(GraphMaterialNodeRepository.class);
     private final GraphMaterialEdgeRepository edgeRepository = mock(GraphMaterialEdgeRepository.class);
 
@@ -58,6 +61,7 @@ class GraphMaterialApplicationServiceImplTest {
             classicsFacade,
             statsRepository,
             taskRepository,
+            extractionApplicationService,
             nodeRepository,
             edgeRepository,
             mock(GraphMaterialContentResolver.class),
@@ -100,6 +104,7 @@ class GraphMaterialApplicationServiceImplTest {
         assertThat(result.getRecords().get(1).source().contentRef()).isEqualTo(secondRef);
         assertThat(result.getRecords().get(1).material()).isNull();
         verify(materialRepository, never()).getByContentRef(any());
+        verify(extractionApplicationService).syncActiveTasks(100);
     }
 
     @Test

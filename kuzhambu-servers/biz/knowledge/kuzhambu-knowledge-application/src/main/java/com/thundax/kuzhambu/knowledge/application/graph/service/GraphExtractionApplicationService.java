@@ -28,6 +28,8 @@ public interface GraphExtractionApplicationService {
 
     GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command);
 
+    int syncActiveTasks(int limit);
+
     GraphExtractionTaskResult cancelTask(GraphExtractionCancelCommand command);
 
     GraphMaterialResult applyCandidate(GraphExtractionCandidateApplyCommand command);

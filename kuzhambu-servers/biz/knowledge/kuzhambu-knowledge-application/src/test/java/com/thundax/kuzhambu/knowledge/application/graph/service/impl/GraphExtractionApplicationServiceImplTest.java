@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphMaterialContentSnapshotDto;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphDocumentMerger;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
@@ -175,6 +176,31 @@ class GraphExtractionApplicationServiceImplTest {
         assertThat(result.task().disposition()).isEqualTo("PENDING");
         assertThat(result.task().candidateId()).isEqualTo(9101L);
         verify(taskRepository).updateIfLockVersion(any(GraphExtractionTask.class), any(Long.class));
+    }
+
+    @Test
+    void shouldSubmitNewAiBatchWhenRetryingFailedTask() throws Exception {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setExecutionStatus(GraphExtractionExecutionStatus.FAILED);
+        task.setAiBatchId(9001L);
+        task.setContentSnapshotJson(new ObjectMapper().writeValueAsString(snapshot(ref)));
+        GraphMaterial material = material(11L, ref, null);
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(materialRepository.getByContentRef(ref)).thenReturn(material);
+        when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(aiFacade.submitKnowledgeGraphExtraction(any()))
+                .thenReturn(
+                        AiBatchJobActionFacadeResponse.builder().batchId(9002L).build());
+
+        var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 3L, "FAILED", "retry-1"));
+
+        assertThat(result.executionStatus()).isEqualTo("PENDING");
+        assertThat(result.attemptNo()).isEqualTo(2);
+        assertThat(task.getAiBatchId()).isEqualTo(9002L);
+        assertThat(material.getCurrentExtractionTaskId()).isEqualTo(new GraphExtractionTaskId(7001L));
+        verify(aiFacade).submitKnowledgeGraphExtraction(any());
     }
 
     private static ContentRef ref(Long id) {
