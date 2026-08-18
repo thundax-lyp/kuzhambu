@@ -282,7 +282,7 @@ export const GraphMaterialPage = () => {
                 </Splitter.Panel>
                 <Splitter.Panel className="graph-material-work-panel">
                     <MaterialListPanel
-                        canExtractMaterial={canEditGraph}
+                        canEditGraph={canEditGraph}
                         dataSource={records}
                         loading={materialPageQuery.isLoading}
                         onRefreshMaterials={() => materialPageQuery.refetch()}

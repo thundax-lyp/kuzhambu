@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import type { Key } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RobotOutlined } from "@ant-design/icons";
 import { App, Typography } from "antd";
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
@@ -94,7 +94,7 @@ const publicationActionFor = (material?: GraphMaterialRecord | null) => {
 };
 
 interface MaterialListPanelProps {
-    canExtractMaterial?: boolean;
+    canEditGraph?: boolean;
     dataSource: GraphMaterialListRecord[];
     loading?: boolean;
     onRefreshMaterials: () => Promise<unknown>;
@@ -103,7 +103,7 @@ interface MaterialListPanelProps {
 }
 
 export const MaterialListPanel = ({
-    canExtractMaterial = true,
+    canEditGraph = true,
     dataSource,
     loading = false,
     onRefreshMaterials,
@@ -275,6 +275,28 @@ export const MaterialListPanel = ({
     const canWithdrawSelectedMaterials =
         selectedRecords.length > 0 &&
         selectedRecords.every((record) => publicationActionFor(record.material) === "withdraw");
+    const selectedPublicationAction = canWithdrawSelectedMaterials
+        ? "withdraw"
+        : canPublishSelectedMaterials
+          ? "publish"
+          : null;
+    const batchPublicationDisabledReason = !canEditGraph
+        ? "需要图谱编辑权限"
+        : selectedRecords.length === 0
+          ? "请先选择素材"
+          : "仅可对状态一致且可发布或可撤回的素材执行批量操作";
+    const isTableMutating =
+        batchExtractionMutation.isPending ||
+        retryExtractionMutation.isPending ||
+        publicationMutation.isPending ||
+        batchPublicationMutation.isPending;
+
+    useEffect(() => {
+        setSelectedRowKeys((currentKeys) => {
+            const availableKeys = currentKeys.filter((key) => recordByKey.has(String(key)));
+            return availableKeys.length === currentKeys.length ? currentKeys : availableKeys;
+        });
+    }, [recordByKey]);
     const closeMaterialDetailDrawer = () => {
         setActiveRecord(null);
     };
@@ -394,7 +416,7 @@ export const MaterialListPanel = ({
                             ? `重试 ${record.source.title}`
                             : `提取 ${record.source.title}`,
                     disabled:
-                        !canExtractMaterial ||
+                        !canEditGraph ||
                         hasActiveExtractionTask(record) ||
                         batchExtractionMutation.isPending ||
                         retryExtractionMutation.isPending,
@@ -408,7 +430,7 @@ export const MaterialListPanel = ({
                             ? `撤回素材 ${record.source.title}`
                             : `发布素材 ${record.source.title}`,
                     disabled:
-                        !canExtractMaterial ||
+                        !canEditGraph ||
                         publicationMutation.isPending ||
                         publicationActionFor(record.material) === null,
                     onClick: () => publicationMutation.mutate(record)
@@ -431,7 +453,7 @@ export const MaterialListPanel = ({
                             <KuzhambuSpace>
                                 <KuzhambuButton
                                     disabled={
-                                        !canExtractMaterial ||
+                                        !canEditGraph ||
                                         (extractableSelectedRecords.length === 0 &&
                                             retryableSelectedRecords.length === 0)
                                     }
@@ -445,37 +467,46 @@ export const MaterialListPanel = ({
                                         ? "批量重试"
                                         : "批量提取"}
                                 </KuzhambuButton>
-                                {canPublishSelectedMaterials || canWithdrawSelectedMaterials ? (
-                                    <KuzhambuButton
-                                        disabled={
-                                            !canExtractMaterial ||
-                                            batchPublicationMutation.isPending
+                                <KuzhambuButton
+                                    ariaLabel={
+                                        selectedPublicationAction
+                                            ? selectedPublicationAction === "withdraw"
+                                                ? "批量撤回素材"
+                                                : "批量发布素材"
+                                            : batchPublicationDisabledReason
+                                    }
+                                    disabled={
+                                        !selectedPublicationAction ||
+                                        batchPublicationMutation.isPending
+                                    }
+                                    loading={batchPublicationMutation.isPending}
+                                    testId="knowledge-graph-material-batch-publication-button"
+                                    title={
+                                        selectedPublicationAction
+                                            ? undefined
+                                            : batchPublicationDisabledReason
+                                    }
+                                    onClick={() => {
+                                        if (!selectedPublicationAction) {
+                                            return;
                                         }
-                                        loading={batchPublicationMutation.isPending}
-                                        testId="knowledge-graph-material-batch-publication-button"
-                                        onClick={() =>
-                                            batchPublicationMutation.mutate({
-                                                action: canWithdrawSelectedMaterials
-                                                    ? "withdraw"
-                                                    : "publish",
-                                                records: selectedRecords
-                                            })
-                                        }
-                                    >
-                                        {canWithdrawSelectedMaterials ? "批量撤回" : "批量发布"}
-                                    </KuzhambuButton>
-                                ) : null}
+                                        batchPublicationMutation.mutate({
+                                            action: selectedPublicationAction,
+                                            records: selectedRecords
+                                        });
+                                    }}
+                                >
+                                    {selectedPublicationAction === "withdraw"
+                                        ? "批量撤回"
+                                        : "批量发布"}
+                                </KuzhambuButton>
                             </KuzhambuSpace>
                         ),
                         selectedCount: selectedRowKeys.length
                     }}
                     columns={columns}
                     dataSource={dataSource}
-                    loading={
-                        loading ||
-                        batchExtractionMutation.isPending ||
-                        retryExtractionMutation.isPending
-                    }
+                    loading={loading || isTableMutating}
                     pagination={pagination}
                     rowKey={readRecordKey}
                     rowSelection={{

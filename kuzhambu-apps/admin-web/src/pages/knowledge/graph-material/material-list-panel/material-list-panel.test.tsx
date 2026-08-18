@@ -10,7 +10,11 @@ import { MaterialListPanel } from "./material-list-panel";
 
 vi.mock("@/pages/knowledge/graph-material/graph-material-service", () => ({
     createBatchExtraction: vi.fn(),
-    retryExtraction: vi.fn()
+    previewPublication: vi.fn(),
+    previewWithdrawal: vi.fn(),
+    publishMaterial: vi.fn(),
+    retryExtraction: vi.fn(),
+    withdrawMaterial: vi.fn()
 }));
 
 vi.mock("./material-detail-drawer", () => ({
@@ -149,5 +153,54 @@ describe("MaterialListPanel", () => {
         );
 
         expect(screen.getByRole("button", { name: "提取 明代风俗 婚礼" })).toBeDisabled();
+    });
+
+    it("keeps batch publication available but disabled until the selected statuses agree", async () => {
+        renderPanel(
+            <MaterialListPanel
+                dataSource={[graphMaterialMockListRecords[1], graphMaterialMockListRecords[3]]}
+                onRefreshMaterials={vi.fn()}
+            />
+        );
+        const user = userEvent.setup();
+
+        const batchPublication = screen.getByTestId(
+            "knowledge-graph-material-batch-publication-button"
+        );
+        expect(batchPublication).toBeDisabled();
+        expect(batchPublication).toHaveAttribute("title", "请先选择素材");
+
+        const checkboxes = screen.getAllByRole("checkbox");
+        await user.click(checkboxes[1]);
+        await user.click(checkboxes[2]);
+
+        expect(batchPublication).toBeDisabled();
+        expect(batchPublication).toHaveAttribute(
+            "title",
+            "仅可对状态一致且可发布或可撤回的素材执行批量操作"
+        );
+    });
+
+    it("withdraws a published material after previewing it", async () => {
+        const record = graphMaterialMockListRecords[1];
+        vi.mocked(service.previewWithdrawal).mockResolvedValue({});
+        vi.mocked(service.withdrawMaterial).mockResolvedValue(record.material!);
+        const onRefreshMaterials = vi.fn(async () => undefined);
+        renderPanel(
+            <MaterialListPanel dataSource={[record]} onRefreshMaterials={onRefreshMaterials} />
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: `撤回素材 ${record.source.title}` }));
+
+        await waitFor(() => {
+            expect(vi.mocked(service.previewWithdrawal)).toHaveBeenCalledWith({
+                contentRef: record.material!.contentRef
+            });
+            expect(vi.mocked(service.withdrawMaterial)).toHaveBeenCalledWith({
+                contentRef: record.material!.contentRef,
+                materialLockVersion: record.material!.lockVersion
+            });
+        });
+        expect(onRefreshMaterials).toHaveBeenCalledTimes(1);
     });
 });
