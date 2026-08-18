@@ -1,3 +1,7 @@
-.knowledge-graph-governance-page {
+.graph-governance-page {
     min-width: 0;
+}
+
+.graph-governance-work-area {
+    min-height: 620px;
 }
