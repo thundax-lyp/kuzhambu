@@ -4,16 +4,16 @@ import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.GraphExtractionTaskWithMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTaskWithMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphExtractionTaskPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
-import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskWithMaterialDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphExtractionTaskMapper;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.projection.GraphExtractionTaskWithMaterialProjection;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Repository;
@@ -109,7 +109,7 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
-    public PageResult<GraphExtractionTaskWithMaterial> pageWithMaterialTitle(
+    public PageResult<GraphExtractionTaskWithMaterial> listWithMaterialTitle(
             List<ContentRef> contentRefs,
             String batchId,
             GraphExtractionExecutionStatus executionStatus,
@@ -140,7 +140,7 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
                         (effectivePageNo - 1) * effectivePageSize,
                         effectivePageSize)
                 .stream()
-                .map((GraphExtractionTaskWithMaterialDO row) -> new GraphExtractionTaskWithMaterial(
+                .map((GraphExtractionTaskWithMaterialProjection row) -> new GraphExtractionTaskWithMaterial(
                         GraphExtractionTaskPersistenceAssembler.toDomain(row), row.getMaterialTitle()))
                 .toList();
         return PageResult.of(effectivePageNo, effectivePageSize, total, records);

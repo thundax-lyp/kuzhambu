@@ -258,13 +258,12 @@ public class GraphController {
                                 .getTask(new GraphTaskDetailQuery(
                                         tasks.getRecords().get(0).taskId()))
                                 .candidate();
-        return GraphInterfaceAssembler.toDetailData(
-                result,
-                tasks.getRecords().stream()
-                        .map(GraphInterfaceAssembler::toTaskData)
-                        .toList(),
-                tasks.getTotalCount(),
-                latestTaskCandidate);
+        var taskData = tasks.getRecords().stream()
+                .map(GraphInterfaceAssembler::toTaskData)
+                .toList();
+        return latestTaskCandidate == null
+                ? GraphInterfaceAssembler.toDetailData(result, taskData, tasks.getTotalCount())
+                : GraphInterfaceAssembler.toDetailData(result, taskData, tasks.getTotalCount(), latestTaskCandidate);
     }
 
     @Operation(summary = "创建图谱素材提取任务", description = "knowledge:graph:edit")

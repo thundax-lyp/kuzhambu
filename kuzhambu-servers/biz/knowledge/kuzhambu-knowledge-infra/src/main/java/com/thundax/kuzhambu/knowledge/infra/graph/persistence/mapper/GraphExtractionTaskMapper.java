@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
-import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskWithMaterialDO;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.projection.GraphExtractionTaskWithMaterialProjection;
 import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -151,7 +151,7 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
             limit #{pageSize} offset #{offset}
             </script>
             """)
-    List<GraphExtractionTaskWithMaterialDO> pageTasksWithMaterialTitle(
+    List<GraphExtractionTaskWithMaterialProjection> pageTasksWithMaterialTitle(
             @Param("refs") List<GraphExtractionTaskDO> refs,
             @Param("batchId") String batchId,
             @Param("executionStatus") String executionStatus,

@@ -2,8 +2,8 @@ package com.thundax.kuzhambu.knowledge.domain.graph.repository;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.GraphExtractionTaskWithMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTaskWithMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
@@ -32,7 +32,7 @@ public interface GraphExtractionTaskRepository {
             int pageNo,
             int pageSize);
 
-    PageResult<GraphExtractionTaskWithMaterial> pageWithMaterialTitle(
+    PageResult<GraphExtractionTaskWithMaterial> listWithMaterialTitle(
             List<ContentRef> contentRefs,
             String batchId,
             GraphExtractionExecutionStatus executionStatus,

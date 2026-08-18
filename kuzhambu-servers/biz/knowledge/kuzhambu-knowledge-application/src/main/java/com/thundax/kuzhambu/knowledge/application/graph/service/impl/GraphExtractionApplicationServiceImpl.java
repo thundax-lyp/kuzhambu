@@ -195,7 +195,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     public PageResult<GraphExtractionTaskResult> pageTasks(GraphTaskQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
-        var page = taskRepository.pageWithMaterialTitle(
+        var page = taskRepository.listWithMaterialTitle(
                 query == null ? null : query.contentRefs(),
                 query == null ? null : query.batchId(),
                 GraphExtractionExecutionStatus.from(query == null ? null : query.executionStatus()),

@@ -322,7 +322,9 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphMaterialResponses.DetailData toDetailData(
             @NonNull GraphMaterialResult value, @NonNull List<GraphExtractionResponses.TaskData> extractionTasks) {
-        return toDetailData(value, extractionTasks, extractionTasks.size(), null);
+        Objects.requireNonNull(value, "value");
+        Objects.requireNonNull(extractionTasks, "extractionTasks");
+        return toDetailDataInternal(value, extractionTasks, extractionTasks.size(), null);
     }
 
     @NonNull
@@ -330,7 +332,9 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphMaterialResult value,
             @NonNull List<GraphExtractionResponses.TaskData> extractionTasks,
             long taskCount) {
-        return toDetailData(value, extractionTasks, taskCount, null);
+        Objects.requireNonNull(value, "value");
+        Objects.requireNonNull(extractionTasks, "extractionTasks");
+        return toDetailDataInternal(value, extractionTasks, taskCount, null);
     }
 
     @NonNull
@@ -338,9 +342,18 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphMaterialResult value,
             @NonNull List<GraphExtractionResponses.TaskData> extractionTasks,
             long taskCount,
-            GraphExtractionCandidatePreviewResult latestTaskCandidate) {
+            @NonNull GraphExtractionCandidatePreviewResult latestTaskCandidate) {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(extractionTasks, "extractionTasks");
+        Objects.requireNonNull(latestTaskCandidate, "latestTaskCandidate");
+        return toDetailDataInternal(value, extractionTasks, taskCount, latestTaskCandidate);
+    }
+
+    private static GraphMaterialResponses.DetailData toDetailDataInternal(
+            GraphMaterialResult value,
+            List<GraphExtractionResponses.TaskData> extractionTasks,
+            long taskCount,
+            GraphExtractionCandidatePreviewResult latestTaskCandidate) {
         return new GraphMaterialResponses.DetailData(
                 toNullableSourceData(value.source()),
                 value.material() == null ? null : toMaterialData(value.material()),
@@ -844,13 +857,20 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.PublicationConfirmRequest request) {
-        return toCommand(request, null);
+        Objects.requireNonNull(request, "request");
+        return toPublicationCommand(request, null);
     }
 
     @NonNull
     public static GraphPublicationCommand toCommand(
-            @NonNull GraphPublicationRequests.PublicationConfirmRequest request, Long publishedBy) {
+            @NonNull GraphPublicationRequests.PublicationConfirmRequest request, @NonNull Long publishedBy) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(publishedBy, "publishedBy");
+        return toPublicationCommand(request, publishedBy);
+    }
+
+    private static GraphPublicationCommand toPublicationCommand(
+            GraphPublicationRequests.PublicationConfirmRequest request, Long publishedBy) {
         return new GraphPublicationCommand(
                 toContentRef(request),
                 Long.valueOf(request.getMaterialLockVersion()),
@@ -872,13 +892,20 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphBatchPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.BatchPublicationConfirmRequest request) {
-        return toCommand(request, null);
+        Objects.requireNonNull(request, "request");
+        return toBatchPublicationCommand(request, null);
     }
 
     @NonNull
     public static GraphBatchPublicationCommand toCommand(
-            @NonNull GraphPublicationRequests.BatchPublicationConfirmRequest request, Long publishedBy) {
+            @NonNull GraphPublicationRequests.BatchPublicationConfirmRequest request, @NonNull Long publishedBy) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(publishedBy, "publishedBy");
+        return toBatchPublicationCommand(request, publishedBy);
+    }
+
+    private static GraphBatchPublicationCommand toBatchPublicationCommand(
+            GraphPublicationRequests.BatchPublicationConfirmRequest request, Long publishedBy) {
         return new GraphBatchPublicationCommand(request.getMaterials().stream()
                 .map(material -> toCommand(material, publishedBy))
                 .toList());
