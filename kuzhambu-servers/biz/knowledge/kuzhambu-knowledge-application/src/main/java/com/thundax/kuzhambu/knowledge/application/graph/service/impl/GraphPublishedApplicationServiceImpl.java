@@ -155,6 +155,9 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         var result = nodeRepository.page(
+                query == null || query.subjectNodeId() == null
+                        ? null
+                        : query.subjectNodeId().value(),
                 query == null ? null : query.subjectKeyword(),
                 query == null ? null : query.subjectType(),
                 query == null ? GraphPublishedStatus.ACTIVE : query.subjectStatus(),

@@ -147,19 +147,14 @@ export const GraphGovernancePage = () => {
                     includeIsolated: false,
                     pageNo: DEFAULT_PAGE_NO,
                     pageSize: 50,
-                    subjectKeyword: node.name ?? node.id
+                    subjectNodeId: node.id
                 }),
-            queryKey: ["knowledge", "graph-governance", "adjacency", node.id, node.name]
+            queryKey: ["knowledge", "graph-governance", "adjacency", node.id]
         }))
     });
     const adjacencyRecords = useMemo(
-        () =>
-            adjacencyQueries.flatMap((adjacencyQuery) =>
-                (adjacencyQuery.data?.records ?? []).filter((record) =>
-                    expandedNodeIds.includes(record.subject.id)
-                )
-            ),
-        [adjacencyQueries, expandedNodeIds]
+        () => adjacencyQueries.flatMap((adjacencyQuery) => adjacencyQuery.data?.records ?? []),
+        [adjacencyQueries]
     );
     const graphNodes = useMemo<KuzhambuGraphNodeItem[]>(() => {
         const nodes = new Map<string, KuzhambuGraphNodeItem>();

@@ -26,7 +26,7 @@ export type GraphGovernanceRelationPageQuery = PageQuery<{
 
 export type GraphGovernanceAdjacencyQuery = PageQuery<{
     includeIsolated?: boolean;
-    subjectKeyword?: string | null;
+    subjectNodeId?: string | null;
 }>;
 
 export const pagePublishedNodes = (query: GraphGovernanceNodePageQuery) =>

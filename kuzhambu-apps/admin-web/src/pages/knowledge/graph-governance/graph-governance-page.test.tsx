@@ -71,6 +71,11 @@ describe("GraphGovernancePage", () => {
         expect(await screen.findByTestId("knowledge-graph-governance-canvas")).toBeInTheDocument();
         expect(screen.getByText(/已以“李白”为焦点加载一跳关系/)).toBeInTheDocument();
         expect(screen.getByText("节点详情")).toBeInTheDocument();
+        await waitFor(() =>
+            expect(service.pagePublishedAdjacency).toHaveBeenCalledWith(
+                expect.objectContaining({ subjectNodeId: "1" })
+            )
+        );
     });
 
     it("submits search filters and switches to the paginated relation list", async () => {

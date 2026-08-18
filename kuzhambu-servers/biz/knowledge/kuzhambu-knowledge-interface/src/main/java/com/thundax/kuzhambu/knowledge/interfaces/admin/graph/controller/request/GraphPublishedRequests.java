@@ -77,6 +77,9 @@ public final class GraphPublishedRequests {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class PublishedAdjacencyPageRequest {
 
+        @Pattern(regexp = "^\\d+$")
+        private String subjectNodeId;
+
         @Size(max = 128)
         private String subjectKeyword;
 

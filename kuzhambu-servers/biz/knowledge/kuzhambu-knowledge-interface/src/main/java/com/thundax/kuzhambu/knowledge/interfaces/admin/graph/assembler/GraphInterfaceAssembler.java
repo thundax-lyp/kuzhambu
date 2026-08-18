@@ -1095,6 +1095,7 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphPublishedRequests.PublishedAdjacencyPageRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphPublishedAdjacencyQuery(
+                request.getSubjectNodeId() == null ? null : toNodeId(request.getSubjectNodeId()),
                 request.getSubjectKeyword(),
                 request.getSubjectType() == null ? null : GraphNodeType.from(request.getSubjectType()),
                 request.getSubjectStatus() == null ? null : GraphPublishedStatus.valueOf(request.getSubjectStatus()),

@@ -73,6 +73,7 @@ class GraphPublishedApplicationServiceImplTest {
                         any(),
                         any(),
                         any(),
+                        any(),
                         anyBoolean(),
                         anyInt(),
                         anyInt()))
@@ -80,7 +81,19 @@ class GraphPublishedApplicationServiceImplTest {
 
         var result = fixture.service.pageAdjacency(
                 new GraphPublishedAdjacencyQuery(
-                        "主语", GraphNodeType.PERSON, null, null, "RELATED_TO", null, null, null, null, null, null, null),
+                        new GraphPublishedNodeId(61L),
+                        "主语",
+                        GraphNodeType.PERSON,
+                        null,
+                        null,
+                        "RELATED_TO",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null),
                 new PageQuery(1, 20));
 
         assertThat(result.getTotalCount()).isEqualTo(1);
@@ -91,6 +104,7 @@ class GraphPublishedApplicationServiceImplTest {
         });
         verify(fixture.nodeRepository)
                 .page(
+                        eq(61L),
                         eq("主语"),
                         eq(GraphNodeType.PERSON),
                         eq(null),
