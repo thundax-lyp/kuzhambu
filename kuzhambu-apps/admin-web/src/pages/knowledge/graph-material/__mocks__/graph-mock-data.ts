@@ -112,7 +112,7 @@ export const graphMaterialMockMaterials: GraphMaterialRecord[] = [
         contentType: "MING_CUSTOMS",
         id: "2004",
         lockVersion: "2",
-        status: "DRAFT",
+        status: "READY",
         title: "明代风俗 婚礼",
         volume: "礼俗"
     }
@@ -537,7 +537,7 @@ export const graphBatchWithdrawalResult: GraphBatchWithdrawalResultRecord = {
             contentRef: publishedRef,
             result: {
                 ...graphMaterialMockMaterials[0],
-                status: "DRAFT"
+                status: "READY"
             },
             success: true
         }

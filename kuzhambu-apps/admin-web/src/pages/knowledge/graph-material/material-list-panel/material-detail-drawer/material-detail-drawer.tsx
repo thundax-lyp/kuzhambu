@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Spin } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -21,12 +21,17 @@ import "./material-detail-drawer.css";
 interface MaterialDetailDrawerProps {
     record: GraphMaterialListRecord | null;
     onClose: () => void;
+    onRefreshMaterials?: () => Promise<unknown>;
 }
 
 const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "请稍后重试。";
 
-export const MaterialDetailDrawer = ({ record, onClose }: MaterialDetailDrawerProps) => {
+export const MaterialDetailDrawer = ({
+    record,
+    onClose,
+    onRefreshMaterials = async () => undefined
+}: MaterialDetailDrawerProps) => {
     const contentRef = record?.source.contentRef ?? null;
     const contentRefKey = contentRef
         ? `${contentRef.contentType}:${contentRef.contentRefId}`
@@ -74,18 +79,19 @@ export const MaterialDetailDrawer = ({ record, onClose }: MaterialDetailDrawerPr
 
     const sections: Array<KuzhambuSegmentedDrawerSection<GraphMaterialDrawerSection>> = [
         {
-            content: (
-                <MaterialOverviewSection
-                    detail={detail}
-                    refreshing={materialDetailQuery.isRefetching}
-                    onRefresh={() => void materialDetailQuery.refetch()}
-                />
-            ),
+            content: <MaterialOverviewSection detail={detail} />,
             label: "概览",
             value: "OVERVIEW"
         },
         {
-            content: <MaterialDraftGraphSection detail={detail} />,
+            content: (
+                <MaterialDraftGraphSection
+                    detail={detail}
+                    onRefresh={async () => {
+                        await Promise.all([materialDetailQuery.refetch(), onRefreshMaterials()]);
+                    }}
+                />
+            ),
             label: "知识图谱",
             value: "DRAFT_GRAPH"
         },
@@ -108,6 +114,19 @@ export const MaterialDetailDrawer = ({ record, onClose }: MaterialDetailDrawerPr
                 }
             ]}
             open={open}
+            headerExtra={
+                <KuzhambuButton
+                    ariaLabel="刷新素材详情"
+                    icon={<ReloadOutlined />}
+                    loading={materialDetailQuery.isRefetching}
+                    testId="knowledge-graph-material-detail-refresh-button"
+                    type="text"
+                    onClick={() => void materialDetailQuery.refetch()}
+                >
+                    刷新
+                </KuzhambuButton>
+            }
+            loading={loading}
             sectionClassName="knowledge-graph-material-detail-drawer-section"
             sections={sections}
             size="large"
@@ -138,7 +157,6 @@ export const MaterialDetailDrawer = ({ record, onClose }: MaterialDetailDrawerPr
                         showIcon
                     />
                 ) : null}
-                {loading ? <Spin tip="素材详情加载中" /> : null}
             </KuzhambuSpace>
         </KuzhambuSegmentedDrawer>
     );

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Input, Splitter } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { ReloadOutlined } from "@ant-design/icons";
+import { Splitter } from "antd";
+import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuAlert, KuzhambuButton, KuzhambuPage, KuzhambuSpace } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -21,7 +21,6 @@ const getErrorMessage = (error: unknown) =>
 
 const EMPTY_MATERIAL_RECORDS: GraphMaterialListRecord[] = [];
 const EMPTY_CATALOG_NODES: MaterialCatalogNode[] = [];
-const SEARCH_DEBOUNCE_MS = 500;
 const ROOT_CATALOG_KEY = "root";
 
 const decodeCatalogNodeIdPart = (value: string) => {
@@ -30,11 +29,6 @@ const decodeCatalogNodeIdPart = (value: string) => {
     } catch {
         return value;
     }
-};
-
-const normalizeKeyword = (value: string) => {
-    const keyword = value.trim();
-    return keyword || undefined;
 };
 
 const toCatalogNode = (record: GraphMaterialTreeNodeRecord): MaterialCatalogNode => ({
@@ -98,14 +92,9 @@ const attachCatalogChildren = (
         return { ...node, children: attachCatalogChildren(node.children, parentKey, children) };
     });
 
-const toCatalogQuery = (
-    node: MaterialCatalogNode,
-    keyword: string | null,
-    pageSize: number
-): GraphMaterialPageQuery => {
+const toCatalogQuery = (node: MaterialCatalogNode, pageSize: number): GraphMaterialPageQuery => {
     const parts = node.key.split(":");
     const query: GraphMaterialPageQuery = {
-        keyword: keyword ?? undefined,
         pageNo: DEFAULT_PAGE_NO,
         pageSize
     };
@@ -124,7 +113,6 @@ const toCatalogQuery = (
 const isSamePageQuery = (left: GraphMaterialPageQuery, right: GraphMaterialPageQuery) =>
     left.categoryCode === right.categoryCode &&
     left.contentType === right.contentType &&
-    left.keyword === right.keyword &&
     left.pageNo === right.pageNo &&
     left.pageSize === right.pageSize &&
     left.volumeCode === right.volumeCode;
@@ -134,8 +122,6 @@ const isLeafCatalogNode = (node?: MaterialCatalogNode) => Boolean(node?.leaf);
 export const GraphMaterialPage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
     const canEditGraph = hasPermission("knowledge:graph:edit");
-    const [searchText, setSearchText] = useState("");
-    const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
     const [selectedCatalogKey, setSelectedCatalogKey] = useState(ROOT_CATALOG_KEY);
     const [loadedCatalogNodes, setLoadedCatalogNodes] = useState<MaterialCatalogNode[] | null>(
         null
@@ -172,24 +158,6 @@ export const GraphMaterialPage = () => {
     const records = pageResult?.records ?? EMPTY_MATERIAL_RECORDS;
     const totalCount = pageResult?.totalCount ?? pageResult?.count ?? 0;
     const isInitialError = materialPageQuery.isError && records.length === 0;
-
-    useEffect(() => {
-        const timeoutId = window.setTimeout(() => {
-            const nextKeyword = normalizeKeyword(searchText) ?? null;
-            setAppliedKeyword(nextKeyword);
-            if (selectedLeafCatalogNode) {
-                setQuery((currentQuery) => {
-                    const nextQuery = toCatalogQuery(
-                        selectedLeafCatalogNode,
-                        nextKeyword,
-                        currentQuery.pageSize || DEFAULT_PAGE_SIZE
-                    );
-                    return isSamePageQuery(currentQuery, nextQuery) ? currentQuery : nextQuery;
-                });
-            }
-        }, SEARCH_DEBOUNCE_MS);
-        return () => window.clearTimeout(timeoutId);
-    }, [searchText, selectedLeafCatalogNode]);
 
     const updateQuery = (nextQuery: GraphMaterialPageQuery) => {
         setQuery(nextQuery);
@@ -232,19 +200,13 @@ export const GraphMaterialPage = () => {
             title="图谱素材库"
             actions={
                 <KuzhambuSpace className="graph-material-page-actions">
-                    <Input
-                        allowClear
-                        aria-label="搜索图谱素材"
-                        className="graph-material-page-search"
-                        placeholder="搜索素材标题或摘要"
-                        prefix={<SearchOutlined />}
-                        value={searchText}
-                        onChange={(event) => setSearchText(event.target.value)}
-                    />
                     <KuzhambuButton
+                        ariaLabel="刷新图谱素材列表"
+                        disabled={!selectedLeafCatalogNode}
+                        loading={materialPageQuery.isFetching}
                         testId="knowledge-graph-material-refresh-button"
                         icon={<ReloadOutlined />}
-                        onClick={() => void refreshCatalog()}
+                        onClick={() => void materialPageQuery.refetch()}
                     >
                         刷新
                     </KuzhambuButton>
@@ -301,11 +263,7 @@ export const GraphMaterialPage = () => {
                                 setSelectedCatalogKey(node.key);
                                 if (isLeafCatalogNode(node)) {
                                     updateQuery(
-                                        toCatalogQuery(
-                                            node,
-                                            appliedKeyword,
-                                            query.pageSize || DEFAULT_PAGE_SIZE
-                                        )
+                                        toCatalogQuery(node, query.pageSize || DEFAULT_PAGE_SIZE)
                                     );
                                 } else {
                                     setCatalogExpandedKeys((currentKeys) =>

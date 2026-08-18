@@ -1,1 +1,5 @@
-export { GraphExtractionTaskTable } from "./graph-extraction-task-table";
+export {
+    createGraphExtractionTaskColumns,
+    GraphExtractionTaskTable,
+    graphExtractionTaskRowKey
+} from "./graph-extraction-task-table";

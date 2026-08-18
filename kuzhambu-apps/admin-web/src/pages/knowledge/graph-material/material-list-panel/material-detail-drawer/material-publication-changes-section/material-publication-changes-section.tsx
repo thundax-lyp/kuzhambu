@@ -10,6 +10,7 @@ import {
     KuzhambuTag
 } from "@/components";
 import type { GraphMaterialDetailRecord } from "@/pages/knowledge/graph-material/graph-material-types";
+import { buildReuseConflictDecisions } from "@/pages/knowledge/graph-material/graph-publication-conflicts";
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
 import "./material-publication-changes-section.css";
 
@@ -95,7 +96,7 @@ export const MaterialPublicationChangesSection = ({
             throw new Error(preview.issues[0]?.message ?? "发布预检未通过。");
         }
         await service.publishMaterial({
-            conflictDecisions: [],
+            conflictDecisions: buildReuseConflictDecisions(preview),
             contentRef: preview.materialRef,
             materialLockVersion: preview.materialLockVersion,
             previewToken: preview.previewToken

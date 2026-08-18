@@ -9,7 +9,8 @@ import * as service from "@/pages/knowledge/graph-material/graph-material-servic
 import { MaterialListPanel } from "./material-list-panel";
 
 vi.mock("@/pages/knowledge/graph-material/graph-material-service", () => ({
-    createBatchExtraction: vi.fn()
+    createBatchExtraction: vi.fn(),
+    retryExtraction: vi.fn()
 }));
 
 vi.mock("./material-detail-drawer", () => ({
@@ -87,6 +88,27 @@ describe("MaterialListPanel", () => {
                 contentRefs: [{ contentRefId: "1002", contentType: "SANCAI_ENTRY" }]
             });
         });
+    });
+
+    it("retries a failed extraction task instead of creating another task", async () => {
+        const failedRecord = graphMaterialMockListRecords[2];
+        const failedTask = failedRecord.latestTask!;
+        vi.mocked(service.retryExtraction).mockResolvedValue(failedTask);
+        renderPanel(<MaterialListPanel dataSource={[failedRecord]} onRefreshMaterials={vi.fn()} />);
+
+        fireEvent.click(screen.getByRole("button", { name: `重试 ${failedRecord.source.title}` }));
+
+        await waitFor(() => {
+            expect(vi.mocked(service.retryExtraction)).toHaveBeenCalledWith(
+                {
+                    expectedExecutionStatus: "FAILED",
+                    taskId: failedTask.id,
+                    taskLockVersion: failedTask.lockVersion
+                },
+                expect.anything()
+            );
+        });
+        expect(service.createBatchExtraction).not.toHaveBeenCalled();
     });
 
     it("opens an uninitialized material through its title link", () => {

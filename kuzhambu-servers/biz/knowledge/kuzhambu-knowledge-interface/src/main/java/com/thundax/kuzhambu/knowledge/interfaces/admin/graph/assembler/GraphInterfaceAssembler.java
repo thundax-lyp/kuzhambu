@@ -432,13 +432,15 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphExtractionRetryCommand toRetryCommand(
-            @NonNull GraphExtractionRequests.TaskActionRequest request) {
+            @NonNull GraphExtractionRequests.TaskActionRequest request, @NonNull Long requestedBy) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
         return new GraphExtractionRetryCommand(
                 Long.valueOf(request.getTaskId()),
                 Long.parseLong(request.getTaskLockVersion()),
                 request.getExpectedExecutionStatus(),
-                request.getIdempotencyKey());
+                request.getIdempotencyKey(),
+                requestedBy);
     }
 
     @NonNull
@@ -823,7 +825,8 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
-    public static GraphWithdrawalPreviewQuery toQuery(@NonNull GraphPublicationRequests.WithdrawalRequest request) {
+    public static GraphWithdrawalPreviewQuery toWithdrawalPreviewQuery(
+            @NonNull GraphMaterialRequests.ContentRefRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphWithdrawalPreviewQuery(toContentRef(request));
     }
@@ -840,11 +843,17 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.PublicationConfirmRequest request) {
+        return toCommand(request, null);
+    }
+
+    @NonNull
+    public static GraphPublicationCommand toCommand(
+            @NonNull GraphPublicationRequests.PublicationConfirmRequest request, Long publishedBy) {
         Objects.requireNonNull(request, "request");
         return new GraphPublicationCommand(
                 toContentRef(request),
                 Long.valueOf(request.getMaterialLockVersion()),
-                null,
+                publishedBy,
                 request.getPreviewToken(),
                 request.getConflictDecisions() == null
                         ? List.of()
@@ -862,9 +871,15 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphBatchPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.BatchPublicationConfirmRequest request) {
+        return toCommand(request, null);
+    }
+
+    @NonNull
+    public static GraphBatchPublicationCommand toCommand(
+            @NonNull GraphPublicationRequests.BatchPublicationConfirmRequest request, Long publishedBy) {
         Objects.requireNonNull(request, "request");
         return new GraphBatchPublicationCommand(request.getMaterials().stream()
-                .map(GraphInterfaceAssembler::toCommand)
+                .map(material -> toCommand(material, publishedBy))
                 .toList());
     }
 

@@ -235,6 +235,9 @@ describe("GraphExtractionPage", () => {
             });
         });
         expect(await screen.findByText("任务 8008")).toBeInTheDocument();
+        expect(screen.getByText("素材标题")).toBeInTheDocument();
+        expect(screen.getAllByText("运行状态")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("采纳状态")[0]).toBeInTheDocument();
         expect(screen.queryByText("请选择左侧卷目查看稿件")).not.toBeInTheDocument();
     });
 

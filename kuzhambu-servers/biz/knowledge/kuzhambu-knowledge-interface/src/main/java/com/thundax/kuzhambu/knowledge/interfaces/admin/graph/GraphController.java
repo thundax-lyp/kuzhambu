@@ -352,7 +352,7 @@ public class GraphController {
     public GraphExtractionResponses.TaskData taskRetry(
             @Valid @RequestBody GraphExtractionRequests.TaskActionRequest request) {
         return GraphInterfaceAssembler.toTaskData(
-                extractionService.retryTask(GraphInterfaceAssembler.toRetryCommand(request)));
+                extractionService.retryTask(GraphInterfaceAssembler.toRetryCommand(request, currentSubjectLong())));
     }
 
     @Operation(summary = "取消图谱提取任务", description = "knowledge:graph:edit")
@@ -694,7 +694,7 @@ public class GraphController {
     public GraphPublicationResponses.PublicationData publicationPublish(
             @Valid @RequestBody GraphPublicationRequests.PublicationConfirmRequest request) {
         return GraphInterfaceAssembler.toPublicationData(
-                publicationService.publish(GraphInterfaceAssembler.toCommand(request)));
+                publicationService.publish(GraphInterfaceAssembler.toCommand(request, currentSubjectLong())));
     }
 
     @Operation(summary = "批量预览图谱素材发布", description = "knowledge:graph:view")
@@ -728,7 +728,7 @@ public class GraphController {
     public GraphPublicationResponses.BatchData publicationBatchPublish(
             @Valid @RequestBody GraphPublicationRequests.BatchPublicationConfirmRequest request) {
         return GraphInterfaceAssembler.toBatchData(
-                publicationService.publishBatch(GraphInterfaceAssembler.toCommand(request)));
+                publicationService.publishBatch(GraphInterfaceAssembler.toCommand(request, currentSubjectLong())));
     }
 
     @Operation(summary = "预览撤回图谱素材发布", description = "knowledge:graph:view")
@@ -743,9 +743,9 @@ public class GraphController {
     @SysLogger(value = "图谱发布撤回预览")
     @PostMapping("publication/withdrawal/preview")
     public GraphPublicationResponses.WithdrawalPreviewData withdrawalPreview(
-            @Valid @RequestBody GraphPublicationRequests.WithdrawalRequest request) {
+            @Valid @RequestBody GraphMaterialRequests.ContentRefRequest request) {
         return GraphInterfaceAssembler.toWithdrawalPreviewData(
-                publicationService.previewWithdrawal(GraphInterfaceAssembler.toQuery(request)));
+                publicationService.previewWithdrawal(GraphInterfaceAssembler.toWithdrawalPreviewQuery(request)));
     }
 
     @Operation(summary = "撤回图谱素材发布", description = "knowledge:graph:edit")

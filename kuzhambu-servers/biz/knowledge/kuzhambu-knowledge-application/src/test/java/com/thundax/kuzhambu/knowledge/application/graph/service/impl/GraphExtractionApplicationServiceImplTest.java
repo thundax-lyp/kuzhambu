@@ -87,7 +87,7 @@ class GraphExtractionApplicationServiceImplTest {
         var result = service.createExtraction(new GraphExtractionCommand(ref, "idem-1", 1L));
 
         assertThat(result.taskId()).isEqualTo(7001L);
-        assertThat(result.executionStatus()).isEqualTo("PENDING");
+        assertThat(result.executionStatus()).isEqualTo("RUNNING");
         verify(aiFacade).submitKnowledgeGraphExtraction(any());
         verify(statsRefresher).refresh(any(GraphMaterial.class));
 
@@ -120,7 +120,7 @@ class GraphExtractionApplicationServiceImplTest {
 
         assertThat(result.tasks()).hasSize(2);
         assertThat(result.tasks().get(0).contentRef()).isEqualTo(first);
-        assertThat(result.tasks().get(0).executionStatus()).isEqualTo("PENDING");
+        assertThat(result.tasks().get(0).executionStatus()).isEqualTo("RUNNING");
         assertThat(result.tasks().get(1).contentRef()).isEqualTo(second);
         assertThat(result.tasks().get(1).executionStatus()).isEqualTo("FAILED");
     }
@@ -179,6 +179,63 @@ class GraphExtractionApplicationServiceImplTest {
     }
 
     @Test
+    void shouldFailTaskWhenCompletedAiBatchHasNoCandidate() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setAiBatchId(9001L);
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(taskRepository.listByMaterialId(11L)).thenReturn(List.of(task));
+        when(aiFacade.getBatchJob(9001L))
+                .thenReturn(AiBatchJobFacadeResponse.builder()
+                        .batchId(9001L)
+                        .status("SUCCEEDED")
+                        .completedAt(NOW)
+                        .build());
+
+        var result = service.getTask(new GraphTaskDetailQuery(7001L));
+
+        assertThat(result.task().executionStatus()).isEqualTo("FAILED");
+        assertThat(result.task().currentStage()).isEqualTo("CANDIDATE_UNAVAILABLE");
+    }
+
+    @Test
+    void shouldReturnLatestTaskWhenAiSyncLosesLockRace() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask staleTask = task(7001L, 11L, ref);
+        staleTask.setAiBatchId(9001L);
+        GraphExtractionTask synchronizedTask = task(7001L, 11L, ref);
+        synchronizedTask.setAiBatchId(9001L);
+        synchronizedTask.setExecutionStatus(GraphExtractionExecutionStatus.SUCCEEDED);
+        synchronizedTask.setCandidateId(9101L);
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(9101L)
+                .batchId(9001L)
+                .capability("KNOWLEDGE_GRAPH_EXTRACT")
+                .contentType("SANCAI_ENTRY")
+                .contentId(1001L)
+                .resultFormat("json")
+                .resultPayload("{}")
+                .build();
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(staleTask, synchronizedTask);
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(0);
+        when(taskRepository.listByMaterialId(11L)).thenReturn(List.of(synchronizedTask));
+        when(aiFacade.getBatchJob(9001L))
+                .thenReturn(AiBatchJobFacadeResponse.builder()
+                        .batchId(9001L)
+                        .status("SUCCEEDED")
+                        .completedAt(NOW)
+                        .build());
+        when(aiFacade.getLatestCandidateByBatch(9001L)).thenReturn(candidate);
+        when(aiFacade.getCandidate(any())).thenReturn(candidate);
+
+        var result = service.getTask(new GraphTaskDetailQuery(7001L));
+
+        assertThat(result.task().executionStatus()).isEqualTo("SUCCEEDED");
+        assertThat(result.task().candidateId()).isEqualTo(9101L);
+    }
+
+    @Test
     void shouldSubmitNewAiBatchWhenRetryingFailedTask() throws Exception {
         ContentRef ref = ref(1001L);
         GraphExtractionTask task = task(7001L, 11L, ref);
@@ -194,13 +251,34 @@ class GraphExtractionApplicationServiceImplTest {
                 .thenReturn(
                         AiBatchJobActionFacadeResponse.builder().batchId(9002L).build());
 
-        var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 3L, "FAILED", "retry-1"));
+        var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 3L, "FAILED", "retry-1", 1L));
 
-        assertThat(result.executionStatus()).isEqualTo("PENDING");
+        assertThat(result.executionStatus()).isEqualTo("RUNNING");
         assertThat(result.attemptNo()).isEqualTo(2);
         assertThat(task.getAiBatchId()).isEqualTo(9002L);
         assertThat(material.getCurrentExtractionTaskId()).isEqualTo(new GraphExtractionTaskId(7001L));
         verify(aiFacade).submitKnowledgeGraphExtraction(any());
+    }
+
+    @Test
+    void shouldRefreshMissingContentSnapshotWhenRetryingFailedTask() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setExecutionStatus(GraphExtractionExecutionStatus.FAILED);
+        GraphMaterial material = material(11L, ref, null);
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(materialRepository.getByContentRef(ref)).thenReturn(material);
+        when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(contentResolver.resolveWorkbench(ref)).thenReturn(snapshot(ref));
+        when(aiFacade.submitKnowledgeGraphExtraction(any()))
+                .thenReturn(
+                        AiBatchJobActionFacadeResponse.builder().batchId(9002L).build());
+
+        service.retryTask(new GraphExtractionRetryCommand(7001L, 3L, "FAILED", "retry-1", 1L));
+
+        assertThat(task.getContentSnapshotJson()).contains("素材1001");
+        verify(contentResolver).resolveWorkbench(ref);
     }
 
     private static ContentRef ref(Long id) {

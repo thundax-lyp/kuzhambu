@@ -203,6 +203,16 @@ export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectio
     });
     const taskSummary = detail?.taskSummary;
     const latestTask = detail?.extractionTasks?.[0] ?? taskSummary?.latestTask;
+    const retryExtractionMutation = useMutation({
+        mutationFn: service.retryExtraction,
+        onSuccess: async (task) => {
+            await queryClient.refetchQueries({
+                queryKey: ["knowledge", "graph-material"],
+                type: "active"
+            });
+            messageApi.success(`抽取任务已重试 #${task?.id ?? "-"}`);
+        }
+    });
     const extractedGraph = parseExtractedGraphDocument(detail?.latestTaskCandidate);
     const extractedGraphSpoList = extractedGraph ? toKuzhambuGraphSpoList(extractedGraph) : [];
     const canApplyLatestCandidate =
@@ -259,17 +269,26 @@ export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectio
                         disabled={
                             !canExtractMaterial ||
                             extractionMutation.isPending ||
+                            retryExtractionMutation.isPending ||
                             hasActiveExtractionTask(latestTask?.executionStatus)
                         }
                         icon={<RobotOutlined />}
-                        loading={extractionMutation.isPending}
+                        loading={extractionMutation.isPending || retryExtractionMutation.isPending}
                         testId="knowledge-graph-material-detail-extract-button"
                         type="primary"
-                        onClick={() =>
-                            extractionMutation.mutate({ contentRef: detail.source.contentRef })
-                        }
+                        onClick={() => {
+                            if (latestTask?.executionStatus === "FAILED") {
+                                retryExtractionMutation.mutate({
+                                    expectedExecutionStatus: "FAILED",
+                                    taskId: latestTask.id,
+                                    taskLockVersion: latestTask.lockVersion
+                                });
+                                return;
+                            }
+                            extractionMutation.mutate({ contentRef: detail.source.contentRef });
+                        }}
                     >
-                        抽取
+                        {latestTask?.executionStatus === "FAILED" ? "重试" : "抽取"}
                     </KuzhambuButton>
                 }
             >

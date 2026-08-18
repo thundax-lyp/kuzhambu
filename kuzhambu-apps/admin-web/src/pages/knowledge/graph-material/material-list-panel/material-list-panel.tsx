@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { RobotOutlined } from "@ant-design/icons";
 import { App, Typography } from "antd";
 import * as service from "@/pages/knowledge/graph-material/graph-material-service";
+import { buildReuseConflictDecisions } from "@/pages/knowledge/graph-material/graph-publication-conflicts";
 import { MaterialDetailDrawer } from "./material-detail-drawer";
 import type {
     GraphContentRefRecord,
@@ -131,7 +132,18 @@ export const MaterialListPanel = ({
             messageApi.warning(
                 `已创建 ${result.materials.length - failures.length} 个任务，${failureSummary}`
             );
-        }
+        },
+        onError: (error) =>
+            messageApi.error(error instanceof Error ? error.message : "创建抽取任务失败")
+    });
+    const retryExtractionMutation = useMutation({
+        mutationFn: service.retryExtraction,
+        onSuccess: (task) => {
+            void onRefreshMaterials();
+            messageApi.success(`抽取任务已重试 #${task?.id ?? "-"}`);
+        },
+        onError: (error) =>
+            messageApi.error(error instanceof Error ? error.message : "重试抽取任务失败")
     });
     const publicationMutation = useMutation({
         mutationFn: async (record: GraphMaterialListRecord) => {
@@ -152,7 +164,7 @@ export const MaterialListPanel = ({
                 throw new Error(preview.issues[0]?.message ?? "发布预检未通过。");
             }
             return service.publishMaterial({
-                conflictDecisions: [],
+                conflictDecisions: buildReuseConflictDecisions(preview),
                 contentRef: preview.materialRef,
                 materialLockVersion: preview.materialLockVersion,
                 previewToken: preview.previewToken
@@ -214,7 +226,7 @@ export const MaterialListPanel = ({
                     return result
                         ? [
                               {
-                                  conflictDecisions: [],
+                                  conflictDecisions: buildReuseConflictDecisions(result),
                                   contentRef: result.materialRef,
                                   materialLockVersion: result.materialLockVersion,
                                   previewToken: result.previewToken
@@ -250,8 +262,12 @@ export const MaterialListPanel = ({
     const selectedRecords = selectedRowKeys
         .map((key) => recordByKey.get(String(key)))
         .filter((record): record is GraphMaterialListRecord => record !== undefined);
+    const retryableSelectedRecords = selectedRecords.filter(
+        (record) => record.latestTask?.executionStatus === "FAILED"
+    );
     const extractableSelectedRecords = selectedRecords.filter(
-        (record) => !hasActiveExtractionTask(record)
+        (record) =>
+            record.latestTask?.executionStatus !== "FAILED" && !hasActiveExtractionTask(record)
     );
     const canPublishSelectedMaterials =
         selectedRecords.length > 0 &&
@@ -262,16 +278,49 @@ export const MaterialListPanel = ({
     const closeMaterialDetailDrawer = () => {
         setActiveRecord(null);
     };
-    const extractMaterial = (contentRef: GraphContentRefRecord) =>
-        batchExtractionMutation.mutateAsync({ contentRefs: [contentRef] });
+    const extractMaterial = (record: GraphMaterialListRecord) => {
+        if (record.latestTask?.executionStatus === "FAILED") {
+            return retryExtractionMutation.mutateAsync({
+                expectedExecutionStatus: "FAILED",
+                taskId: record.latestTask.id,
+                taskLockVersion: record.latestTask.lockVersion
+            });
+        }
+        return batchExtractionMutation.mutateAsync({ contentRefs: [record.source.contentRef] });
+    };
     const extractSelectedMaterials = () => {
-        const skippedCount = selectedRecords.length - extractableSelectedRecords.length;
+        const skippedCount =
+            selectedRecords.length -
+            retryableSelectedRecords.length -
+            extractableSelectedRecords.length;
         if (skippedCount > 0) {
             messageApi.info(`${skippedCount} 个素材已有执行中的提取任务，已跳过。`);
         }
-        void batchExtractionMutation.mutateAsync({
-            contentRefs: extractableSelectedRecords.map((record) => record.source.contentRef)
-        });
+        void (async () => {
+            try {
+                await Promise.all([
+                    ...(extractableSelectedRecords.length > 0
+                        ? [
+                              batchExtractionMutation.mutateAsync({
+                                  contentRefs: extractableSelectedRecords.map(
+                                      (record) => record.source.contentRef
+                                  )
+                              })
+                          ]
+                        : []),
+                    ...retryableSelectedRecords.map((record) =>
+                        retryExtractionMutation.mutateAsync({
+                            expectedExecutionStatus: "FAILED",
+                            taskId: record.latestTask!.id,
+                            taskLockVersion: record.latestTask!.lockVersion
+                        })
+                    )
+                ]);
+                setSelectedRowKeys([]);
+            } catch {
+                // The individual mutation reports the error and keeps the selection for another try.
+            }
+        })();
     };
     const columns: KuzhambuTableProps<GraphMaterialListRecord>["columns"] = [
         {
@@ -338,11 +387,18 @@ export const MaterialListPanel = ({
                 },
                 {
                     key: "extract",
-                    text: "提取",
+                    text: record.latestTask?.executionStatus === "FAILED" ? "重试" : "提取",
                     testId: "knowledge-graph-material-extract-button",
-                    ariaLabel: `提取 ${record.source.title}`,
-                    disabled: !canExtractMaterial || hasActiveExtractionTask(record),
-                    onClick: () => void extractMaterial(record.source.contentRef)
+                    ariaLabel:
+                        record.latestTask?.executionStatus === "FAILED"
+                            ? `重试 ${record.source.title}`
+                            : `提取 ${record.source.title}`,
+                    disabled:
+                        !canExtractMaterial ||
+                        hasActiveExtractionTask(record) ||
+                        batchExtractionMutation.isPending ||
+                        retryExtractionMutation.isPending,
+                    onClick: () => void extractMaterial(record)
                 },
                 {
                     key: "publication",
@@ -376,15 +432,18 @@ export const MaterialListPanel = ({
                                 <KuzhambuButton
                                     disabled={
                                         !canExtractMaterial ||
-                                        extractableSelectedRecords.length === 0
+                                        (extractableSelectedRecords.length === 0 &&
+                                            retryableSelectedRecords.length === 0)
                                     }
                                     icon={<RobotOutlined />}
-                                    loading={batchExtractionMutation.isPending}
                                     testId="knowledge-graph-material-batch-extract-button"
                                     type="primary"
                                     onClick={extractSelectedMaterials}
                                 >
-                                    批量提取
+                                    {retryableSelectedRecords.length > 0 &&
+                                    extractableSelectedRecords.length === 0
+                                        ? "批量重试"
+                                        : "批量提取"}
                                 </KuzhambuButton>
                                 {canPublishSelectedMaterials || canWithdrawSelectedMaterials ? (
                                     <KuzhambuButton
@@ -412,7 +471,11 @@ export const MaterialListPanel = ({
                     }}
                     columns={columns}
                     dataSource={dataSource}
-                    loading={loading || batchExtractionMutation.isPending}
+                    loading={
+                        loading ||
+                        batchExtractionMutation.isPending ||
+                        retryExtractionMutation.isPending
+                    }
                     pagination={pagination}
                     rowKey={readRecordKey}
                     rowSelection={{
@@ -425,7 +488,11 @@ export const MaterialListPanel = ({
                     }}
                 />
             )}
-            <MaterialDetailDrawer record={activeRecord} onClose={closeMaterialDetailDrawer} />
+            <MaterialDetailDrawer
+                record={activeRecord}
+                onClose={closeMaterialDetailDrawer}
+                onRefreshMaterials={onRefreshMaterials}
+            />
         </div>
     );
 };

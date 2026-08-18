@@ -1,12 +1,5 @@
 import { Empty } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
-import {
-    KuzhambuButton,
-    KuzhambuCard,
-    KuzhambuDescriptions,
-    KuzhambuSpace,
-    KuzhambuTag
-} from "@/components";
+import { KuzhambuCard, KuzhambuDescriptions, KuzhambuSpace, KuzhambuTag } from "@/components";
 import type {
     GraphMaterialDetailRecord,
     GraphMaterialStatus
@@ -41,8 +34,6 @@ const MATERIAL_STATUS_TYPES: Readonly<
 
 interface MaterialOverviewSectionProps {
     detail: GraphMaterialDetailRecord | null;
-    refreshing?: boolean;
-    onRefresh?: () => void;
 }
 
 const readSourceTypeLabel = (contentType: string) => SOURCE_TYPE_LABELS[contentType] || contentType;
@@ -58,11 +49,7 @@ const readMaterialStatus = (detail: GraphMaterialDetailRecord) => {
     );
 };
 
-export const MaterialOverviewSection = ({
-    detail,
-    refreshing = false,
-    onRefresh
-}: MaterialOverviewSectionProps) => {
+export const MaterialOverviewSection = ({ detail }: MaterialOverviewSectionProps) => {
     if (!detail) {
         return (
             <Empty
@@ -79,14 +66,6 @@ export const MaterialOverviewSection = ({
             orientation="vertical"
             size={12}
         >
-            <KuzhambuButton
-                icon={<ReloadOutlined />}
-                loading={refreshing}
-                testId="knowledge-graph-material-detail-refresh-button"
-                onClick={onRefresh}
-            >
-                刷新素材详情
-            </KuzhambuButton>
             <KuzhambuCard title="素材来源" size="small">
                 <KuzhambuDescriptions
                     ariaLabel="素材来源"

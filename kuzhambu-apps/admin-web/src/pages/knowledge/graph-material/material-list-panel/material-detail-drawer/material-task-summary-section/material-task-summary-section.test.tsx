@@ -10,6 +10,7 @@ import { MaterialTaskSummarySection } from "./material-task-summary-section";
 
 vi.mock("@/pages/knowledge/graph-material/graph-material-service", () => ({
     createExtraction: vi.fn(),
+    retryExtraction: vi.fn(),
     applyCandidate: vi.fn()
 }));
 

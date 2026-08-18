@@ -23,10 +23,6 @@ html[data-theme="dark"] .graph-material-page {
     justify-content: flex-end;
 }
 
-.graph-material-page-search {
-    width: min(100%, 280px);
-}
-
 .graph-material-alert {
     position: relative;
     z-index: 1;
@@ -59,10 +55,6 @@ html[data-theme="dark"] .graph-material-page {
 }
 
 @media (max-width: 760px) {
-    .graph-material-page-search {
-        width: 100%;
-    }
-
     .graph-material-work-area {
         width: 100% !important;
         max-width: 100%;

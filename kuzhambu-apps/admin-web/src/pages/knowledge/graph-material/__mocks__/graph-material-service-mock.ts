@@ -67,6 +67,20 @@ export const mockGraphMaterialService: GraphMaterialService = {
         }
         return detail;
     },
+    createMaterialNode: async (command) =>
+        mockGraphMaterialService.getMaterial({ contentRef: command.contentRef }),
+    updateMaterialNode: async (command) =>
+        mockGraphMaterialService.getMaterial({ contentRef: command.contentRef }),
+    deleteMaterialNode: async (command) =>
+        mockGraphMaterialService.getMaterial({ contentRef: command.contentRef }),
+    createMaterialEdge: async (command) =>
+        mockGraphMaterialService.getMaterial({ contentRef: command.contentRef }),
+    updateMaterialEdge: async (command) =>
+        mockGraphMaterialService.getMaterial({ contentRef: command.contentRef }),
+    deleteMaterialEdge: async (command) =>
+        mockGraphMaterialService.getMaterial({ contentRef: command.contentRef }),
+    mergeMaterialNodes: async (command) =>
+        mockGraphMaterialService.getMaterial({ contentRef: command.contentRef }),
     createExtraction: async (command) => {
         const result = graphBatchExtractionResult.materials.find(
             (material) =>
@@ -82,6 +96,12 @@ export const mockGraphMaterialService: GraphMaterialService = {
         return result?.result ?? graphBatchExtractionResult.materials[0].result;
     },
     createBatchExtraction: async () => graphBatchExtractionResult,
+    retryExtraction: async (command) => {
+        const detail = graphMaterialMockDetails.find((item) =>
+            item.extractionTasks?.some((task) => task.id === command.taskId)
+        );
+        return detail?.extractionTasks?.find((task) => task.id === command.taskId);
+    },
     applyCandidate: async () => ({}),
     previewPublication: async (command) => ({
         edges: [],
@@ -137,7 +157,7 @@ export const mockGraphMaterialService: GraphMaterialService = {
         contentType: command.contentRef.contentType,
         id: command.contentRef.contentRefId,
         lockVersion: command.materialLockVersion,
-        status: "DRAFT",
+        status: "READY",
         title: command.contentRef.contentRefId
     }),
     precheckDeletion: async () => ({ executable: true }),

@@ -19,6 +19,7 @@ const drawerActionMocks = {
 
 vi.mock("@/pages/knowledge/graph-material/graph-material-service", () => ({
     createExtraction: vi.fn(),
+    retryExtraction: vi.fn(),
     getMaterial: vi.fn(),
     precheckDeletion: vi.fn(),
     previewPublication: vi.fn(),
@@ -152,7 +153,10 @@ describe("MaterialDetailDrawer", () => {
         expect(
             screen.getByTestId("knowledge-graph-material-detail-draft-graph-section")
         ).toBeInTheDocument();
-        expect(screen.getByText("草稿图谱：三才图会 人物一")).toBeInTheDocument();
+        expect(screen.getAllByText("图谱信息").length).toBeGreaterThan(0);
+        expect(screen.getByTestId("knowledge-graph-material-canvas-mock")).toHaveTextContent(
+            "1 条关系"
+        );
 
         await user.click(screen.getByText("任务"));
         expect(
@@ -165,22 +169,21 @@ describe("MaterialDetailDrawer", () => {
         expect(screen.queryByText("发布变更")).not.toBeInTheDocument();
     });
 
-    it("keeps published material draft graph read-only in the drawer section", async () => {
+    it("disables graph mutations for published material", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         renderDrawer();
         const user = userEvent.setup();
 
         await user.click(screen.getByText("知识图谱"));
 
-        expect(screen.getByText("草稿图谱：三才图会 人物一")).toBeInTheDocument();
-        expect(screen.getByText("只读")).toBeInTheDocument();
         expect(screen.getByTestId("knowledge-graph-material-canvas-mock")).toHaveTextContent(
             "1 条关系"
         );
-        expect(screen.queryByRole("button", { name: "新增对象" })).not.toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "抽取草稿" })).not.toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "导入草稿" })).not.toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: "撤回素材" })).not.toBeInTheDocument();
+        expect(screen.getByTestId("knowledge-graph-material-draft-create-button")).toBeDisabled();
+        expect(screen.getByTestId("knowledge-graph-material-draft-merge-button")).toBeDisabled();
+        expect(
+            screen.getByTestId("knowledge-graph-material-draft-batch-delete-button")
+        ).toBeDisabled();
         expect(screen.queryByText("发布预览")).not.toBeInTheDocument();
     });
 
@@ -239,17 +242,15 @@ describe("MaterialDetailDrawer", () => {
         expect(screen.queryByRole("button", { name: "删除任务" })).not.toBeInTheDocument();
     });
 
-    it("does not keep the selected draft object state after the drawer closes", async () => {
+    it("does not keep the merge dialog state after the drawer closes", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         renderSwitchableDrawer();
         const user = userEvent.setup();
 
         await user.click(screen.getByText("知识图谱"));
-        await user.click(
-            screen.getByTestId("knowledge-graph-material-open-object-node-1004-1-button")
-        );
+        await user.click(screen.getByTestId("knowledge-graph-material-draft-merge-button"));
         expect(
-            screen.getByTestId("knowledge-graph-material-draft-object-detail")
+            screen.getByTestId("knowledge-graph-material-draft-merge-modal")
         ).toBeInTheDocument();
 
         await user.click(screen.getByTestId("knowledge-graph-material-detail-close-button"));
@@ -262,9 +263,8 @@ describe("MaterialDetailDrawer", () => {
         await user.click(screen.getByRole("button", { name: "打开已发布素材" }));
         await user.click(screen.getByText("知识图谱"));
 
-        expect(screen.getByText("草稿图谱：三才图会 人物一")).toBeInTheDocument();
         expect(
-            screen.queryByTestId("knowledge-graph-material-draft-object-detail")
+            screen.queryByTestId("knowledge-graph-material-draft-merge-modal")
         ).not.toBeInTheDocument();
     });
 });

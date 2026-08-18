@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Empty, Input } from "antd";
+import { App, Input } from "antd";
 import { useState } from "react";
 import { usePermission } from "@/auth/hooks/use-permission";
 import { KuzhambuAlert, KuzhambuListPage, KuzhambuPage, KuzhambuSelect } from "@/components";
@@ -10,7 +10,10 @@ import type {
     GraphExtractionTaskPageQuery,
     GraphExtractionTaskStateCommand
 } from "./graph-extraction-service";
-import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
+import {
+    createGraphExtractionTaskColumns,
+    graphExtractionTaskRowKey
+} from "./graph-extraction-task-table";
 import type {
     GraphContentRefRecord,
     GraphExtractionTaskRecord,
@@ -238,43 +241,38 @@ export const GraphExtractionPage = () => {
 
     return (
         <KuzhambuListPage
-            content={
-                tasks.length > 0 ? (
-                    <GraphExtractionTaskTable
-                        canRetry={canEditGraph}
-                        loading={taskPageQuery.isLoading}
-                        pageNo={taskQuery.pageNo ?? DEFAULT_PAGE_NO}
-                        pageSize={taskQuery.pageSize ?? DEFAULT_PAGE_SIZE}
-                        retryingTaskId={
-                            retryTaskMutation.variables
-                                ? String(
-                                      retryTaskMutation.variables.taskId ||
-                                          retryTaskMutation.variables.id
-                                  )
-                                : null
-                        }
-                        tasks={tasks}
-                        total={taskTotalCount}
-                        onPageChange={(pageNo, pageSize) =>
-                            setTaskQuery((currentQuery) => ({ ...currentQuery, pageNo, pageSize }))
-                        }
-                        onRetry={(task) => retryTaskMutation.mutate(task)}
-                    />
-                ) : (
-                    <Empty
-                        className="knowledge-graph-extraction-task-empty"
-                        description="当前还没有抽取任务。"
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    />
-                )
-            }
             description="查看 Knowledge 抽取任务的运行状态和结果。"
             enableFilter
             filterActive={hasActiveFilters}
+            filterDefaultOpen
             filterFields={filterFields}
             pageClassName="graph-extraction-page knowledge-graph-extraction-page"
+            rowKey={graphExtractionTaskRowKey}
             subjectName="知识抽取任务"
             title="知识抽取"
+            ariaLabel="知识抽取任务列表"
+            columns={createGraphExtractionTaskColumns({
+                canRetry: canEditGraph,
+                retryingTaskId: retryTaskMutation.variables
+                    ? String(retryTaskMutation.variables.taskId || retryTaskMutation.variables.id)
+                    : null,
+                onRetry: (task) => retryTaskMutation.mutate(task)
+            })}
+            dataSource={tasks}
+            loading={taskPageQuery.isLoading}
+            locale={{
+                emptyText: taskPageQuery.isError
+                    ? "任务列表加载失败，请确认权限和接口状态。"
+                    : "暂无抽取任务"
+            }}
+            pagination={{
+                current: taskQuery.pageNo ?? DEFAULT_PAGE_NO,
+                pageSize: taskQuery.pageSize ?? DEFAULT_PAGE_SIZE,
+                showTotal: (total) => `共 ${total} 个任务`,
+                total: taskTotalCount,
+                onChange: (pageNo, pageSize) =>
+                    setTaskQuery((currentQuery) => ({ ...currentQuery, pageNo, pageSize }))
+            }}
             onFilterApply={() =>
                 setTaskQuery((currentQuery) => ({
                     ...currentQuery,

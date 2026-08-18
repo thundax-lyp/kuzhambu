@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.application.graph.operator;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -40,6 +41,35 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
 class GraphPublicationExecutorTest {
+
+    @Test
+    void publishShouldValidateReadyMaterialBeforeTransitioningToPublishing() {
+        Fixture fixture = new Fixture();
+        GraphMaterial material = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.READY, null, 0L);
+        GraphMaterial statusMaterial = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.READY, null, 0L);
+        when(fixture.graphLoader.require(fixture.ref))
+                .thenReturn(GraphMaterialGraph.of(material, List.of(), List.of()));
+        when(fixture.materialRepository.getByContentRef(fixture.ref)).thenReturn(statusMaterial);
+        when(fixture.materialRepository.updateIfLockVersion(
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong()))
+                .thenReturn(1);
+        when(fixture.previewTokenRepository.getByToken("preview-token"))
+                .thenReturn(new GraphPublicationPreviewToken(
+                        "preview-token",
+                        fixture.ref,
+                        0L,
+                        "{\"materialLockVersion\":0,\"nodes\":[],\"edges\":[]}",
+                        Instant.now().plusSeconds(60),
+                        null));
+        when(fixture.schemaResolver.validateForPublication(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(List.of());
+
+        var result = fixture.executor.publishOne(
+                new GraphPublicationCommand(fixture.ref, 0L, 9001L, "preview-token", List.of()));
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.materialStatus()).isEqualTo(GraphMaterialStatus.PUBLISHED);
+    }
 
     @Test
     void publishShouldRequireDecisionForEachPreviewConflict() {

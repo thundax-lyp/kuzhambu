@@ -139,6 +139,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 extractionRequest(materialRef, snapshot, command.requestedBy()));
         if (aiBatch != null && aiBatch.getBatchId() != null) {
             task.setAiBatchId(aiBatch.getBatchId());
+            task.start();
             updateTask(task, task.getLockVersion());
         }
         return toTaskResult(task);
@@ -226,6 +227,9 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphExtractionTask task =
                 requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
         requireExpectedStatus(task, command.expectedExecutionStatus());
+        if (!hasUsableContentSnapshot(task.getContentSnapshotJson())) {
+            task.setContentSnapshotJson(snapshotJson(contentResolver.resolveWorkbench(task.getContentRef())));
+        }
         taskOperator.retry(task);
         updateTask(task, command.taskLockVersion());
         GraphMaterial material = materialRepository.getByContentRef(task.getContentRef());
@@ -234,9 +238,11 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         }
         material.setCurrentExtractionTaskId(task.getId());
         updateMaterial(material);
-        AiBatchJobActionFacadeResponse aiBatch = aiFacade.submitKnowledgeGraphExtraction(extractionRequest(task, null));
+        AiBatchJobActionFacadeResponse aiBatch =
+                aiFacade.submitKnowledgeGraphExtraction(extractionRequest(task, command.requestedBy()));
         if (aiBatch != null && aiBatch.getBatchId() != null) {
             task.setAiBatchId(aiBatch.getBatchId());
+            task.start();
             updateTask(task, task.getLockVersion());
         }
         statsRefresher.refresh(task.getContentRef());
@@ -348,6 +354,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 extractionRequest(previous.getContentRef(), snapshot, command.requestedBy()));
         if (aiBatch != null && aiBatch.getBatchId() != null) {
             nextTask.setAiBatchId(aiBatch.getBatchId());
+            nextTask.start();
             updateTask(nextTask, nextTask.getLockVersion());
         }
         return toTaskResult(nextTask);
@@ -579,7 +586,14 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             }
         }
         if (task.getExecutionStatus() != originalStatus) {
-            updateTask(task, task.getLockVersion());
+            try {
+                updateTask(task, task.getLockVersion());
+            } catch (BizException ex) {
+                if (!"GRAPH_TASK_LOCK_CONFLICT".equals(ex.getCode())) {
+                    throw ex;
+                }
+                return requireTask(task.getId().value());
+            }
             if (task.getExecutionStatus() != GraphExtractionExecutionStatus.PENDING
                     && task.getExecutionStatus() != GraphExtractionExecutionStatus.RUNNING) {
                 clearActiveTask(task);
@@ -605,6 +619,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     private void succeedTaskFromAi(GraphExtractionTask task) {
         AiCandidateFacadeDto candidate = aiFacade.getLatestCandidateByBatch(task.getAiBatchId());
         if (candidate == null || candidate.getCandidateId() == null) {
+            startPendingTask(task);
+            task.fail("CANDIDATE_UNAVAILABLE", Instant.now(clock));
             return;
         }
         startPendingTask(task);
@@ -633,6 +649,17 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             return objectMapper.readTree(snapshotJson).path("title").asText();
         } catch (JsonProcessingException ex) {
             throw new BizException("Graph extraction content snapshot cannot be read");
+        }
+    }
+
+    private boolean hasUsableContentSnapshot(String snapshotJson) {
+        if (snapshotJson == null || snapshotJson.isBlank()) {
+            return false;
+        }
+        try {
+            return !objectMapper.readTree(snapshotJson).path("title").asText().isBlank();
+        } catch (JsonProcessingException ex) {
+            return false;
         }
     }
 

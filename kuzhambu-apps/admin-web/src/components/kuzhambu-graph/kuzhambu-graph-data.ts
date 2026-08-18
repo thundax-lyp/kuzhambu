@@ -1,6 +1,6 @@
 import type { EdgeData, GraphData, NodeData } from "@antv/g6";
 
-import type { KuzhambuGraphSpoItem } from "./kuzhambu-graph-types";
+import type { KuzhambuGraphNodeItem, KuzhambuGraphSpoItem } from "./kuzhambu-graph-types";
 
 const DEFAULT_GROUP = "default";
 const VIRTUAL_GROUP_PREFIX = "__kuzhambu_graph_group__";
@@ -14,7 +14,7 @@ const getObjectGroup = (spoItem: KuzhambuGraphSpoItem) => {
 };
 
 const createEdgeId = (spoItem: KuzhambuGraphSpoItem) => {
-    return `${spoItem.subject}::${spoItem.predicate}::${spoItem.object}`;
+    return `${spoItem.subjectId ?? spoItem.subject}::${spoItem.predicate}::${spoItem.objectId ?? spoItem.object}`;
 };
 
 const createGroupAnchorId = (index: number) => `${VIRTUAL_GROUP_PREFIX}${index}`;
@@ -119,14 +119,29 @@ const addLayoutAnchors = (nodes: NodeData[], edges: EdgeData[]): GraphData => {
     };
 };
 
-export const buildKuzhambuGraphData = (spoList: KuzhambuGraphSpoItem[]): GraphData => {
+export const buildKuzhambuGraphData = (
+    spoList: KuzhambuGraphSpoItem[],
+    nodeList: KuzhambuGraphNodeItem[] = []
+): GraphData => {
     const nodeMap = new Map<string, NodeData>();
     const edgeMap = new Map<string, EdgeData>();
 
+    nodeList.forEach((node) => {
+        nodeMap.set(node.id, {
+            id: node.id,
+            data: {
+                label: node.label,
+                group: node.group ?? DEFAULT_GROUP
+            }
+        });
+    });
+
     spoList.forEach((spoItem) => {
-        if (!nodeMap.has(spoItem.subject)) {
-            nodeMap.set(spoItem.subject, {
-                id: spoItem.subject,
+        const subjectId = spoItem.subjectId ?? spoItem.subject;
+        const objectId = spoItem.objectId ?? spoItem.object;
+        if (!nodeMap.has(subjectId)) {
+            nodeMap.set(subjectId, {
+                id: subjectId,
                 data: {
                     label: spoItem.subject,
                     group: getSubjectGroup(spoItem)
@@ -134,9 +149,9 @@ export const buildKuzhambuGraphData = (spoList: KuzhambuGraphSpoItem[]): GraphDa
             });
         }
 
-        if (!nodeMap.has(spoItem.object)) {
-            nodeMap.set(spoItem.object, {
-                id: spoItem.object,
+        if (!nodeMap.has(objectId)) {
+            nodeMap.set(objectId, {
+                id: objectId,
                 data: {
                     label: spoItem.object,
                     group: getObjectGroup(spoItem)
@@ -148,8 +163,8 @@ export const buildKuzhambuGraphData = (spoList: KuzhambuGraphSpoItem[]): GraphDa
         if (!edgeMap.has(edgeId)) {
             edgeMap.set(edgeId, {
                 id: edgeId,
-                source: spoItem.subject,
-                target: spoItem.object,
+                source: subjectId,
+                target: objectId,
                 data: {
                     label: spoItem.predicate
                 }

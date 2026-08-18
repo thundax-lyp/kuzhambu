@@ -6,9 +6,13 @@ import "./material-draft-graph-section.css";
 
 interface MaterialDraftGraphSectionProps {
     detail: GraphMaterialDetailRecord | null;
+    onRefresh: () => Promise<unknown>;
 }
 
-export const MaterialDraftGraphSection = ({ detail }: MaterialDraftGraphSectionProps) => {
+export const MaterialDraftGraphSection = ({
+    detail,
+    onRefresh
+}: MaterialDraftGraphSectionProps) => {
     const canEditGraph = hasPermission("knowledge:graph:edit");
     const material = detail?.material ?? null;
 
@@ -19,10 +23,10 @@ export const MaterialDraftGraphSection = ({ detail }: MaterialDraftGraphSectionP
         >
             {material ? (
                 <MaterialDraftCanvas
-                    canApplyGraph={canEditGraph}
                     canEditGraph={canEditGraph}
                     detail={detail}
                     material={material}
+                    onRefresh={onRefresh}
                 />
             ) : (
                 <Empty
