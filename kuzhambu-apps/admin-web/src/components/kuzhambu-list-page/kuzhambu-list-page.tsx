@@ -27,6 +27,7 @@ export interface KuzhambuListPageProps<RecordType extends object = object> exten
     description?: ReactNode;
     enableFilter?: boolean;
     enableSearch?: boolean;
+    filterDefaultOpen?: boolean;
     filterActive?: boolean;
     filterFields?: KuzhambuListPageFilterField[];
     filterText?: ReactNode;
@@ -57,6 +58,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     description,
     enableFilter = false,
     enableSearch = false,
+    filterDefaultOpen = false,
     filterActive = false,
     filterFields,
     filterText = "筛选",
@@ -74,7 +76,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     title,
     ...tableProps
 }: KuzhambuListPageProps<RecordType>) => {
-    const [internalFilterOpen, setInternalFilterOpen] = useState(false);
+    const [internalFilterOpen, setInternalFilterOpen] = useState(filterDefaultOpen);
     const actualFilterOpen = enableFilter && internalFilterOpen;
     const resolvedSearchPlaceholder =
         searchPlaceholder ?? (subjectName ? `搜索${subjectName}...` : "搜索...");

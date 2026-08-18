@@ -5,184 +5,35 @@ import { clearPermissions, replacePermissions } from "@/auth/permission-storage"
 import { GraphExtractionPage } from "./graph-extraction-page";
 
 const serviceState = vi.hoisted(() => ({
-    taskDisposition: "PENDING"
+    executionStatus: "SUCCEEDED"
 }));
 
 const serviceMocks = vi.hoisted(() => ({
-    applyCandidate: vi.fn(
-        async (): Promise<{
-            conflict?: { code: string; message: string };
-            task?: { disposition?: string; status: string; taskId: string };
-        }> => {
-            serviceState.taskDisposition = "ADOPTED_MERGE";
-            return {
-                task: {
-                    disposition: "ADOPTED_MERGE",
-                    status: "SUCCEEDED",
-                    taskId: "8008"
-                }
-            };
-        }
-    ),
-    cancelTask: vi.fn(async () => ({ task: { status: "CANCELLED", taskId: "8008" } })),
-    createBatchExtraction: vi.fn(async () => ({ batchId: "batch-001", materials: [] })),
-    discardCandidate: vi.fn(async () => ({ task: { status: "SUCCEEDED", taskId: "8008" } })),
-    getTask: vi.fn(async (request: { taskId: string }) => ({
-        candidate: {
-            candidateId: "7001",
-            diff: [],
-            edges: [],
-            issues: [],
-            nodes: []
-        },
-        materialStats: {
-            activeTaskCount: "0",
-            calculatedAt: "1723852820000",
-            draftEdgeCount: "18",
-            draftNodeCount: "12",
-            failedTaskCount: "0",
-            pendingReviewTaskCount: "1",
-            publicationContributionCount: "0",
-            publishedEdgeCount: "0",
-            publishedNodeCount: "0",
-            statsRevision: "4"
-        },
-        relatedTasks: [],
-        source: {
-            contentRef: {
-                contentRefId: "1001",
-                contentType: "SANCAI_ENTRY"
-            },
-            contentType: "SANCAI_ENTRY",
-            title: "三才稿件"
-        },
-        stages: [],
-        task: {
-            aiCandidateId: "7001",
-            attemptNo: "1",
-            batchJobId: "1001",
-            currentStage: "CANDIDATE_READY",
-            disposition: serviceState.taskDisposition,
-            executionStatus: "SUCCEEDED",
-            id: request.taskId,
-            lockVersion: "1",
-            materialRef: {
-                contentRefId: "1001",
-                contentType: "SANCAI_ENTRY"
-            },
-            progress: 100,
-            selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-            status: "SUCCEEDED",
-            taskId: request.taskId,
-            taskType: "GRAPH",
-            triggerSource: "QUALITY_REPORT"
-        }
-    })),
-    getMaterial: vi.fn(async () => ({
-        edges: [],
-        material: {
-            contentRef: {
-                contentRefId: "1001",
-                contentType: "SANCAI_ENTRY"
-            },
-            contentType: "SANCAI_ENTRY",
-            id: "2001",
-            lockVersion: "4",
-            status: "DRAFT",
-            title: "三才稿件"
-        },
-        materialStats: null,
-        nodes: [],
-        source: {
-            contentRef: {
-                contentRefId: "1001",
-                contentType: "SANCAI_ENTRY"
-            },
-            contentType: "SANCAI_ENTRY",
-            title: "三才稿件"
-        },
-        taskSummary: {
-            activeTaskCount: "0",
-            failedTaskCount: "0",
-            latestTask: null,
-            pendingReviewTaskCount: "0"
-        }
-    })),
     pageTasks: vi.fn(async (query?: { groupBy?: string }) => ({
         count: query?.groupBy === "MATERIAL" ? 2 : 1,
         pageNo: 1,
         pageSize: 20,
-        records:
-            query?.groupBy === "MATERIAL"
-                ? [
-                      {
-                          aiCandidateId: "7001",
-                          attemptNo: "1",
-                          batchJobId: "1001",
-                          currentStage: "CANDIDATE_READY",
-                          disposition: "PENDING",
-                          executionStatus: "SUCCEEDED",
-                          id: "8008",
-                          lockVersion: "1",
-                          materialRef: {
-                              contentRefId: "1001",
-                              contentType: "SANCAI_ENTRY"
-                          },
-                          progress: 100,
-                          selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-                          status: "SUCCEEDED",
-                          taskId: "8008",
-                          taskType: "GRAPH",
-                          triggerSource: "QUALITY_REPORT"
-                      },
-                      {
-                          aiCandidateId: null,
-                          attemptNo: "1",
-                          batchJobId: "1002",
-                          currentStage: "CANDIDATE_BUILD",
-                          disposition: null,
-                          executionStatus: "FAILED",
-                          failureReason: "候选解析失败",
-                          id: "8010",
-                          lockVersion: "1",
-                          materialRef: {
-                              contentRefId: "1002",
-                              contentType: "SANCAI_ENTRY"
-                          },
-                          progress: 60,
-                          selectionScopeJson: '{"sourceContentIds":[2001]}',
-                          status: "FAILED",
-                          taskId: "8010",
-                          taskType: "GRAPH",
-                          triggerSource: "MANUAL"
-                      }
-                  ]
-                : [
-                      {
-                          aiCandidateId: "7001",
-                          attemptNo: "1",
-                          batchJobId: "1001",
-                          currentStage: "CANDIDATE_READY",
-                          disposition: "PENDING",
-                          executionStatus: "SUCCEEDED",
-                          id: "8008",
-                          lockVersion: "1",
-                          materialRef: {
-                              contentRefId: "1001",
-                              contentType: "SANCAI_ENTRY"
-                          },
-                          progress: 100,
-                          selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-                          status: "SUCCEEDED",
-                          taskId: "8008",
-                          taskType: "GRAPH",
-                          triggerSource: "QUALITY_REPORT"
-                      }
-                  ],
+        records: [
+            {
+                attemptNo: "1",
+                currentStage: "CANDIDATE_READY",
+                disposition: "PENDING",
+                executionStatus: serviceState.executionStatus,
+                id: "8008",
+                lockVersion: "1",
+                materialRef: {
+                    contentRefId: "1001",
+                    contentType: "SANCAI_ENTRY"
+                },
+                materialTitle: "三才稿件",
+                progress: 100,
+                status: "SUCCEEDED",
+                taskId: "8008"
+            }
+        ],
         totalCount: query?.groupBy === "MATERIAL" ? 2 : 1,
         totalPage: 1
     })),
-    regenerateTask: vi.fn(async () => ({ task: { status: "PENDING", taskId: "9002" } })),
     retryTask: vi.fn(async () => ({ task: { status: "PENDING", taskId: "8008" } }))
 }));
 
@@ -213,7 +64,7 @@ const renderPage = () => {
 describe("GraphExtractionPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        serviceState.taskDisposition = "PENDING";
+        serviceState.executionStatus = "SUCCEEDED";
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
     });
 
@@ -233,127 +84,59 @@ describe("GraphExtractionPage", () => {
                 pageSize: 20
             });
         });
-        expect(await screen.findByText("任务 8008")).toBeInTheDocument();
+        expect(await screen.findByText("三才稿件")).toBeInTheDocument();
+        expect(screen.getByText("素材标题")).toBeInTheDocument();
+        expect(screen.getAllByText("运行状态")[0]).toBeInTheDocument();
+        expect(screen.getAllByText("采纳状态")[0]).toBeInTheDocument();
+        expect(screen.getByText("已成功")).toBeInTheDocument();
+        expect(screen.getByText("待采纳")).toBeInTheDocument();
         expect(screen.queryByText("请选择左侧卷目查看稿件")).not.toBeInTheDocument();
     });
 
-    it("loads task filters from batchId and contentRefs search params", async () => {
-        window.history.pushState(
-            {},
-            "",
-            `/knowledge/graph-extraction?batchId=batch-001&contentRefs=${encodeURIComponent(
-                JSON.stringify([{ contentType: "SANCAI_ENTRY", contentRefId: "1001" }])
-            )}`
-        );
-
+    it("refreshes the task list", async () => {
         renderPage();
 
+        await screen.findByText("三才稿件");
+        expect(serviceMocks.pageTasks).toHaveBeenCalledTimes(1);
+
+        fireEvent.click(screen.getByTestId("knowledge-graph-extraction-refresh-button"));
+
         await waitFor(() => {
-            expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
-                batchId: "batch-001",
-                contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }],
-                groupBy: "NONE",
-                pageNo: 1,
-                pageSize: 20
-            });
+            expect(serviceMocks.pageTasks).toHaveBeenCalledTimes(2);
         });
     });
 
-    it("switches task list mode by requesting server grouped results", async () => {
+    it("only exposes retry for failed tasks", async () => {
         renderPage();
 
-        fireEvent.click(await screen.findByText("按素材分组"));
-
-        await waitFor(() => {
-            expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
-                groupBy: "MATERIAL",
-                pageNo: 1,
-                pageSize: 20
-            });
-        });
-        expect(await screen.findByText("任务 8010")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "查看任务 8008" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "重试任务 8008" })).not.toBeInTheDocument();
     });
 
-    it("sends task lock and expected state before applying candidate from detail drawer", async () => {
+    it("retries a failed task and refreshes the task list", async () => {
+        serviceState.executionStatus = "FAILED";
         renderPage();
 
-        fireEvent.click(await screen.findByRole("button", { name: /查\s*看/u }));
-        await waitFor(() => {
-            expect(serviceMocks.getTask).toHaveBeenCalledWith({ taskId: "8008" });
-        });
-
-        fireEvent.click(await screen.findByText("候选处置"));
-        fireEvent.click(await screen.findByRole("button", { name: "合并" }));
+        fireEvent.click(await screen.findByRole("button", { name: "重试任务 8008" }));
 
         await waitFor(() => {
-            expect(serviceMocks.getMaterial).toHaveBeenCalledWith({
-                contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
+            expect(serviceMocks.retryTask).toHaveBeenCalledWith({
+                expectedExecutionStatus: "FAILED",
+                sourceTaskId: "8008",
+                taskId: "8008",
+                taskLockVersion: "1"
             });
-            expect(serviceMocks.applyCandidate).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    applyMode: "MERGE",
-                    expectedDisposition: "PENDING",
-                    expectedExecutionStatus: "SUCCEEDED",
-                    materialLockVersion: "4",
-                    taskId: "8008",
-                    taskLockVersion: "1"
-                })
-            );
+            expect(serviceMocks.pageTasks).toHaveBeenCalledTimes(2);
         });
     });
 
-    it("refreshes detail without guessing final state when task action has conflict", async () => {
-        serviceMocks.applyCandidate.mockResolvedValueOnce({
-            conflict: {
-                code: "GRAPH_TASK_LOCK_CONFLICT",
-                message: "任务版本已变化，请刷新后重试。"
-            }
-        });
+    it("does not render an empty action column without edit permission", async () => {
+        replacePermissions(["knowledge:graph:view"]);
         renderPage();
 
-        fireEvent.click(await screen.findByRole("button", { name: /查\s*看/u }));
-        await waitFor(() => {
-            expect(serviceMocks.getTask).toHaveBeenCalledWith({ taskId: "8008" });
-        });
+        await screen.findByText("三才稿件");
 
-        fireEvent.click(await screen.findByText("候选处置"));
-        fireEvent.click(await screen.findByRole("button", { name: "合并" }));
-
-        await waitFor(() => {
-            expect(serviceMocks.applyCandidate).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    expectedDisposition: "PENDING",
-                    expectedExecutionStatus: "SUCCEEDED",
-                    taskId: "8008",
-                    taskLockVersion: "1"
-                })
-            );
-        });
-        await waitFor(() => {
-            expect(serviceMocks.getTask).toHaveBeenCalledTimes(2);
-        });
-        expect(screen.getByRole("button", { name: "合并" })).toBeInTheDocument();
-    });
-
-    it("creates batch extraction tasks from contentRefs search params", async () => {
-        window.history.pushState(
-            {},
-            "",
-            `/knowledge/graph-extraction?contentRefs=${encodeURIComponent(
-                JSON.stringify([{ contentType: "SANCAI_ENTRY", contentRefId: "1001" }])
-            )}`
-        );
-        renderPage();
-
-        fireEvent.click(
-            await screen.findByTestId("knowledge-graph-extraction-batch-create-selected-button")
-        );
-
-        await waitFor(() => {
-            expect(serviceMocks.createBatchExtraction).toHaveBeenCalledWith({
-                contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
-            });
-        });
+        expect(screen.queryByRole("columnheader", { name: "操作" })).not.toBeInTheDocument();
     });
 
     it("does not load task data without graph queue permission", async () => {
@@ -372,47 +155,5 @@ describe("GraphExtractionPage", () => {
 
         expect(await screen.findByText("无权查看知识抽取任务")).toBeInTheDocument();
         expect(serviceMocks.pageTasks).not.toHaveBeenCalled();
-    });
-
-    it("submits refinement handoff regenerate payload from search params", async () => {
-        window.history.pushState(
-            {},
-            "",
-            "/knowledge/graph-extraction?regenerate=1&taskType=GRAPH&sourceTaskId=88&triggerSource=REFINEMENT_APPLIED&replaceUnconfirmedOnly=true&selectionScopeJson=%7B%22sourceContentIds%22%3A%5B1001%5D%7D"
-        );
-        renderPage();
-
-        expect(await screen.findByText("精修应用后的图谱重生成参数已载入")).toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole("button", { name: "提交重生成" }));
-
-        await waitFor(() => {
-            expect(serviceMocks.regenerateTask).toHaveBeenCalled();
-            const regenerateCalls = serviceMocks.regenerateTask.mock.calls as unknown as Array<
-                [unknown]
-            >;
-            expect(regenerateCalls[0]?.[0]).toEqual({
-                replaceUnconfirmedOnly: true,
-                selectionScopeJson: '{"sourceContentIds":[1001]}',
-                sourceTaskId: "88",
-                taskType: "GRAPH",
-                triggerSource: "REFINEMENT_APPLIED"
-            });
-        });
-    });
-
-    it("ignores invalid refinement handoff source task id", async () => {
-        window.history.pushState(
-            {},
-            "",
-            "/knowledge/graph-extraction?regenerate=1&taskType=GRAPH&sourceTaskId=abc&triggerSource=REFINEMENT_APPLIED"
-        );
-        renderPage();
-
-        await waitFor(() => {
-            expect(screen.queryByText("精修应用后的图谱重生成参数已载入")).not.toBeInTheDocument();
-        });
-        expect(screen.queryByRole("button", { name: "提交重生成" })).not.toBeInTheDocument();
-        expect(serviceMocks.regenerateTask).not.toHaveBeenCalled();
     });
 });

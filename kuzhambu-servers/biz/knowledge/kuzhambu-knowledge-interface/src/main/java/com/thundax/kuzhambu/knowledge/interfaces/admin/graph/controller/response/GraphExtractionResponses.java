@@ -11,6 +11,7 @@ public final class GraphExtractionResponses {
     public record TaskData(
             String id,
             GraphMaterialResponses.ContentRefData materialRef,
+            String materialTitle,
             String lockVersion,
             String executionStatus,
             String disposition,

@@ -45,6 +45,15 @@ class GraphRequestsTest {
     }
 
     @Test
+    void shouldAllowWithdrawalPreviewWithOnlyContentReference() {
+        var request = new GraphMaterialRequests.ContentRefRequest();
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentRefId("1001");
+
+        assertThat(validator.validate(request)).isEmpty();
+    }
+
+    @Test
     void shouldNotExposeOperatorFieldsInGraphRequests() {
         var requestTypes = Arrays.asList(
                 GraphWorkbenchRequests.class,

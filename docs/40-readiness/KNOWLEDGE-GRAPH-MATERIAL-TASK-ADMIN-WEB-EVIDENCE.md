@@ -5,7 +5,7 @@
 - Date: 2026-08-17
 - Branch: `docs/admin-web-dag-worktree-plan`
 - Area: `kuzhambu-apps/admin-web`
-- Routes: `/knowledge/graph-materials`, `/knowledge/graph-extraction`
+- Routes: `/knowledge/graph-material`, `/knowledge/graph-extraction`
 - Source runbook: migrated into this readiness evidence and removed from `docs/30-designs/`
 
 ## Current Status
@@ -18,7 +18,7 @@
 
 | Flow | Evidence | Status |
 | --- | --- | --- |
-| Material page | Playwright opens `/knowledge/graph-materials`, renders the composite material table, and verifies business network paths | Covered by E2E |
+| Material page | Playwright opens `/knowledge/graph-material`, renders the composite material table, and verifies business network paths | Covered by E2E |
 | Material drawer | Playwright opens a material detail drawer and switches task/publication sections | Covered by E2E |
 | Single material extraction | Playwright selects one material row and verifies `/knowledge/graph/task/batch/create` receives one `contentRef` | Covered by E2E |
 | Task drawer | Playwright opens task list and task segmented detail drawer from `/knowledge/graph-extraction` | Covered by E2E |

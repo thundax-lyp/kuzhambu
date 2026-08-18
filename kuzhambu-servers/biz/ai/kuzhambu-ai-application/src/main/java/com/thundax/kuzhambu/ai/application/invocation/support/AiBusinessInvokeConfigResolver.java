@@ -56,7 +56,7 @@ public class AiBusinessInvokeConfigResolver {
         ObjectNode promptVariables = buildPromptVariables(variables, inputPayload);
         String promptMessagesJson = renderPromptMessages(promptVersion.getMessageTemplatesJson(), promptVariables);
         String promptVariablesJson = toJson(promptVariables, "AI prompt variables is not valid JSON");
-        String outputSchemaJson = isBlank(command.payload().outputSchemaJson())
+        String outputSchemaJson = isEmptyJson(command.payload().outputSchemaJson())
                 ? promptVersion.getOutputSchemaJson()
                 : command.payload().outputSchemaJson();
 
@@ -320,6 +320,18 @@ public class AiBusinessInvokeConfigResolver {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private boolean isEmptyJson(String value) {
+        if (isBlank(value)) {
+            return true;
+        }
+        try {
+            JsonNode node = objectMapper.readTree(value);
+            return node == null || node.isNull() || node.isEmpty();
+        } catch (JsonProcessingException exception) {
+            return false;
+        }
     }
 
     public record ResolvedBusinessInvokeConfig(

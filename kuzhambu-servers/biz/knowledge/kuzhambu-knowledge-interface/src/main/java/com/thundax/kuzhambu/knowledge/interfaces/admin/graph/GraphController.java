@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialDeletionApplicationService;
@@ -213,6 +215,24 @@ public class GraphController {
         return PageResponseHelper.fromPageResult(result, GraphInterfaceAssembler::toMaterialPageData);
     }
 
+    @Operation(summary = "查询图谱素材树", description = "knowledge:graph:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:view")
+    @SysLogger(value = "图谱素材树")
+    @PostMapping("material/tree/list")
+    public List<GraphMaterialResponses.MaterialTreeNodeData> materialTreeList(
+            @Valid @RequestBody GraphMaterialRequests.MaterialTreeRequest request) {
+        return materialService.listMaterialTree(GraphInterfaceAssembler.toQuery(request)).stream()
+                .map(GraphInterfaceAssembler::toMaterialTreeNodeData)
+                .toList();
+    }
+
     @Operation(summary = "获取图谱素材画布", description = "knowledge:graph:view")
     @ApiImplicitParams({
         @ApiImplicitParam(
@@ -226,9 +246,24 @@ public class GraphController {
     @PostMapping("material/get")
     public GraphMaterialResponses.DetailData materialGet(
             @Valid @RequestBody GraphMaterialRequests.ContentRefRequest request) {
-        var result = materialService.getMaterialGraph(
-                GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId()));
-        return GraphInterfaceAssembler.toDetailData(result, List.of());
+        var query = GraphInterfaceAssembler.toQuery(request, KuzhambuContextHolder.currentSubjectId());
+        var result = materialService.getMaterialGraph(query);
+        var tasks = extractionService.pageTasks(
+                new GraphTaskQuery(null, null, null, null, List.of(query.materialRef()), null, null, null, null),
+                new PageQuery(1, 50));
+        var latestTaskCandidate =
+                tasks.getRecords().isEmpty() || tasks.getRecords().get(0).candidateId() == null
+                        ? null
+                        : extractionService
+                                .getTask(new GraphTaskDetailQuery(
+                                        tasks.getRecords().get(0).taskId()))
+                                .candidate();
+        var taskData = tasks.getRecords().stream()
+                .map(GraphInterfaceAssembler::toTaskData)
+                .toList();
+        return latestTaskCandidate == null
+                ? GraphInterfaceAssembler.toDetailData(result, taskData, tasks.getTotalCount())
+                : GraphInterfaceAssembler.toDetailData(result, taskData, tasks.getTotalCount(), latestTaskCandidate);
     }
 
     @Operation(summary = "创建图谱素材提取任务", description = "knowledge:graph:edit")
@@ -316,7 +351,7 @@ public class GraphController {
     public GraphExtractionResponses.TaskData taskRetry(
             @Valid @RequestBody GraphExtractionRequests.TaskActionRequest request) {
         return GraphInterfaceAssembler.toTaskData(
-                extractionService.retryTask(GraphInterfaceAssembler.toRetryCommand(request)));
+                extractionService.retryTask(GraphInterfaceAssembler.toRetryCommand(request, currentSubjectLong())));
     }
 
     @Operation(summary = "取消图谱提取任务", description = "knowledge:graph:edit")
@@ -658,7 +693,7 @@ public class GraphController {
     public GraphPublicationResponses.PublicationData publicationPublish(
             @Valid @RequestBody GraphPublicationRequests.PublicationConfirmRequest request) {
         return GraphInterfaceAssembler.toPublicationData(
-                publicationService.publish(GraphInterfaceAssembler.toCommand(request)));
+                publicationService.publish(GraphInterfaceAssembler.toCommand(request, currentSubjectLong())));
     }
 
     @Operation(summary = "批量预览图谱素材发布", description = "knowledge:graph:view")
@@ -692,7 +727,7 @@ public class GraphController {
     public GraphPublicationResponses.BatchData publicationBatchPublish(
             @Valid @RequestBody GraphPublicationRequests.BatchPublicationConfirmRequest request) {
         return GraphInterfaceAssembler.toBatchData(
-                publicationService.publishBatch(GraphInterfaceAssembler.toCommand(request)));
+                publicationService.publishBatch(GraphInterfaceAssembler.toCommand(request, currentSubjectLong())));
     }
 
     @Operation(summary = "预览撤回图谱素材发布", description = "knowledge:graph:view")
@@ -707,9 +742,9 @@ public class GraphController {
     @SysLogger(value = "图谱发布撤回预览")
     @PostMapping("publication/withdrawal/preview")
     public GraphPublicationResponses.WithdrawalPreviewData withdrawalPreview(
-            @Valid @RequestBody GraphPublicationRequests.WithdrawalRequest request) {
+            @Valid @RequestBody GraphMaterialRequests.ContentRefRequest request) {
         return GraphInterfaceAssembler.toWithdrawalPreviewData(
-                publicationService.previewWithdrawal(GraphInterfaceAssembler.toQuery(request)));
+                publicationService.previewWithdrawal(GraphInterfaceAssembler.toWithdrawalPreviewQuery(request)));
     }
 
     @Operation(summary = "撤回图谱素材发布", description = "knowledge:graph:edit")

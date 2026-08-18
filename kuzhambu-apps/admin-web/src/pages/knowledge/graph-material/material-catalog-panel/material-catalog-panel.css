@@ -1,0 +1,55 @@
+.graph-material-catalog-tree-panel {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+}
+
+.graph-material-catalog-panel-head {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--graph-material-line);
+}
+
+.graph-material-catalog-panel-title-icon {
+    color: var(--graph-material-accent);
+}
+
+.graph-material-catalog-refresh {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+}
+
+.graph-material-catalog-tree-panel:hover .graph-material-catalog-refresh,
+.graph-material-catalog-tree-panel:focus-within .graph-material-catalog-refresh {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.graph-material-catalog-tree {
+    color: var(--graph-material-ink);
+    background: transparent;
+}
+
+.graph-material-catalog-tree-title {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+}
+
+.graph-material-catalog-tree-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--graph-material-accent);
+}
+
+.graph-material-catalog-tree-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

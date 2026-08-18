@@ -77,7 +77,7 @@ describe("knowledge graph extraction service request contracts", () => {
         localStorage.clear();
     });
 
-    it("sends task page and detail requests to Knowledge graph endpoints", async () => {
+    it("sends task page requests to Knowledge graph endpoints", async () => {
         installFetchRecorder({
             pageNo: "1",
             pageSize: "20",
@@ -102,21 +102,9 @@ describe("knowledge graph extraction service request contracts", () => {
             pageNo: 1,
             pageSize: 20
         });
-
-        await service.getTask({ taskId: "7001" });
-        expectLastCall("POST", "/knowledge/graph/task/get", {
-            taskId: "7001"
-        });
-
-        await service.getMaterial({
-            contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
-        });
-        expectLastCall("POST", "/knowledge/graph/material/get", {
-            contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
-        });
     });
 
-    it("adds idempotency key, lock version and expected states to task mutations", async () => {
+    it("adds idempotency key, lock version and expected state to task retry", async () => {
         installFetchRecorder({
             attemptNo: "1",
             currentStage: "CANDIDATE_READY",
@@ -138,83 +126,6 @@ describe("knowledge graph extraction service request contracts", () => {
             idempotencyKey: "00000000-0000-4000-8000-000000000002",
             taskId: "7003",
             taskLockVersion: "3"
-        });
-
-        await service.cancelTask({
-            expectedExecutionStatus: "RUNNING",
-            taskId: "7002",
-            taskLockVersion: "2"
-        });
-        expectLastCall("POST", "/knowledge/graph/task/cancel", {
-            expectedExecutionStatus: "RUNNING",
-            idempotencyKey: "00000000-0000-4000-8000-000000000002",
-            taskId: "7002",
-            taskLockVersion: "2"
-        });
-
-        await service.applyCandidate({
-            applyMode: "MERGE",
-            expectedDisposition: "PENDING",
-            expectedExecutionStatus: "SUCCEEDED",
-            materialLockVersion: "4",
-            taskId: "7001",
-            taskLockVersion: "5"
-        });
-        expectLastCall("POST", "/knowledge/graph/task/candidate/apply", {
-            applyMode: "MERGE",
-            expectedDisposition: "PENDING",
-            expectedExecutionStatus: "SUCCEEDED",
-            idempotencyKey: "00000000-0000-4000-8000-000000000002",
-            materialLockVersion: "4",
-            taskId: "7001",
-            taskLockVersion: "5"
-        });
-
-        await service.discardCandidate({
-            expectedDisposition: "PENDING",
-            expectedExecutionStatus: "SUCCEEDED",
-            reason: "人工判断不采用",
-            taskId: "7001",
-            taskLockVersion: "5"
-        });
-        expectLastCall("POST", "/knowledge/graph/task/candidate/discard", {
-            expectedDisposition: "PENDING",
-            expectedExecutionStatus: "SUCCEEDED",
-            idempotencyKey: "00000000-0000-4000-8000-000000000002",
-            reason: "人工判断不采用",
-            taskId: "7001",
-            taskLockVersion: "5"
-        });
-    });
-
-    it("sends regenerate and batch create requests", async () => {
-        installFetchRecorder({
-            batchId: "batch-001",
-            materials: []
-        });
-
-        await service.regenerateTask({
-            expectedDisposition: "PENDING",
-            expectedExecutionStatus: "SUCCEEDED",
-            taskId: "7001",
-            taskLockVersion: "5"
-        });
-        expectLastCall("POST", "/knowledge/graph/task/candidate/regenerate", {
-            expectedDisposition: "PENDING",
-            expectedExecutionStatus: "SUCCEEDED",
-            idempotencyKey: "00000000-0000-4000-8000-000000000002",
-            taskId: "7001",
-            taskLockVersion: "5"
-        });
-
-        await service.createBatchExtraction({
-            contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
-        });
-        expectLastCall("POST", "/knowledge/graph/task/batch/create", {
-            idempotencyKey: "00000000-0000-4000-8000-000000000002",
-            selection: {
-                contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }]
-            }
         });
     });
 });

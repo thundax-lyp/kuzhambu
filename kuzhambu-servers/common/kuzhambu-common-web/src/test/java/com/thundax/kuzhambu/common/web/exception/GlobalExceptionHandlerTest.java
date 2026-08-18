@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.common.web.exception;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.web.i18n.I18nMessageResolver;
 import com.thundax.kuzhambu.common.web.response.ApiResponse;
 import java.util.Collections;
@@ -55,6 +56,17 @@ public class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
         assertEquals(WebErrorCode.FORBIDDEN.getCode(), response.getBody().getCode());
         assertEquals(WebErrorCode.FORBIDDEN.getMessage(), response.getBody().getMessage());
+        assertNull(response.getBody().getData());
+    }
+
+    @Test
+    public void shouldConvertBusinessExceptionToFailureResponse() {
+        ResponseEntity<ApiResponse<Object>> response = handler.handleException(
+                new DomainException("GRAPH_PREVIEW_STALE", "knowledge.graph.preview-stale", "图谱预览已失效，请刷新后重试"), null);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("GRAPH_PREVIEW_STALE", response.getBody().getCode());
+        assertEquals("图谱预览已失效，请刷新后重试", response.getBody().getMessage());
         assertNull(response.getBody().getData());
     }
 

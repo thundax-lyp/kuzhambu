@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFacadeRequest;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import java.time.Clock;
@@ -18,11 +19,16 @@ public class GraphExtractionTaskCleanupScheduler {
 
     private final GraphExtractionTaskRepository taskRepository;
     private final AiFacade aiFacade;
+    private final GraphExtractionApplicationService extractionService;
     private Clock clock = Clock.systemUTC();
 
-    public GraphExtractionTaskCleanupScheduler(GraphExtractionTaskRepository taskRepository, AiFacade aiFacade) {
+    public GraphExtractionTaskCleanupScheduler(
+            GraphExtractionTaskRepository taskRepository,
+            AiFacade aiFacade,
+            GraphExtractionApplicationService extractionService) {
         this.taskRepository = taskRepository;
         this.aiFacade = aiFacade;
+        this.extractionService = extractionService;
     }
 
     GraphExtractionTaskCleanupScheduler useClock(Clock clock) {
@@ -42,6 +48,11 @@ public class GraphExtractionTaskCleanupScheduler {
             }
         }
         return count;
+    }
+
+    @Scheduled(fixedDelayString = "${kuzhambu.knowledge.graph.task-sync-delay-ms:60000}")
+    public int syncActiveTasks() {
+        return extractionService.syncActiveTasks();
     }
 
     private boolean cleanupOne(GraphExtractionTask task) {

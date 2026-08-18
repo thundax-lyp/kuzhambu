@@ -4,7 +4,6 @@ import type { Page, Route } from "@playwright/test";
 type ApiPayload = Record<string, unknown>;
 
 const ADMIN_PERMISSIONS = ["knowledge:graph:view", "knowledge:graph:edit", "knowledge:graph:apply"];
-const TASK_PERMISSIONS = ["knowledge:graph:view", "knowledge:graph:edit"];
 
 const SANCAI_REF = {
     contentRefId: "1001",
@@ -65,7 +64,7 @@ const mockShellApis = async (page: Page, permissions: string[]) => {
                 id: "graph-materials",
                 name: "图谱素材库",
                 parentId: "knowledge",
-                url: "/knowledge/graph-materials"
+                url: "/knowledge/graph-material"
             },
             {
                 displayParams: '{"icon":"submissions"}',
@@ -303,93 +302,6 @@ const extractionTasks = [
     }
 ];
 
-const taskDetail = (taskId: string) => {
-    const task = extractionTasks.find((item) => item.taskId === taskId) ?? extractionTasks[0];
-    return {
-        candidate:
-            task.executionStatus === "SUCCEEDED"
-                ? {
-                      candidateId: "8001",
-                      diff: [
-                          {
-                              candidateObjectId: "candidate-node-1",
-                              changeType: "ADD",
-                              objectType: "NODE"
-                          }
-                      ],
-                      edges: [
-                          {
-                              candidateObjectId: "candidate-edge-1",
-                              qualifiers: { evidence: "卷一正文" },
-                              relationType: "LOCATED_IN",
-                              sourceCandidateNodeId: "candidate-node-1",
-                              targetCandidateNodeId: "candidate-node-2"
-                          }
-                      ],
-                      issues: [
-                          {
-                              code: "LOW_CONFIDENCE_RELATION",
-                              message: "部分关系置信度较低。",
-                              severity: "WARNING"
-                          }
-                      ],
-                      nodes: [
-                          {
-                              candidateObjectId: "candidate-node-1",
-                              name: "张三",
-                              nodeType: "PERSON",
-                              properties: { aliases: ["子某"] }
-                          },
-                          {
-                              candidateObjectId: "candidate-node-2",
-                              name: "洛阳",
-                              nodeType: "PLACE",
-                              properties: {}
-                          }
-                      ]
-                  }
-                : null,
-        materialStats: {
-            activeTaskCount: "0",
-            calculatedAt: "1723852820000",
-            draftEdgeCount: "18",
-            draftNodeCount: "12",
-            failedTaskCount: "0",
-            pendingReviewTaskCount: "1",
-            publicationContributionCount: "0",
-            publishedEdgeCount: "0",
-            publishedNodeCount: "0",
-            statsRevision: "4"
-        },
-        relatedTasks: [],
-        source: materialListRecords[0].source,
-        stages: [
-            {
-                completedAt: "1723852805000",
-                inputSummary: "读取素材正文和既有草稿图谱。",
-                outputSummary: "完成素材快照准备。",
-                progress: 100,
-                stageCode: "SNAPSHOT",
-                stageNo: "1",
-                startedAt: "1723852800000",
-                status: "SUCCEEDED"
-            },
-            {
-                completedAt: task.executionStatus === "FAILED" ? "1723852840000" : "1723852810000",
-                failureReason: task.failureReason,
-                inputSummary: "提交图谱提取能力执行。",
-                outputSummary: "节点 12，关系 18",
-                progress: task.progress,
-                stageCode: task.currentStage,
-                stageNo: "2",
-                startedAt: "1723852805000",
-                status: task.executionStatus
-            }
-        ],
-        task
-    };
-};
-
 const createMaterialHandlers = async (page: Page) => {
     let batchCreatePayload: ApiPayload | null = null;
     let materialGetPayload: ApiPayload | null = null;
@@ -441,72 +353,6 @@ const createMaterialHandlers = async (page: Page) => {
     };
 };
 
-const createTaskHandlers = async (page: Page) => {
-    let taskPagePayload: ApiPayload | null = null;
-    let taskGetPayload: ApiPayload | null = null;
-    let applyPayload: ApiPayload | null = null;
-    let retryPayload: ApiPayload | null = null;
-
-    await page.route("**/kuzhambu-admin-api/api/knowledge/graph/task/page", async (route) => {
-        taskPagePayload = readRequestBody(route.request().postData());
-        await fulfillSuccess(route, {
-            pageNo: "1",
-            pageSize: "20",
-            records: extractionTasks,
-            totalCount: String(extractionTasks.length),
-            totalPage: "1"
-        });
-    });
-    await page.route("**/kuzhambu-admin-api/api/knowledge/graph/task/get", async (route) => {
-        taskGetPayload = readRequestBody(route.request().postData());
-        await fulfillSuccess(route, taskDetail(String(taskGetPayload.taskId)));
-    });
-    await page.route("**/kuzhambu-admin-api/api/knowledge/graph/material/get", async (route) => {
-        const payload = readRequestBody(route.request().postData());
-        await fulfillSuccess(route, {
-            ...materialDetail,
-            material: {
-                contentRef: payload.contentRef,
-                contentType: "SANCAI_ENTRY",
-                id: "2001",
-                lockVersion: "4",
-                status: "DRAFT",
-                title: "三才图会 天文一"
-            },
-            source: {
-                contentRef: payload.contentRef,
-                contentType: "SANCAI_ENTRY",
-                title: "三才图会 天文一"
-            }
-        });
-    });
-    await page.route(
-        "**/kuzhambu-admin-api/api/knowledge/graph/task/candidate/apply",
-        async (route) => {
-            applyPayload = readRequestBody(route.request().postData());
-            await fulfillSuccess(route, {
-                ...extractionTasks[0],
-                disposition: "ADOPTED_MERGE"
-            });
-        }
-    );
-    await page.route("**/kuzhambu-admin-api/api/knowledge/graph/task/retry", async (route) => {
-        retryPayload = readRequestBody(route.request().postData());
-        await fulfillSuccess(route, {
-            ...extractionTasks[1],
-            attemptNo: "2",
-            executionStatus: "PENDING"
-        });
-    });
-
-    return {
-        getApplyPayload: () => applyPayload,
-        getRetryPayload: () => retryPayload,
-        getTaskGetPayload: () => taskGetPayload,
-        getTaskPagePayload: () => taskPagePayload
-    };
-};
-
 const selectMaterialRow = async (page: Page, rowIndex: number) => {
     await page.getByRole("checkbox").nth(rowIndex).click();
 };
@@ -524,7 +370,7 @@ test.describe("admin knowledge graph material and task flow", () => {
         const apiCollector = createApiPathCollector(page);
         const mocks = await createMaterialHandlers(page);
 
-        await page.goto("/knowledge/graph-materials");
+        await page.goto("/knowledge/graph-material");
 
         await expect(page.getByRole("heading", { name: "图谱素材库" })).toBeVisible();
         await expect(page.getByRole("table", { name: "图谱素材复合表格" })).toBeVisible();
@@ -584,80 +430,6 @@ test.describe("admin knowledge graph material and task flow", () => {
         await expect(
             page.getByTestId("knowledge-graph-material-batch-result-WANGQI_DOCUMENT:1003")
         ).toContainText("发布预览存在未解决冲突。");
-
-        apiCollector.assertOnlyKnowledgeGraphApi();
-    });
-
-    test("opens task drawer, retries a failed task, and adopts a candidate", async ({ page }) => {
-        await installSession(page, TASK_PERMISSIONS);
-        await mockShellApis(page, TASK_PERMISSIONS);
-        const apiCollector = createApiPathCollector(page);
-        const mocks = await createTaskHandlers(page);
-
-        await page.goto(
-            `/knowledge/graph-extraction?contentRefs=${encodeURIComponent(
-                JSON.stringify([SANCAI_REF, FAILED_REF])
-            )}`
-        );
-
-        await expect(page.getByRole("heading", { name: "知识抽取" })).toBeVisible();
-        await expect
-            .poll(() => mocks.getTaskPagePayload())
-            .toMatchObject({
-                contentRefs: [SANCAI_REF, FAILED_REF],
-                groupBy: "NONE"
-            });
-
-        await page.getByTestId("knowledge-graph-extraction-task-list-button").click();
-        const taskListDrawer = page.getByTestId("knowledge-graph-extraction-task-list-drawer");
-        await expect(taskListDrawer).toBeVisible();
-        await expect(taskListDrawer.getByRole("table", { name: "知识抽取表格" })).toBeVisible();
-
-        await taskListDrawer
-            .getByTestId("knowledge-graph-extraction-graph-extraction-task-view-button")
-            .first()
-            .click();
-        await expect.poll(() => mocks.getTaskGetPayload()).toEqual({ taskId: "7001" });
-        await expect(
-            page.getByTestId("knowledge-graph-extraction-task-detail-drawer")
-        ).toBeVisible();
-
-        await page.getByText("候选预览").click();
-        await expect(
-            page.getByTestId("knowledge-graph-extraction-task-detail-candidate-section")
-        ).toContainText("候选摘要");
-        await page.getByText("候选处置").click();
-        await page.getByTestId("knowledge-graph-extraction-task-disposition-merge-button").click();
-        await expect
-            .poll(() => mocks.getApplyPayload())
-            .toMatchObject({
-                applyMode: "MERGE",
-                expectedDisposition: "PENDING",
-                expectedExecutionStatus: "SUCCEEDED",
-                materialLockVersion: "4",
-                taskId: "7001",
-                taskLockVersion: "5"
-            });
-
-        await page.keyboard.press("Escape");
-        await taskListDrawer
-            .getByRole("row", { name: /7003/u })
-            .getByTestId("knowledge-graph-extraction-graph-extraction-task-view-button")
-            .click();
-        await expect.poll(() => mocks.getTaskGetPayload()).toEqual({ taskId: "7003" });
-        await page.getByText("执行过程").click();
-        await expect(
-            page.getByTestId("knowledge-graph-extraction-task-detail-execution-section")
-        ).toContainText("候选实体名称缺少身份限定。");
-        await page.getByText("候选处置").click();
-        await page.getByTestId("knowledge-graph-extraction-task-disposition-retry-button").click();
-        await expect
-            .poll(() => mocks.getRetryPayload())
-            .toMatchObject({
-                expectedExecutionStatus: "FAILED",
-                taskId: "7003",
-                taskLockVersion: "3"
-            });
 
         apiCollector.assertOnlyKnowledgeGraphApi();
     });

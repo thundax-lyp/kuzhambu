@@ -127,8 +127,6 @@ public class GraphPublicationExecutor {
         material.requirePublishable();
         material.requireLockVersion(command.materialLockVersion());
         GraphPublicationPreviewToken token = requireConsumablePreviewToken(command, material);
-        runStatusTransition(command.materialRef(), command.materialLockVersion(), GraphMaterial::startPublishing);
-        material.startPublishing();
 
         Map<GraphMaterialNodeId, GraphPublishedNode> matchedNodes = matchedNodes(graph.nodes());
         Map<GraphMaterialEdgeId, GraphPublishedEdge> matchedEdges = matchedEdges(graph.edges());
@@ -141,6 +139,9 @@ public class GraphPublicationExecutor {
         if (!schemaSupport.validateForPublication(graph).isEmpty()) {
             throw new BizException("Graph material is not publishable");
         }
+
+        runStatusTransition(command.materialRef(), command.materialLockVersion(), GraphMaterial::startPublishing);
+        material.startPublishing();
 
         Map<GraphMaterialNodeId, GraphPublishedNodeId> publishedNodeIds =
                 publishNodes(graph.nodes(), matchedNodes, now);
@@ -320,6 +321,7 @@ public class GraphPublicationExecutor {
         edgeMaterialRepository.deleteByMaterial(command.materialRef());
         nodeMaterialRepository.deleteByMaterial(command.materialRef());
         material.withdraw();
+        material.refreshStatus(graph.nodes().isEmpty());
         updateMaterial(material, command.materialLockVersion() + 1);
         return material;
     }

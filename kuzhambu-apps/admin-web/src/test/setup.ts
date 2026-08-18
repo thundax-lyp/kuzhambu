@@ -14,17 +14,17 @@ const createTestStorage = (): Storage => {
     };
 };
 
-if (typeof globalThis.localStorage === "undefined") {
-    Object.defineProperty(globalThis, "localStorage", {
-        configurable: true,
-        value: createTestStorage()
-    });
-}
+const testStorage = createTestStorage();
 
-if (typeof window !== "undefined" && typeof window.localStorage === "undefined") {
+Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: testStorage
+});
+
+if (typeof window !== "undefined") {
     Object.defineProperty(window, "localStorage", {
         configurable: true,
-        value: globalThis.localStorage
+        value: testStorage
     });
 }
 

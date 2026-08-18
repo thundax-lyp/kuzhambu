@@ -20,6 +20,7 @@ public class GraphExtractionTaskDO {
     private String contentType;
     private Long contentRefId;
     private String contentSnapshotJson;
+    private String pipelineVersion;
     private String modelSnapshotJson;
     private String promptSnapshotJson;
     private String outputSchemaJson;
@@ -32,6 +33,7 @@ public class GraphExtractionTaskDO {
     private Long candidateId;
     private String currentStage;
     private Integer progress;
+    private String failureReason;
     private String idempotencyKey;
     private Long regeneratedFromTaskId;
     private Long supersededByTaskId;

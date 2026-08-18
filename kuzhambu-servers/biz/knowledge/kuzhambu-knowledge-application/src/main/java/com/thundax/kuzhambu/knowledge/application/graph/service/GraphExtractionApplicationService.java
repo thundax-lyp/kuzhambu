@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionC
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyncQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
@@ -27,6 +28,10 @@ public interface GraphExtractionApplicationService {
     GraphExtractionTaskDetailResult getTask(GraphTaskDetailQuery query);
 
     GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command);
+
+    int syncActiveTasks();
+
+    int syncActiveTasks(GraphActiveTaskSyncQuery query);
 
     GraphExtractionTaskResult cancelTask(GraphExtractionCancelCommand command);
 

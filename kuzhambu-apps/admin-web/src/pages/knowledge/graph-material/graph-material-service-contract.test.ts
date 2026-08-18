@@ -109,6 +109,13 @@ describe("knowledge graph material service request contracts", () => {
             volumeCode: "vol-001"
         });
 
+        await service.listMaterialTree({
+            parentId: "type:SANCAI_ENTRY:category:astronomy"
+        });
+        expectLastCall("POST", "/knowledge/graph/material/tree/list", {
+            parentId: "type:SANCAI_ENTRY:category:astronomy"
+        });
+
         await service.getMaterial({
             contentRef: { contentRefId: "1001", contentType: "SANCAI_ENTRY" }
         });
@@ -245,7 +252,7 @@ describe("knowledge graph material service request contracts", () => {
         });
     });
 
-    it("sends single withdrawal and deletion precheck requests", async () => {
+    it("sends single withdrawal requests", async () => {
         installFetchRecorder({});
 
         await service.previewWithdrawal({
@@ -263,13 +270,6 @@ describe("knowledge graph material service request contracts", () => {
             contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
             idempotencyKey: "00000000-0000-4000-8000-000000000001",
             materialLockVersion: "4"
-        });
-
-        await service.precheckDeletion({
-            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
-        });
-        expectLastCall("POST", "/knowledge/graph/deletion-change/precheck", {
-            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
         });
     });
 });

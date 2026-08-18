@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialTreeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnapshotFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
@@ -26,18 +27,22 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGr
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyncQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChangeImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialSourceResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
@@ -70,6 +75,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
     private final ClassicsFacade classicsFacade;
     private final GraphMaterialStatsRepository materialStatsRepository;
     private final GraphExtractionTaskRepository extractionTaskRepository;
+    private final GraphExtractionApplicationService extractionApplicationService;
     private final GraphMaterialNodeRepository nodeRepository;
     private final GraphMaterialEdgeRepository edgeRepository;
     private final GraphMaterialContentResolver contentResolver;
@@ -85,6 +91,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
             ClassicsFacade classicsFacade,
             GraphMaterialStatsRepository materialStatsRepository,
             GraphExtractionTaskRepository extractionTaskRepository,
+            GraphExtractionApplicationService extractionApplicationService,
             GraphMaterialNodeRepository nodeRepository,
             GraphMaterialEdgeRepository edgeRepository,
             GraphMaterialContentResolver contentResolver,
@@ -98,6 +105,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
         this.classicsFacade = classicsFacade;
         this.materialStatsRepository = materialStatsRepository;
         this.extractionTaskRepository = extractionTaskRepository;
+        this.extractionApplicationService = extractionApplicationService;
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
         this.contentResolver = contentResolver;
@@ -141,6 +149,7 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                 .map(GraphMaterial::getId)
                 .filter(java.util.Objects::nonNull)
                 .toList();
+        extractionApplicationService.syncActiveTasks(new GraphActiveTaskSyncQuery(materialIds));
         Map<Long, GraphMaterialStats> statsByMaterialId =
                 materialStatsRepository.listByMaterialIds(materialIds).stream()
                         .collect(Collectors.toMap(GraphMaterialStats::getMaterialId, Function.identity()));
@@ -168,6 +177,19 @@ public class GraphMaterialApplicationServiceImpl implements GraphMaterialApplica
                         query == null ? null : query.taskDisposition()))
                 .toList();
         return PageResult.of(page.getPageNo(), page.getPageSize(), page.getTotalCount(), records);
+    }
+
+    @Override
+    public List<GraphMaterialTreeNodeResult> listMaterialTree(GraphMaterialTreeQuery query) {
+        var response = classicsFacade.listKnowledgeGraphMaterialTree(KnowledgeGraphMaterialTreeFacadeRequest.builder()
+                .parentId(query == null ? null : query.parentId())
+                .build());
+        return response == null || response.getNodes() == null
+                ? List.of()
+                : response.getNodes().stream()
+                        .map(node -> new GraphMaterialTreeNodeResult(
+                                node.getId(), node.getParentId(), node.getTitle(), node.getNodeType(), node.isLeaf()))
+                        .toList();
     }
 
     private ContentRefFilter filteredContentRefs(GraphMaterialListQuery query) {

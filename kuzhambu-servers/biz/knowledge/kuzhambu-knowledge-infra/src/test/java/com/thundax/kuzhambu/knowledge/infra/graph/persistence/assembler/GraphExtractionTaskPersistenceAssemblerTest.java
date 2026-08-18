@@ -32,6 +32,7 @@ class GraphExtractionTaskPersistenceAssemblerTest {
                 401L,
                 "REVIEW",
                 80,
+                null,
                 "key-1",
                 new GraphExtractionTaskId(102L),
                 new GraphExtractionTaskId(103L),

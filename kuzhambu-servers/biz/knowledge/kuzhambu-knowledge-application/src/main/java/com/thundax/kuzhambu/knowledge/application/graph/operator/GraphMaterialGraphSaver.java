@@ -59,6 +59,7 @@ public class GraphMaterialGraphSaver {
         graph.material().requireLockVersion(expectedLockVersion);
         graph.validate();
         replaceGraph(graph);
+        graph.material().refreshStatus(graph.nodes().isEmpty());
         updateMaterial(graph.material(), expectedLockVersion);
     }
 

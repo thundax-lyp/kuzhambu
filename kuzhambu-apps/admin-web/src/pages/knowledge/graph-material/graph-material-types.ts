@@ -1,14 +1,14 @@
 export type GraphContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS" | string;
 
-export type GraphMaterialStatus = "DRAFT" | "PUBLISHING" | "PUBLISHED" | "WITHDRAWING" | "FAILED";
+export type GraphMaterialStatus =
+    "DRAFT" | "READY" | "PUBLISHING" | "PUBLISHED" | "WITHDRAWING" | "FAILED";
 
 export type GraphTaskExecutionStatus = "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
 
 export type GraphTaskDisposition =
     "PENDING" | "ADOPTED_MERGE" | "ADOPTED_REPLACE" | "DISCARDED" | "SUPERSEDED";
 
-export type GraphMaterialDrawerSection =
-    "OVERVIEW" | "DRAFT_GRAPH" | "TASKS" | "PUBLICATION_CHANGES";
+export type GraphMaterialDrawerSection = "OVERVIEW" | "DRAFT_GRAPH" | "TASKS";
 
 export interface GraphContentRefRecord {
     contentType: GraphContentType;
@@ -36,12 +36,6 @@ export interface GraphMaterialRecord {
     publishedAt?: string | null;
     failureReason?: string | null;
     failedOperation?: "PUBLISH" | "WITHDRAW" | null;
-}
-
-export interface GraphMaterialBatchPublicationResult {
-    failureReason?: string;
-    materialId: string;
-    status: "PUBLISHED" | "FAILED";
 }
 
 export interface GraphPublicationIssueRecord {
@@ -92,13 +86,6 @@ export interface GraphPublicationResultRecord {
     reusedEdgeCount: string;
     reusedNodeCount: string;
     success: boolean;
-}
-
-export interface GraphMaterialDraftObject {
-    id: string;
-    name: string;
-    sourceText: string;
-    type: string;
 }
 
 export interface GraphMaterialStatsRecord {
@@ -154,20 +141,29 @@ export interface GraphMaterialEdgeRecord {
     source: "AI" | "MANUAL" | "MATERIAL" | string;
 }
 
-export interface GraphMaterialTaskSummaryPanelRecord {
-    activeTaskCount: string;
-    pendingReviewTaskCount: string;
-    failedTaskCount: string;
-    latestTask?: GraphMaterialTaskSummaryRecord | null;
-}
-
 export interface GraphMaterialDetailRecord {
     source: GraphSourceRecord;
     material?: GraphMaterialRecord | null;
     materialStats?: GraphMaterialStatsRecord | null;
     nodes: GraphMaterialNodeRecord[];
     edges: GraphMaterialEdgeRecord[];
-    taskSummary: GraphMaterialTaskSummaryPanelRecord;
+    taskSummary?: GraphMaterialTaskSummarySnapshotRecord | null;
+    extractionTasks?: GraphMaterialTaskSummaryRecord[];
+    latestTaskCandidate?: GraphExtractionCandidatePreviewRecord | null;
+}
+
+export interface GraphExtractionCandidatePreviewRecord {
+    candidateId: string;
+    resultFormat: string;
+    resultSummaryJson: string;
+}
+
+export interface GraphMaterialTaskSummarySnapshotRecord {
+    activeTaskCount: string;
+    pendingReviewTaskCount: string;
+    failedTaskCount: string;
+    totalTaskCount: string;
+    latestTask?: GraphMaterialTaskSummaryRecord | null;
 }
 
 export interface GraphBatchMaterialResultRecord<TResult = unknown> {
@@ -206,9 +202,20 @@ export interface GraphBatchPublicationResultRecord {
     materials: GraphBatchMaterialResultRecord<GraphPublicationResultRecord>[];
 }
 
-export interface GraphDeletionPrecheckRecord {
-    changeId?: string;
-    executable?: boolean;
-    failureMessage?: string | null;
-    issues?: GraphPublicationIssueRecord[] | null;
+export type MaterialCatalogNodeType = "all" | "category" | "contentType" | "volume";
+
+export interface MaterialCatalogNode {
+    children?: MaterialCatalogNode[];
+    key: string;
+    leaf: boolean;
+    nodeType: MaterialCatalogNodeType;
+    title: string;
+}
+
+export interface GraphMaterialTreeNodeRecord {
+    id: string;
+    leaf: boolean;
+    nodeType: MaterialCatalogNodeType;
+    parentId?: string | null;
+    title: string;
 }

@@ -83,6 +83,17 @@ public final class GraphMaterialRequests {
 
     @Getter
     @Setter
+    @Schema(description = "图谱素材树查询请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class MaterialTreeRequest {
+
+        @Size(max = 255)
+        private String parentId;
+    }
+
+    @Getter
+    @Setter
     @Schema(description = "图谱素材节点创建或更新请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

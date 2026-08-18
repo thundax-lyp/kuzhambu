@@ -61,10 +61,12 @@ public final class GraphApplicationAssembler {
                 task.getCandidateId(),
                 task.getCurrentStage(),
                 task.getProgress(),
+                task.getFailureReason(),
                 task.getRequestedAt(),
                 task.getCompletedAt(),
                 task.getDisposedAt(),
-                task.getPurgeAfter());
+                task.getPurgeAfter(),
+                null);
     }
 
     public static GraphPublishedNodeDetailResult toNodeDetail(

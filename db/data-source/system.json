@@ -738,7 +738,7 @@
         {
           "id": 14,
           "name": "知识图谱",
-          "perms": ["knowledge:graph:view"],
+          "perms": ["knowledge:graph:view", "knowledge:graph:edit"],
           "priority": 80,
           "icon": "book",
           "url": "/knowledge/graph",
@@ -747,7 +747,7 @@
             {
               "id": 41,
               "name": "工作台",
-              "perms": ["knowledge:graph:view"],
+              "perms": ["knowledge:graph:view", "knowledge:graph:edit"],
               "priority": 80,
               "icon": "submissions",
               "url": "/knowledge/graph-workbench",
@@ -756,7 +756,7 @@
             {
               "id": 42,
               "name": "图谱治理",
-              "perms": ["knowledge:graph:view"],
+              "perms": ["knowledge:graph:view", "knowledge:graph:edit"],
               "priority": 81,
               "icon": "book",
               "url": "/knowledge/graph-governance",
@@ -765,16 +765,16 @@
             {
               "id": 46,
               "name": "素材管理",
-              "perms": ["knowledge:graph:view"],
+              "perms": ["knowledge:graph:view", "knowledge:graph:edit"],
               "priority": 82,
               "icon": "book",
-              "url": "/knowledge/graph-materials",
+              "url": "/knowledge/graph-material",
               "remarks": "素材草稿、发布和删除任务入口"
             },
             {
               "id": 47,
               "name": "提取任务",
-              "perms": ["knowledge:graph:view"],
+              "perms": ["knowledge:graph:view", "knowledge:graph:edit"],
               "priority": 83,
               "icon": "submissions",
               "url": "/knowledge/graph-extraction",

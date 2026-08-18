@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeReq
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialTreeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupExecutionFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupTargetsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
@@ -14,6 +15,7 @@ import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeRe
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnapshotFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialTreeFacadeResponse;
 
 public interface ClassicsFacade {
 
@@ -43,6 +45,9 @@ public interface ClassicsFacade {
 
     KnowledgeGraphMaterialPageFacadeResponse pageKnowledgeGraphMaterials(
             KnowledgeGraphMaterialPageFacadeRequest request);
+
+    KnowledgeGraphMaterialTreeFacadeResponse listKnowledgeGraphMaterialTree(
+            KnowledgeGraphMaterialTreeFacadeRequest request);
 
     KnowledgeGraphMaterialSnapshotFacadeResponse getKnowledgeGraphMaterialSnapshot(
             KnowledgeGraphMaterialSnapshotFacadeRequest request);

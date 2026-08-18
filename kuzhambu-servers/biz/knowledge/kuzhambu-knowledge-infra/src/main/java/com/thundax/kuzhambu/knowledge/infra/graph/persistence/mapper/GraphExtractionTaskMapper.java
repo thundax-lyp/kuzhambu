@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
+import com.thundax.kuzhambu.knowledge.infra.graph.persistence.projection.GraphExtractionTaskWithMaterialProjection;
 import java.time.Instant;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -129,6 +130,37 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
 
     @Select(
             """
+            <script>
+            select t.*, coalesce(material_by_id.content_title_snapshot, material_by_content.content_title_snapshot)
+                as material_title
+            from knowledge_graph_extraction_task t
+            left join knowledge_graph_material material_by_id on material_by_id.id = t.material_id
+            left join knowledge_graph_material material_by_content
+                on material_by_content.content_type = t.content_type
+                and material_by_content.content_ref_id = t.content_ref_id
+            where (#{batchId} is null or t.batch_id = #{batchId})
+              and (#{executionStatus} is null or t.execution_status = #{executionStatus})
+              and (#{disposition} is null or t.disposition = #{disposition})
+              <if test="refs != null and refs.size() > 0">
+                and (t.content_type, t.content_ref_id) in
+                <foreach collection="refs" item="ref" open="(" separator="," close=")">
+                  (#{ref.contentType}, #{ref.contentRefId})
+                </foreach>
+              </if>
+            order by t.requested_at desc, t.id desc
+            limit #{pageSize} offset #{offset}
+            </script>
+            """)
+    List<GraphExtractionTaskWithMaterialProjection> pageTasksWithMaterialTitle(
+            @Param("refs") List<GraphExtractionTaskDO> refs,
+            @Param("batchId") String batchId,
+            @Param("executionStatus") String executionStatus,
+            @Param("disposition") String disposition,
+            @Param("offset") int offset,
+            @Param("pageSize") int pageSize);
+
+    @Select(
+            """
             select * from knowledge_graph_extraction_task
             where purge_after is not null and purge_after <= #{deadline}
               and execution_status in ('SUCCEEDED', 'CANCELLED')
@@ -152,6 +184,7 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
                 candidate_id = #{row.candidateId},
                 current_stage = #{row.currentStage},
                 progress = #{row.progress},
+                failure_reason = #{row.failureReason},
                 regenerated_from_task_id = #{row.regeneratedFromTaskId},
                 superseded_by_task_id = #{row.supersededByTaskId},
                 triggered_by_task_id = #{row.triggeredByTaskId},

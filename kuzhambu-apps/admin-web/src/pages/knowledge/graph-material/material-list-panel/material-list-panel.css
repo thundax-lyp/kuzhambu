@@ -1,0 +1,14 @@
+.graph-material-list-panel {
+    min-width: 0;
+}
+
+.graph-material-list-placeholder {
+    display: grid;
+    min-width: 0;
+    min-height: 260px;
+    place-items: center;
+    color: var(--graph-material-copy);
+    background: var(--graph-material-soft);
+    border: 1px dashed var(--graph-material-line);
+    border-radius: 8px;
+}

@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFaca
 import com.thundax.kuzhambu.ai.facade.response.CleanupKnowledgeGraphCandidateFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
@@ -81,7 +82,9 @@ class GraphExtractionTaskCleanupSchedulerTest {
 
     private static GraphExtractionTaskCleanupScheduler scheduler(
             GraphExtractionTaskRepository repository, AiFacade aiFacade) {
-        return new GraphExtractionTaskCleanupScheduler(repository, aiFacade).useClock(Clock.fixed(NOW, ZoneOffset.UTC));
+        return new GraphExtractionTaskCleanupScheduler(
+                        repository, aiFacade, mock(GraphExtractionApplicationService.class))
+                .useClock(Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
     private static GraphExtractionTask task(Long id, Long candidateId) {
@@ -102,6 +105,7 @@ class GraphExtractionTaskCleanupSchedulerTest {
                 candidateId,
                 "DONE",
                 100,
+                null,
                 "idem-1",
                 null,
                 null,

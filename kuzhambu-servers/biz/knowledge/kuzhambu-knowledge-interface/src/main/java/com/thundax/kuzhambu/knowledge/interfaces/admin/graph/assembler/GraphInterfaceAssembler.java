@@ -43,6 +43,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQ
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeMergeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedAdjacencyQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeDeleteQuery;
@@ -71,6 +72,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialChan
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialImportPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialPageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
@@ -178,6 +180,12 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphMaterialTreeQuery toQuery(@NonNull GraphMaterialRequests.MaterialTreeRequest request) {
+        Objects.requireNonNull(request, "request");
+        return new GraphMaterialTreeQuery(request.getParentId());
+    }
+
+    @NonNull
     public static GraphMaterialResponses.ContentRefData toContentRefData(@NonNull ContentRef value) {
         Objects.requireNonNull(value, "value");
         return new GraphMaterialResponses.ContentRefData(value.getContentType(), String.valueOf(value.getContentId()));
@@ -281,6 +289,14 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphMaterialResponses.MaterialTreeNodeData toMaterialTreeNodeData(
+            @NonNull GraphMaterialTreeNodeResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphMaterialResponses.MaterialTreeNodeData(
+                value.id(), value.parentId(), value.title(), value.nodeType(), value.leaf());
+    }
+
+    @NonNull
     public static GraphMaterialResponses.NodeData toMaterialNodeData(@NonNull GraphMaterialNode value) {
         Objects.requireNonNull(value, "value");
         return new GraphMaterialResponses.NodeData(
@@ -305,9 +321,39 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphMaterialResponses.DetailData toDetailData(
-            @NonNull GraphMaterialResult value, @NonNull List<GraphMaterialResponses.TaskData> extractionTasks) {
+            @NonNull GraphMaterialResult value, @NonNull List<GraphExtractionResponses.TaskData> extractionTasks) {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(extractionTasks, "extractionTasks");
+        return toDetailDataInternal(value, extractionTasks, extractionTasks.size(), null);
+    }
+
+    @NonNull
+    public static GraphMaterialResponses.DetailData toDetailData(
+            @NonNull GraphMaterialResult value,
+            @NonNull List<GraphExtractionResponses.TaskData> extractionTasks,
+            long taskCount) {
+        Objects.requireNonNull(value, "value");
+        Objects.requireNonNull(extractionTasks, "extractionTasks");
+        return toDetailDataInternal(value, extractionTasks, taskCount, null);
+    }
+
+    @NonNull
+    public static GraphMaterialResponses.DetailData toDetailData(
+            @NonNull GraphMaterialResult value,
+            @NonNull List<GraphExtractionResponses.TaskData> extractionTasks,
+            long taskCount,
+            @NonNull GraphExtractionCandidatePreviewResult latestTaskCandidate) {
+        Objects.requireNonNull(value, "value");
+        Objects.requireNonNull(extractionTasks, "extractionTasks");
+        Objects.requireNonNull(latestTaskCandidate, "latestTaskCandidate");
+        return toDetailDataInternal(value, extractionTasks, taskCount, latestTaskCandidate);
+    }
+
+    private static GraphMaterialResponses.DetailData toDetailDataInternal(
+            GraphMaterialResult value,
+            List<GraphExtractionResponses.TaskData> extractionTasks,
+            long taskCount,
+            GraphExtractionCandidatePreviewResult latestTaskCandidate) {
         return new GraphMaterialResponses.DetailData(
                 toNullableSourceData(value.source()),
                 value.material() == null ? null : toMaterialData(value.material()),
@@ -318,8 +364,19 @@ public final class GraphInterfaceAssembler {
                 value.edges().stream()
                         .map(GraphInterfaceAssembler::toMaterialEdgeData)
                         .toList(),
-                toNullableTaskData(value.taskSummary()),
-                extractionTasks);
+                toTaskSummaryData(value, taskCount),
+                extractionTasks,
+                toNullableCandidateData(latestTaskCandidate));
+    }
+
+    private static GraphMaterialResponses.TaskSummaryData toTaskSummaryData(GraphMaterialResult value, long taskCount) {
+        var stats = value.materialStats();
+        return new GraphMaterialResponses.TaskSummaryData(
+                stats == null ? "0" : String.valueOf(stats.getActiveTaskCount()),
+                stats == null ? "0" : String.valueOf(stats.getPendingReviewTaskCount()),
+                stats == null ? "0" : String.valueOf(stats.getFailedTaskCount()),
+                String.valueOf(taskCount),
+                toNullableTaskData(value.taskSummary()));
     }
 
     @NonNull
@@ -388,13 +445,15 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphExtractionRetryCommand toRetryCommand(
-            @NonNull GraphExtractionRequests.TaskActionRequest request) {
+            @NonNull GraphExtractionRequests.TaskActionRequest request, @NonNull Long requestedBy) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
         return new GraphExtractionRetryCommand(
                 Long.valueOf(request.getTaskId()),
                 Long.parseLong(request.getTaskLockVersion()),
                 request.getExpectedExecutionStatus(),
-                request.getIdempotencyKey());
+                request.getIdempotencyKey(),
+                requestedBy);
     }
 
     @NonNull
@@ -466,6 +525,7 @@ public final class GraphInterfaceAssembler {
         return new GraphExtractionResponses.TaskData(
                 string(value.taskId()),
                 toNullableContentRefData(value.contentRef()),
+                value.materialTitle(),
                 String.valueOf(value.lockVersion()),
                 value.executionStatus(),
                 value.disposition(),
@@ -474,7 +534,7 @@ public final class GraphInterfaceAssembler {
                 value.currentStage(),
                 string(value.candidateId()),
                 null,
-                null,
+                value.failureReason(),
                 value.batchId(),
                 null,
                 null,
@@ -779,7 +839,8 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
-    public static GraphWithdrawalPreviewQuery toQuery(@NonNull GraphPublicationRequests.WithdrawalRequest request) {
+    public static GraphWithdrawalPreviewQuery toWithdrawalPreviewQuery(
+            @NonNull GraphMaterialRequests.ContentRefRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphWithdrawalPreviewQuery(toContentRef(request));
     }
@@ -797,10 +858,23 @@ public final class GraphInterfaceAssembler {
     public static GraphPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.PublicationConfirmRequest request) {
         Objects.requireNonNull(request, "request");
+        return toPublicationCommand(request, null);
+    }
+
+    @NonNull
+    public static GraphPublicationCommand toCommand(
+            @NonNull GraphPublicationRequests.PublicationConfirmRequest request, @NonNull Long publishedBy) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(publishedBy, "publishedBy");
+        return toPublicationCommand(request, publishedBy);
+    }
+
+    private static GraphPublicationCommand toPublicationCommand(
+            GraphPublicationRequests.PublicationConfirmRequest request, Long publishedBy) {
         return new GraphPublicationCommand(
                 toContentRef(request),
                 Long.valueOf(request.getMaterialLockVersion()),
-                null,
+                publishedBy,
                 request.getPreviewToken(),
                 request.getConflictDecisions() == null
                         ? List.of()
@@ -819,8 +893,21 @@ public final class GraphInterfaceAssembler {
     public static GraphBatchPublicationCommand toCommand(
             @NonNull GraphPublicationRequests.BatchPublicationConfirmRequest request) {
         Objects.requireNonNull(request, "request");
+        return toBatchPublicationCommand(request, null);
+    }
+
+    @NonNull
+    public static GraphBatchPublicationCommand toCommand(
+            @NonNull GraphPublicationRequests.BatchPublicationConfirmRequest request, @NonNull Long publishedBy) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(publishedBy, "publishedBy");
+        return toBatchPublicationCommand(request, publishedBy);
+    }
+
+    private static GraphBatchPublicationCommand toBatchPublicationCommand(
+            GraphPublicationRequests.BatchPublicationConfirmRequest request, Long publishedBy) {
         return new GraphBatchPublicationCommand(request.getMaterials().stream()
-                .map(GraphInterfaceAssembler::toCommand)
+                .map(material -> toCommand(material, publishedBy))
                 .toList());
     }
 

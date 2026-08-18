@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -10,8 +11,10 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialTreeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialPageFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialSnapshotFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.KnowledgeGraphMaterialTreeFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -22,8 +25,11 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialGr
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialStatsRefresher;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyncQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterialStats;
@@ -46,6 +52,8 @@ class GraphMaterialApplicationServiceImplTest {
     private final ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
     private final GraphMaterialStatsRepository statsRepository = mock(GraphMaterialStatsRepository.class);
     private final GraphExtractionTaskRepository taskRepository = mock(GraphExtractionTaskRepository.class);
+    private final GraphExtractionApplicationService extractionApplicationService =
+            mock(GraphExtractionApplicationService.class);
     private final GraphMaterialNodeRepository nodeRepository = mock(GraphMaterialNodeRepository.class);
     private final GraphMaterialEdgeRepository edgeRepository = mock(GraphMaterialEdgeRepository.class);
 
@@ -54,6 +62,7 @@ class GraphMaterialApplicationServiceImplTest {
             classicsFacade,
             statsRepository,
             taskRepository,
+            extractionApplicationService,
             nodeRepository,
             edgeRepository,
             mock(GraphMaterialContentResolver.class),
@@ -96,6 +105,7 @@ class GraphMaterialApplicationServiceImplTest {
         assertThat(result.getRecords().get(1).source().contentRef()).isEqualTo(secondRef);
         assertThat(result.getRecords().get(1).material()).isNull();
         verify(materialRepository, never()).getByContentRef(any());
+        verify(extractionApplicationService).syncActiveTasks(new GraphActiveTaskSyncQuery(List.of(11L)));
     }
 
     @Test
@@ -201,6 +211,28 @@ class GraphMaterialApplicationServiceImplTest {
         verify(materialRepository, never()).getByContentRef(any());
     }
 
+    @Test
+    void shouldDelegateMaterialTreeQueryToClassicsFacade() {
+        when(classicsFacade.listKnowledgeGraphMaterialTree(any(KnowledgeGraphMaterialTreeFacadeRequest.class)))
+                .thenReturn(KnowledgeGraphMaterialTreeFacadeResponse.builder()
+                        .nodes(List.of(KnowledgeGraphMaterialTreeFacadeResponse.Node.builder()
+                                .id("type:SANCAI_ENTRY:category:TIANWEN")
+                                .parentId("type:SANCAI_ENTRY")
+                                .title("天文")
+                                .nodeType("category")
+                                .leaf(false)
+                                .build()))
+                        .build());
+
+        var nodes = service.listMaterialTree(new GraphMaterialTreeQuery("type:SANCAI_ENTRY"));
+
+        assertThat(nodes).hasSize(1);
+        assertThat(nodes.get(0).id()).isEqualTo("type:SANCAI_ENTRY:category:TIANWEN");
+        assertThat(nodes.get(0).leaf()).isFalse();
+        verify(classicsFacade)
+                .listKnowledgeGraphMaterialTree(argThat(request -> "type:SANCAI_ENTRY".equals(request.getParentId())));
+    }
+
     private static KnowledgeGraphMaterialPageFacadeResponse.Source source(String contentId, String title) {
         return KnowledgeGraphMaterialPageFacadeResponse.Source.builder()
                 .contentType("SANCAI_ENTRY")
@@ -232,6 +264,7 @@ class GraphMaterialApplicationServiceImplTest {
                 9001L,
                 "CANDIDATE_READY",
                 100,
+                null,
                 "idem-1",
                 null,
                 null,

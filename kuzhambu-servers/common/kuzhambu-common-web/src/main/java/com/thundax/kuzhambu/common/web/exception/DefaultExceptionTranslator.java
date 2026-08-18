@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.common.web.exception;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import org.springframework.core.Ordered;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
@@ -10,6 +11,15 @@ public class DefaultExceptionTranslator implements ExceptionTranslator, Ordered 
 
     @Override
     public KuzhambuException translate(Exception exception) {
+        if (exception instanceof BizException) {
+            BizException bizException = (BizException) exception;
+            return new KuzhambuException(
+                    WebErrorCode.BAD_REQUEST,
+                    bizException.getCode(),
+                    bizException.getMessageKey(),
+                    bizException.getDefaultMessage(),
+                    bizException.getMessageArgs());
+        }
         if (exception instanceof AccessDeniedException) {
             return new KuzhambuException(WebErrorCode.FORBIDDEN);
         }

@@ -138,7 +138,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "knowledge/graph",
-                            element: <Navigate to="/knowledge/graph-materials" replace />
+                            element: <Navigate to="/knowledge/graph-material" replace />
                         },
                         {
                             path: "knowledge/graph-workbench",
@@ -149,7 +149,7 @@ const router = createBrowserRouter(
                             element: <GraphGovernancePage />
                         },
                         {
-                            path: "knowledge/graph-materials",
+                            path: "knowledge/graph-material",
                             element: <GraphMaterialPage />
                         },
                         {

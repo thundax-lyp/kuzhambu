@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -26,7 +27,11 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentS
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
@@ -34,6 +39,7 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeReq
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialPageFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialSnapshotFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.request.KnowledgeGraphMaterialTreeFacadeRequest;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -81,7 +87,20 @@ class ClassicsFacadeImplTest {
         when(searchService.getWorkbenchContent(argThat(
                         query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId()))))
                 .thenReturn(first);
-        ClassicsFacadeImpl facade = newFacade(mock(ClassicsReportApplicationService.class), searchService);
+        SancaiApplicationService sancaiApplicationService = mock(SancaiApplicationService.class);
+        SancaiCategory category = new SancaiCategory(SancaiCategoryIdCodec.toDomain(11L), "天文", null, 1);
+        SancaiVolume volume =
+                new SancaiVolume(SancaiVolumeIdCodec.toDomain(22L), SancaiCategoryIdCodec.toDomain(11L), "卷一", null, 1);
+        when(sancaiApplicationService.listCategories()).thenReturn(List.of(category));
+        when(sancaiApplicationService.listVolumes(SancaiCategoryIdCodec.toDomain(11L)))
+                .thenReturn(List.of(volume));
+        ClassicsFacadeImpl facade = newFacade(
+                mock(ClassicsReportApplicationService.class),
+                searchService,
+                mock(ClassicsContentApplicationService.class),
+                sancaiApplicationService,
+                mock(WangqiDocumentApplicationService.class),
+                mock(MingCustomsApplicationService.class));
 
         var page = facade.pageKnowledgeGraphMaterials(KnowledgeGraphMaterialPageFacadeRequest.builder()
                 .subjectId("operator-1")
@@ -94,13 +113,31 @@ class ClassicsFacadeImplTest {
                 .contentType("SANCAI_ENTRY")
                 .contentId("1001")
                 .build());
+        var rootNodes = facade.listKnowledgeGraphMaterialTree(KnowledgeGraphMaterialTreeFacadeRequest.builder()
+                .parentId("root")
+                .build());
+        var categoryNodes = facade.listKnowledgeGraphMaterialTree(KnowledgeGraphMaterialTreeFacadeRequest.builder()
+                .parentId("type:SANCAI_ENTRY")
+                .build());
+        var volumeNodes = facade.listKnowledgeGraphMaterialTree(KnowledgeGraphMaterialTreeFacadeRequest.builder()
+                .parentId("type:SANCAI_ENTRY:category:11")
+                .build());
 
         assertEquals(1L, page.getTotalCount());
         assertEquals("1001", page.getRecords().get(0).getContentId());
         assertEquals(true, page.getRecords().get(0).isGraphable());
         assertEquals("青花龙纹", snapshot.getSource().getTitle());
         assertEquals("原文\n译文", snapshot.getContentSnapshot());
-        verify(searchService).listWorkbenchContents();
+        assertEquals("type:SANCAI_ENTRY", rootNodes.getNodes().get(0).getId());
+        assertEquals("三才图会", rootNodes.getNodes().get(0).getTitle());
+        assertEquals(
+                "type:SANCAI_ENTRY:category:11", categoryNodes.getNodes().get(0).getId());
+        assertEquals(false, categoryNodes.getNodes().get(0).isLeaf());
+        assertEquals(
+                "type:SANCAI_ENTRY:category:11:volume:22",
+                volumeNodes.getNodes().get(0).getId());
+        assertEquals(true, volumeNodes.getNodes().get(0).isLeaf());
+        verify(searchService, times(1)).listWorkbenchContents();
         verify(searchService)
                 .getWorkbenchContent(argThat(
                         query -> "SANCAI_ENTRY".equals(query.contentType()) && "1001".equals(query.contentId())));

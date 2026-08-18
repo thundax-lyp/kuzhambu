@@ -4,7 +4,11 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "rea
 
 import { buildKuzhambuGraphData, mergeKuzhambuGraphData } from "./kuzhambu-graph-data";
 import "./kuzhambu-graph.css";
-import type { KuzhambuGraphHandle, KuzhambuGraphSpoItem } from "./kuzhambu-graph-types";
+import type {
+    KuzhambuGraphHandle,
+    KuzhambuGraphNodeItem,
+    KuzhambuGraphSpoItem
+} from "./kuzhambu-graph-types";
 
 const GROUP_COLORS = ["#1677ff", "#52c41a", "#faad14", "#722ed1", "#eb2f96", "#13c2c2"];
 const FORCE_LINK_DISTANCE = 112;
@@ -152,21 +156,25 @@ const renderGraphSafely = async (graph: Graph, isMounted: () => boolean) => {
 
 export interface KuzhambuGraphProps {
     spoList: KuzhambuGraphSpoItem[];
+    nodeList?: KuzhambuGraphNodeItem[];
     className?: string;
     height?: number;
 }
 
 export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>(
-    ({ spoList, className, height = 520 }, ref) => {
+    ({ spoList, nodeList = [], className, height = 520 }, ref) => {
         const containerRef = useRef<HTMLDivElement | null>(null);
         const graphRef = useRef<Graph | null>(null);
         const initialGraphDataRef = useRef<GraphData | null>(null);
         const dataRef = useRef<GraphData>({ nodes: [], edges: [] });
         const isMountedRef = useRef(false);
         const pendingRendersRef = useRef(new Set<Promise<void>>());
-        const graphData = useMemo(() => buildKuzhambuGraphData(spoList), [spoList]);
+        const graphData = useMemo(
+            () => buildKuzhambuGraphData(spoList, nodeList),
+            [nodeList, spoList]
+        );
         const classNames = ["kuzhambu-graph", className].filter(Boolean).join(" ");
-        const hasSpoItems = spoList.length > 0;
+        const hasGraphItems = spoList.length > 0 || nodeList.length > 0;
 
         const scheduleRender = (graph: Graph) => {
             const task = renderGraphSafely(graph, () => isMountedRef.current);
@@ -339,7 +347,7 @@ export const KuzhambuGraph = forwardRef<KuzhambuGraphHandle, KuzhambuGraphProps>
         return (
             <div className={classNames} style={{ height }}>
                 <div ref={containerRef} className="kuzhambu-graph__canvas" />
-                {!hasSpoItems && <div className="kuzhambu-graph__empty">暂无 SPO 关系</div>}
+                {!hasGraphItems && <div className="kuzhambu-graph__empty">暂无图谱内容</div>}
             </div>
         );
     }

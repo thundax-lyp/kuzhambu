@@ -56,6 +56,9 @@ public final class GraphMaterialResponses {
                     latestTask) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record MaterialTreeNodeData(String id, String parentId, String title, String nodeType, boolean leaf) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public record NodeData(String id, String nodeType, String name, Map<String, Object> properties, String source) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
@@ -75,16 +78,13 @@ public final class GraphMaterialResponses {
     public record GraphData(MaterialData material, List<NodeData> nodes, List<EdgeData> edges) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    public record TaskData(
-            String id,
-            String status,
-            String progress,
-            String inputSnapshotVersion,
-            String resultSummary,
-            String failureReason,
-            String retryFromTaskId,
-            String requestedAt,
-            String completedAt) {}
+    public record TaskSummaryData(
+            String activeTaskCount,
+            String pendingReviewTaskCount,
+            String failedTaskCount,
+            String totalTaskCount,
+            com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses.TaskData
+                    latestTask) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record DetailData(
@@ -93,9 +93,9 @@ public final class GraphMaterialResponses {
             MaterialStatsData materialStats,
             List<NodeData> nodes,
             List<EdgeData> edges,
-            com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses.TaskData
-                    taskSummary,
-            List<TaskData> extractionTasks) {}
+            TaskSummaryData taskSummary,
+            List<GraphExtractionResponses.TaskData> extractionTasks,
+            GraphExtractionResponses.CandidatePreviewData latestTaskCandidate) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record ChangeImpactData(

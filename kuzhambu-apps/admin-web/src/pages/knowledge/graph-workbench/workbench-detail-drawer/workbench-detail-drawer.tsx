@@ -34,7 +34,7 @@ export const WorkbenchDetailDrawer = ({ node, onClose, open }: WorkbenchDetailDr
                 <KuzhambuButton
                     testId="knowledge-graph-workbench-open-material-button"
                     onClick={() =>
-                        navigate(`/knowledge/graph-materials?source=${node?.sourceName ?? ""}`)
+                        navigate(`/knowledge/graph-material?source=${node?.sourceName ?? ""}`)
                     }
                 >
                     查看素材
