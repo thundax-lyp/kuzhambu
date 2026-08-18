@@ -20,12 +20,7 @@ const drawerActionMocks = {
 vi.mock("@/pages/knowledge/graph-material/graph-material-service", () => ({
     createExtraction: vi.fn(),
     retryExtraction: vi.fn(),
-    getMaterial: vi.fn(),
-    precheckDeletion: vi.fn(),
-    previewPublication: vi.fn(),
-    previewWithdrawal: vi.fn(),
-    publishMaterial: vi.fn(),
-    withdrawMaterial: vi.fn()
+    getMaterial: vi.fn()
 }));
 
 vi.mock("@/components/kuzhambu-graph", () => ({
@@ -115,29 +110,6 @@ describe("MaterialDetailDrawer", () => {
             }
             return detail;
         });
-        vi.mocked(service.precheckDeletion).mockResolvedValue({ executable: true });
-        vi.mocked(service.previewPublication).mockResolvedValue({
-            edges: [],
-            issues: [],
-            materialLockVersion: "4",
-            materialRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-            nodes: [],
-            previewToken: "preview-token",
-            publishable: true
-        });
-        vi.mocked(service.previewWithdrawal).mockResolvedValue({});
-        vi.mocked(service.publishMaterial).mockResolvedValue({
-            contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
-            createdEdgeCount: "0",
-            createdNodeCount: "0",
-            materialStatus: "PUBLISHED",
-            reusedEdgeCount: "1",
-            reusedNodeCount: "1",
-            success: true
-        });
-        vi.mocked(service.withdrawMaterial).mockResolvedValue(
-            graphMaterialMockDetails[1].material!
-        );
     });
 
     it("renders the three material detail sections", async () => {

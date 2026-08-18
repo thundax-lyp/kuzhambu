@@ -160,7 +160,6 @@ export const mockGraphMaterialService: GraphMaterialService = {
         status: "READY",
         title: command.contentRef.contentRefId
     }),
-    precheckDeletion: async () => ({ executable: true }),
     previewBatchWithdrawal: async () => graphBatchWithdrawalPreview,
     withdrawBatch: async () => graphBatchWithdrawalResult
 };

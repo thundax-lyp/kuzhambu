@@ -8,7 +8,6 @@ import type {
     GraphBatchWithdrawalResultRecord,
     GraphContentRefRecord,
     GraphContentType,
-    GraphDeletionPrecheckRecord,
     GraphMaterialDetailRecord,
     GraphMaterialListRecord,
     GraphMaterialRecord,
@@ -36,7 +35,6 @@ const WITHDRAWAL_PREVIEW_PATH = "/knowledge/graph/publication/withdrawal/preview
 const WITHDRAWAL_WITHDRAW_PATH = "/knowledge/graph/publication/withdrawal/withdraw";
 const BATCH_WITHDRAWAL_PREVIEW_PATH = "/knowledge/graph/publication/batch/withdrawal/preview";
 const BATCH_WITHDRAWAL_WITHDRAW_PATH = "/knowledge/graph/publication/batch/withdrawal/withdraw";
-const DELETION_PRECHECK_PATH = "/knowledge/graph/deletion-change/precheck";
 const MATERIAL_NODE_CREATE_PATH = "/knowledge/graph/material/node/create";
 const MATERIAL_NODE_UPDATE_PATH = "/knowledge/graph/material/node/update";
 const MATERIAL_NODE_DELETE_PATH = "/knowledge/graph/material/node/delete";
@@ -107,10 +105,6 @@ interface GraphWithdrawalPayloadCommand {
     contentRef: GraphContentRefRecord;
     idempotencyKey: string;
     materialLockVersion: string;
-}
-
-interface GraphDeletionPrecheckCommand {
-    contentRef: GraphContentRefRecord;
 }
 
 export interface GraphMaterialPageQuery {
@@ -224,9 +218,6 @@ export interface GraphMaterialService {
     listMaterialTree: (query?: GraphMaterialTreeQuery) => Promise<GraphMaterialTreeNodeRecord[]>;
     applyCandidate: (command: GraphMaterialCandidateApplyCommand) => Promise<unknown>;
     pageMaterials: (query?: GraphMaterialPageQuery) => Promise<Page<GraphMaterialListRecord>>;
-    precheckDeletion: (
-        command: GraphMaterialContentRefCommand
-    ) => Promise<GraphDeletionPrecheckRecord>;
     previewBatchPublication: (
         command: Pick<GraphMaterialBatchExtractionCommand, "contentRefs">
     ) => Promise<GraphBatchPublicationPreviewRecord>;
@@ -420,13 +411,6 @@ export const httpGraphMaterialService: GraphMaterialService = {
                 idempotencyKey: createIdempotencyKey()
             }
         }),
-    precheckDeletion: (command) =>
-        postJson<GraphDeletionPrecheckRecord, GraphDeletionPrecheckCommand>(
-            DELETION_PRECHECK_PATH,
-            {
-                body: command
-            }
-        ),
     previewBatchWithdrawal: (command) =>
         postJson<GraphBatchWithdrawalPreviewRecord, GraphBatchWithdrawalPreviewCommand>(
             BATCH_WITHDRAWAL_PREVIEW_PATH,
@@ -468,6 +452,5 @@ export const previewBatchPublication = httpGraphMaterialService.previewBatchPubl
 export const publishBatch = httpGraphMaterialService.publishBatch;
 export const previewWithdrawal = httpGraphMaterialService.previewWithdrawal;
 export const withdrawMaterial = httpGraphMaterialService.withdrawMaterial;
-export const precheckDeletion = httpGraphMaterialService.precheckDeletion;
 export const previewBatchWithdrawal = httpGraphMaterialService.previewBatchWithdrawal;
 export const withdrawBatch = httpGraphMaterialService.withdrawBatch;

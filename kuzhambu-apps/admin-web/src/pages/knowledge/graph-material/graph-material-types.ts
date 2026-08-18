@@ -38,12 +38,6 @@ export interface GraphMaterialRecord {
     failedOperation?: "PUBLISH" | "WITHDRAW" | null;
 }
 
-export interface GraphMaterialBatchPublicationResult {
-    failureReason?: string;
-    materialId: string;
-    status: "PUBLISHED" | "FAILED";
-}
-
 export interface GraphPublicationIssueRecord {
     code: string;
     message: string;
@@ -92,13 +86,6 @@ export interface GraphPublicationResultRecord {
     reusedEdgeCount: string;
     reusedNodeCount: string;
     success: boolean;
-}
-
-export interface GraphMaterialDraftObject {
-    id: string;
-    name: string;
-    sourceText: string;
-    type: string;
 }
 
 export interface GraphMaterialStatsRecord {
@@ -213,13 +200,6 @@ export interface GraphBatchPublicationPreviewRecord {
 
 export interface GraphBatchPublicationResultRecord {
     materials: GraphBatchMaterialResultRecord<GraphPublicationResultRecord>[];
-}
-
-export interface GraphDeletionPrecheckRecord {
-    changeId?: string;
-    executable?: boolean;
-    failureMessage?: string | null;
-    issues?: GraphPublicationIssueRecord[] | null;
 }
 
 export type MaterialCatalogNodeType = "all" | "category" | "contentType" | "volume";

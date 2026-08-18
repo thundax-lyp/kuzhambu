@@ -22,7 +22,6 @@ vi.mock("./graph-material-service", () => ({
     getMaterial: vi.fn(),
     listMaterialTree: vi.fn(),
     pageMaterials: vi.fn(),
-    precheckDeletion: vi.fn(),
     previewBatchPublication: vi.fn(),
     previewBatchWithdrawal: vi.fn(),
     previewPublication: vi.fn(),
