@@ -50,13 +50,6 @@ describe("GraphGovernancePage", () => {
     it("loads a paginated published-node list and focuses its local graph", async () => {
         replacePermissions(["knowledge:graph:view"]);
         vi.mocked(service.pagePublishedNodes).mockResolvedValue(page);
-        vi.mocked(service.getPublishedNode).mockResolvedValue({
-            incidentEdges: [],
-            materials: [],
-            node: page.records[0],
-            operations: [],
-            properties: []
-        });
         vi.mocked(service.pagePublishedAdjacency).mockResolvedValue({
             ...page,
             records: []
@@ -66,10 +59,13 @@ describe("GraphGovernancePage", () => {
         renderPage();
 
         expect(await screen.findByText("李白")).toBeInTheDocument();
-        expect(screen.getByLabelText("发布节点分页列表")).toBeInTheDocument();
-        await user.click(screen.getByTestId("knowledge-graph-governance-view-node-1"));
+        expect(screen.getAllByText("人物")).not.toHaveLength(0);
+        expect(screen.getByLabelText("发布节点关系树")).toBeInTheDocument();
+        await user.click(screen.getByTestId("knowledge-graph-governance-toggle-node-1"));
         expect(await screen.findByTestId("knowledge-graph-governance-canvas")).toBeInTheDocument();
-        expect(screen.getByText(/已以“李白”为焦点加载一跳关系/)).toBeInTheDocument();
+        expect(screen.getByText(/已加入 1 个节点，并加载各节点的一跳关系/)).toBeInTheDocument();
+        expect(screen.queryByText("节点详情")).not.toBeInTheDocument();
+        await user.click(screen.getByTestId("knowledge-graph-governance-view-node-1"));
         expect(screen.getByText("节点详情")).toBeInTheDocument();
         await waitFor(() =>
             expect(service.pagePublishedAdjacency).toHaveBeenCalledWith(
@@ -78,25 +74,14 @@ describe("GraphGovernancePage", () => {
         );
     });
 
-    it("submits search filters and switches to the paginated relation list", async () => {
+    it("submits search filters for the paginated node tree", async () => {
         replacePermissions(["knowledge:graph:view"]);
         vi.mocked(service.pagePublishedNodes).mockResolvedValue(page);
-        vi.mocked(service.pagePublishedRelations).mockResolvedValue({
-            ...page,
-            records: [
-                {
-                    id: "11",
-                    relationType: "AUTHORED",
-                    source: "MATERIAL",
-                    status: "ACTIVE"
-                }
-            ]
-        });
         const user = userEvent.setup();
 
         renderPage();
         await screen.findByText("李白");
-        await user.type(screen.getByRole("textbox", { name: "搜索发布对象" }), "李白");
+        await user.type(screen.getByRole("textbox", { name: "搜索节点" }), "李白");
         await user.click(screen.getByTestId("knowledge-graph-governance-apply-filters"));
         await waitFor(() =>
             expect(vi.mocked(service.pagePublishedNodes).mock.calls.at(-1)?.[0]).toMatchObject({
@@ -104,9 +89,57 @@ describe("GraphGovernancePage", () => {
                 status: "ACTIVE"
             })
         );
-        await user.click(screen.getByText("关系"));
-        expect(await screen.findByText("AUTHORED")).toBeInTheDocument();
-        expect(screen.getByLabelText("发布关系分页列表")).toBeInTheDocument();
+        expect(screen.getByLabelText("发布节点关系树")).toBeInTheDocument();
+    });
+
+    it("loads relations as child rows and continues their pagination", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+        vi.mocked(service.pagePublishedNodes).mockResolvedValue(page);
+        vi.mocked(service.pagePublishedAdjacency).mockResolvedValue({
+            ...page,
+            records: [
+                {
+                    isolated: false,
+                    object: { id: "2", name: "唐诗", nodeType: "WORK" },
+                    relation: { id: "11", relationType: "AUTHORED" },
+                    subject: page.records[0]
+                }
+            ],
+            totalCount: 2,
+            totalPage: 2
+        });
+        const user = userEvent.setup();
+
+        renderPage();
+
+        await screen.findByText("李白");
+        const expandButton = screen
+            .getByLabelText("发布节点关系树")
+            .querySelector<HTMLButtonElement>(".ant-table-row-expand-icon");
+        expect(expandButton).not.toBeNull();
+        await user.click(expandButton!);
+
+        expect(await screen.findByText("唐诗")).toBeInTheDocument();
+        await user.click(screen.getByTestId("knowledge-graph-governance-load-more-relations-1"));
+        await waitFor(() =>
+            expect(service.pagePublishedAdjacency).toHaveBeenCalledWith(
+                expect.objectContaining({ pageNo: 2, subjectNodeId: "1" })
+            )
+        );
+    });
+
+    it("shows the editor action to users with graph-edit permission", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        vi.mocked(service.pagePublishedNodes).mockResolvedValue(page);
+
+        renderPage();
+
+        expect(
+            await screen.findByTestId("knowledge-graph-governance-edit-node-1")
+        ).toHaveTextContent("编辑");
+        expect(
+            screen.queryByTestId("knowledge-graph-governance-view-node-1")
+        ).not.toBeInTheDocument();
     });
 
     it("renders the access-denied state without loading published objects", () => {

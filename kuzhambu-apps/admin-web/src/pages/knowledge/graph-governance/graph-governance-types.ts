@@ -12,11 +12,14 @@ export interface GraphGovernanceNodeRecord {
 export interface GraphGovernanceRelationRecord {
     id: string;
     lockVersion?: string | null;
+    qualifiers?: Record<string, unknown> | null;
     relationType?: string | null;
     source?: string | null;
     sourceNodeId?: string | null;
+    sourceNodeName?: string | null;
     status?: string | null;
     targetNodeId?: string | null;
+    targetNodeName?: string | null;
 }
 
 export interface GraphGovernanceAdjacencyRecord {
@@ -67,4 +70,11 @@ export interface GraphGovernanceRelationDetailRecord {
     properties: GraphGovernancePropertyRecord[];
     sourceNode: GraphGovernanceNodeRecord;
     targetNode: GraphGovernanceNodeRecord;
+}
+
+export interface GraphGovernanceImpactRecord {
+    edges: GraphGovernanceRelationRecord[];
+    executable: boolean;
+    impactToken: string;
+    nodes: GraphGovernanceNodeRecord[];
 }
