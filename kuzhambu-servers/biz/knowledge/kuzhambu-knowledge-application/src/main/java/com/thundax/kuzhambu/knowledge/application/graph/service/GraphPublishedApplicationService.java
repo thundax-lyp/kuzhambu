@@ -18,8 +18,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedNode
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceImpactResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgeDetailResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgePageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
@@ -28,7 +28,7 @@ public interface GraphPublishedApplicationService {
 
     PageResult<GraphPublishedNode> pageNodes(GraphPublishedNodeQuery query, PageQuery pageQuery);
 
-    PageResult<GraphPublishedEdge> pageEdges(GraphPublishedEdgeQuery query, PageQuery pageQuery);
+    PageResult<GraphPublishedEdgePageResult> pageEdges(GraphPublishedEdgeQuery query, PageQuery pageQuery);
 
     PageResult<GraphPublishedAdjacencyResult> pageAdjacency(GraphPublishedAdjacencyQuery query, PageQuery pageQuery);
 

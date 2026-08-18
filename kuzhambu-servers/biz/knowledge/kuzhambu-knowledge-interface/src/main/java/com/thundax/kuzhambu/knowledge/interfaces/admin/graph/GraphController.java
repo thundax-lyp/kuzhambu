@@ -1197,6 +1197,7 @@ public class GraphController {
     public GraphPublishedResponses.EdgeData publishedEdgeDelete(
             @Valid @RequestBody GraphPublishedRequests.PublishedEdgeDeleteRequest request) {
         publishedService.deleteEdge(GraphInterfaceAssembler.toCommand(request));
-        return new GraphPublishedResponses.EdgeData(request.getEdgeId(), null, null, null, null, null, "DELETED", null);
+        return new GraphPublishedResponses.EdgeData(
+                request.getEdgeId(), null, null, null, null, null, "DELETED", null, null, null);
     }
 }

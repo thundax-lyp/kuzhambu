@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceIm
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgeDetailResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgePageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPublishedApplicationService;
@@ -137,16 +138,31 @@ public class GraphPublishedApplicationServiceImpl implements GraphPublishedAppli
     }
 
     @Override
-    public PageResult<GraphPublishedEdge> pageEdges(GraphPublishedEdgeQuery query, PageQuery pageQuery) {
+    public PageResult<GraphPublishedEdgePageResult> pageEdges(GraphPublishedEdgeQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
-        return edgeRepository.page(
+        var result = edgeRepository.page(
                 query == null ? null : query.keyword(),
                 query == null ? null : query.relationType(),
                 query == null ? null : query.status(),
                 query == null ? null : query.source(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
+        Map<GraphPublishedNodeId, GraphPublishedNode> nodesById = new LinkedHashMap<>();
+        nodeRepository
+                .listByIds(result.getRecords().stream()
+                        .flatMap(edge -> java.util.stream.Stream.of(edge.getSourceNodeId(), edge.getTargetNodeId()))
+                        .distinct()
+                        .toList())
+                .forEach(node -> nodesById.put(node.getId(), node));
+        return PageResult.of(
+                result.getPageNo(),
+                result.getPageSize(),
+                result.getTotalCount(),
+                result.getRecords().stream()
+                        .map(edge -> new GraphPublishedEdgePageResult(
+                                edge, nodesById.get(edge.getSourceNodeId()), nodesById.get(edge.getTargetNodeId())))
+                        .toList());
     }
 
     @Override

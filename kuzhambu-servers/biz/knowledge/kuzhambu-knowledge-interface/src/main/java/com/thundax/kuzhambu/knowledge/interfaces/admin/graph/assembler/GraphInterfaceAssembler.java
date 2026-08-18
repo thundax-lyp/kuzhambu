@@ -77,6 +77,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationP
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgeDetailResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgePageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalPreviewResult;
@@ -1163,6 +1164,17 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphPublishedResponses.EdgeData toEdgeData(@NonNull GraphPublishedEdge value) {
         Objects.requireNonNull(value, "value");
+        return toEdgeData(value, null, null);
+    }
+
+    @NonNull
+    public static GraphPublishedResponses.EdgeData toEdgeData(@NonNull GraphPublishedEdgePageResult value) {
+        Objects.requireNonNull(value, "value");
+        return toEdgeData(value.edge(), value.sourceNode(), value.targetNode());
+    }
+
+    private static GraphPublishedResponses.EdgeData toEdgeData(
+            @NonNull GraphPublishedEdge value, GraphPublishedNode sourceNode, GraphPublishedNode targetNode) {
         return new GraphPublishedResponses.EdgeData(
                 String.valueOf(value.getId().value()),
                 String.valueOf(value.getSourceNodeId().value()),
@@ -1171,7 +1183,9 @@ public final class GraphInterfaceAssembler {
                 null,
                 value.getSource().name(),
                 value.getStatus().name(),
-                String.valueOf(value.getLockVersion()));
+                String.valueOf(value.getLockVersion()),
+                sourceNode == null ? null : sourceNode.getName(),
+                targetNode == null ? null : targetNode.getName());
     }
 
     @NonNull
