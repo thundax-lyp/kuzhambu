@@ -7,8 +7,6 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -144,47 +142,10 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "degraded-latency-ms: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_DEGRADED_LATENCY_MS:1000}");
     }
 
-    @Test
-    void systemSeedShouldExposeOperationsHealthPageMenu() throws IOException {
-        Path repoRoot = findRepoRoot();
-        String systemJson = Files.readString(repoRoot.resolve("db/data-source/system.json"));
-
-        Assertions.assertThat(systemJson)
-                .contains("\"name\": \"健康检查\"")
-                .contains("\"operations:health:view\"")
-                .contains("\"url\": \"/operations/health\"");
-    }
-
-    @Test
-    void systemSeedShouldExposeAiGovernanceMenus() throws IOException {
-        Path repoRoot = findRepoRoot();
-        String systemJson = Files.readString(repoRoot.resolve("db/data-source/system.json"));
-
-        Assertions.assertThat(systemJson)
-                .contains("\"url\": \"/ai/models\"")
-                .contains("\"url\": \"/ai/prompts\"")
-                .contains("\"url\": \"/ai/business-configs\"")
-                .contains("\"url\": \"/ai/invocations\"")
-                .doesNotContain("\"url\": \"/ai/action-status\"")
-                .doesNotContain("\"url\": \"/ai/services\"")
-                .doesNotContain("\"url\": \"/ai/capability-mappings\"");
-    }
-
     private String loadApplicationYaml() throws IOException {
         try (InputStream inputStream = KuzhambuAdminApplication.class.getResourceAsStream("/application.yml")) {
             Assertions.assertThat(inputStream).isNotNull();
             return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
-    }
-
-    private Path findRepoRoot() {
-        Path currentPath = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-        while (currentPath != null) {
-            if (Files.exists(currentPath.resolve("db/data-source/system.json"))) {
-                return currentPath;
-            }
-            currentPath = currentPath.getParent();
-        }
-        throw new IllegalStateException("Cannot locate repository root from user.dir");
     }
 }

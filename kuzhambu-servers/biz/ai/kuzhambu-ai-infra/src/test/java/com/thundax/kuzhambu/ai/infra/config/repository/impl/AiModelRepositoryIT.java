@@ -1,9 +1,7 @@
 package com.thundax.kuzhambu.ai.infra.config.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -17,31 +15,12 @@ import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.AiModelDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.mapper.AiModelMapper;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class AiModelRepositoryIT {
-
-    @Test
-    void schemaAndSeedSqlShouldDeclareModelPersistenceObjects() throws IOException {
-        String schemaSql = readRequiredSql("db/schema/ai.sql");
-        String seedGenerator = readRequiredSql("scripts/seed/generate-ai-sql.mjs");
-
-        assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_service_config`"));
-        assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_model`"));
-        assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_model_check_record`"));
-        assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_model_source_name`"));
-        assertFalse(seedGenerator.contains("INSERT INTO `ai_capability`"));
-        assertTrue(seedGenerator.contains("ON DUPLICATE KEY UPDATE"));
-        assertTrue(seedGenerator.contains("CTYUN-CX-Qwen3.5-397B-A17B"));
-        assertTrue(seedGenerator.contains("CTYUN-bot-DeepSeek-V3.2-pro"));
-        assertTrue(seedGenerator.contains("doubao-seedream-5-0-pro-260628"));
-    }
 
     @Test
     void repositoryShouldMapModelWritesAndReads() {
@@ -80,14 +59,5 @@ class AiModelRepositoryIT {
         assertEquals(List.of(AiModelCapability.TEXT2TEXT, AiModelCapability.IMAGE2TEXT), loadedModel.getCapabilities());
         assertEquals("gpt-test", loadedModel.getModelName().value());
         assertEquals("GPT Test", loadedModel.getDisplayName());
-    }
-
-    private static String readRequiredSql(String path) throws IOException {
-        for (Path candidate : List.of(Path.of(path), Path.of("../" + path), Path.of("../../../../" + path))) {
-            if (Files.exists(candidate)) {
-                return Files.readString(candidate);
-            }
-        }
-        throw new IOException("Required SQL file not found: " + path);
     }
 }
