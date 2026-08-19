@@ -499,7 +499,8 @@ public final class GraphPersistenceAssembler {
                 GraphPublishedNodeIdCodec.toValue(entity.getPublishedNodeId()),
                 ContentRefCodec.toContentType(entity.getMaterialRef()),
                 ContentRefCodec.toValue(entity.getMaterialRef()),
-                entity.getSourceSnapshotJson());
+                entity.getSourceSnapshotJson(),
+                entity.getChangedAt());
     }
 
     public static GraphPublishedNodeMaterial toDomain(GraphPublishedNodeMaterialDO dataObject) {
@@ -509,7 +510,8 @@ public final class GraphPersistenceAssembler {
         return new GraphPublishedNodeMaterial(
                 GraphPublishedNodeIdCodec.toDomain(dataObject.getPublishedNodeId()),
                 ContentRefCodec.toDomain(dataObject.getContentType(), dataObject.getContentRefId()),
-                dataObject.getSourceSnapshotJson());
+                dataObject.getSourceSnapshotJson(),
+                dataObject.getChangedAt());
     }
 
     public static GraphPublishedEdgeMaterialDO toObject(GraphPublishedEdgeMaterial entity) {
@@ -520,7 +522,8 @@ public final class GraphPersistenceAssembler {
                 GraphPublishedEdgeIdCodec.toValue(entity.getPublishedEdgeId()),
                 ContentRefCodec.toContentType(entity.getMaterialRef()),
                 ContentRefCodec.toValue(entity.getMaterialRef()),
-                entity.getSourceSnapshotJson());
+                entity.getSourceSnapshotJson(),
+                entity.getChangedAt());
     }
 
     public static GraphPublishedEdgeMaterial toDomain(GraphPublishedEdgeMaterialDO dataObject) {
@@ -530,6 +533,7 @@ public final class GraphPersistenceAssembler {
         return new GraphPublishedEdgeMaterial(
                 GraphPublishedEdgeIdCodec.toDomain(dataObject.getPublishedEdgeId()),
                 ContentRefCodec.toDomain(dataObject.getContentType(), dataObject.getContentRefId()),
-                dataObject.getSourceSnapshotJson());
+                dataObject.getSourceSnapshotJson(),
+                dataObject.getChangedAt());
     }
 }

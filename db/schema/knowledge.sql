@@ -281,8 +281,10 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_node_material` (
     `content_type` varchar(32) NOT NULL,
     `content_ref_id` bigint NOT NULL,
     `source_snapshot_json` json DEFAULT NULL,
+    `changed_at` BIGINT NOT NULL,
     PRIMARY KEY (`published_node_id`, `content_type`, `content_ref_id`),
-    KEY `idx_knowledge_graph_published_node_material_content` (`content_type`, `content_ref_id`)
+    KEY `idx_knowledge_graph_published_node_material_content` (`content_type`, `content_ref_id`),
+    KEY `idx_knowledge_graph_published_node_material_changed_at` (`changed_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布节点当前素材关联';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge_material` (
@@ -290,8 +292,10 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_published_edge_material` (
     `content_type` varchar(32) NOT NULL,
     `content_ref_id` bigint NOT NULL,
     `source_snapshot_json` json DEFAULT NULL,
+    `changed_at` BIGINT NOT NULL,
     PRIMARY KEY (`published_edge_id`, `content_type`, `content_ref_id`),
-    KEY `idx_knowledge_graph_published_edge_material_content` (`content_type`, `content_ref_id`)
+    KEY `idx_knowledge_graph_published_edge_material_content` (`content_type`, `content_ref_id`),
+    KEY `idx_knowledge_graph_published_edge_material_changed_at` (`changed_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布关系当前素材关联';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_manual_source` (

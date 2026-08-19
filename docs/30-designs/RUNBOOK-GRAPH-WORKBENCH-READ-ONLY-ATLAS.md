@@ -303,7 +303,7 @@ public interface GraphWorkbenchApplicationService {
 | `.../infra/graph/repository/impl/GraphPublishedEdgeRepositoryImpl.java` | 修改 | 实现 recent/one-hop 边读取和 `truncated` |
 | `.../infra/graph/workbench/GraphWorkbenchOverviewCacheDTO.java` | 新增 | Redis 序列化 DTO；字段与 `GraphWorkbenchOverviewSnapshot` 一一对应 |
 | `.../infra/graph/workbench/RedisGraphWorkbenchSnapshotStore.java` | 新增 | JetCache REMOTE 读写和 token 锁实现 |
-| `db/schema/knowledge.sql` | 修改 | 两张 `knowledge_graph_published_*_material` 表增加 `changed_at BIGINT NOT NULL` 和 `(changed_at)` 索引；迁移回填与全部关联写路径同步维护 |
+| `db/schema/knowledge.sql` | 修改 | 两张 `knowledge_graph_published_*_material` 表增加 `changed_at BIGINT NOT NULL` 和 `(changed_at)` 索引；`--rebuild` 重建历史关联、全部关联写路径同步维护 |
 | `.../interfaces/admin/graph/GraphController.java` | 修改 | 替换两个画布路由与 handler；保留权限与 `ApiResponse` 包装 |
 | `.../interfaces/admin/graph/controller/request/GraphWorkbenchRequests.java` | 修改 | `RecentEdgesListRequest`、`OneHopEdgesListRequest`，删除 Seeds/Incident 请求 |
 | `.../interfaces/admin/graph/controller/response/GraphWorkbenchResponses.java` | 修改 | `OverviewData` 增加 `snapshotAt`；新增 `RecentEdgesData`、`OneHopEdgesData` |
@@ -477,7 +477,7 @@ flowchart LR
 - 未消费且未过期预览 token 中冲突项的数量；
 - 图谱 Schema 的版本或内容摘要，确保核心关系策略变更会刷新统计。
 
-当前两张发布对象-素材关联表没有时间字段，无法用“最大变更时间”检测同数量的关联替换。实施时必须为两表新增非空 `changed_at BIGINT` 及相应索引，并在全部创建、撤回、删除、治理迁移关联的写路径中更新它。这个字段描述正式关联事实的变更时间，不是统计数据；不违反“统计不落数据库”的边界。历史数据迁移时以迁移执行时间回填。禁止以 `COUNT(*)`、`GROUP_CONCAT` 截断摘要或概率散列代替该检测。
+当前两张发布对象-素材关联表没有时间字段，无法用“最大变更时间”检测同数量的关联替换。实施时必须为两表新增非空 `changed_at BIGINT` 及相应索引，并在全部创建、撤回、删除、治理迁移关联的写路径中更新它。这个字段描述正式关联事实的变更时间，不是统计数据；不违反“统计不落数据库”的边界。当前数据库规则要求通过 `scripts/import-seed-data.sh --rebuild` 重建 schema；重建后的历史关联在重建写入时以写入时间填充，禁止新增增量 migration 脚本。禁止以 `COUNT(*)`、`GROUP_CONCAT` 截断摘要或概率散列代替该检测。
 
 预览 token 的过期会在没有写入时改变“待决冲突数”。检测器因此必须把当前时间参与 fingerprint，按最近 token 过期边界计算下一次强制刷新时间；不得只依赖表的更新时间。
 
@@ -506,7 +506,7 @@ flowchart LR
 
 ## Implementation Plan
 
-1. 在 `db/schema/knowledge.sql` 为两张发布对象-素材关联表增加 `changed_at` 和索引，回填现存记录，并使全部关联写路径维护该字段。
+1. 在 `db/schema/knowledge.sql` 为两张发布对象-素材关联表增加 `changed_at` 和索引，并使全部关联写路径维护该字段；通过 `scripts/import-seed-data.sh --rebuild` 重建 schema 与历史关联，不新增增量 migration 脚本。
 2. 在 Knowledge application/domain/infra 明确 `GraphWorkbenchOverviewSource`、`GraphWorkbenchSnapshotStore` 与 `GraphWorkbenchSnapshotRefresher` 的窄接口；缓存 DTO 和 JetCache/Redis 实现放在 infra，正式图聚合仍由现有 repository 完成，`ApplicationService.getOverview()` 只读取 store。
 3. 为 fingerprint、完整概览聚合、Redis 序列化、锁竞争、旧快照保留和无快照失败分别补单元测试。
 4. 新增 `GraphWorkbenchSnapshotScheduler`：`ApplicationReadyEvent` 预热与 fixed-delay 检测复用同一个幂等刷新服务；多实例仅允许一个实例实际重建。

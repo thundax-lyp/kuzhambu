@@ -39,6 +39,7 @@ public class GraphPublishedNodeMaterialRepositoryImpl implements GraphPublishedN
 
     @Override
     public int insert(GraphPublishedNodeMaterial relation) {
+        relation.setChangedAt(System.currentTimeMillis());
         try {
             return mapper.insert(GraphPersistenceAssembler.toObject(relation));
         } catch (DuplicateKeyException ex) {

@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `知识图谱发布关联`：记录素材关联变更时间
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`db/schema/knowledge.sql`、`knowledge_graph_published_node_material`、`knowledge_graph_published_edge_material` 的写入实现与测试
-    - 处理动作：为两张发布关联表新增并维护 `changed_at`。
-    - 验收点：关联替换即使数量不变也更新 `changed_at`；迁移回填成功；不新增统计表。
-    - 重要度：9/10
-
 - [ ] `知识图谱工作台指纹`：提供概览刷新判定数据源
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
