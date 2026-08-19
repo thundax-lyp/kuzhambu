@@ -7,6 +7,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class GraphRequestsTest {
@@ -26,7 +27,7 @@ class GraphRequestsTest {
                         .getDeclaredField("materialLockVersion")
                         .getType())
                 .isEqualTo(String.class);
-        assertThat(GraphWorkbenchRequests.IncidentEdgesListRequest.class
+        assertThat(GraphWorkbenchRequests.OneHopEdgesListRequest.class
                         .getDeclaredField("afterEdgeId")
                         .getType())
                 .isEqualTo(String.class);
@@ -42,6 +43,17 @@ class GraphRequestsTest {
 
         assertThat(contentRefViolations).isNotEmpty();
         assertThat(validator.validate(decision)).isNotEmpty();
+    }
+
+    @Test
+    void oneHopEdgesShouldHaveFixedServerBatchAndAtMostFourHundredNodeIds() {
+        GraphWorkbenchRequests.OneHopEdgesListRequest request = new GraphWorkbenchRequests.OneHopEdgesListRequest();
+        request.setNodeIds(Collections.nCopies(401, "1001"));
+
+        assertThat(validator.validate(request)).isNotEmpty();
+        assertThat(Arrays.stream(GraphWorkbenchRequests.OneHopEdgesListRequest.class.getDeclaredFields())
+                        .map(Field::getName))
+                .doesNotContain("pageSize");
     }
 
     @Test

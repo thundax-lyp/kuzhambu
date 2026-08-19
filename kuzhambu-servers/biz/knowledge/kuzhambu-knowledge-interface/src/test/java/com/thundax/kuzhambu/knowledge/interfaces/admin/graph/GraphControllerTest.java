@@ -97,6 +97,11 @@ class GraphControllerTest {
     }
 
     @Test
+    void shouldExposeOneHopEdgesInsteadOfIncidentEdges() throws Exception {
+        assertThat(postMapping("oneHopEdges")).isEqualTo("workbench/one-hop-edges/list");
+    }
+
+    @Test
     void shouldMapMaterialNodeCreateThroughAssemblerAndApplicationService() {
         GraphMaterialApplicationService materialService = mock(GraphMaterialApplicationService.class);
         GraphController controller = controller(materialService);
