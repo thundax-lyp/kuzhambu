@@ -51,29 +51,29 @@ const createIdempotencyKey = () => {
 };
 
 const toPage = <TRecord>(page: {
-    pageNo: string;
-    pageSize: string;
+    count: number;
+    pageNo: number;
+    pageSize: number;
     records: TRecord[];
-    totalCount: string;
-    totalPage: string;
+    totalPage: number;
 }): Page<TRecord> => ({
-    count: Number(page.totalCount),
-    pageNo: Number(page.pageNo),
-    pageSize: Number(page.pageSize),
+    count: page.count,
+    pageNo: page.pageNo,
+    pageSize: page.pageSize,
     records: page.records,
-    totalCount: Number(page.totalCount),
-    totalPage: Number(page.totalPage)
+    totalCount: page.count,
+    totalPage: page.totalPage
 });
 
 export const httpGraphExtractionService: GraphExtractionService = {
     pageTasks: async (query = {}) => {
         const page = await postJson<
             {
-                pageNo: string;
-                pageSize: string;
+                count: number;
+                pageNo: number;
+                pageSize: number;
                 records: GraphExtractionTaskRecord[];
-                totalCount: string;
-                totalPage: string;
+                totalPage: number;
             },
             GraphExtractionTaskPageQuery
         >(TASK_PAGE_PATH, {

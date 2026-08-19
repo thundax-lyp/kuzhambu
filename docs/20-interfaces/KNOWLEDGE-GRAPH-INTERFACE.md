@@ -67,7 +67,7 @@
 
 `governanceImpact` 固定为 `{impactToken,nodes,edges,nodeMappings,edgeMappings,issues,executable}`。所有删除、合并和拆分确认 body 必须携带对应 `impactToken`；服务端比较预览时所有受影响对象 ID/lockVersion 和依赖集合，不一致返回 `GRAPH_PREVIEW_STALE`，不写任何数据。
 
-`Page<T>` 固定为 `{pageNo:string,pageSize:string,totalCount:string,totalPage:string,records:[T]}`。所有 `occurredAt`、`requestedAt`、`completedAt`、`publishedAt` 为 epoch milliseconds 字符串；可空值显式返回 `null`，不省略字段。
+`Page<T>` 固定为 `{pageNo:number,pageSize:number,count:number,totalPage:number,records:[T]}`。`count` 是符合当前筛选条件的记录总数；前端内部如需兼容 `totalCount`，必须由 `count` 映射，HTTP 响应不得读取或返回 `totalCount`。所有 `occurredAt`、`requestedAt`、`completedAt`、`publishedAt` 为 epoch milliseconds 字符串；可空值显式返回 `null`，不省略字段。
 
 `publishedProperty` 固定为 `{id,propertyName,value,preferred,sourceType:"MATERIAL"|"MANUAL",sourceRef?}`；`sourceRef` 为 `{contentRef?,auditLogId?}`，当 `sourceType` 为 `MATERIAL` 时必须有 `contentRef`，为 `MANUAL` 时必须有 `auditLogId`。
 
