@@ -265,6 +265,12 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     }
 
     @Override
+    public int recoverActiveTasksAtStartup() {
+        return syncAllTasksWithStatus(GraphExtractionExecutionStatus.PENDING)
+                + syncAllTasksWithStatus(GraphExtractionExecutionStatus.RUNNING);
+    }
+
+    @Override
     public int syncActiveTasks(GraphActiveTaskSyncQuery query) {
         List<Long> materialIds = query == null ? null : query.materialIds();
         if (materialIds == null || materialIds.isEmpty()) {
@@ -637,6 +643,19 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 .map(this::syncTaskFromAi)
                 .mapToInt(task -> 1)
                 .sum();
+    }
+
+    private int syncAllTasksWithStatus(GraphExtractionExecutionStatus status) {
+        PageResult<GraphExtractionTask> firstPage = taskRepository.page(null, null, status, null, 1, 100);
+        int syncedCount = 0;
+        for (int pageNo = firstPage.getTotalPage(); pageNo >= 1; pageNo--) {
+            PageResult<GraphExtractionTask> page = taskRepository.page(null, null, status, null, pageNo, 100);
+            syncedCount += page.getRecords().stream()
+                    .map(this::syncTaskFromAi)
+                    .mapToInt(task -> 1)
+                    .sum();
+        }
+        return syncedCount;
     }
 
     private void startPendingTask(GraphExtractionTask task) {

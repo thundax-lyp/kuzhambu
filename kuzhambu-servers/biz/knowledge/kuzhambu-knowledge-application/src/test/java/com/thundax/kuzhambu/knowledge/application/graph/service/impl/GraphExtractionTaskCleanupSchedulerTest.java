@@ -80,6 +80,29 @@ class GraphExtractionTaskCleanupSchedulerTest {
         verify(repository).deleteById(new GraphExtractionTaskId(7001L));
     }
 
+    @Test
+    void startupShouldSynchronizeActiveTasks() {
+        GraphExtractionTaskRepository repository = mock(GraphExtractionTaskRepository.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        GraphExtractionApplicationService extractionService = mock(GraphExtractionApplicationService.class);
+
+        new GraphExtractionTaskCleanupScheduler(repository, aiFacade, extractionService).onApplicationEvent(null);
+
+        verify(extractionService).recoverActiveTasksAtStartup();
+    }
+
+    @Test
+    void startupShouldKeepApplicationAvailableWhenSynchronizationFails() {
+        GraphExtractionTaskRepository repository = mock(GraphExtractionTaskRepository.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        GraphExtractionApplicationService extractionService = mock(GraphExtractionApplicationService.class);
+        when(extractionService.recoverActiveTasksAtStartup()).thenThrow(new BizException("AI service unavailable"));
+
+        new GraphExtractionTaskCleanupScheduler(repository, aiFacade, extractionService).onApplicationEvent(null);
+
+        verify(extractionService).recoverActiveTasksAtStartup();
+    }
+
     private static GraphExtractionTaskCleanupScheduler scheduler(
             GraphExtractionTaskRepository repository, AiFacade aiFacade) {
         return new GraphExtractionTaskCleanupScheduler(
