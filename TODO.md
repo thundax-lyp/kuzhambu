@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `admin 图谱工作台画布`：实现无操作的 G6 渲染组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`graph-workbench-canvas/`、`graph-workbench-types.ts`
-    - 处理动作：实现只接收 `{ graph, motion }` 的页面私有 G6 Canvas。
-    - 验收点：颜色、形状、标签密度、分批动画和 reduced motion 符合 RUNBOOK；未注册点击、拖拽、缩放或平移行为。
-    - 重要度：9/10
-
 - [ ] `admin 图谱工作台页面`：装配只读态势展示并清理旧 UI
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`

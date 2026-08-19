@@ -32,7 +32,9 @@ const mergeGraph = (current: GraphWorkbenchGraphRecord, incoming: GraphWorkbench
     });
     const acceptedEdges = [...edgesById.values()].slice(0, GRAPH_EDGE_LIMIT);
     const endpointIds = new Set(
-        acceptedEdges.flatMap((edge) => [edge.sourceNodeId, edge.targetNodeId]).filter(Boolean)
+        acceptedEdges
+            .flatMap((edge) => [edge.sourceNodeId, edge.targetNodeId])
+            .filter((id): id is string => Boolean(id))
     );
     return {
         edges: acceptedEdges,
