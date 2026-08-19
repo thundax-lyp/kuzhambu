@@ -235,8 +235,26 @@ public record GraphWorkbenchOverviewSnapshot(
         List<GraphWorkbenchActivity> recentActivities) {}
 
 public record GraphWorkbenchOverviewFingerprint(
-        String value,
-        Instant nextRefreshAt) {}
+        long activeNodeCount,
+        Long activeNodeModifiedAt,
+        long activeEdgeCount,
+        Long activeEdgeModifiedAt,
+        long nodeMaterialAssociationCount,
+        Long nodeMaterialAssociationChangedAt,
+        long edgeMaterialAssociationCount,
+        Long edgeMaterialAssociationChangedAt,
+        long publicationCount,
+        Long publicationOccurredAt,
+        long governanceOperationCount,
+        Long governanceOperationOccurredAt,
+        long deletionChangeCount,
+        Long deletionChangeOccurredAt,
+        long pendingConflictCount,
+        Long nextPendingConflictExpiresAt,
+        String schemaFingerprint) {
+    String value();
+    Instant nextRefreshAt();
+}
 
 public record GraphRecentEdgesResult(
         List<GraphPublishedNode> nodes,
@@ -295,7 +313,7 @@ public interface GraphWorkbenchApplicationService {
 | `.../application/graph/scheduler/GraphWorkbenchSnapshotScheduler.java` | 新增 | `ApplicationReadyEvent` 预热与 `@Scheduled(fixedDelay = 30_000L)`；只调用 refresher |
 | `.../application/graph/service/GraphWorkbenchApplicationService.java` | 修改 | `getOverview()`、`listRecentEdges()`、`listOneHopEdges(query)`；删除 `listRecentSeedNodes()`、`listIncidentEdges()` |
 | `.../application/graph/service/impl/GraphWorkbenchApplicationServiceImpl.java` | 修改 | 只从 snapshot store 读取 overview；组装 recent/one-hop 画布结果 |
-| `.../domain/graph/repository/GraphWorkbenchRepository.java` | 修改 | 增加 `getOverviewFingerprint()` 和 `getOverviewSnapshot()`；不再把实时聚合暴露给 HTTP 调用 |
+| `.../domain/graph/repository/GraphWorkbenchRepository.java` | 修改 | 增加 `getByOverviewFingerprint(schemaFingerprint)`；完整聚合只由 `GraphWorkbenchOverviewSource` 调用，不再暴露给 HTTP 调用 |
 | `.../domain/graph/repository/GraphPublishedEdgeRepository.java` | 修改 | 增加 `listRecentlyUpdated(int limit)`；`listIncidentEdges` 改名为 `listOneHopEdges` |
 | `.../infra/graph/persistence/mapper/GraphWorkbenchMapper.java` | 修改 | 概览聚合和指纹的 SQL |
 | `.../infra/graph/persistence/mapper/GraphPublishedEdgeMapper.java` | 修改 | 最近 200 条边及一跳边的 SQL，排序和 `limit + 1` 游标读取 |
@@ -483,7 +501,7 @@ flowchart LR
 
 ### Lifecycle
 
-1. `ApplicationReadyEvent` 异步调用 `refreshIfRequired(STARTUP)`；应用可启动，工作台在快照未就绪时只显示“正式图态势正在准备”。
+1. `ApplicationReadyEvent` 调用 `refreshIfRequired(STARTUP)`；应用可启动，工作台在快照未就绪时只显示“正式图态势正在准备”。
 2. `@Scheduled(fixedDelay = 30_000L)` 读取 fingerprint。
 3. 指纹变化、缓存缺失或到达预览 token 的下一过期边界时，尝试刷新。
 4. 刷新获得 Redis 分布式锁后，从数据库计算完整概览并写入 Redis；失败时保留仍有效的旧快照，记录 `WARN` 日志和度量。

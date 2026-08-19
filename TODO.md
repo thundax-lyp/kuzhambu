@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `知识图谱工作台刷新器`：以指纹重建 Redis 概览
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`GraphWorkbenchOverviewSource.java`、`GraphWorkbenchSnapshotRefresher.java`、`GraphWorkbenchSnapshotScheduler.java` 及 application 测试
-    - 处理动作：实现启动预热和 30 秒定时刷新编排。
-    - 验收点：多实例只重建一次；指纹未变不重建；刷新失败保留旧快照；无快照不在请求链路聚合统计。
-    - 重要度：10/10
-
 - [ ] `知识图谱工作台概览接口`：将 overview 切换为快照读取
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
