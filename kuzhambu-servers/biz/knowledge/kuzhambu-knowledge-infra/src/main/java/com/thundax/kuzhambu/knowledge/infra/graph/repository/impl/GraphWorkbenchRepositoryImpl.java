@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishe
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphQualitySnapshot;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchActivity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchMetrics;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchOverviewFingerprint;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphWorkbenchRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.GraphPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphPublishedEdgeMapper;
@@ -55,6 +56,29 @@ public class GraphWorkbenchRepositoryImpl implements GraphWorkbenchRepository {
                         .map(this::toActivity)
                         .toList(),
                 mapper.countPendingPublicationConflicts());
+    }
+
+    @Override
+    public GraphWorkbenchOverviewFingerprint getByOverviewFingerprint(String schemaFingerprint) {
+        GraphWorkbenchMapper.FingerprintRow row = mapper.getByOverviewFingerprint();
+        return new GraphWorkbenchOverviewFingerprint(
+                row.getActiveNodeCount(),
+                row.getActiveNodeModifiedAt(),
+                row.getActiveEdgeCount(),
+                row.getActiveEdgeModifiedAt(),
+                row.getNodeMaterialAssociationCount(),
+                row.getNodeMaterialAssociationChangedAt(),
+                row.getEdgeMaterialAssociationCount(),
+                row.getEdgeMaterialAssociationChangedAt(),
+                row.getPublicationCount(),
+                row.getPublicationOccurredAt(),
+                row.getGovernanceOperationCount(),
+                row.getGovernanceOperationOccurredAt(),
+                row.getDeletionChangeCount(),
+                row.getDeletionChangeOccurredAt(),
+                row.getPendingConflictCount(),
+                row.getNextPendingConflictExpiresAt(),
+                schemaFingerprint);
     }
 
     @Override

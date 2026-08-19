@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchMetrics;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchOverviewFingerprint;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphPublishedEdgeMapper;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphPublishedNodeMapper;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphWorkbenchMapper;
@@ -61,6 +62,51 @@ class GraphWorkbenchRepositoryImplTest {
         assertThat(conflictSql).contains("CONFLICT");
         assertThat(conflictSql).contains("$.nodes[*].matchType");
         assertThat(conflictSql).contains("$.edges[*].matchType");
+    }
+
+    @Test
+    void fingerprintShouldExposeAllSnapshotInvalidationMarkers() throws Exception {
+        GraphWorkbenchMapper mapper = mock(GraphWorkbenchMapper.class);
+        GraphWorkbenchRepositoryImpl repository = new GraphWorkbenchRepositoryImpl(
+                mapper, mock(GraphPublishedNodeMapper.class), mock(GraphPublishedEdgeMapper.class));
+        GraphWorkbenchMapper.FingerprintRow row = new GraphWorkbenchMapper.FingerprintRow();
+        row.setActiveNodeCount(12L);
+        row.setActiveNodeModifiedAt(100L);
+        row.setActiveEdgeCount(18L);
+        row.setActiveEdgeModifiedAt(200L);
+        row.setNodeMaterialAssociationCount(5L);
+        row.setNodeMaterialAssociationChangedAt(300L);
+        row.setEdgeMaterialAssociationCount(6L);
+        row.setEdgeMaterialAssociationChangedAt(400L);
+        row.setPublicationCount(7L);
+        row.setPublicationOccurredAt(500L);
+        row.setGovernanceOperationCount(8L);
+        row.setGovernanceOperationOccurredAt(600L);
+        row.setDeletionChangeCount(9L);
+        row.setDeletionChangeOccurredAt(700L);
+        row.setPendingConflictCount(3L);
+        row.setNextPendingConflictExpiresAt(800L);
+        when(mapper.getByOverviewFingerprint()).thenReturn(row);
+
+        GraphWorkbenchOverviewFingerprint fingerprint = repository.getByOverviewFingerprint("schema-v1");
+
+        assertThat(fingerprint.activeNodeModifiedAt()).isEqualTo(100L);
+        assertThat(fingerprint.nodeMaterialAssociationChangedAt()).isEqualTo(300L);
+        assertThat(fingerprint.edgeMaterialAssociationChangedAt()).isEqualTo(400L);
+        assertThat(fingerprint.publicationOccurredAt()).isEqualTo(500L);
+        assertThat(fingerprint.governanceOperationOccurredAt()).isEqualTo(600L);
+        assertThat(fingerprint.deletionChangeOccurredAt()).isEqualTo(700L);
+        assertThat(fingerprint.nextPendingConflictExpiresAt()).isEqualTo(800L);
+        assertThat(fingerprint.schemaFingerprint()).isEqualTo("schema-v1");
+
+        String fingerprintSql = selectSql("getByOverviewFingerprint");
+        assertThat(fingerprintSql).contains("knowledge_graph_published_node_material");
+        assertThat(fingerprintSql).contains("knowledge_graph_published_edge_material");
+        assertThat(fingerprintSql).contains("changed_at");
+        assertThat(fingerprintSql).contains("knowledge_graph_publish_record");
+        assertThat(fingerprintSql).contains("knowledge_graph_governance_operation");
+        assertThat(fingerprintSql).contains("knowledge_graph_material_deletion_change");
+        assertThat(fingerprintSql).contains("nextPendingConflictExpiresAt");
     }
 
     private static String selectSql(String methodName, Class<?>... parameterTypes) throws Exception {

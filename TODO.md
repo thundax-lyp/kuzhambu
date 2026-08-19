@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `知识图谱工作台指纹`：提供概览刷新判定数据源
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`GraphWorkbenchRepository.java`、`GraphWorkbenchMapper.java`、`GraphWorkbenchRepositoryImpl.java`、`GraphWorkbenchRepositoryImplTest.java`
-    - 处理动作：实现覆盖正式图、关联变更、活动、冲突 token 和 Schema 的 `GraphWorkbenchOverviewFingerprint`。
-    - 验收点：任一规定来源变化均改变 fingerprint；最近 token 过期时间可作为下一次刷新边界。
-    - 重要度：9/10
-
 - [ ] `知识图谱工作台快照存储`：建立 Redis 概览读模型边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`

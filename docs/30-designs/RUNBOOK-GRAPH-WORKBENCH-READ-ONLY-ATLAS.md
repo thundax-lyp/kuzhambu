@@ -443,7 +443,7 @@ type WorkbenchOneHopEdgesResponse = {
 
 ```text
 GraphWorkbenchOverviewSource.load()             // 从 GraphWorkbenchRepository 聚合正式数据
-GraphWorkbenchOverviewSource.getFingerprint()   // 从 GraphWorkbenchRepository 读取轻量指纹
+GraphWorkbenchOverviewSource.getFingerprint()   // 从 GraphWorkbenchRepository.getByOverviewFingerprint() 读取轻量指纹
 GraphWorkbenchSnapshotStore.get() / replace()   // 只读写 Redis 快照
 GraphWorkbenchSnapshotRefresher.refreshIfRequired(reason)
                                                    // 指纹、锁、构建和替换的唯一编排处
@@ -469,7 +469,7 @@ flowchart LR
 
 ### Source fingerprint
 
-新增 `GraphWorkbenchRepository.getOverviewFingerprint()`，只读取参与概览的轻量聚合结果，不加载节点、边或活动明细。指纹至少覆盖：
+新增 `GraphWorkbenchRepository.getByOverviewFingerprint()`，只读取参与概览的轻量聚合结果，不加载节点、边或活动明细。指纹至少覆盖：
 
 - 有效正式节点和边的数量及最大 `modified_at`；
 - `knowledge_graph_published_node_material` 和 `knowledge_graph_published_edge_material` 的数量及最大 `changed_at`；
