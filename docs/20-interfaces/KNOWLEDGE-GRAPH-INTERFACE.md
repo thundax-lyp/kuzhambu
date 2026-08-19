@@ -87,7 +87,7 @@
 
 | URL | request | response | purpose |
 | --- | --- | --- | --- |
-| `/knowledge/graph/workbench/overview/get` | `{}` | `{publishedNodeCount,publishedEdgeCount,coveredMaterialCount,isolatedNodeCount,missingCoreRelationNodeCount,recentActivities:[{type,contentRef?,occurredAt,summary}],pendingConflictCount}` | 工作台统计 |
+| `/knowledge/graph/workbench/overview/get` | `{}` | `{snapshotAt,publishedNodeCount,publishedEdgeCount,coveredMaterialCount,isolatedNodeCount,missingCoreRelationNodeCount,recentActivities:[{type,contentRef?,occurredAt,summary}],pendingConflictCount}` | Redis 快照工作台统计；快照未就绪时返回 `WORKBENCH_SNAPSHOT_UNAVAILABLE` |
 | `/knowledge/graph/workbench/seeds/list` | `{}` | `{nodes:[publishedNode]}` | 最近发布 100 个种子 |
 | `/knowledge/graph/workbench/incident-edges/list` | `{nodeIds:[string],afterEdgeId?:string,pageSize:number}` | `{nodes:[publishedNode],edges:[publishedEdge],nextCursor?:string,truncated:boolean}` | 渐进子图 |
 | `/knowledge/graph/workbench/search/page` | `{keyword?,nodeType?,relationType?,pageNo,pageSize}` | `Page<{objectType,node?:publishedNode,edge?:publishedEdge}>` | 全局搜索 |

@@ -13,6 +13,7 @@ public final class GraphWorkbenchResponses {
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record OverviewData(
+            String snapshotAt,
             String publishedNodeCount,
             String publishedEdgeCount,
             String coveredMaterialCount,

@@ -28,6 +28,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWorkbenchOverviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialDeletionApplicationService;
@@ -43,6 +44,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMateri
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphDeletionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
@@ -216,6 +218,26 @@ class GraphControllerTest {
         ArgumentCaptor<GraphTaskDetailQuery> detailCaptor = ArgumentCaptor.forClass(GraphTaskDetailQuery.class);
         verify(extractionService).getTask(detailCaptor.capture());
         assertThat(detailCaptor.getValue().taskId()).isEqualTo(7001L);
+    }
+
+    @Test
+    void shouldMapOverviewSnapshotTimestamp() {
+        GraphWorkbenchApplicationService workbenchService = mock(GraphWorkbenchApplicationService.class);
+        when(workbenchService.getOverview())
+                .thenReturn(new GraphWorkbenchOverviewResult(
+                        Instant.parse("2026-08-19T04:00:00Z"), 12L, 18L, 4L, 1L, 2L, List.of(), 3L));
+        GraphController controller = new GraphController(
+                workbenchService,
+                mock(GraphMaterialApplicationService.class),
+                mock(GraphExtractionApplicationService.class),
+                mock(GraphPublicationApplicationService.class),
+                mock(GraphPublishedApplicationService.class),
+                mock(GraphMaterialDeletionApplicationService.class));
+
+        var response = controller.overview(new GraphWorkbenchRequests.OverviewGetRequest());
+
+        assertThat(response.snapshotAt()).isEqualTo("1787112000000");
+        assertThat(response.publishedNodeCount()).isEqualTo("12");
     }
 
     @Test

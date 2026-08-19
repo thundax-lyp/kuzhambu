@@ -16,12 +16,13 @@ import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplication
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphQualitySnapshot;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchMetrics;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchOverviewSnapshot;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeSlice;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdgeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphWorkbenchRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphWorkbenchSnapshotStore;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,29 +41,38 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
     private final GraphPublishedNodeRepository nodeRepository;
     private final GraphPublishedEdgeRepository edgeRepository;
     private final GraphSchemaResolver schemaResolver;
+    private final GraphWorkbenchSnapshotStore snapshotStore;
 
     public GraphWorkbenchApplicationServiceImpl(
             GraphWorkbenchRepository workbenchRepository,
             GraphPublishedNodeRepository nodeRepository,
             GraphPublishedEdgeRepository edgeRepository,
-            GraphSchemaResolver schemaResolver) {
+            GraphSchemaResolver schemaResolver,
+            GraphWorkbenchSnapshotStore snapshotStore) {
         this.workbenchRepository = workbenchRepository;
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
         this.schemaResolver = schemaResolver;
+        this.snapshotStore = snapshotStore;
     }
 
     @Override
     public GraphWorkbenchOverviewResult getOverview() {
-        GraphWorkbenchMetrics metrics = workbenchRepository.getByOverview(schemaResolver.coreRelationPolicies());
+        GraphWorkbenchOverviewSnapshot snapshot = snapshotStore
+                .get()
+                .orElseThrow(() -> new BizException(
+                        "WORKBENCH_SNAPSHOT_UNAVAILABLE",
+                        "knowledge.graph.workbench-snapshot-unavailable",
+                        "Graph workbench overview snapshot is unavailable"));
         return new GraphWorkbenchOverviewResult(
-                metrics.publishedNodeCount(),
-                metrics.publishedEdgeCount(),
-                metrics.coveredMaterialCount(),
-                metrics.isolatedNodeCount(),
-                metrics.missingCoreRelationNodeCount(),
-                metrics.recentActivities(),
-                metrics.pendingConflictCount());
+                snapshot.generatedAt(),
+                snapshot.publishedNodeCount(),
+                snapshot.publishedEdgeCount(),
+                snapshot.coveredMaterialCount(),
+                snapshot.isolatedNodeCount(),
+                snapshot.missingCoreRelationNodeCount(),
+                snapshot.recentActivities(),
+                snapshot.pendingConflictCount());
     }
 
     @Override

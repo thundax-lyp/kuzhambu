@@ -52,7 +52,7 @@ class GraphResponsesTest {
     @Test
     void shouldSerializePreviewAndDeletionStructuresWithContractFieldNames() {
         JsonNode overview = OBJECT_MAPPER.valueToTree(
-                new GraphWorkbenchResponses.OverviewData("12", "18", "4", "1", "2", List.of(), "3"));
+                new GraphWorkbenchResponses.OverviewData("1755561600000", "12", "18", "4", "1", "2", List.of(), "3"));
         JsonNode impact = OBJECT_MAPPER.valueToTree(new GraphPublishedResponses.GovernanceImpactData(
                 "impact-token", List.of(), List.of(), List.of(), List.of(), List.of(), true));
         JsonNode deletion = OBJECT_MAPPER.valueToTree(new GraphDeletionResponses.ChangeData(
@@ -67,6 +67,7 @@ class GraphResponsesTest {
         JsonNode deletionTask = OBJECT_MAPPER.valueToTree(new GraphDeletionResponses.TaskData(
                 "9201", "FAILED", "5", "0", "9101", null, "timeout", null, "1720000000000", null));
 
+        assertThat(overview.path("snapshotAt").asText()).isEqualTo("1755561600000");
         assertThat(overview.path("pendingConflictCount").asText()).isEqualTo("3");
         assertThat(impact.path("impactToken").asText()).isEqualTo("impact-token");
         assertThat(deletion.path("lockVersion").asText()).isEqualTo("4");

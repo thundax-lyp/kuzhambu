@@ -82,6 +82,9 @@ public class GraphController {
             @Valid @RequestBody GraphWorkbenchRequests.OverviewGetRequest request) {
         var result = workbenchService.getOverview();
         return new GraphWorkbenchResponses.OverviewData(
+                result.snapshotAt() == null
+                        ? null
+                        : String.valueOf(result.snapshotAt().toEpochMilli()),
                 String.valueOf(result.publishedNodeCount()),
                 String.valueOf(result.publishedEdgeCount()),
                 String.valueOf(result.coveredMaterialCount()),

@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `知识图谱工作台概览接口`：将 overview 切换为快照读取
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`GraphWorkbenchApplicationService.java`、`GraphWorkbenchApplicationServiceImpl.java`、`GraphController.java`、`GraphWorkbenchResponses.java`、`GraphControllerTest.java`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 处理动作：让 overview 只读取 snapshot store，向响应补充 `snapshotAt` 并同步接口文档。
-    - 验收点：有旧快照时正常返回；无快照返回 `WORKBENCH_SNAPSHOT_UNAVAILABLE`；Controller 不触发统计 SQL；接口文档字段一致。
-    - 重要度：10/10
-
 - [ ] `知识图谱工作台首批关系接口`：以最近关系替换 seeds
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
