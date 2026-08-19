@@ -17,6 +17,8 @@ public interface GraphPublishedEdgeRepository {
 
     List<GraphPublishedEdge> listByNodeIds(List<GraphPublishedNodeId> nodeIds);
 
+    List<GraphPublishedEdge> listRecentlyUpdated(int limit);
+
     GraphPublishedEdgeSlice listIncidentEdges(
             List<GraphPublishedNodeId> nodeIds, GraphPublishedEdgeId afterEdgeId, int limit);
 

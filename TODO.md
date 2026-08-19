@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `知识图谱工作台首批关系接口`：以最近关系替换 seeds
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`GraphPublishedEdgeRepository*`、`GraphWorkbenchApplicationService*`、`GraphController.java`、`GraphWorkbenchRequests.java`、`GraphWorkbenchResponses.java`、`GraphInterfaceAssembler.java`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 处理动作：以 `recent-edges/list` 返回最近 200 条 ACTIVE 边及其去重端点，删除 `seeds/list` 并同步接口文档。
-    - 验收点：结果按 `modified_at DESC, id DESC` 排序；节点恰为边端点；旧 Seeds 路由、请求、响应和方法已删除；接口文档已替换。
-    - 重要度：10/10
-
 - [ ] `知识图谱工作台一跳接口`：以固定批次替换 incident edges
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`

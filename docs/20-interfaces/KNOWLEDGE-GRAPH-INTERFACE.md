@@ -88,7 +88,7 @@
 | URL | request | response | purpose |
 | --- | --- | --- | --- |
 | `/knowledge/graph/workbench/overview/get` | `{}` | `{snapshotAt,publishedNodeCount,publishedEdgeCount,coveredMaterialCount,isolatedNodeCount,missingCoreRelationNodeCount,recentActivities:[{type,contentRef?,occurredAt,summary}],pendingConflictCount}` | Redis 快照工作台统计；快照未就绪时返回 `WORKBENCH_SNAPSHOT_UNAVAILABLE` |
-| `/knowledge/graph/workbench/seeds/list` | `{}` | `{nodes:[publishedNode]}` | 最近发布 100 个种子 |
+| `/knowledge/graph/workbench/recent-edges/list` | `{}` | `{nodes:[publishedNode],edges:[publishedEdge]}` | 最近更新的最多 200 条 ACTIVE 正式关系及其去重端点 |
 | `/knowledge/graph/workbench/incident-edges/list` | `{nodeIds:[string],afterEdgeId?:string,pageSize:number}` | `{nodes:[publishedNode],edges:[publishedEdge],nextCursor?:string,truncated:boolean}` | 渐进子图 |
 | `/knowledge/graph/workbench/search/page` | `{keyword?,nodeType?,relationType?,pageNo,pageSize}` | `Page<{objectType,node?:publishedNode,edge?:publishedEdge}>` | 全局搜索 |
 | `/knowledge/graph/workbench/quality/get` | `{issueType?:"ISOLATED_NODE"|"MISSING_CORE_RELATION",nodeType?}` | `{isolatedNodeCount,missingCoreRelationNodeCount,isolatedNodes,missingCoreRelationNodes}` | 质量待办 |

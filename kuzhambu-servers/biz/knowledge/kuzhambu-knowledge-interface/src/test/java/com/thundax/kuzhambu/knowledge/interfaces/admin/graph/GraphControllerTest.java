@@ -53,6 +53,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.web.bind.annotation.PostMapping;
 
 class GraphControllerTest {
 
@@ -88,6 +89,11 @@ class GraphControllerTest {
         assertThat(permission("deletionChangeDecision")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("deletionTaskRetry")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publishedNodeDelete")).isEqualTo("knowledge:graph:edit");
+    }
+
+    @Test
+    void shouldExposeRecentEdgesInsteadOfSeeds() throws Exception {
+        assertThat(postMapping("recentEdges")).isEqualTo("workbench/recent-edges/list");
     }
 
     @Test
@@ -344,6 +350,15 @@ class GraphControllerTest {
         for (Method method : GraphController.class.getDeclaredMethods()) {
             if (method.getName().equals(methodName)) {
                 return method.getAnnotation(HasPermission.class).value()[0];
+            }
+        }
+        throw new AssertionError("missing method " + methodName);
+    }
+
+    private static String postMapping(String methodName) {
+        for (Method method : GraphController.class.getDeclaredMethods()) {
+            if (method.getName().equals(methodName)) {
+                return method.getAnnotation(PostMapping.class).value()[0];
             }
         }
         throw new AssertionError("missing method " + methodName);

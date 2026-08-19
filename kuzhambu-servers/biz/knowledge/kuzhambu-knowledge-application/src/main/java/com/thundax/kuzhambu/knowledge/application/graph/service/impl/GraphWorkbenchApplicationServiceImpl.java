@@ -9,10 +9,12 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphIncidentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphQualityResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphRecentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphSearchResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWorkbenchOverviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphQualitySnapshot;
@@ -31,7 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchApplicationService {
 
-    private static final int RECENT_SEED_NODE_LIMIT = 100;
+    private static final int RECENT_EDGE_LIMIT = 200;
     private static final int LOCAL_GRAPH_NODE_LIMIT = 200;
     private static final int QUALITY_SAMPLE_LIMIT = 100;
     private static final String ISSUE_TYPE_ISOLATED_NODE = "ISOLATED_NODE";
@@ -76,8 +78,21 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
     }
 
     @Override
-    public List<GraphPublishedNode> listRecentSeedNodes() {
-        return nodeRepository.listRecentlyUpdated(RECENT_SEED_NODE_LIMIT);
+    public GraphRecentEdgesResult listRecentEdges() {
+        List<GraphPublishedEdge> recentEdges = edgeRepository.listRecentlyUpdated(RECENT_EDGE_LIMIT);
+        Map<GraphPublishedNodeId, GraphPublishedNode> nodesById = new LinkedHashMap<>();
+        for (GraphPublishedNode node : nodeRepository.listByIds(edgeNodeIds(recentEdges))) {
+            if (node != null && node.getStatus() == GraphPublishedStatus.ACTIVE) {
+                nodesById.putIfAbsent(node.getId(), node);
+            }
+        }
+        List<GraphPublishedEdge> acceptedEdges = recentEdges.stream()
+                .filter(edge ->
+                        nodesById.containsKey(edge.getSourceNodeId()) && nodesById.containsKey(edge.getTargetNodeId()))
+                .toList();
+        List<GraphPublishedNodeId> acceptedNodeIds = edgeNodeIds(acceptedEdges);
+        return new GraphRecentEdgesResult(
+                acceptedNodeIds.stream().map(nodesById::get).toList(), acceptedEdges);
     }
 
     @Override
@@ -148,10 +163,14 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
     }
 
     private List<GraphPublishedNodeId> edgeNodeIds(GraphPublishedEdgeSlice edgeSlice) {
-        if (edgeSlice == null || edgeSlice.edges() == null) {
+        return edgeNodeIds(edgeSlice == null ? null : edgeSlice.edges());
+    }
+
+    private List<GraphPublishedNodeId> edgeNodeIds(List<GraphPublishedEdge> edges) {
+        if (edges == null) {
             return List.of();
         }
-        return edgeSlice.edges().stream()
+        return edges.stream()
                 .flatMap(edge -> List.of(edge.getSourceNodeId(), edge.getTargetNodeId()).stream())
                 .distinct()
                 .toList();

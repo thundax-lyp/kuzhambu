@@ -7,16 +7,15 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphIncidentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphQualityResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphRecentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphSearchResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWorkbenchOverviewResult;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
-import java.util.List;
 
 public interface GraphWorkbenchApplicationService {
 
     GraphWorkbenchOverviewResult getOverview();
 
-    List<GraphPublishedNode> listRecentSeedNodes();
+    GraphRecentEdgesResult listRecentEdges();
 
     GraphIncidentEdgesResult listIncidentEdges(GraphIncidentEdgesQuery query, PageQuery pageQuery);
 

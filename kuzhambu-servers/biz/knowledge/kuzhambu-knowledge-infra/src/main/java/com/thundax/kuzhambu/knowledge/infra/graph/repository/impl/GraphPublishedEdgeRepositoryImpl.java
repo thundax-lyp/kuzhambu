@@ -54,6 +54,14 @@ public class GraphPublishedEdgeRepositoryImpl implements GraphPublishedEdgeRepos
     }
 
     @Override
+    public List<GraphPublishedEdge> listRecentlyUpdated(int limit) {
+        int effectiveLimit = limit <= 0 ? 1 : limit;
+        return mapper.listRecentlyUpdated(effectiveLimit).stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
     public GraphPublishedEdgeSlice listIncidentEdges(
             List<GraphPublishedNodeId> ids, GraphPublishedEdgeId after, int limit) {
         if (ids == null || ids.isEmpty()) {

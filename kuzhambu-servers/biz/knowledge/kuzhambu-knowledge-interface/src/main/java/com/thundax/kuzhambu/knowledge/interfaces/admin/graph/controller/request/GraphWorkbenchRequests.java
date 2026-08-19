@@ -25,10 +25,10 @@ public final class GraphWorkbenchRequests {
 
     @Getter
     @Setter
-    @Schema(description = "图谱工作台种子节点查询请求")
+    @Schema(description = "图谱工作台最近关系查询请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class SeedsListRequest {}
+    public static class RecentEdgesListRequest {}
 
     @Getter
     @Setter
