@@ -56,7 +56,7 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - Java servers 目录发生变更时，PR 验证必须显式执行 `mvn -q spotless:check`、`mvn -q checkstyle:check` 和 `mvn -q test`；CI runner 使用干净 checkout，不要求单独执行 `mvn -q clean`。
 - Java servers PR workflow、根级构建配置、`common` 模块组或 Maven 聚合 POM 发生变更时，PR 验证必须执行全量 Maven 验证；其他 leaf module 变更可以使用 Maven reactor `-pl ... -am -amd` 裁剪到受影响模块、其依赖和依赖它的模块。
 - Java servers 验证必须检查 `common`、`biz`、`starter` 三段式布局，并拒绝继续保留旧 `kuzhambu-servers/interfaces` 入口。
-- Apps 目录发生变更时，PR 验证必须使用 Node 20，并显式执行锁文件安装、`pnpm run format:check`、`pnpm run lint` 和全量或受影响范围的 Vitest；GitHub Actions 中使用 `pnpm install --frozen-lockfile` 和 pnpm 缓存。
+- Apps 目录发生变更时，PR 验证必须使用 Node 26，并显式执行锁文件安装、`pnpm run format:check`、`pnpm run lint` 和全量或受影响范围的 Vitest；GitHub Actions 中使用 `pnpm install --frozen-lockfile` 和 pnpm 缓存。
 - Apps 子 workspace 目录发生变更时，PR 验证按 workspace 裁剪执行对应 `format:check`、`lint` 和 `test`。`admin-web` 仅变更 `src/pages/<module>/` 时，Vitest 可以裁剪为 `src/app.test.tsx`、全部受影响 page module 和依赖变更文件的模块外测试；`admin-web` 共享代码、配置或 page module 之外的文件发生变更时必须执行该 workspace 全量测试。`kuzhambu-apps/` 根级文件或 PR workflow 发生变更时必须验证全部 frontend workspace。
 - Python workers 目录发生变更时，PR 验证必须使用 Python 3.10，并显式执行 `ruff format --check .`、`ruff check .` 和 `python -m pytest -p no:capture`。
 - PR workflow、PR 规则文档或 PR 模板发生变更时，PR 验证必须触发 servers、workers、apps 和 db 的显式检查，以验证验证规则本身。
