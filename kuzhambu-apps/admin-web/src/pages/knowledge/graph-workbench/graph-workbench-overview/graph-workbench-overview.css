@@ -1,0 +1,19 @@
+.graph-workbench-overview {
+    background: color-mix(in srgb, var(--ant-color-bg-container) 88%, transparent);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+    left: 16px;
+    padding: 12px;
+    position: absolute;
+    top: 16px;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    .graph-workbench-overview {
+        left: 8px;
+        right: 8px;
+    }
+}

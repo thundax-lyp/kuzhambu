@@ -1,11 +1,8 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { replacePermissions } from "@/auth/permission-storage";
 import { GraphWorkbenchPage } from "./graph-workbench-page";
-import * as service from "./graph-workbench-service";
+import { useGraphWorkbenchAtlas } from "./hooks/use-graph-workbench-atlas";
 
 const permissionState = vi.hoisted(() => ({
     permissions: new Set<string>()
@@ -18,72 +15,42 @@ vi.mock("@/auth/permission-storage", () => ({
     }
 }));
 
-vi.mock("./graph-workbench-service", () => ({
-    pagePublishedAdjacency: vi.fn()
+vi.mock("./hooks/use-graph-workbench-atlas", () => ({
+    useGraphWorkbenchAtlas: vi.fn()
 }));
 
-const adjacencyPage = {
-    count: 2,
-    pageNo: 1,
-    pageSize: 20,
-    records: [
-        {
-            isolated: false,
-            object: {
-                id: "2",
-                name: "李白",
-                nodeType: "PERSON",
-                source: "MATERIAL",
-                status: "ACTIVE"
-            },
-            relation: {
-                id: "10",
-                relationType: "MENTIONS",
-                source: "MATERIAL",
-                status: "ACTIVE"
-            },
-            subject: {
-                id: "1",
-                name: "杜甫",
-                nodeType: "PERSON",
-                source: "MATERIAL",
-                status: "ACTIVE"
-            }
-        },
-        {
-            isolated: true,
-            object: null,
-            relation: null,
-            subject: {
-                id: "3",
-                name: "孤立节点",
-                nodeType: "CONCEPT",
-                source: "MANUAL",
-                status: "ACTIVE"
-            }
-        }
-    ],
-    totalCount: 2,
-    totalPage: 1
+vi.mock("./graph-workbench-canvas", () => {
+    const MockGraphWorkbenchCanvas = ({
+        graph
+    }: {
+        graph: { edges: unknown[]; nodes: unknown[] };
+    }) => <div aria-label={`画布 ${graph.nodes.length}/${graph.edges.length}`} role="img" />;
+    return { GraphWorkbenchCanvas: MockGraphWorkbenchCanvas };
+});
+
+const atlas = {
+    graph: {
+        edges: [{ id: "edge-1", sourceNodeId: "node-1", targetNodeId: "node-2" }],
+        nodes: [
+            { id: "node-1", name: "杜甫", nodeType: "PERSON" },
+            { id: "node-2", name: "李白", nodeType: "PERSON" }
+        ]
+    },
+    graphState: "ready" as const,
+    overview: {
+        coveredMaterialCount: "3",
+        isolatedNodeCount: "1",
+        missingCoreRelationNodeCount: "2",
+        pendingConflictCount: "4",
+        publishedEdgeCount: "6",
+        publishedNodeCount: "5",
+        recentActivities: [
+            { occurredAt: "2026-08-19T00:00:00Z", summary: "发布杜甫与李白关系", type: "PUBLISH" }
+        ],
+        snapshotAt: "2026-08-19T00:00:00Z"
+    },
+    overviewState: "ready" as const
 };
-
-const createTestQueryClient = () =>
-    new QueryClient({
-        defaultOptions: {
-            queries: {
-                retry: false
-            }
-        }
-    });
-
-const renderWorkbench = () =>
-    render(
-        <QueryClientProvider client={createTestQueryClient()}>
-            <MemoryRouter>
-                <GraphWorkbenchPage />
-            </MemoryRouter>
-        </QueryClientProvider>
-    );
 
 describe("GraphWorkbenchPage", () => {
     afterEach(() => {
@@ -92,78 +59,42 @@ describe("GraphWorkbenchPage", () => {
         vi.clearAllMocks();
     });
 
-    it("renders the published adjacency table with isolated nodes", async () => {
+    it("renders the read-only graph situation with its overview and activity", () => {
         replacePermissions(["knowledge:graph:view"]);
-        vi.mocked(service.pagePublishedAdjacency).mockResolvedValue(adjacencyPage);
+        vi.mocked(useGraphWorkbenchAtlas).mockReturnValue(atlas);
 
-        renderWorkbench();
+        render(<GraphWorkbenchPage />);
 
         expect(screen.getByRole("heading", { name: "图谱工作台" })).toBeInTheDocument();
-        expect(await screen.findByText("杜甫")).toBeInTheDocument();
-        expect(screen.getByText("MENTIONS")).toBeInTheDocument();
-        expect(screen.getByText("李白")).toBeInTheDocument();
-        expect(
-            screen.getByRole("row", { name: "孤立节点 CONCEPT - - - 孤立节点 MANUAL" })
-        ).toBeInTheDocument();
-        expect(screen.getByRole("columnheader", { name: "主语" })).toBeInTheDocument();
+        expect(screen.getByText("正式节点 5")).toBeInTheDocument();
+        expect(screen.getByText("结构缺口 2")).toBeInTheDocument();
+        expect(screen.getByText("发布杜甫与李白关系")).toBeInTheDocument();
+        expect(screen.getByRole("img", { name: "画布 2/1" })).toBeInTheDocument();
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
+        expect(screen.queryByRole("table")).not.toBeInTheDocument();
     });
 
-    it("submits filters to the adjacency service", async () => {
+    it("shows the snapshot-unavailable state without hiding the graph", () => {
         replacePermissions(["knowledge:graph:view"]);
-        vi.mocked(service.pagePublishedAdjacency).mockResolvedValue(adjacencyPage);
-        const user = userEvent.setup();
-
-        renderWorkbench();
-        await screen.findByText("杜甫");
-        await user.type(screen.getByRole("textbox", { name: "筛选主语关键词" }), "杜甫");
-        await user.type(screen.getByRole("textbox", { name: "筛选谓词" }), "MENTIONS");
-        await user.type(screen.getByRole("textbox", { name: "筛选宾语关键词" }), "李白");
-        await user.click(screen.getByTestId("knowledge-graph-workbench-apply-filters-button"));
-
-        await waitFor(() =>
-            expect(vi.mocked(service.pagePublishedAdjacency).mock.calls.at(-1)?.[0]).toMatchObject({
-                includeIsolated: true,
-                objectKeyword: "李白",
-                pageNo: 1,
-                pageSize: 20,
-                relationStatus: "ACTIVE",
-                relationType: "MENTIONS",
-                subjectKeyword: "杜甫",
-                subjectStatus: "ACTIVE"
-            })
-        );
-    });
-
-    it("keeps unsubmitted filter drafts out of pagination requests", async () => {
-        replacePermissions(["knowledge:graph:view"]);
-        vi.mocked(service.pagePublishedAdjacency).mockResolvedValue({
-            ...adjacencyPage,
-            totalCount: 40,
-            totalPage: 2
+        vi.mocked(useGraphWorkbenchAtlas).mockReturnValue({
+            ...atlas,
+            overview: null,
+            overviewState: "unavailable"
         });
-        const user = userEvent.setup();
 
-        renderWorkbench();
-        await screen.findByText("杜甫");
-        await user.type(screen.getByRole("textbox", { name: "筛选主语关键词" }), "未提交");
-        await user.click(screen.getByTitle("2"));
+        render(<GraphWorkbenchPage />);
 
-        await waitFor(() =>
-            expect(vi.mocked(service.pagePublishedAdjacency).mock.calls.at(-1)?.[0]).toMatchObject({
-                pageNo: 2,
-                pageSize: 20,
-                subjectKeyword: null,
-                subjectStatus: "ACTIVE"
-            })
-        );
+        expect(screen.getByText("正式图态势正在准备")).toBeInTheDocument();
+        expect(screen.getByRole("img", { name: "画布 2/1" })).toBeInTheDocument();
     });
 
-    it("renders permission state without querying data", () => {
+    it("renders permission state without enabling the atlas", () => {
         replacePermissions([]);
+        vi.mocked(useGraphWorkbenchAtlas).mockReturnValue(atlas);
 
-        renderWorkbench();
+        render(<GraphWorkbenchPage />);
 
         expect(screen.getByText("无权查看图谱工作台")).toBeInTheDocument();
-        expect(vi.mocked(service.pagePublishedAdjacency)).not.toHaveBeenCalled();
+        expect(useGraphWorkbenchAtlas).toHaveBeenCalledWith(false);
     });
 });

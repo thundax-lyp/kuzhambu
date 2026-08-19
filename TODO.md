@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `admin 图谱工作台页面`：装配只读态势展示并清理旧 UI
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`graph-workbench-page.tsx`、`graph-workbench-page.css`、`graph-workbench-overview/`、`graph-workbench-legend/`、`graph-workbench-activity-timeline/`、`workbench-canvas/`、`workbench-detail-drawer/`
-    - 处理动作：装配四个只读展示组件并删除旧筛选表、原型画布和详情抽屉。
-    - 验收点：首屏布局、窄屏、可访问文本和无操作边界符合 RUNBOOK；旧目录已删除。
-    - 重要度：10/10
-
 - [ ] `图谱工作台交付验证`：固化跨层验证证据并收口文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`

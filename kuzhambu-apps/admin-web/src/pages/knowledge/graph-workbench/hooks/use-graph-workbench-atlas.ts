@@ -9,7 +9,7 @@ import type {
 
 const GRAPH_EDGE_LIMIT = 600;
 
-type LoadState = "idle" | "loading" | "ready" | "unavailable" | "error";
+export type GraphWorkbenchLoadState = "idle" | "loading" | "ready" | "unavailable" | "error";
 
 const emptyGraph = (): GraphWorkbenchGraphRecord => ({ edges: [], nodes: [] });
 
@@ -46,9 +46,9 @@ const mergeGraph = (current: GraphWorkbenchGraphRecord, incoming: GraphWorkbench
 
 export const useGraphWorkbenchAtlas = (enabled: boolean) => {
     const [overview, setOverview] = useState<GraphWorkbenchOverviewRecord | null>(null);
-    const [overviewState, setOverviewState] = useState<LoadState>("idle");
+    const [overviewState, setOverviewState] = useState<GraphWorkbenchLoadState>("idle");
     const [graph, setGraph] = useState<GraphWorkbenchGraphRecord>(emptyGraph);
-    const [graphState, setGraphState] = useState<LoadState>("idle");
+    const [graphState, setGraphState] = useState<GraphWorkbenchLoadState>("idle");
     const sessionRef = useRef(0);
 
     useEffect(() => {

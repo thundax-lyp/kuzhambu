@@ -1,0 +1,17 @@
+.graph-workbench-legend {
+    background: color-mix(in srgb, var(--ant-color-bg-container) 88%, transparent);
+    border-radius: 8px;
+    bottom: 16px;
+    padding: 12px;
+    position: absolute;
+    right: 16px;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    .graph-workbench-legend {
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+    }
+}

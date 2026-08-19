@@ -1,12 +1,9 @@
-.graph-workbench-page,
-.knowledge-graph-workbench-page {
-    min-width: 0;
+.graph-workbench-stage {
+    min-height: 620px;
+    position: relative;
 }
-
-.graph-workbench-filter-input {
-    width: 180px;
-}
-
-.graph-workbench-filter-select {
-    width: 132px;
+@media (max-width: 768px) {
+    .graph-workbench-stage {
+        min-height: 440px;
+    }
 }
