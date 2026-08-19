@@ -11,9 +11,9 @@
         "lint:fix": "eslint . --fix",
         "format": "prettier . --write",
         "format:check": "prettier . --check",
-        "test": "vitest run",
-        "test:coverage": "vitest run --coverage",
-        "test:watch": "vitest",
+        "test": "node --localstorage-file=./.vitest-localstorage-$$.json ./node_modules/vitest/vitest.mjs run",
+        "test:coverage": "node --localstorage-file=./.vitest-localstorage-$$.json ./node_modules/vitest/vitest.mjs run --coverage",
+        "test:watch": "node --localstorage-file=./.vitest-localstorage-$$.json ./node_modules/vitest/vitest.mjs",
         "e2e": "playwright test"
     },
     "dependencies": {
