@@ -11,6 +11,7 @@ const manuscriptSourcePath = resolve(
   repoRoot,
   "db/data-source/sancai-manuscripts.json",
 );
+const graphSourcePath = resolve(repoRoot, "db/data-source/graph-published.json");
 const outputPath = resolve(repoRoot, "build/seed-sql/knowledge.sql");
 const THEME_CATEGORY_ID = 4;
 const DEFAULT_AI_CATEGORY_ID = 1999;
@@ -19,9 +20,10 @@ const MYSQL_EPOCH_SHANGHAI = "1970-01-01 08:00:00.000000";
 const main = () => {
   const seed = readSeed(tagSourcePath);
   const manuscripts = readManuscripts(manuscriptSourcePath);
+  const graph = readGraph(graphSourcePath);
   const tagIds = buildTagIds(seed.tags);
   const refs = buildRefs(manuscripts, tagIds);
-  const sql = generateSql(seed.tags, seed.aliases, refs, tagIds);
+  const sql = generateSql(seed.tags, seed.aliases, refs, tagIds, graph);
 
   if (process.argv.includes("--check")) {
     const current = readFileSync(outputPath, "utf8");
@@ -36,6 +38,13 @@ const main = () => {
 
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, sql);
+};
+
+const readGraph = (path) => {
+  const graph = JSON.parse(readFileSync(path, "utf8"));
+  if (graph.schema !== "knowledge_graph_published_seed") throw new Error("Invalid graph published seed schema");
+  for (const field of ["nodes", "edges", "nodeMaterials", "edgeMaterials"]) if (!Array.isArray(graph[field])) throw new Error(`graph published seed must contain ${field}`);
+  return graph;
 };
 
 const readSeed = (path) => {
@@ -121,16 +130,40 @@ const buildRefs = (manuscripts, tagIds) => {
   return refs;
 };
 
-const generateSql = (tags, aliases, refs, tagIds) => {
+const generateSql = (tags, aliases, refs, tagIds, graph) => {
   const lines = ["SET NAMES utf8mb4;", ""];
   appendTagCategorySql(lines);
   appendTagSql(lines, tags, tagIds);
   appendTagAliasSql(lines, aliases, tagIds);
   appendTagContentRefSql(lines, refs);
+  appendGraphPublishedSql(lines, graph);
   while (lines.at(-1) === "") {
     lines.pop();
   }
   return `${lines.join("\n")}\n`;
+};
+
+const appendGraphPublishedSql = (lines, graph) => {
+  if (graph.nodes.length === 0) return;
+  lines.push("-- 发布图谱快照，来源：db/data-source/graph-published.json；通过稳定 key 解析关联，不携带开发库主键。");
+  lines.push("INSERT INTO `knowledge_graph_published_node` (`node_key`, `node_type`, `name`, `source`, `status`, `modified_at`, `lock_version`) VALUES");
+  lines.push(graph.nodes.map((node) => row([node.nodeKey, node.nodeType, node.name, node.source, node.status, node.modifiedAt, node.lockVersion])).join(",\n"));
+  lines.push("ON DUPLICATE KEY UPDATE `node_type` = VALUES(`node_type`), `name` = VALUES(`name`), `source` = VALUES(`source`), `status` = VALUES(`status`), `modified_at` = VALUES(`modified_at`), `lock_version` = VALUES(`lock_version`);", "");
+  lines.push("INSERT INTO `knowledge_graph_published_edge` (`edge_key`, `source_published_node_id`, `target_published_node_id`, `relation_type`, `source`, `qualifiers_json`, `status`, `modified_at`, `lock_version`) VALUES");
+  lines.push(graph.edges.map((edge) => `(${[edge.edgeKey, edge.sourceNodeKey, edge.targetNodeKey, edge.relationType, edge.source, edge.qualifiersJson == null ? null : JSON.stringify(edge.qualifiersJson), edge.status, edge.modifiedAt, edge.lockVersion].map((value, index) => index === 1 || index === 2 ? `(SELECT id FROM knowledge_graph_published_node WHERE node_key = ${sqlValue(value)})` : sqlValue(value)).join(", ")})`).join(",\n"));
+  lines.push("ON DUPLICATE KEY UPDATE `source_published_node_id` = VALUES(`source_published_node_id`), `target_published_node_id` = VALUES(`target_published_node_id`), `relation_type` = VALUES(`relation_type`), `source` = VALUES(`source`), `qualifiers_json` = VALUES(`qualifiers_json`), `status` = VALUES(`status`), `modified_at` = VALUES(`modified_at`), `lock_version` = VALUES(`lock_version`);", "");
+  appendGraphMaterialMappings(lines, "knowledge_graph_published_node_material", "node", "node_key", graph.nodeMaterials);
+  appendGraphMaterialMappings(lines, "knowledge_graph_published_edge_material", "edge", "edge_key", graph.edgeMaterials);
+};
+
+const appendGraphMaterialMappings = (lines, table, target, keyColumn, mappings) => {
+  if (mappings.length === 0) return;
+  const key = target === "node" ? "nodeKey" : "edgeKey";
+  const targetTable = `knowledge_graph_published_${target}`;
+  const targetId = `published_${target}_id`;
+  lines.push(`INSERT INTO \`${table}\` (\`${targetId}\`, \`content_type\`, \`content_ref_id\`, \`source_snapshot_json\`, \`changed_at\`) VALUES`);
+  lines.push(mappings.map((mapping) => `((SELECT id FROM \`${targetTable}\` WHERE \`${keyColumn}\` = ${sqlValue(mapping[key])}), ${sqlValue(mapping.contentType)}, ${sqlValue(mapping.contentRefId)}, ${sqlValue(mapping.sourceSnapshotJson == null ? null : JSON.stringify(mapping.sourceSnapshotJson))}, ${sqlValue(mapping.changedAt)})`).join(",\n"));
+  lines.push("ON DUPLICATE KEY UPDATE `source_snapshot_json` = VALUES(`source_snapshot_json`), `changed_at` = VALUES(`changed_at`);", "");
 };
 
 const appendTagCategorySql = (lines) => {
@@ -284,7 +317,7 @@ const sqlValue = (value) => {
   if (isRawSql(value)) {
     return value.rawSql;
   }
-  return `'${String(value).replace(/'/g, "''")}'`;
+  return `'${String(value).replace(/\\/g, "\\\\").replace(/'/g, "''")}'`;
 };
 
 const normalizeTagSource = (source) => {

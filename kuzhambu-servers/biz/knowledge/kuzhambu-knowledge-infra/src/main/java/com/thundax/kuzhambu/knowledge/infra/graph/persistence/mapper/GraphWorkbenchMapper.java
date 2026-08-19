@@ -123,6 +123,34 @@ public interface GraphWorkbenchMapper {
 
     @Select(
             """
+            select
+              (select count(*) from knowledge_graph_published_node where status = 'ACTIVE') as activeNodeCount,
+              (select max(modified_at) from knowledge_graph_published_node where status = 'ACTIVE') as activeNodeModifiedAt,
+              (select count(*) from knowledge_graph_published_edge where status = 'ACTIVE') as activeEdgeCount,
+              (select max(modified_at) from knowledge_graph_published_edge where status = 'ACTIVE') as activeEdgeModifiedAt,
+              (select count(*) from knowledge_graph_published_node_material) as nodeMaterialAssociationCount,
+              (select max(changed_at) from knowledge_graph_published_node_material) as nodeMaterialAssociationChangedAt,
+              (select count(*) from knowledge_graph_published_edge_material) as edgeMaterialAssociationCount,
+              (select max(changed_at) from knowledge_graph_published_edge_material) as edgeMaterialAssociationChangedAt,
+              (select count(*) from knowledge_graph_publish_record) as publicationCount,
+              (select max(coalesce(completed_at, requested_at)) from knowledge_graph_publish_record) as publicationOccurredAt,
+              (select count(*) from knowledge_graph_governance_operation) as governanceOperationCount,
+              (select max(operated_at) from knowledge_graph_governance_operation) as governanceOperationOccurredAt,
+              (select count(*) from knowledge_graph_material_deletion_change) as deletionChangeCount,
+              (select max(coalesce(completed_at, requested_at)) from knowledge_graph_material_deletion_change) as deletionChangeOccurredAt,
+              (select count(*) from knowledge_graph_publication_preview_token
+                where consumed_at is null
+                  and expires_at > cast(unix_timestamp(current_timestamp(3)) * 1000 as unsigned)
+                  and json_search(snapshot_json, 'one', 'CONFLICT', null, '$.nodes[*].matchType', '$.edges[*].matchType') is not null) as pendingConflictCount,
+              (select min(expires_at) from knowledge_graph_publication_preview_token
+                where consumed_at is null
+                  and expires_at > cast(unix_timestamp(current_timestamp(3)) * 1000 as unsigned)
+                  and json_search(snapshot_json, 'one', 'CONFLICT', null, '$.nodes[*].matchType', '$.edges[*].matchType') is not null) as nextPendingConflictExpiresAt
+            """)
+    FingerprintRow getByOverviewFingerprint();
+
+    @Select(
+            """
             <script>
             select n.*
             from knowledge_graph_published_node n
@@ -256,5 +284,26 @@ public interface GraphWorkbenchMapper {
         private Long contentRefId;
         private Instant occurredAt;
         private String summary;
+    }
+
+    @Getter
+    @Setter
+    class FingerprintRow {
+        private long activeNodeCount;
+        private Long activeNodeModifiedAt;
+        private long activeEdgeCount;
+        private Long activeEdgeModifiedAt;
+        private long nodeMaterialAssociationCount;
+        private Long nodeMaterialAssociationChangedAt;
+        private long edgeMaterialAssociationCount;
+        private Long edgeMaterialAssociationChangedAt;
+        private long publicationCount;
+        private Long publicationOccurredAt;
+        private long governanceOperationCount;
+        private Long governanceOperationOccurredAt;
+        private long deletionChangeCount;
+        private Long deletionChangeOccurredAt;
+        private long pendingConflictCount;
+        private Long nextPendingConflictExpiresAt;
     }
 }

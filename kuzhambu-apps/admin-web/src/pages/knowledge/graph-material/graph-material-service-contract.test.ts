@@ -79,14 +79,14 @@ describe("knowledge graph material service request contracts", () => {
 
     it("sends material page and detail requests to Knowledge graph endpoints", async () => {
         installFetchRecorder({
-            pageNo: "1",
-            pageSize: "20",
+            count: 41,
+            pageNo: 1,
+            pageSize: 20,
             records: [],
-            totalCount: "0",
-            totalPage: "1"
+            totalPage: 3
         });
 
-        await service.pageMaterials({
+        const page = await service.pageMaterials({
             categoryCode: "astronomy",
             contentType: "SANCAI_ENTRY",
             keyword: "天文",
@@ -97,6 +97,7 @@ describe("knowledge graph material service request contracts", () => {
             taskExecutionStatus: "SUCCEEDED",
             volumeCode: "vol-001"
         });
+        expect(page).toMatchObject({ count: 41, totalCount: 41, totalPage: 3 });
         expectLastCall("POST", "/knowledge/graph/material/page", {
             categoryCode: "astronomy",
             contentType: "SANCAI_ENTRY",

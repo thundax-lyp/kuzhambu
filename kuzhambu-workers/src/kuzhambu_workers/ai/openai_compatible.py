@@ -1,6 +1,7 @@
 import json
 from collections.abc import Iterator
 from dataclasses import dataclass
+from threading import Event, Timer
 from typing import Any
 
 import httpx
@@ -20,6 +21,9 @@ from kuzhambu_workers.ai.structured_output import openai_response_format
 from kuzhambu_workers.ai.usage import elapsed_ms, monotonic_ms, usage_from_provider
 from kuzhambu_workers.schemas.ai import AiInvokeRequest
 from kuzhambu_workers.schemas.common import UsageSummary
+
+STREAM_IDLE_TIMEOUT_SECONDS = 30.0
+STREAM_MAX_EXECUTION_SECONDS = 300.0
 
 
 @dataclass(frozen=True)
@@ -235,6 +239,7 @@ def iter_chat_completion_chunks(
     body = _request_body(chat_request)
     headers = _request_headers(request.modelConfig.apiKey)
     start_ms = monotonic_ms()
+    total_execution_timed_out = Event()
     try:
         if client is not None:
             with client.stream(
@@ -242,21 +247,33 @@ def iter_chat_completion_chunks(
                 invocation.chat_completions_url,
                 json=body,
                 headers=headers,
-                timeout=invocation.timeout_ms / 1000,
+                timeout=_stream_timeout(),
             ) as response:
-                yield from _iter_response_chunks(response, start_ms)
+                yield from _iter_response_chunks(
+                    response,
+                    start_ms,
+                    total_execution_timed_out,
+                )
             return
-        with httpx.Client(timeout=invocation.timeout_ms / 1000) as owned_client:
+        with httpx.Client(timeout=_stream_timeout()) as owned_client:
             with owned_client.stream(
                 "POST",
                 invocation.chat_completions_url,
                 json=body,
                 headers=headers,
             ) as response:
-                yield from _iter_response_chunks(response, start_ms)
+                yield from _iter_response_chunks(
+                    response,
+                    start_ms,
+                    total_execution_timed_out,
+                )
     except httpx.TimeoutException as exc:
+        if total_execution_timed_out.is_set():
+            raise model_timeout(detail={"timeoutType": "TOTAL_EXECUTION"}) from exc
         raise model_timeout(detail={"errorClass": type(exc).__name__}) from exc
-    except httpx.RequestError as exc:
+    except (httpx.RequestError, httpx.StreamError) as exc:
+        if total_execution_timed_out.is_set():
+            raise model_timeout(detail={"timeoutType": "TOTAL_EXECUTION"}) from exc
         raise model_transport_error(
             "模型服务流式请求失败。",
             detail={"errorClass": type(exc).__name__},
@@ -266,22 +283,55 @@ def iter_chat_completion_chunks(
 def _iter_response_chunks(
     response: httpx.Response,
     start_ms: int,
+    total_execution_timed_out: Event,
 ) -> Iterator[OpenAiChatCompletionChunk]:
     _raise_for_provider_status(response)
     saw_usage = False
-    for line in response.iter_lines():
-        chunk = _parse_stream_line(line, start_ms)
-        if chunk is None:
-            continue
-        saw_usage = saw_usage or chunk.usage is not None
-        yield chunk
-    if not saw_usage:
-        yield OpenAiChatCompletionChunk(
-            delta="",
-            usage=UsageSummary(latencyMs=elapsed_ms(start_ms)),
-            finish_reason=None,
-            provider_usage=False,
-        )
+    total_execution_timer = Timer(
+        STREAM_MAX_EXECUTION_SECONDS,
+        _close_stream_after_total_execution_timeout,
+        args=(response, total_execution_timed_out),
+    )
+    total_execution_timer.daemon = True
+    total_execution_timer.start()
+    try:
+        for line in response.iter_lines():
+            if (
+                total_execution_timed_out.is_set()
+                or elapsed_ms(start_ms) >= STREAM_MAX_EXECUTION_SECONDS * 1000
+            ):
+                raise model_timeout(detail={"timeoutType": "TOTAL_EXECUTION"})
+            chunk = _parse_stream_line(line, start_ms)
+            if chunk is None:
+                continue
+            saw_usage = saw_usage or chunk.usage is not None
+            yield chunk
+        if not saw_usage:
+            yield OpenAiChatCompletionChunk(
+                delta="",
+                usage=UsageSummary(latencyMs=elapsed_ms(start_ms)),
+                finish_reason=None,
+                provider_usage=False,
+            )
+    finally:
+        total_execution_timer.cancel()
+
+
+def _close_stream_after_total_execution_timeout(
+    response: httpx.Response,
+    total_execution_timed_out: Event,
+) -> None:
+    total_execution_timed_out.set()
+    response.close()
+
+
+def _stream_timeout() -> httpx.Timeout:
+    return httpx.Timeout(
+        connect=STREAM_IDLE_TIMEOUT_SECONDS,
+        read=STREAM_IDLE_TIMEOUT_SECONDS,
+        write=STREAM_IDLE_TIMEOUT_SECONDS,
+        pool=STREAM_IDLE_TIMEOUT_SECONDS,
+    )
 
 
 def _parse_stream_line(line: str, start_ms: int) -> OpenAiChatCompletionChunk | None:

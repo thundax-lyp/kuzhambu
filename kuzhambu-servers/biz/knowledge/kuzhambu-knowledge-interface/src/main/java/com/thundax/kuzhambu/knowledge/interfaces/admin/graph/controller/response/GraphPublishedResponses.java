@@ -20,7 +20,9 @@ public final class GraphPublishedResponses {
             Map<String, Object> qualifiers,
             String source,
             String status,
-            String lockVersion) {}
+            String lockVersion,
+            String sourceNodeName,
+            String targetNodeName) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record AdjacencyData(NodeData subject, EdgeData relation, NodeData object, boolean isolated) {}

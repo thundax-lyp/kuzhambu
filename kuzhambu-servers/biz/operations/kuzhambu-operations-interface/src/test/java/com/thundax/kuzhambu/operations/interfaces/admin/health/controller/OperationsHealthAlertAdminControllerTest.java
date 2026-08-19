@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.health.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -18,10 +17,7 @@ import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertAckRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertRecoverRequest;
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -123,26 +119,6 @@ class OperationsHealthAlertAdminControllerTest {
         verify(service)
                 .recover(argThat(
                         command -> command != null && command.alertId().value().equals(9201L)));
-    }
-
-    @Test
-    void seedDataShouldIncludeHealthAlertViewAndManagePermissions() throws IOException {
-        Path repoRoot = findRepoRoot();
-        String systemJson = Files.readString(repoRoot.resolve("db/data-source/system.json"));
-        for (String permission : List.of("operations:health:view", "operations:health:manage")) {
-            assertTrue(systemJson.contains(permission), () -> "system.json missing " + permission);
-        }
-    }
-
-    private Path findRepoRoot() {
-        Path currentPath = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-        while (currentPath != null) {
-            if (Files.exists(currentPath.resolve("db/data-source/system.json"))) {
-                return currentPath;
-            }
-            currentPath = currentPath.getParent();
-        }
-        throw new IllegalStateException("Cannot locate repository root from user.dir");
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

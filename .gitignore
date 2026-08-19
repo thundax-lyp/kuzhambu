@@ -58,3 +58,4 @@ deploy/fastgpt/generated/
 /shortcuts.md
 /temp.md
 /tmp.md
+/kuzhambu-apps/admin-web/.vitest-localstorage-*.json

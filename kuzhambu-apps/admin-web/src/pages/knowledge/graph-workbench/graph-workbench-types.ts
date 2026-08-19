@@ -1,31 +1,3 @@
-export interface GraphWorkbenchMetricRecord {
-    key: "nodes" | "relations" | "materials" | "orphans" | "missingCoreRelations";
-    label: string;
-    value: number;
-}
-
-export interface GraphWorkbenchCategoryRecord {
-    code: string;
-    name: string;
-}
-
-export interface GraphWorkbenchNodeRecord {
-    categoryCode: string;
-    id: string;
-    label: string;
-    isFaded: boolean;
-    isOrphan?: boolean;
-    sourceName?: string;
-    qualityTodo?: string;
-}
-
-export interface GraphWorkbenchEdgeRecord {
-    id: string;
-    source: string;
-    target: string;
-    predicate: string;
-}
-
 export interface GraphPublishedNodeRecord {
     id: string;
     nodeType?: string | null;
@@ -45,9 +17,27 @@ export interface GraphPublishedEdgeRecord {
     lockVersion?: string | null;
 }
 
-export interface GraphPublishedAdjacencyRecord {
-    subject: GraphPublishedNodeRecord;
-    relation?: GraphPublishedEdgeRecord | null;
-    object?: GraphPublishedNodeRecord | null;
-    isolated: boolean;
+export interface GraphWorkbenchOverviewRecord {
+    snapshotAt: string;
+    publishedNodeCount: string;
+    publishedEdgeCount: string;
+    coveredMaterialCount: string;
+    isolatedNodeCount: string;
+    missingCoreRelationNodeCount: string;
+    pendingConflictCount: string;
+    recentActivities: Array<{
+        type: string;
+        occurredAt: string | null;
+        summary: string;
+    }>;
+}
+
+export interface GraphWorkbenchGraphRecord {
+    nodes: GraphPublishedNodeRecord[];
+    edges: GraphPublishedEdgeRecord[];
+}
+
+export interface GraphWorkbenchOneHopEdgesRecord extends GraphWorkbenchGraphRecord {
+    nextCursor: string | null;
+    truncated: boolean;
 }

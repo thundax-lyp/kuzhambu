@@ -13,6 +13,7 @@ public final class GraphWorkbenchResponses {
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record OverviewData(
+            String snapshotAt,
             String publishedNodeCount,
             String publishedEdgeCount,
             String coveredMaterialCount,
@@ -22,10 +23,11 @@ public final class GraphWorkbenchResponses {
             String pendingConflictCount) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    public record SeedsData(List<GraphPublishedResponses.NodeData> nodes) {}
+    public record RecentEdgesData(
+            List<GraphPublishedResponses.NodeData> nodes, List<GraphPublishedResponses.EdgeData> edges) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    public record IncidentEdgesData(
+    public record OneHopEdgesData(
             List<GraphPublishedResponses.NodeData> nodes,
             List<GraphPublishedResponses.EdgeData> edges,
             String nextCursor,

@@ -35,7 +35,6 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
-import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionChangeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
@@ -44,6 +43,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeM
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphOneHopEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedAdjacencyQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeDeleteQuery;
@@ -77,6 +77,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationP
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedAdjacencyResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgeDetailResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedEdgePageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublishedNodeDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphValidationIssueResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalPreviewResult;
@@ -1095,6 +1096,7 @@ public final class GraphInterfaceAssembler {
             @NonNull GraphPublishedRequests.PublishedAdjacencyPageRequest request) {
         Objects.requireNonNull(request, "request");
         return new GraphPublishedAdjacencyQuery(
+                request.getSubjectNodeId() == null ? null : toNodeId(request.getSubjectNodeId()),
                 request.getSubjectKeyword(),
                 request.getSubjectType() == null ? null : GraphNodeType.from(request.getSubjectType()),
                 request.getSubjectStatus() == null ? null : GraphPublishedStatus.valueOf(request.getSubjectStatus()),
@@ -1124,9 +1126,9 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
-    public static GraphIncidentEdgesQuery toQuery(@NonNull GraphWorkbenchRequests.IncidentEdgesListRequest request) {
+    public static GraphOneHopEdgesQuery toQuery(@NonNull GraphWorkbenchRequests.OneHopEdgesListRequest request) {
         Objects.requireNonNull(request, "request");
-        return new GraphIncidentEdgesQuery(
+        return new GraphOneHopEdgesQuery(
                 request.getNodeIds().stream()
                         .map(Long::valueOf)
                         .map(GraphPublishedNodeIdCodec::toDomain)
@@ -1162,6 +1164,17 @@ public final class GraphInterfaceAssembler {
     @NonNull
     public static GraphPublishedResponses.EdgeData toEdgeData(@NonNull GraphPublishedEdge value) {
         Objects.requireNonNull(value, "value");
+        return toEdgeData(value, null, null);
+    }
+
+    @NonNull
+    public static GraphPublishedResponses.EdgeData toEdgeData(@NonNull GraphPublishedEdgePageResult value) {
+        Objects.requireNonNull(value, "value");
+        return toEdgeData(value.edge(), value.sourceNode(), value.targetNode());
+    }
+
+    private static GraphPublishedResponses.EdgeData toEdgeData(
+            @NonNull GraphPublishedEdge value, GraphPublishedNode sourceNode, GraphPublishedNode targetNode) {
         return new GraphPublishedResponses.EdgeData(
                 String.valueOf(value.getId().value()),
                 String.valueOf(value.getSourceNodeId().value()),
@@ -1170,7 +1183,9 @@ public final class GraphInterfaceAssembler {
                 null,
                 value.getSource().name(),
                 value.getStatus().name(),
-                String.valueOf(value.getLockVersion()));
+                String.valueOf(value.getLockVersion()),
+                sourceNode == null ? null : sourceNode.getName(),
+                targetNode == null ? null : targetNode.getName());
     }
 
     @NonNull

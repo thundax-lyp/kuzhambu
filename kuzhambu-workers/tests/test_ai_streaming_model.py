@@ -1,6 +1,9 @@
+from time import sleep
+
 import httpx
 import pytest
 
+from kuzhambu_workers.ai import openai_compatible
 from kuzhambu_workers.ai.openai_compatible import iter_chat_completion_chunks
 from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType
 from kuzhambu_workers.schemas.ai import AiInvokeRequest
@@ -126,6 +129,35 @@ def test_iter_chat_completion_chunks_rejects_invalid_chunk() -> None:
 
     assert raised.value.error_type == WorkerErrorType.OUTPUT_FORMAT_FAILURE
     assert raised.value.code == "MODEL_STREAM_CHUNK_INVALID"
+
+
+def test_iter_chat_completion_chunks_enforces_total_execution_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class SlowStream(httpx.SyncByteStream):
+        def __iter__(self):
+            sleep(0.05)
+            yield b'data: {"choices":[{"delta":{"content":"answer"}}]}\n\n'
+
+        def close(self) -> None:
+            return None
+
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            stream=SlowStream(),
+        )
+
+    monkeypatch.setattr(openai_compatible, "STREAM_MAX_EXECUTION_SECONDS", 0.01)
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    request = AiInvokeRequest.model_validate(_request_payload())
+
+    with pytest.raises(WorkerError) as raised:
+        list(iter_chat_completion_chunks(request, client=client))
+
+    assert raised.value.error_type == WorkerErrorType.WORKER_TIMEOUT
+    assert raised.value.code == "MODEL_TIMEOUT"
+    assert raised.value.detail == {"timeoutType": "TOTAL_EXECUTION"}
 
 
 def _request_payload() -> dict:

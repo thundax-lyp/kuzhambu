@@ -31,6 +31,8 @@ public interface GraphExtractionApplicationService {
 
     int syncActiveTasks();
 
+    int recoverActiveTasksAtStartup();
+
     int syncActiveTasks(GraphActiveTaskSyncQuery query);
 
     GraphExtractionTaskResult cancelTask(GraphExtractionCancelCommand command);

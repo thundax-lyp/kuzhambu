@@ -1,0 +1,37 @@
+.graph-workbench-canvas {
+    background:
+        radial-gradient(
+            circle at 50% 42%,
+            color-mix(in srgb, var(--ant-color-primary) 10%, transparent),
+            transparent 34%
+        ),
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--ant-color-border) 38%, transparent) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            color-mix(in srgb, var(--ant-color-border) 38%, transparent) 1px,
+            transparent 1px
+        ),
+        var(--ant-color-bg-container);
+    background-size:
+        auto,
+        36px 36px,
+        36px 36px,
+        auto;
+    border: 1px solid color-mix(in srgb, var(--ant-color-border) 78%, transparent);
+    border-radius: 20px;
+    overflow: hidden;
+    min-height: 560px;
+    width: 100%;
+}
+
+.graph-workbench-canvas--idle {
+    align-items: center;
+    color: var(--ant-color-text-tertiary);
+    display: flex;
+    font-size: 13px;
+    justify-content: center;
+    letter-spacing: 0.18em;
+}

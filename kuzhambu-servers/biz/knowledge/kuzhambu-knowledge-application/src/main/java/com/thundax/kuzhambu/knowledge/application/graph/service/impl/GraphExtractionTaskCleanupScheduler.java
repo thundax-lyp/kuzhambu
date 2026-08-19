@@ -8,14 +8,19 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTas
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
 @Lazy(false)
-public class GraphExtractionTaskCleanupScheduler {
+public class GraphExtractionTaskCleanupScheduler implements ApplicationListener<ApplicationReadyEvent> {
     private static final int DEFAULT_LIMIT = 100;
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphExtractionTaskCleanupScheduler.class);
 
     private final GraphExtractionTaskRepository taskRepository;
     private final AiFacade aiFacade;
@@ -36,6 +41,15 @@ public class GraphExtractionTaskCleanupScheduler {
             this.clock = clock;
         }
         return this;
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        try {
+            extractionService.recoverActiveTasksAtStartup();
+        } catch (RuntimeException ex) {
+            LOGGER.warn("Graph extraction startup task synchronization failed", ex);
+        }
     }
 
     @Scheduled(cron = "0 20 2 * * ?")

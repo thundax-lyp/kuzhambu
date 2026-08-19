@@ -87,6 +87,7 @@ public class GraphPublishedNodeRepositoryImpl implements GraphPublishedNodeRepos
 
     @Override
     public PageResult<GraphPublishedAdjacency> page(
+            Long subjectNodeId,
             String subjectKeyword,
             GraphNodeType subjectType,
             GraphPublishedStatus subjectStatus,
@@ -112,6 +113,7 @@ public class GraphPublishedNodeRepositoryImpl implements GraphPublishedNodeRepos
         String objectStatusValue = objectStatus == null ? null : objectStatus.value();
         String objectSourceValue = objectSource == null ? null : objectSource.value();
         long total = mapper.countAdjacency(
+                subjectNodeId,
                 subjectKeyword,
                 subjectTypeValue,
                 subjectStatusValue,
@@ -126,6 +128,7 @@ public class GraphPublishedNodeRepositoryImpl implements GraphPublishedNodeRepos
                 includeIsolated);
         List<GraphPublishedAdjacency> records = mapper
                 .listAdjacency(
+                        subjectNodeId,
                         subjectKeyword,
                         subjectTypeValue,
                         subjectStatusValue,

@@ -39,6 +39,7 @@ public class GraphPublishedEdgeMaterialRepositoryImpl implements GraphPublishedE
 
     @Override
     public int insert(GraphPublishedEdgeMaterial relation) {
+        relation.setChangedAt(System.currentTimeMillis());
         try {
             return mapper.insert(GraphPersistenceAssembler.toObject(relation));
         } catch (DuplicateKeyException ex) {

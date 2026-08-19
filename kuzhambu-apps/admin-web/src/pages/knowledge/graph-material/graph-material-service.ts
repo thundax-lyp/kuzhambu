@@ -248,18 +248,18 @@ const createIdempotencyKey = () => {
 };
 
 const toPage = <TRecord>(page: {
-    pageNo: string;
-    pageSize: string;
+    count: number;
+    pageNo: number;
+    pageSize: number;
     records: TRecord[];
-    totalCount: string;
-    totalPage: string;
+    totalPage: number;
 }): Page<TRecord> => ({
-    count: Number(page.totalCount),
-    pageNo: Number(page.pageNo),
-    pageSize: Number(page.pageSize),
+    count: page.count,
+    pageNo: page.pageNo,
+    pageSize: page.pageSize,
     records: page.records,
-    totalCount: Number(page.totalCount),
-    totalPage: Number(page.totalPage)
+    totalCount: page.count,
+    totalPage: page.totalPage
 });
 
 const assertBatchExtractionSelection = (command: GraphMaterialBatchExtractionCommand) => {
@@ -274,11 +274,11 @@ export const httpGraphMaterialService: GraphMaterialService = {
     pageMaterials: async (query = {}) => {
         const page = await postJson<
             {
-                pageNo: string;
-                pageSize: string;
+                count: number;
+                pageNo: number;
+                pageSize: number;
                 records: GraphMaterialListRecord[];
-                totalCount: string;
-                totalPage: string;
+                totalPage: number;
             },
             GraphMaterialPageQuery
         >(MATERIAL_PAGE_PATH, {

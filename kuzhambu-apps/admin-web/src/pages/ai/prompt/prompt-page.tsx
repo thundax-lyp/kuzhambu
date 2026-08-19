@@ -536,7 +536,7 @@ export const PromptPage = () => {
             />
 
             <PromptEditDrawer
-                key={promptEditDrawerOpen ? editingTemplate?.id || "create" : "closed"}
+                key={`prompt-edit-${promptEditDrawerOpen ? editingTemplate?.id || "create" : "closed"}`}
                 canEdit={canEditPrompt}
                 capabilityOptions={capabilityOptions}
                 open={promptEditDrawerOpen}
@@ -545,7 +545,7 @@ export const PromptPage = () => {
                 onSaved={handleSaved}
             />
             <PromptVersionDrawer
-                key={versionTemplate?.id || "closed"}
+                key={`prompt-version-${versionTemplate?.id || "closed"}`}
                 canEdit={canEditPrompt}
                 open={Boolean(versionTemplate)}
                 template={versionTemplate}

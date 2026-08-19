@@ -13,6 +13,16 @@ public interface GraphPublishedEdgeMapper extends BaseMapper<GraphPublishedEdgeD
 
     @Select(
             """
+            select *
+            from knowledge_graph_published_edge
+            where status = 'ACTIVE'
+            order by modified_at desc, id desc
+            limit #{limit}
+            """)
+    List<GraphPublishedEdgeDO> listRecentlyUpdated(@Param("limit") int limit);
+
+    @Select(
+            """
             <script>
             select *
             from (
@@ -42,7 +52,7 @@ public interface GraphPublishedEdgeMapper extends BaseMapper<GraphPublishedEdgeD
             limit #{limit}
             </script>
             """)
-    List<GraphPublishedEdgeDO> listIncidentEdges(
+    List<GraphPublishedEdgeDO> listOneHopEdges(
             @Param("nodeIds") List<Long> nodeIds, @Param("afterEdgeId") Long afterEdgeId, @Param("limit") int limit);
 
     @Update(

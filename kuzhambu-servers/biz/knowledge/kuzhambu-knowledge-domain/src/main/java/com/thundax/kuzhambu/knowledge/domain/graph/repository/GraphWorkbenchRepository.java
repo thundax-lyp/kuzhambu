@@ -6,10 +6,13 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphCoreRela
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishedSearchHit;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphQualitySnapshot;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchMetrics;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchOverviewFingerprint;
 import java.util.List;
 
 public interface GraphWorkbenchRepository {
     GraphWorkbenchMetrics getByOverview(List<GraphCoreRelationPolicy> coreRelationPolicies);
+
+    GraphWorkbenchOverviewFingerprint getByOverviewFingerprint(String schemaFingerprint);
 
     PageResult<GraphPublishedSearchHit> page(
             String keyword, GraphNodeType nodeType, String relationType, int pageNo, int pageSize);

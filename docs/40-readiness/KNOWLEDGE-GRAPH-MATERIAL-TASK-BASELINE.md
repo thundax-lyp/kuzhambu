@@ -57,7 +57,7 @@ S6c 必须在本文件追加迁移后相同口径的统计、差异结论和已�
 - 当前开发库业务数据为空，素材、草稿节点、草稿边、发布记录、旧映射和提取任务均保持 `0`，未发现迁移导致的数据数量差异。
 - 当前开发库 schema 尚未完成本分支结构同步：`knowledge_graph_material_stats` 表不存在。
 - 当前开发库 `knowledge_graph_extraction_task` 仍是旧结构，按新字段 `execution_status` / `disposition` 查询状态分布失败；错误为 `Unknown column 'execution_status' in 'field list'`。
-- `scripts/verify-graph-migration.sh` 仍依赖本机 `mysql` 客户端；当前 PATH 未发现 `mysql`，本次改用 JDBC 完成只读统计。
+- 当前 PATH 未发现 `mysql`，本次使用 JDBC 完成只读统计。
 
 ### Executed Validation
 

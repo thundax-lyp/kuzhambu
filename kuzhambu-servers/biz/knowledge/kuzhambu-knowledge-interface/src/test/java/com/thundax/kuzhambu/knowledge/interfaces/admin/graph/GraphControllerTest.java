@@ -28,6 +28,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTa
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialTreeNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWithdrawalResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphWorkbenchOverviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphMaterialDeletionApplicationService;
@@ -43,6 +44,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMateri
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphDeletionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
@@ -51,6 +53,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.web.bind.annotation.PostMapping;
 
 class GraphControllerTest {
 
@@ -86,6 +89,16 @@ class GraphControllerTest {
         assertThat(permission("deletionChangeDecision")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("deletionTaskRetry")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publishedNodeDelete")).isEqualTo("knowledge:graph:edit");
+    }
+
+    @Test
+    void shouldExposeRecentEdgesInsteadOfSeeds() throws Exception {
+        assertThat(postMapping("recentEdges")).isEqualTo("workbench/recent-edges/list");
+    }
+
+    @Test
+    void shouldExposeOneHopEdgesInsteadOfIncidentEdges() throws Exception {
+        assertThat(postMapping("oneHopEdges")).isEqualTo("workbench/one-hop-edges/list");
     }
 
     @Test
@@ -219,6 +232,26 @@ class GraphControllerTest {
     }
 
     @Test
+    void shouldMapOverviewSnapshotTimestamp() {
+        GraphWorkbenchApplicationService workbenchService = mock(GraphWorkbenchApplicationService.class);
+        when(workbenchService.getOverview())
+                .thenReturn(new GraphWorkbenchOverviewResult(
+                        Instant.parse("2026-08-19T04:00:00Z"), 12L, 18L, 4L, 1L, 2L, List.of(), 3L));
+        GraphController controller = new GraphController(
+                workbenchService,
+                mock(GraphMaterialApplicationService.class),
+                mock(GraphExtractionApplicationService.class),
+                mock(GraphPublicationApplicationService.class),
+                mock(GraphPublishedApplicationService.class),
+                mock(GraphMaterialDeletionApplicationService.class));
+
+        var response = controller.overview(new GraphWorkbenchRequests.OverviewGetRequest());
+
+        assertThat(response.snapshotAt()).isEqualTo("1787112000000");
+        assertThat(response.publishedNodeCount()).isEqualTo("12");
+    }
+
+    @Test
     void shouldMapMaterialTreeParentIdThroughAssemblerAndApplicationService() {
         GraphMaterialApplicationService materialService = mock(GraphMaterialApplicationService.class);
         GraphController controller = controller(materialService);
@@ -322,6 +355,15 @@ class GraphControllerTest {
         for (Method method : GraphController.class.getDeclaredMethods()) {
             if (method.getName().equals(methodName)) {
                 return method.getAnnotation(HasPermission.class).value()[0];
+            }
+        }
+        throw new AssertionError("missing method " + methodName);
+    }
+
+    private static String postMapping(String methodName) {
+        for (Method method : GraphController.class.getDeclaredMethods()) {
+            if (method.getName().equals(methodName)) {
+                return method.getAnnotation(PostMapping.class).value()[0];
             }
         }
         throw new AssertionError("missing method " + methodName);

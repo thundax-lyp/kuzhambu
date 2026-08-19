@@ -15,4 +15,10 @@ public class GraphPublishedEdgeMaterial {
     private GraphPublishedEdgeId publishedEdgeId;
     private ContentRef materialRef;
     private String sourceSnapshotJson;
+    private long changedAt;
+
+    public GraphPublishedEdgeMaterial(
+            GraphPublishedEdgeId publishedEdgeId, ContentRef materialRef, String sourceSnapshotJson) {
+        this(publishedEdgeId, materialRef, sourceSnapshotJson, 0L);
+    }
 }

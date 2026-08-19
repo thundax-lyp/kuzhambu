@@ -53,6 +53,9 @@ public interface GraphPublishedNodeMapper extends BaseMapper<GraphPublishedNodeD
             left join knowledge_graph_published_node o
               on p.target_published_node_id = o.id
             where 1 = 1
+              <if test="subjectNodeId != null">
+              and s.id = #{subjectNodeId}
+              </if>
               <if test="subjectKeyword != null and subjectKeyword != ''">
               and s.name like concat('%', #{subjectKeyword}, '%')
               </if>
@@ -71,6 +74,7 @@ public interface GraphPublishedNodeMapper extends BaseMapper<GraphPublishedNodeD
             </script>
             """)
     long countAdjacency(
+            @Param("subjectNodeId") Long subjectNodeId,
             @Param("subjectKeyword") String subjectKeyword,
             @Param("subjectType") String subjectType,
             @Param("subjectStatus") String subjectStatus,
@@ -150,6 +154,9 @@ public interface GraphPublishedNodeMapper extends BaseMapper<GraphPublishedNodeD
             left join knowledge_graph_published_node o
               on p.target_published_node_id = o.id
             where 1 = 1
+              <if test="subjectNodeId != null">
+              and s.id = #{subjectNodeId}
+              </if>
               <if test="subjectKeyword != null and subjectKeyword != ''">
               and s.name like concat('%', #{subjectKeyword}, '%')
               </if>
@@ -170,6 +177,7 @@ public interface GraphPublishedNodeMapper extends BaseMapper<GraphPublishedNodeD
             </script>
             """)
     List<GraphPublishedAdjacencyDO> listAdjacency(
+            @Param("subjectNodeId") Long subjectNodeId,
             @Param("subjectKeyword") String subjectKeyword,
             @Param("subjectType") String subjectType,
             @Param("subjectStatus") String subjectStatus,

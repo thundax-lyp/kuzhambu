@@ -14,4 +14,5 @@ public class GraphPublishedEdgeMaterialDO {
     private String contentType;
     private Long contentRefId;
     private String sourceSnapshotJson;
+    private Long changedAt;
 }

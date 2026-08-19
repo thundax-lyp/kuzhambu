@@ -15,4 +15,10 @@ public class GraphPublishedNodeMaterial {
     private GraphPublishedNodeId publishedNodeId;
     private ContentRef materialRef;
     private String sourceSnapshotJson;
+    private long changedAt;
+
+    public GraphPublishedNodeMaterial(
+            GraphPublishedNodeId publishedNodeId, ContentRef materialRef, String sourceSnapshotJson) {
+        this(publishedNodeId, materialRef, sourceSnapshotJson, 0L);
+    }
 }

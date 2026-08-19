@@ -82,6 +82,9 @@ public class GraphController {
             @Valid @RequestBody GraphWorkbenchRequests.OverviewGetRequest request) {
         var result = workbenchService.getOverview();
         return new GraphWorkbenchResponses.OverviewData(
+                result.snapshotAt() == null
+                        ? null
+                        : String.valueOf(result.snapshotAt().toEpochMilli()),
                 String.valueOf(result.publishedNodeCount()),
                 String.valueOf(result.publishedEdgeCount()),
                 String.valueOf(result.coveredMaterialCount()),
@@ -93,7 +96,7 @@ public class GraphController {
                 String.valueOf(result.pendingConflictCount()));
     }
 
-    @Operation(summary = "查询图谱种子节点", description = "knowledge:graph:view")
+    @Operation(summary = "查询图谱工作台最近关系", description = "knowledge:graph:view")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -102,16 +105,17 @@ public class GraphController {
                 dataTypeClass = String.class),
     })
     @HasPermission("knowledge:graph:view")
-    @SysLogger(value = "图谱种子节点")
-    @PostMapping("workbench/seeds/list")
-    public GraphWorkbenchResponses.SeedsData seeds(
-            @Valid @RequestBody GraphWorkbenchRequests.SeedsListRequest request) {
-        return new GraphWorkbenchResponses.SeedsData(workbenchService.listRecentSeedNodes().stream()
-                .map(GraphInterfaceAssembler::toNodeData)
-                .toList());
+    @SysLogger(value = "图谱工作台最近关系")
+    @PostMapping("workbench/recent-edges/list")
+    public GraphWorkbenchResponses.RecentEdgesData recentEdges(
+            @Valid @RequestBody GraphWorkbenchRequests.RecentEdgesListRequest request) {
+        var result = workbenchService.listRecentEdges();
+        return new GraphWorkbenchResponses.RecentEdgesData(
+                result.nodes().stream().map(GraphInterfaceAssembler::toNodeData).toList(),
+                result.edges().stream().map(GraphInterfaceAssembler::toEdgeData).toList());
     }
 
-    @Operation(summary = "查询图谱邻接关系", description = "knowledge:graph:view")
+    @Operation(summary = "查询图谱工作台一跳关系", description = "knowledge:graph:view")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -120,14 +124,12 @@ public class GraphController {
                 dataTypeClass = String.class),
     })
     @HasPermission("knowledge:graph:view")
-    @SysLogger(value = "图谱邻接关系")
-    @PostMapping("workbench/incident-edges/list")
-    public GraphWorkbenchResponses.IncidentEdgesData incidentEdges(
-            @Valid @RequestBody GraphWorkbenchRequests.IncidentEdgesListRequest request) {
-        var result = workbenchService.listIncidentEdges(
-                GraphInterfaceAssembler.toQuery(request),
-                PageInterfaceAssembler.toPageQuery(null, request.getPageSize()));
-        return new GraphWorkbenchResponses.IncidentEdgesData(
+    @SysLogger(value = "图谱工作台一跳关系")
+    @PostMapping("workbench/one-hop-edges/list")
+    public GraphWorkbenchResponses.OneHopEdgesData oneHopEdges(
+            @Valid @RequestBody GraphWorkbenchRequests.OneHopEdgesListRequest request) {
+        var result = workbenchService.listOneHopEdges(GraphInterfaceAssembler.toQuery(request));
+        return new GraphWorkbenchResponses.OneHopEdgesData(
                 result.nodes().stream().map(GraphInterfaceAssembler::toNodeData).toList(),
                 result.edges().stream().map(GraphInterfaceAssembler::toEdgeData).toList(),
                 result.nextCursor() == null
@@ -1197,6 +1199,7 @@ public class GraphController {
     public GraphPublishedResponses.EdgeData publishedEdgeDelete(
             @Valid @RequestBody GraphPublishedRequests.PublishedEdgeDeleteRequest request) {
         publishedService.deleteEdge(GraphInterfaceAssembler.toCommand(request));
-        return new GraphPublishedResponses.EdgeData(request.getEdgeId(), null, null, null, null, null, "DELETED", null);
+        return new GraphPublishedResponses.EdgeData(
+                request.getEdgeId(), null, null, null, null, null, "DELETED", null, null, null);
     }
 }

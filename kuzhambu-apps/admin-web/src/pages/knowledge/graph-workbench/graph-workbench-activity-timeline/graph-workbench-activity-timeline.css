@@ -1,0 +1,52 @@
+.graph-workbench-activity {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+}
+
+.graph-workbench-activity li {
+    align-items: center;
+    background: var(--ant-color-bg-container);
+    border: 1px solid var(--ant-color-border-secondary);
+    border-radius: 12px;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    min-width: 0;
+    padding: 10px 12px;
+}
+
+.graph-workbench-activity-content {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+}
+
+.graph-workbench-activity-action {
+    color: var(--ant-color-text-secondary);
+    font-size: 13px;
+}
+
+.graph-workbench-activity-content strong {
+    color: var(--ant-color-text);
+    font-weight: 600;
+}
+
+.graph-workbench-activity time {
+    color: var(--ant-color-text-tertiary);
+    flex: none;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .graph-workbench-activity li {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

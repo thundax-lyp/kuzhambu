@@ -335,6 +335,47 @@ class AiWorkerHttpGatewayTest {
     }
 
     @Test
+    void streamShouldTimeoutAfterTheLastReceivedData() throws IOException {
+        startServer("/internal/ai/stream", exchange -> {
+            exchange.getResponseHeaders().set("Content-Type", "text/event-stream; charset=utf-8");
+            exchange.sendResponseHeaders(200, 0);
+            exchange.getResponseBody()
+                    .write(("event:delta\n"
+                                    + "data: {\"eventId\":\"evt-1\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"model_stream\",\"deltaText\":\"片段一\"}\n\n")
+                            .getBytes(StandardCharsets.UTF_8));
+            exchange.getResponseBody().flush();
+            try {
+                Thread.sleep(60);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+            }
+            exchange.getResponseBody()
+                    .write(("event:delta\n"
+                                    + "data: {\"eventId\":\"evt-2\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"model_stream\",\"deltaText\":\"片段二\"}\n\n")
+                            .getBytes(StandardCharsets.UTF_8));
+            exchange.getResponseBody().flush();
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+            }
+            exchange.close();
+        });
+        AiWorkerGatewayProperties properties = properties();
+        properties.setTimeoutMs(150);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties, new AiWorkerRequestSigner(), null);
+        List<AiStreamEventResult> events = new ArrayList<>();
+
+        client.stream(command(), events::add);
+
+        assertEquals(3, events.size());
+        assertEquals("delta", events.get(0).getEventType());
+        assertEquals("delta", events.get(1).getEventType());
+        assertEquals("error", events.get(2).getEventType());
+        assertEquals("WORKER_TIMEOUT", events.get(2).getErrorType());
+    }
+
+    @Test
     void streamShouldParseErrorEvent() throws IOException {
         startServer(
                 "/internal/ai/stream",

@@ -79,14 +79,14 @@ describe("knowledge graph extraction service request contracts", () => {
 
     it("sends task page requests to Knowledge graph endpoints", async () => {
         installFetchRecorder({
-            pageNo: "1",
-            pageSize: "20",
+            count: 41,
+            pageNo: 1,
+            pageSize: 20,
             records: [],
-            totalCount: "0",
-            totalPage: "1"
+            totalPage: 3
         });
 
-        await service.pageTasks({
+        const page = await service.pageTasks({
             batchId: "batch-001",
             contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }],
             executionStatus: "RUNNING",
@@ -94,6 +94,7 @@ describe("knowledge graph extraction service request contracts", () => {
             pageNo: 1,
             pageSize: 20
         });
+        expect(page).toMatchObject({ count: 41, totalCount: 41, totalPage: 3 });
         expectLastCall("POST", "/knowledge/graph/task/page", {
             batchId: "batch-001",
             contentRefs: [{ contentRefId: "1001", contentType: "SANCAI_ENTRY" }],

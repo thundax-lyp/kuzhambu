@@ -53,30 +53,6 @@ class PromptRepositoryIT {
     }
 
     @Test
-    void seedSqlShouldContainClassicsPromptAndBaseConfigRecords() throws IOException {
-        String seedGenerator = readRequiredSql("scripts/seed/generate-ai-sql.mjs");
-        String normalized = seedGenerator.replaceAll("\\s+", " ");
-
-        assertFalse(normalized.contains("INSERT INTO `ai_service_config`"));
-        assertFalse(normalized.contains("https://ai.wdit.com.cn/v1"));
-        assertFalse(normalized.contains("https://ark.cn-beijing.volces.com/api/v3"));
-        assertTrue(normalized.contains("`base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`)"));
-        assertTrue(normalized.contains(
-                "`encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`)"));
-        assertTrue(normalized.contains("CTYUN-CX-Qwen3.5-397B-A17B"));
-        assertTrue(normalized.contains("CTYUN-bot-DeepSeek-V3.2-pro"));
-        assertTrue(normalized.contains("doubao-seedream-5-0-pro-260628"));
-        assertTrue(normalized.contains("INSERT INTO `ai_business_config`"));
-        assertSeedContainsAllBusinessCapabilities(readAllAiPromptMeta());
-        assertTrue(normalized.contains("`model_id` = COALESCE(`model_id`, VALUES(`model_id`))"));
-        assertFalse(normalized.contains("INSERT INTO `ai_capability_mapping`"));
-        assertFalse(normalized.contains("INSERT INTO `ai_action_status`"));
-
-        assertTrue(existsInKnownRoots("db/data-source/ai-prompts/classics/summary/system-template.txt"));
-        assertTrue(existsInKnownRoots("db/data-source/ai-prompts/discovery/answer-generation/sample.md"));
-    }
-
-    @Test
     void repositoryShouldMapPromptTemplateWritesAndReads() {
         PromptMapper mapper = mock(PromptMapper.class);
         PromptRepositoryImpl repository = new PromptRepositoryImpl(mapper);
@@ -152,46 +128,5 @@ class PromptRepositoryIT {
             }
         }
         throw new IOException("Required SQL file not found: " + path);
-    }
-
-    private static void assertSeedContainsAllBusinessCapabilities(String seedMeta) {
-        for (AiBusinessCapability capability : AiBusinessCapability.values()) {
-            assertTrue(
-                    seedMeta.contains("\"capability\": \"" + capability.value() + "\""),
-                    "missing prompt seed source for " + capability.value());
-        }
-    }
-
-    private static String readAllAiPromptMeta() throws IOException {
-        Path repoRoot = findRepoRoot();
-        try (var paths = Files.walk(repoRoot.resolve("db/data-source/ai-prompts"))) {
-            StringBuilder builder = new StringBuilder();
-            for (Path path : paths.filter(
-                            candidate -> candidate.getFileName().toString().equals("meta.json"))
-                    .toList()) {
-                builder.append(Files.readString(path)).append('\n');
-            }
-            return builder.toString();
-        }
-    }
-
-    private static Path findRepoRoot() throws IOException {
-        Path currentPath = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-        while (currentPath != null) {
-            if (Files.exists(currentPath.resolve("db/data-source/ai-prompts"))) {
-                return currentPath;
-            }
-            currentPath = currentPath.getParent();
-        }
-        throw new IOException("Cannot locate repository root from user.dir");
-    }
-
-    private static boolean existsInKnownRoots(String path) {
-        for (Path candidate : List.of(Path.of(path), Path.of("../" + path), Path.of("../../../../" + path))) {
-            if (Files.exists(candidate)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

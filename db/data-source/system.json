@@ -134,10 +134,6 @@
         "知识治理/知识图谱/图谱治理",
         "知识治理/知识图谱/素材管理",
         "知识治理/知识图谱/提取任务",
-        "知识治理/世系图",
-        "运营运维",
-        "运营运维/健康检查",
-        "运营运维/备份恢复",
         "审计中心",
         "审计中心/审计日志",
         "系统管理",
@@ -194,7 +190,6 @@
         "知识治理/知识图谱/图谱治理",
         "知识治理/知识图谱/素材管理",
         "知识治理/知识图谱/提取任务",
-        "知识治理/世系图",
         "知识治理/标签配置",
         "知识库",
         "知识库/检索",
@@ -203,10 +198,6 @@
         "知识库/问答",
         "知识库/问答/问答",
         "知识库/问答/问答运维",
-        "运营运维",
-        "运营运维/运营看板",
-        "运营运维/健康检查",
-        "运营运维/任务台账",
         "审计中心",
         "审计中心/审计日志",
         "系统管理",
@@ -234,11 +225,7 @@
         "知识库/检索",
         "知识库/检索/检索",
         "知识库/问答",
-        "知识库/问答/问答",
-        "运营运维",
-        "运营运维/运营看板",
-        "运营运维/健康检查",
-        "运营运维/任务台账"
+        "知识库/问答/问答"
       ]
     }
   ],
@@ -783,15 +770,6 @@
           ]
         },
         {
-          "id": 15,
-          "name": "世系图",
-          "perms": ["knowledge:graph:view"],
-          "priority": 79,
-          "icon": "book",
-          "url": "/knowledge/lineage",
-          "remarks": "正式世系图独立浏览入口"
-        },
-        {
           "id": 17,
           "name": "标签配置",
           "perms": [
@@ -872,81 +850,6 @@
               "remarks": "知识库同步、问答来源和轨迹排查"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": 23,
-      "name": "运营运维",
-      "perms": ["operations"],
-      "priority": 70,
-      "icon": "dashboard",
-      "url": "/operations",
-      "remarks": "运营运维根菜单",
-      "children": [
-        {
-          "id": 24,
-          "name": "运营看板",
-          "perms": [
-            "operations:dashboard:view",
-            "operations:health:view",
-            "operations:health:manage"
-          ],
-          "priority": 70,
-          "icon": "dashboard",
-          "url": "/operations/dashboard",
-          "remarks": "内容、AI、搜索和问答统计"
-        },
-        {
-          "id": 25,
-          "name": "报表记录",
-          "perms": ["operations:report:view", "operations:report:edit"],
-          "priority": 65,
-          "visibility": "HIDDEN",
-          "icon": "submissions",
-          "url": null,
-          "remarks": "周报月报生成记录"
-        },
-        {
-          "id": 26,
-          "name": "健康检查",
-          "perms": ["operations:health:view"],
-          "priority": 62,
-          "icon": "logs",
-          "url": "/operations/health",
-          "remarks": "健康检查分页、探针结果和关联告警"
-        },
-        {
-          "id": 27,
-          "name": "任务台账",
-          "perms": ["operations:task:view"],
-          "priority": 60,
-          "icon": "logs",
-          "url": "/operations/tasks",
-          "remarks": "长任务和批量操作运行状态"
-        },
-        {
-          "id": 28,
-          "name": "备份恢复",
-          "perms": [
-            "operations:backup:view",
-            "operations:backup:execute",
-            "operations:restore:view",
-            "operations:restore:execute"
-          ],
-          "priority": 55,
-          "icon": "storage",
-          "url": "/operations/backup-restore",
-          "remarks": "备份台账、手动备份和恢复入口"
-        },
-        {
-          "id": 29,
-          "name": "清理维护",
-          "perms": ["operations:cleanup:view", "operations:cleanup:execute"],
-          "priority": 50,
-          "icon": "menus",
-          "url": "/operations/cleanup",
-          "remarks": "维护清理任务入口"
         }
       ]
     },

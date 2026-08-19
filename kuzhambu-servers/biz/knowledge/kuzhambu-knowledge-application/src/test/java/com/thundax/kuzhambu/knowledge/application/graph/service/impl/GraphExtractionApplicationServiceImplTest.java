@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
@@ -196,6 +197,47 @@ class GraphExtractionApplicationServiceImplTest {
     }
 
     @Test
+    void shouldResetRunningTasksToPendingAtStartupWithoutCallingAi() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setExecutionStatus(GraphExtractionExecutionStatus.RUNNING);
+        task.setCurrentStage("EXTRACT");
+        task.setProgress(40);
+        when(taskRepository.page(null, null, GraphExtractionExecutionStatus.RUNNING, null, 1, 100))
+                .thenReturn(PageResult.of(1, 100, 1, List.of(task)));
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+
+        int recoveredCount = service.recoverActiveTasksAtStartup();
+
+        assertThat(recoveredCount).isEqualTo(1);
+        assertThat(task.getExecutionStatus()).isEqualTo(GraphExtractionExecutionStatus.PENDING);
+        assertThat(task.getCurrentStage()).isEqualTo("PENDING");
+        assertThat(task.getProgress()).isEqualTo(40);
+        verify(aiFacade, never()).getBatchJob(any());
+    }
+
+    @Test
+    void shouldStartPendingRecoveredTaskWhenAiBatchIsRunning() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setExecutionStatus(GraphExtractionExecutionStatus.PENDING);
+        task.setAiBatchId(9001L);
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(taskRepository.listByMaterialId(11L)).thenReturn(List.of(task));
+        when(aiFacade.getBatchJob(9001L))
+                .thenReturn(AiBatchJobFacadeResponse.builder()
+                        .batchId(9001L)
+                        .status("RUNNING")
+                        .build());
+
+        var result = service.getTask(new GraphTaskDetailQuery(7001L));
+
+        assertThat(result.task().executionStatus()).isEqualTo("RUNNING");
+        verify(taskRepository).updateIfLockVersion(any(GraphExtractionTask.class), any(Long.class));
+    }
+
+    @Test
     void shouldFailTaskWhenCompletedAiBatchHasNoCandidate() {
         ContentRef ref = ref(1001L);
         GraphExtractionTask task = task(7001L, 11L, ref);
@@ -350,7 +392,7 @@ class GraphExtractionApplicationServiceImplTest {
                 null,
                 null,
                 null,
-                "QUEUED",
+                "PENDING",
                 0,
                 null,
                 "idem-1",

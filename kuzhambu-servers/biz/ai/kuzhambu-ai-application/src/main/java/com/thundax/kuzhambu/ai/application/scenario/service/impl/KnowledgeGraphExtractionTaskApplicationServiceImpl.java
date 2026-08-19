@@ -48,7 +48,7 @@ public class KnowledgeGraphExtractionTaskApplicationServiceImpl
             LoggerFactory.getLogger(KnowledgeGraphExtractionTaskApplicationServiceImpl.class);
 
     private static final String TASK_TYPE_GRAPH = "GRAPH";
-    private static final Duration ORPHANED_TASK_TIMEOUT = Duration.ofHours(1L);
+    private static final Duration ORPHANED_TASK_TIMEOUT = Duration.ofSeconds(600L);
     private static final int ORPHANED_TASK_EXPIRE_LIMIT = 100;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -171,7 +171,7 @@ public class KnowledgeGraphExtractionTaskApplicationServiceImpl
 
     @Scheduled(
             initialDelayString = "${kuzhambu.ai.knowledge-graph.orphaned-task-expiry.initial-delay-ms:60000}",
-            fixedDelayString = "${kuzhambu.ai.knowledge-graph.orphaned-task-expiry.fixed-delay-ms:3600000}")
+            fixedDelayString = "${kuzhambu.ai.knowledge-graph.orphaned-task-expiry.fixed-delay-ms:300000}")
     @Transactional(rollbackFor = Exception.class)
     public void expireOrphanedRunningGraphJobs() {
         Instant requestedBefore = Instant.now().minus(ORPHANED_TASK_TIMEOUT);
