@@ -22,6 +22,7 @@ const nodeStyle = (nodeType?: string | null) => {
 export const GraphWorkbenchCanvas = ({ graph, motion }: GraphWorkbenchCanvasProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const graphRef = useRef<Graph | null>(null);
+    const renderQueueRef = useRef(Promise.resolve());
 
     useEffect(() => {
         const container = containerRef.current;
@@ -37,7 +38,7 @@ export const GraphWorkbenchCanvas = ({ graph, motion }: GraphWorkbenchCanvasProp
             width: container.clientWidth || 960
         });
         graphRef.current = instance;
-        void instance.render();
+        renderQueueRef.current = Promise.resolve();
         const observer = new ResizeObserver(() =>
             instance.resize(container.clientWidth, container.clientHeight)
         );
@@ -45,7 +46,7 @@ export const GraphWorkbenchCanvas = ({ graph, motion }: GraphWorkbenchCanvasProp
         return () => {
             observer.disconnect();
             graphRef.current = null;
-            void instance.destroy();
+            void renderQueueRef.current.finally(() => instance.destroy());
         };
     }, [motion]);
 
@@ -71,7 +72,9 @@ export const GraphWorkbenchCanvas = ({ graph, motion }: GraphWorkbenchCanvasProp
                 type: nodeStyle(node.nodeType).type
             }))
         });
-        void instance.render();
+        renderQueueRef.current = renderQueueRef.current
+            .then(() => instance.render())
+            .catch(() => undefined);
     }, [graph]);
 
     return (
