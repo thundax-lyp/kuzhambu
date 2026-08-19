@@ -37,6 +37,7 @@ const atlas = {
         ]
     },
     graphState: "ready" as const,
+    onGraphLaidOut: () => undefined,
     overview: {
         coveredMaterialCount: "3",
         isolatedNodeCount: "1",
@@ -66,8 +67,10 @@ describe("GraphWorkbenchPage", () => {
         render(<GraphWorkbenchPage />);
 
         expect(screen.getByRole("heading", { name: "图谱工作台" })).toBeInTheDocument();
-        expect(screen.getByText("正式节点 5")).toBeInTheDocument();
-        expect(screen.getByText("结构缺口 2")).toBeInTheDocument();
+        expect(screen.getByText("正式节点")).toBeInTheDocument();
+        expect(screen.getByText("孤立节点")).toBeInTheDocument();
+        expect(screen.queryByText("待决冲突")).not.toBeInTheDocument();
+        expect(screen.queryByText("结构缺口")).not.toBeInTheDocument();
         expect(screen.getByText("发布杜甫与李白关系")).toBeInTheDocument();
         expect(screen.getByRole("img", { name: "画布 2/1" })).toBeInTheDocument();
         expect(screen.queryByRole("button")).not.toBeInTheDocument();

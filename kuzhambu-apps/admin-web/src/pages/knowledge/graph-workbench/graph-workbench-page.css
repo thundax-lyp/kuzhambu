@@ -1,4 +1,11 @@
 .graph-workbench-stage {
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--ant-color-bg-container) 94%, var(--ant-color-primary)),
+        var(--ant-color-bg-container)
+    );
+    border-radius: 24px;
+    padding: 12px;
     min-height: 620px;
     position: relative;
 }

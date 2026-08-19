@@ -2,7 +2,6 @@ import { KuzhambuAlert, KuzhambuPage } from "@/components";
 import { hasPermission } from "@/auth/permission-storage";
 import { GraphWorkbenchActivityTimeline } from "./graph-workbench-activity-timeline";
 import { GraphWorkbenchCanvas } from "./graph-workbench-canvas";
-import { GraphWorkbenchLegend } from "./graph-workbench-legend";
 import { GraphWorkbenchOverview } from "./graph-workbench-overview";
 import { useGraphWorkbenchAtlas } from "./hooks/use-graph-workbench-atlas";
 import "./graph-workbench-page.css";
@@ -24,10 +23,14 @@ export const GraphWorkbenchPage = () => {
             description="正式知识图的只读动态态势展示。"
             title="图谱工作台"
         >
+            <GraphWorkbenchOverview overview={atlas.overview} state={atlas.overviewState} />
             <section className="graph-workbench-stage">
-                <GraphWorkbenchOverview overview={atlas.overview} state={atlas.overviewState} />
-                <GraphWorkbenchCanvas graph={atlas.graph} motion={!reducedMotion} />
-                <GraphWorkbenchLegend graph={atlas.graph} />
+                <GraphWorkbenchCanvas
+                    graph={atlas.graph}
+                    motion={!reducedMotion}
+                    onProjectionLaidOut={atlas.onGraphLaidOut}
+                    projecting={atlas.graphState === "loading"}
+                />
             </section>
             {atlas.overviewState === "ready" && atlas.overview?.recentActivities.length ? (
                 <GraphWorkbenchActivityTimeline activities={atlas.overview.recentActivities} />

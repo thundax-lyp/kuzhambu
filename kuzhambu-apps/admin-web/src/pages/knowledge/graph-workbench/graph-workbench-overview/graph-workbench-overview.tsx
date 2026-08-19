@@ -11,14 +11,20 @@ export const GraphWorkbenchOverview = ({ overview, state }: GraphWorkbenchOvervi
     if (state === "unavailable") {
         return <div className="graph-workbench-overview">正式图态势正在准备</div>;
     }
+    const metrics = [
+        ["正式节点", overview?.publishedNodeCount],
+        ["关系", overview?.publishedEdgeCount],
+        ["覆盖素材", overview?.coveredMaterialCount],
+        ["孤立节点", overview?.isolatedNodeCount]
+    ];
     return (
-        <div aria-live="polite" className="graph-workbench-overview">
-            <strong>正式节点 {overview?.publishedNodeCount ?? "-"}</strong>
-            <span>关系 {overview?.publishedEdgeCount ?? "-"}</span>
-            <span>覆盖素材 {overview?.coveredMaterialCount ?? "-"}</span>
-            <span>待决冲突 {overview?.pendingConflictCount ?? "-"}</span>
-            <span>孤立节点 {overview?.isolatedNodeCount ?? "-"}</span>
-            <span>结构缺口 {overview?.missingCoreRelationNodeCount ?? "-"}</span>
-        </div>
+        <dl aria-live="polite" className="graph-workbench-overview">
+            {metrics.map(([label, value]) => (
+                <div className="graph-workbench-overview-card" key={label}>
+                    <dt>{label}</dt>
+                    <dd>{value ?? "-"}</dd>
+                </div>
+            ))}
+        </dl>
     );
 };
