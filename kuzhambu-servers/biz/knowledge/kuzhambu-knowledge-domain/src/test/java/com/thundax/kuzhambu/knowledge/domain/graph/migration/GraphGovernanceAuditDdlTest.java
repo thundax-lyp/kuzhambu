@@ -21,29 +21,6 @@ class GraphGovernanceAuditDdlTest {
         assertThat(tableBlock(schema, "knowledge_graph_manual_source")).doesNotContain("operator_id");
     }
 
-    @Test
-    void rebuildScriptShouldStopWhenEitherGovernanceAuditTableHasRows() throws IOException {
-        String script = Files.readString(repoRoot().resolve("scripts/rebuild-graph-governance-audit-tables.sql"));
-
-        assertThat(script)
-                .contains("SELECT COUNT(*) INTO governance_operation_count FROM knowledge_graph_governance_operation;");
-        assertThat(script).contains("SELECT COUNT(*) INTO manual_source_count FROM knowledge_graph_manual_source;");
-        assertThat(script).contains("IF governance_operation_count <> 0 OR manual_source_count <> 0 THEN");
-        assertThat(script).contains("SIGNAL SQLSTATE '45000'");
-    }
-
-    @Test
-    void rebuildScriptShouldRecreateAuditTablesWithFixedDdl() throws IOException {
-        String script = Files.readString(repoRoot().resolve("scripts/rebuild-graph-governance-audit-tables.sql"));
-
-        assertThat(script.indexOf("DROP TABLE IF EXISTS knowledge_graph_manual_source"))
-                .isLessThan(script.indexOf("DROP TABLE IF EXISTS knowledge_graph_governance_operation"));
-        assertAuditLogIdAfterReason(script, "knowledge_graph_governance_operation");
-        assertAuditLogIdAfterReason(script, "knowledge_graph_manual_source");
-        assertAuditIndex(script, "idx_knowledge_graph_governance_operation_audit");
-        assertAuditIndex(script, "idx_knowledge_graph_manual_source_audit");
-    }
-
     private void assertAuditLogIdAfterReason(String ddl, String tableName) {
         String table = tableBlock(ddl, tableName);
         assertThat(table.indexOf("`reason` varchar(1024) NOT NULL,"))

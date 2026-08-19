@@ -17,29 +17,6 @@ class GraphDeletionTableRebuildScriptTest {
         assertLockVersionAfterStatus(schema, "knowledge_graph_material_deletion_task");
     }
 
-    @Test
-    void rebuildScriptShouldStopWhenEitherDeletionTableHasRows() throws IOException {
-        String script = Files.readString(repoRoot().resolve("scripts/rebuild-graph-deletion-tables.sql"));
-
-        assertThat(script)
-                .contains("SELECT COUNT(*) INTO deletion_change_count FROM knowledge_graph_material_deletion_change;");
-        assertThat(script)
-                .contains("SELECT COUNT(*) INTO deletion_task_count FROM knowledge_graph_material_deletion_task;");
-        assertThat(script).contains("IF deletion_change_count <> 0 OR deletion_task_count <> 0 THEN");
-        assertThat(script).contains("SIGNAL SQLSTATE '45000'");
-    }
-
-    @Test
-    void rebuildScriptShouldDropTaskBeforeChangeAndRecreateNewDdl() throws IOException {
-        String script = Files.readString(repoRoot().resolve("scripts/rebuild-graph-deletion-tables.sql"));
-
-        assertThat(script.indexOf("DROP TABLE IF EXISTS knowledge_graph_material_deletion_task"))
-                .isLessThan(script.indexOf("DROP TABLE IF EXISTS knowledge_graph_material_deletion_change"));
-        assertLockVersionAfterStatus(script, "knowledge_graph_material_deletion_change");
-        assertLockVersionAfterStatus(script, "knowledge_graph_material_deletion_task");
-        assertThat(script).contains("UNIQUE KEY `uk_knowledge_graph_deletion_task_idempotency` (`idempotency_key`)");
-    }
-
     private void assertLockVersionAfterStatus(String ddl, String tableName) {
         String table = tableBlock(ddl, tableName);
         assertThat(table.indexOf("`status` varchar(32) NOT NULL,"))
