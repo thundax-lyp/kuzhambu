@@ -8,6 +8,94 @@
 
 ## 当前任务项
 
+- [ ] `知识图谱发布关联`：记录素材关联变更时间
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`db/schema/knowledge.sql`、`knowledge_graph_published_node_material`、`knowledge_graph_published_edge_material` 的写入实现与测试
+    - 处理动作：为两张发布关联表新增并维护 `changed_at`。
+    - 验收点：关联替换即使数量不变也更新 `changed_at`；迁移回填成功；不新增统计表。
+    - 重要度：9/10
+
+- [ ] `知识图谱工作台指纹`：提供概览刷新判定数据源
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`GraphWorkbenchRepository.java`、`GraphWorkbenchMapper.java`、`GraphWorkbenchRepositoryImpl.java`、`GraphWorkbenchRepositoryImplTest.java`
+    - 处理动作：实现覆盖正式图、关联变更、活动、冲突 token 和 Schema 的 `GraphWorkbenchOverviewFingerprint`。
+    - 验收点：任一规定来源变化均改变 fingerprint；最近 token 过期时间可作为下一次刷新边界。
+    - 重要度：9/10
+
+- [ ] `知识图谱工作台快照存储`：建立 Redis 概览读模型边界
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`GraphWorkbenchOverviewSnapshot.java`、`GraphWorkbenchOverviewCacheDTO.java`、`GraphWorkbenchSnapshotStore.java`、`RedisGraphWorkbenchSnapshotStore.java`
+    - 处理动作：实现 REMOTE JetCache 快照序列化、读取、替换和 token 锁。
+    - 验收点：缓存 DTO 与 snapshot 字段一一对应；锁只能由持有 token 释放；不存在本地缓存或工作台专属 TTL 配置。
+    - 重要度：9/10
+
+- [ ] `知识图谱工作台刷新器`：以指纹重建 Redis 概览
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`GraphWorkbenchOverviewSource.java`、`GraphWorkbenchSnapshotRefresher.java`、`GraphWorkbenchSnapshotScheduler.java` 及 application 测试
+    - 处理动作：实现启动预热和 30 秒定时刷新编排。
+    - 验收点：多实例只重建一次；指纹未变不重建；刷新失败保留旧快照；无快照不在请求链路聚合统计。
+    - 重要度：10/10
+
+- [ ] `知识图谱工作台概览接口`：将 overview 切换为快照读取
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`GraphWorkbenchApplicationService.java`、`GraphWorkbenchApplicationServiceImpl.java`、`GraphController.java`、`GraphWorkbenchResponses.java`、`GraphControllerTest.java`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 处理动作：让 overview 只读取 snapshot store，向响应补充 `snapshotAt` 并同步接口文档。
+    - 验收点：有旧快照时正常返回；无快照返回 `WORKBENCH_SNAPSHOT_UNAVAILABLE`；Controller 不触发统计 SQL；接口文档字段一致。
+    - 重要度：10/10
+
+- [ ] `知识图谱工作台首批关系接口`：以最近关系替换 seeds
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`GraphPublishedEdgeRepository*`、`GraphWorkbenchApplicationService*`、`GraphController.java`、`GraphWorkbenchRequests.java`、`GraphWorkbenchResponses.java`、`GraphInterfaceAssembler.java`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 处理动作：以 `recent-edges/list` 返回最近 200 条 ACTIVE 边及其去重端点，删除 `seeds/list` 并同步接口文档。
+    - 验收点：结果按 `modified_at DESC, id DESC` 排序；节点恰为边端点；旧 Seeds 路由、请求、响应和方法已删除；接口文档已替换。
+    - 重要度：10/10
+
+- [ ] `知识图谱工作台一跳接口`：以固定批次替换 incident edges
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`GraphPublishedEdgeRepository*`、`GraphWorkbenchApplicationService*`、`GraphController.java`、`GraphWorkbenchRequests.java`、`GraphWorkbenchResponses.java`、`GraphInterfaceAssembler.java`、`GraphRequestsTest.java`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
+    - 处理动作：以 `one-hop-edges/list` 替换 `incident-edges/list`，固定服务端每批 50 条并同步接口文档。
+    - 验收点：请求仅接受 1..400 个 `nodeIds` 和可选 `afterEdgeId`；`truncated` 与 `nextCursor` 一致；旧 Incident 命名与路由已删除；接口文档已替换。
+    - 重要度：10/10
+
+- [ ] `admin 图谱工作台数据层`：实现只读态势视图模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`graph-workbench-types.ts`、`graph-workbench-service.ts`、`hooks/use-graph-workbench-atlas.ts`
+    - 处理动作：实现三段读取、独立 overview/graph 状态、游标映射、去重及 600 边封顶。
+    - 验收点：首批空边不扩展；后续固定端点集合传递 `afterEdgeId`；节点只随已接纳边出现；取消请求不写入过期 state。
+    - 重要度：10/10
+
+- [ ] `admin 图谱工作台画布`：实现无操作的 G6 渲染组件
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`graph-workbench-canvas/`、`graph-workbench-types.ts`
+    - 处理动作：实现只接收 `{ graph, motion }` 的页面私有 G6 Canvas。
+    - 验收点：颜色、形状、标签密度、分批动画和 reduced motion 符合 RUNBOOK；未注册点击、拖拽、缩放或平移行为。
+    - 重要度：9/10
+
+- [ ] `admin 图谱工作台页面`：装配只读态势展示并清理旧 UI
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：`graph-workbench-page.tsx`、`graph-workbench-page.css`、`graph-workbench-overview/`、`graph-workbench-legend/`、`graph-workbench-activity-timeline/`、`workbench-canvas/`、`workbench-detail-drawer/`
+    - 处理动作：装配四个只读展示组件并删除旧筛选表、原型画布和详情抽屉。
+    - 验收点：首屏布局、窄屏、可访问文本和无操作边界符合 RUNBOOK；旧目录已删除。
+    - 重要度：10/10
+
+- [ ] `图谱工作台交付验证`：固化跨层验证证据并收口文档
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
+    - 范围对象：RUNBOOK Test file map、`docs/40-readiness/KNOWLEDGE-GRAPH-WORKBENCH-EVIDENCE.md`、`TODO.md`、RUNBOOK
+    - 处理动作：完成契约、页面、E2E 和运行验证，沉淀证据并清理临时任务文档。
+    - 验收点：相关 Maven、pnpm 和 Playwright 检查通过；readiness 留存证据；完成项从 TODO 删除，RUNBOOK 与其引用一并删除。
+    - 重要度：8/10
+
 ## 待审阅任务项
 
 ## 待讨论项
