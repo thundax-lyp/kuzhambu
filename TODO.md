@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `admin 图谱工作台数据层`：实现只读态势视图模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`graph-workbench-types.ts`、`graph-workbench-service.ts`、`hooks/use-graph-workbench-atlas.ts`
-    - 处理动作：实现三段读取、独立 overview/graph 状态、游标映射、去重及 600 边封顶。
-    - 验收点：首批空边不扩展；后续固定端点集合传递 `afterEdgeId`；节点只随已接纳边出现；取消请求不写入过期 state。
-    - 重要度：10/10
-
 - [ ] `admin 图谱工作台画布`：实现无操作的 G6 渲染组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`

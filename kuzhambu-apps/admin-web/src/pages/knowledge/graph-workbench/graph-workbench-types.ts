@@ -51,3 +51,28 @@ export interface GraphPublishedAdjacencyRecord {
     object?: GraphPublishedNodeRecord | null;
     isolated: boolean;
 }
+
+export interface GraphWorkbenchOverviewRecord {
+    snapshotAt: string;
+    publishedNodeCount: string;
+    publishedEdgeCount: string;
+    coveredMaterialCount: string;
+    isolatedNodeCount: string;
+    missingCoreRelationNodeCount: string;
+    pendingConflictCount: string;
+    recentActivities: Array<{
+        type: string;
+        occurredAt: string | null;
+        summary: string;
+    }>;
+}
+
+export interface GraphWorkbenchGraphRecord {
+    nodes: GraphPublishedNodeRecord[];
+    edges: GraphPublishedEdgeRecord[];
+}
+
+export interface GraphWorkbenchOneHopEdgesRecord extends GraphWorkbenchGraphRecord {
+    nextCursor: string | null;
+    truncated: boolean;
+}
