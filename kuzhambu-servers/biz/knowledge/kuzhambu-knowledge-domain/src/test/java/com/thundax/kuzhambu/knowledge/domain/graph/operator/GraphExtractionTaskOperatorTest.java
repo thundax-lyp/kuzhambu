@@ -45,6 +45,22 @@ class GraphExtractionTaskOperatorTest {
     }
 
     @Test
+    void resetToPendingForRecoveryShouldPreserveAttemptAndRequireRunningTask() {
+        GraphExtractionTask task = task(GraphExtractionExecutionStatus.RUNNING, null);
+        task.setAttemptNo(2);
+        task.setProgress(40);
+
+        task.resetToPendingForRecovery();
+
+        assertEquals(GraphExtractionExecutionStatus.PENDING, task.getExecutionStatus());
+        assertEquals("PENDING", task.getCurrentStage());
+        assertEquals(2, task.getAttemptNo());
+        assertEquals(40, task.getProgress());
+        assertThrows(DomainException.class, () -> task(GraphExtractionExecutionStatus.PENDING, null)
+                .resetToPendingForRecovery());
+    }
+
+    @Test
     void adoptDiscardAndSupersedeShouldBeTerminalAndExclusive() {
         Instant disposedAt = Instant.parse("2026-08-17T00:00:00Z");
         Instant purgeAfter = Instant.parse("2026-08-24T00:00:00Z");

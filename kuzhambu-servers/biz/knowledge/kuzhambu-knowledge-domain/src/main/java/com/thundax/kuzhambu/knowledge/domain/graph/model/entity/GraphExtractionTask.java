@@ -47,6 +47,13 @@ public class GraphExtractionTask {
         executionStatus = GraphExtractionExecutionStatus.RUNNING;
     }
 
+    public void resetToPendingForRecovery() {
+        requireExecutionStatus(
+                GraphExtractionExecutionStatus.RUNNING, "Only running graph extraction tasks can reset for recovery");
+        executionStatus = GraphExtractionExecutionStatus.PENDING;
+        currentStage = "PENDING";
+    }
+
     public void succeed(Long resolvedCandidateId, String stage, int resolvedProgress, Instant completedAt) {
         requireExecutionStatus(
                 GraphExtractionExecutionStatus.RUNNING, "Only running graph extraction tasks can succeed");

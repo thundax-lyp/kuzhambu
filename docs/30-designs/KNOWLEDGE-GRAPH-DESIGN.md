@@ -106,7 +106,7 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 
 `properties_json` 与 `qualifiers_json` 是开放多值 JSON 载体：草稿写入只校验其为对象，细分属性和值域作为告警而非拒绝条件；它们不替代可查询的 Key、类型和关系字段。
 
-`execution_status` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`；`disposition` 在成功后固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`。运行状态和采纳状态不得复用同一字段。`FAILED -> PENDING` 是同一任务的原地重试，递增 `attempt_no` 并保留尝试历史；重新抽取创建新任务，通过 `regenerated_from_task_id` 关联来源。`batch_id`、`regenerated_from_task_id`、`superseded_by_task_id`、`triggered_by_task_id` 用于任务详情的关联任务读取。
+`execution_status` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`；`disposition` 在成功后固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`。运行状态和采纳状态不得复用同一字段。服务启动恢复将原 `RUNNING` 任务写为 `PENDING`，定时同步确认 AI 批任务仍执行后才写为 `RUNNING`；确认失败时保持 `PENDING`。`FAILED -> PENDING` 是同一任务的原地重试，递增 `attempt_no` 并保留尝试历史；重新抽取创建新任务，通过 `regenerated_from_task_id` 关联来源。`batch_id`、`regenerated_from_task_id`、`superseded_by_task_id`、`triggered_by_task_id` 用于任务详情的关联任务读取。
 
 ### Published Space
 

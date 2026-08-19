@@ -54,7 +54,7 @@
 
 - `status`：素材固定为 `DRAFT`、`PUBLISHING`、`PUBLISHED`、`WITHDRAWING`、`FAILED`；发布对象为 `ACTIVE`、`DELETED`；删除任务为 `PRECHECKED`、`AWAITING_DECISION`、`PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`。素材不得返回 `READY`；`DRAFT` 表示未抽取、编辑中或已撤回且可编辑。`FAILED` 必须返回 `failureReason` 和 `failedOperation:"PUBLISH"|"WITHDRAW"`；其他状态两字段均返回 `null`。
 - `materialStats` 是素材列表读模型。`statsRevision` 小于素材 `lockVersion` 时，客户端显示“统计更新中”，但不得自行聚合节点、关系或任务表。
-- `task.executionStatus` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`。成功任务的 `disposition` 固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`；非成功任务 `disposition` 返回 `null`。`FAILED -> PENDING` 是同一任务的重试，递增 `attemptNo`；重新抽取才创建新任务。`lockVersion` 用于全部任务状态和候选处置命令的乐观锁校验。
+- `task.executionStatus` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`。`PENDING` 表示尚未确认 AI 批任务正在执行，包括新建、重试和服务启动恢复后的任务；仅在 AI 批任务确认仍执行后转为 `RUNNING`。成功任务的 `disposition` 固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`；非成功任务 `disposition` 返回 `null`。`FAILED -> PENDING` 是同一任务的重试，递增 `attemptNo`；重新抽取才创建新任务。`lockVersion` 用于全部任务状态和候选处置命令的乐观锁校验。
 - `properties` 和 `qualifiers` 是 JSON object；只接受 `KNOWLEDGE-GRAPH-SCHEMA.json` 定义的节点、关系和字段。
 - `materialNode` / `materialEdge` 不含对象级 `lockVersion`；草稿全部写操作只使用 `materialLockVersion`。只有 `publishedNode` / `publishedEdge` 含对象级 `lockVersion`。
 - 写入成功返回最新对象；乐观锁冲突返回业务码 `GRAPH_PREVIEW_STALE` 或 `GRAPH_LOCK_CONFLICT`，前端必须刷新后重新操作。

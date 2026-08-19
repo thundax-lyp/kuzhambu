@@ -266,8 +266,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
 
     @Override
     public int recoverActiveTasksAtStartup() {
-        return syncAllTasksWithStatus(GraphExtractionExecutionStatus.PENDING)
-                + syncAllTasksWithStatus(GraphExtractionExecutionStatus.RUNNING);
+        return resetAllRunningTasksToPendingForRecovery();
     }
 
     @Override
@@ -419,7 +418,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 batchId,
                 null,
                 null,
-                "QUEUED",
+                "PENDING",
                 0,
                 null,
                 idempotencyKey,
@@ -629,8 +628,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 }
                 return requireTask(task.getId().value());
             }
-            if (task.getExecutionStatus() != GraphExtractionExecutionStatus.PENDING
-                    && task.getExecutionStatus() != GraphExtractionExecutionStatus.RUNNING) {
+            if (!active(task)) {
                 clearActiveTask(task);
             }
             statsRefresher.refresh(task.getContentRef());
@@ -656,6 +654,22 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                     .sum();
         }
         return syncedCount;
+    }
+
+    private int resetAllRunningTasksToPendingForRecovery() {
+        PageResult<GraphExtractionTask> firstPage =
+                taskRepository.page(null, null, GraphExtractionExecutionStatus.RUNNING, null, 1, 100);
+        int resetCount = 0;
+        for (int pageNo = firstPage.getTotalPage(); pageNo >= 1; pageNo--) {
+            PageResult<GraphExtractionTask> page =
+                    taskRepository.page(null, null, GraphExtractionExecutionStatus.RUNNING, null, pageNo, 100);
+            for (GraphExtractionTask task : page.getRecords()) {
+                task.resetToPendingForRecovery();
+                updateTask(task, task.getLockVersion());
+                resetCount++;
+            }
+        }
+        return resetCount;
     }
 
     private void startPendingTask(GraphExtractionTask task) {
