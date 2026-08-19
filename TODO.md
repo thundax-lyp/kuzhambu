@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `图谱工作台交付验证`：固化跨层验证证据
-    - 任务类型：执行任务
-    - 依据文档：`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-GRAPH-WORKBENCH-EVIDENCE.md`、`TODO.md`
-    - 处理动作：完成运行验证并沉淀证据。
-    - 验收点：相关 Maven、pnpm 和 Playwright 检查通过；readiness 留存证据后删除该 TODO。
-    - 重要度：8/10
-
 ## 待审阅任务项
 
 ## 待讨论项

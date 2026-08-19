@@ -7,8 +7,8 @@ test("renders the graph workbench as a read-only progressive atlas", async ({ pa
     await page.goto("/knowledge/graph-workbench");
 
     await expect(page.getByRole("heading", { name: "图谱工作台" })).toBeVisible();
-    await expect(page.getByText("正式节点 2")).toBeVisible();
-    await expect(page.getByText("结构缺口 1")).toBeVisible();
+    await expect(page.getByRole("term")).toHaveText(["正式节点", "关系", "覆盖素材", "孤立节点"]);
+    await expect(page.getByRole("definition")).toHaveText(["2", "102", "2", "0"]);
     await expect(
         page.getByRole("img", { name: /正式图画布：已展示 2 个节点和 102 条关系/ })
     ).toBeVisible();
