@@ -317,7 +317,7 @@ const sqlValue = (value) => {
   if (isRawSql(value)) {
     return value.rawSql;
   }
-  return `'${String(value).replace(/'/g, "''")}'`;
+  return `'${String(value).replace(/\\/g, "\\\\").replace(/'/g, "''")}'`;
 };
 
 const normalizeTagSource = (source) => {

@@ -71,4 +71,8 @@ if [[ "${GENERATE}" == "true" ]]; then
 fi
 
 echo "Importing seed data with env: ${ENV_FILE}"
-node "${SCRIPT_DIR}/seed/import-to-database.mjs" "${NODE_ARGS[@]}"
+if [[ ${#NODE_ARGS[@]} -eq 0 ]]; then
+    node "${SCRIPT_DIR}/seed/import-to-database.mjs"
+else
+    node "${SCRIPT_DIR}/seed/import-to-database.mjs" "${NODE_ARGS[@]}"
+fi
