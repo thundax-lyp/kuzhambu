@@ -4,4 +4,4 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublis
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import java.util.List;
 
-public record GraphIncidentEdgesQuery(List<GraphPublishedNodeId> nodeIds, GraphPublishedEdgeId afterEdgeId) {}
+public record GraphOneHopEdgesQuery(List<GraphPublishedNodeId> nodeIds, GraphPublishedEdgeId afterEdgeId) {}

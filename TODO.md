@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `知识图谱工作台一跳接口`：以固定批次替换 incident edges
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`GraphPublishedEdgeRepository*`、`GraphWorkbenchApplicationService*`、`GraphController.java`、`GraphWorkbenchRequests.java`、`GraphWorkbenchResponses.java`、`GraphInterfaceAssembler.java`、`GraphRequestsTest.java`、`docs/20-interfaces/KNOWLEDGE-GRAPH-INTERFACE.md`
-    - 处理动作：以 `one-hop-edges/list` 替换 `incident-edges/list`，固定服务端每批 50 条并同步接口文档。
-    - 验收点：请求仅接受 1..400 个 `nodeIds` 和可选 `afterEdgeId`；`truncated` 与 `nextCursor` 一致；旧 Incident 命名与路由已删除；接口文档已替换。
-    - 重要度：10/10
-
 - [ ] `admin 图谱工作台数据层`：实现只读态势视图模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`

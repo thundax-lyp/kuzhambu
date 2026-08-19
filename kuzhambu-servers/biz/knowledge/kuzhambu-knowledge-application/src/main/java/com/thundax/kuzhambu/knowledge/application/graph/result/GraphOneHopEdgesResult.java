@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
 import java.util.List;
 
-public record GraphIncidentEdgesResult(
+public record GraphOneHopEdgesResult(
         List<GraphPublishedNode> nodes,
         List<GraphPublishedEdge> edges,
         GraphPublishedEdgeId nextCursor,

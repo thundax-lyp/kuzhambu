@@ -21,6 +21,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class GraphPublishedEdgeRepositoryImpl implements GraphPublishedEdgeRepository {
+    private static final int ONE_HOP_EDGE_BATCH_SIZE = 50;
+
     private final GraphPublishedEdgeMapper mapper;
 
     public GraphPublishedEdgeRepositoryImpl(GraphPublishedEdgeMapper mapper) {
@@ -62,19 +64,19 @@ public class GraphPublishedEdgeRepositoryImpl implements GraphPublishedEdgeRepos
     }
 
     @Override
-    public GraphPublishedEdgeSlice listIncidentEdges(
-            List<GraphPublishedNodeId> ids, GraphPublishedEdgeId after, int limit) {
+    public GraphPublishedEdgeSlice listOneHopEdges(List<GraphPublishedNodeId> ids, GraphPublishedEdgeId after) {
         if (ids == null || ids.isEmpty()) {
             return new GraphPublishedEdgeSlice(List.of(), null, false);
         }
-        int effectiveLimit = limit <= 0 ? 20 : limit;
         List<Long> values = ids.stream().map(GraphPublishedNodeIdCodec::toValue).toList();
         List<GraphPublishedEdge> edges =
-                mapper.listIncidentEdges(values, GraphPublishedEdgeIdCodec.toValue(after), effectiveLimit + 1).stream()
+                mapper
+                        .listOneHopEdges(values, GraphPublishedEdgeIdCodec.toValue(after), ONE_HOP_EDGE_BATCH_SIZE + 1)
+                        .stream()
                         .map(GraphPersistenceAssembler::toDomain)
                         .toList();
-        boolean truncated = edges.size() > effectiveLimit;
-        List<GraphPublishedEdge> page = truncated ? edges.subList(0, effectiveLimit) : edges;
+        boolean truncated = edges.size() > ONE_HOP_EDGE_BATCH_SIZE;
+        List<GraphPublishedEdge> page = truncated ? edges.subList(0, ONE_HOP_EDGE_BATCH_SIZE) : edges;
         return new GraphPublishedEdgeSlice(
                 page, truncated ? page.get(page.size() - 1).getId() : null, truncated);
     }

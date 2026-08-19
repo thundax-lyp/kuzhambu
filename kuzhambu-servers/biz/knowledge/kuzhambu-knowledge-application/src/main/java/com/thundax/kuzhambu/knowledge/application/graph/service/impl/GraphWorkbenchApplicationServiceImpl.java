@@ -4,10 +4,10 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
-import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphOneHopEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
-import com.thundax.kuzhambu.knowledge.application.graph.result.GraphIncidentEdgesResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphOneHopEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphQualityResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphRecentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphSearchResult;
@@ -34,7 +34,6 @@ import org.springframework.stereotype.Service;
 public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchApplicationService {
 
     private static final int RECENT_EDGE_LIMIT = 200;
-    private static final int LOCAL_GRAPH_NODE_LIMIT = 200;
     private static final int QUALITY_SAMPLE_LIMIT = 100;
     private static final String ISSUE_TYPE_ISOLATED_NODE = "ISOLATED_NODE";
     private static final String ISSUE_TYPE_MISSING_CORE_RELATION = "MISSING_CORE_RELATION";
@@ -96,13 +95,18 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
     }
 
     @Override
-    public GraphIncidentEdgesResult listIncidentEdges(GraphIncidentEdgesQuery query, PageQuery pageQuery) {
-        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
-        effectivePage.normalize();
-        List<GraphPublishedNodeId> seedNodeIds = query == null || query.nodeIds() == null ? List.of() : query.nodeIds();
-        GraphPublishedEdgeSlice edgeSlice = edgeRepository.listIncidentEdges(
-                seedNodeIds, query == null ? null : query.afterEdgeId(), effectivePage.getPageSize());
-        return GraphApplicationAssembler.toIncidentEdgesResult(localGraphNodes(seedNodeIds, edgeSlice), edgeSlice);
+    public GraphOneHopEdgesResult listOneHopEdges(GraphOneHopEdgesQuery query) {
+        List<GraphPublishedNodeId> nodeIds = query == null || query.nodeIds() == null ? List.of() : query.nodeIds();
+        GraphPublishedEdgeSlice edgeSlice =
+                edgeRepository.listOneHopEdges(nodeIds, query == null ? null : query.afterEdgeId());
+        List<GraphPublishedEdge> edges = edgeSlice == null ? List.of() : edgeSlice.edges();
+        Map<GraphPublishedNodeId, GraphPublishedNode> nodesById = activeNodesById(edges);
+        List<GraphPublishedEdge> acceptedEdges = edgesWithActiveEndpoints(edges, nodesById);
+        return new GraphOneHopEdgesResult(
+                edgeNodeIds(acceptedEdges).stream().map(nodesById::get).toList(),
+                acceptedEdges,
+                edgeSlice.nextCursor(),
+                edgeSlice.truncated());
     }
 
     @Override
@@ -147,19 +151,22 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
                 snapshot.missingCoreRelationNodes());
     }
 
-    private List<GraphPublishedNode> localGraphNodes(
-            List<GraphPublishedNodeId> seedNodeIds, GraphPublishedEdgeSlice edgeSlice) {
+    private Map<GraphPublishedNodeId, GraphPublishedNode> activeNodesById(List<GraphPublishedEdge> edges) {
         Map<GraphPublishedNodeId, GraphPublishedNode> nodesById = new LinkedHashMap<>();
-        for (GraphPublishedNode node : nodeRepository.listByIds(seedNodeIds)) {
-            putActiveNode(nodesById, node);
-        }
-        for (GraphPublishedNode node : nodeRepository.listByIds(edgeNodeIds(edgeSlice))) {
-            putActiveNode(nodesById, node);
-            if (nodesById.size() >= LOCAL_GRAPH_NODE_LIMIT) {
-                break;
+        for (GraphPublishedNode node : nodeRepository.listByIds(edgeNodeIds(edges))) {
+            if (node != null && node.getStatus() == GraphPublishedStatus.ACTIVE) {
+                nodesById.putIfAbsent(node.getId(), node);
             }
         }
-        return nodesById.values().stream().limit(LOCAL_GRAPH_NODE_LIMIT).toList();
+        return nodesById;
+    }
+
+    private List<GraphPublishedEdge> edgesWithActiveEndpoints(
+            List<GraphPublishedEdge> edges, Map<GraphPublishedNodeId, GraphPublishedNode> nodesById) {
+        return edges.stream()
+                .filter(edge ->
+                        nodesById.containsKey(edge.getSourceNodeId()) && nodesById.containsKey(edge.getTargetNodeId()))
+                .toList();
     }
 
     private List<GraphPublishedNodeId> edgeNodeIds(GraphPublishedEdgeSlice edgeSlice) {
@@ -174,13 +181,5 @@ public class GraphWorkbenchApplicationServiceImpl implements GraphWorkbenchAppli
                 .flatMap(edge -> List.of(edge.getSourceNodeId(), edge.getTargetNodeId()).stream())
                 .distinct()
                 .toList();
-    }
-
-    private void putActiveNode(Map<GraphPublishedNodeId, GraphPublishedNode> nodesById, GraphPublishedNode node) {
-        if (node != null
-                && node.getStatus() == GraphPublishedStatus.ACTIVE
-                && nodesById.size() < LOCAL_GRAPH_NODE_LIMIT) {
-            nodesById.putIfAbsent(node.getId(), node);
-        }
     }
 }

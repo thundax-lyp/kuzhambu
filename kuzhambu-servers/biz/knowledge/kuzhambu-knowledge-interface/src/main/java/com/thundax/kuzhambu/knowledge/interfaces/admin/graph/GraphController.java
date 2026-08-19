@@ -115,7 +115,7 @@ public class GraphController {
                 result.edges().stream().map(GraphInterfaceAssembler::toEdgeData).toList());
     }
 
-    @Operation(summary = "查询图谱邻接关系", description = "knowledge:graph:view")
+    @Operation(summary = "查询图谱工作台一跳关系", description = "knowledge:graph:view")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -124,14 +124,12 @@ public class GraphController {
                 dataTypeClass = String.class),
     })
     @HasPermission("knowledge:graph:view")
-    @SysLogger(value = "图谱邻接关系")
-    @PostMapping("workbench/incident-edges/list")
-    public GraphWorkbenchResponses.IncidentEdgesData incidentEdges(
-            @Valid @RequestBody GraphWorkbenchRequests.IncidentEdgesListRequest request) {
-        var result = workbenchService.listIncidentEdges(
-                GraphInterfaceAssembler.toQuery(request),
-                PageInterfaceAssembler.toPageQuery(null, request.getPageSize()));
-        return new GraphWorkbenchResponses.IncidentEdgesData(
+    @SysLogger(value = "图谱工作台一跳关系")
+    @PostMapping("workbench/one-hop-edges/list")
+    public GraphWorkbenchResponses.OneHopEdgesData oneHopEdges(
+            @Valid @RequestBody GraphWorkbenchRequests.OneHopEdgesListRequest request) {
+        var result = workbenchService.listOneHopEdges(GraphInterfaceAssembler.toQuery(request));
+        return new GraphWorkbenchResponses.OneHopEdgesData(
                 result.nodes().stream().map(GraphInterfaceAssembler::toNodeData).toList(),
                 result.edges().stream().map(GraphInterfaceAssembler::toEdgeData).toList(),
                 result.nextCursor() == null

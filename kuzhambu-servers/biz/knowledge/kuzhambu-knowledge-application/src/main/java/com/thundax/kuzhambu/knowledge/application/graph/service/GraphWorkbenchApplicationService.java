@@ -2,10 +2,10 @@ package com.thundax.kuzhambu.knowledge.application.graph.service;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphOneHopEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphQualityQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphSearchQuery;
-import com.thundax.kuzhambu.knowledge.application.graph.result.GraphIncidentEdgesResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphOneHopEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphQualityResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphRecentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphSearchResult;
@@ -17,7 +17,7 @@ public interface GraphWorkbenchApplicationService {
 
     GraphRecentEdgesResult listRecentEdges();
 
-    GraphIncidentEdgesResult listIncidentEdges(GraphIncidentEdgesQuery query, PageQuery pageQuery);
+    GraphOneHopEdgesResult listOneHopEdges(GraphOneHopEdgesQuery query);
 
     PageResult<GraphSearchResult> search(GraphSearchQuery query, PageQuery pageQuery);
 

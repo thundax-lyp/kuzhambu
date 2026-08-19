@@ -4,7 +4,6 @@ import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphEdgePublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceOperationResult;
-import com.thundax.kuzhambu.knowledge.application.graph.result.GraphIncidentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphNodePublicationPreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphPublicationPreviewResult;
@@ -27,7 +26,6 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.operation.GraphPublicat
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphPublishedSearchHit;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialEdgeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialNodeId;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeSlice;
 import java.util.List;
 import java.util.Map;
 
@@ -150,15 +148,6 @@ public final class GraphApplicationAssembler {
 
     public static GraphSearchResult toSearchResult(GraphPublishedSearchHit hit) {
         return hit == null ? null : new GraphSearchResult(hit.objectType(), hit.node(), hit.edge());
-    }
-
-    public static GraphIncidentEdgesResult toIncidentEdgesResult(
-            List<GraphPublishedNode> nodes, GraphPublishedEdgeSlice edgeSlice) {
-        return new GraphIncidentEdgesResult(
-                safeList(nodes),
-                edgeSlice == null ? List.of() : safeList(edgeSlice.edges()),
-                edgeSlice == null ? null : edgeSlice.nextCursor(),
-                edgeSlice != null && edgeSlice.truncated());
     }
 
     private static List<GraphValidationIssueResult> toIssues(List<GraphPublicationChangeSet.ValidationIssue> issues) {

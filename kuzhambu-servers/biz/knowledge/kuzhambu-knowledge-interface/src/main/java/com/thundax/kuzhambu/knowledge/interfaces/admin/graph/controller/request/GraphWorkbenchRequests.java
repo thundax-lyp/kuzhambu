@@ -3,8 +3,6 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -32,20 +30,17 @@ public final class GraphWorkbenchRequests {
 
     @Getter
     @Setter
-    @Schema(description = "图谱工作台关联边渐进查询请求")
+    @Schema(description = "图谱工作台一跳关系渐进查询请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class IncidentEdgesListRequest {
+    public static class OneHopEdgesListRequest {
 
         @NotEmpty
+        @Size(max = 400)
         private List<@Pattern(regexp = "^\\d+$") String> nodeIds;
 
         @Pattern(regexp = "^\\d+$")
         private String afterEdgeId;
-
-        @Min(1)
-        @Max(200)
-        private Integer pageSize;
     }
 
     @Getter

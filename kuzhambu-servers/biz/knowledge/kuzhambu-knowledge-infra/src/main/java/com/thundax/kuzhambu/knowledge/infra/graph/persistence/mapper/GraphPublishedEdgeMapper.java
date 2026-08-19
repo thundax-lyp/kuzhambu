@@ -52,7 +52,7 @@ public interface GraphPublishedEdgeMapper extends BaseMapper<GraphPublishedEdgeD
             limit #{limit}
             </script>
             """)
-    List<GraphPublishedEdgeDO> listIncidentEdges(
+    List<GraphPublishedEdgeDO> listOneHopEdges(
             @Param("nodeIds") List<Long> nodeIds, @Param("afterEdgeId") Long afterEdgeId, @Param("limit") int limit);
 
     @Update(

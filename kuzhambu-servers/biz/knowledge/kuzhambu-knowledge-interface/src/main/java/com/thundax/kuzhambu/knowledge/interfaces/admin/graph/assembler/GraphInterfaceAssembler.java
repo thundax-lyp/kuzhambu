@@ -35,7 +35,6 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublishedNo
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphWithdrawalCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphBatchWithdrawalPreviewQuery;
-import com.thundax.kuzhambu.knowledge.application.graph.query.GraphIncidentEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionChangeQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialDeletionTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialImportQuery;
@@ -44,6 +43,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeM
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialNodeSplitQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialTreeQuery;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphOneHopEdgesQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublicationPreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedAdjacencyQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphPublishedEdgeDeleteQuery;
@@ -1126,9 +1126,9 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
-    public static GraphIncidentEdgesQuery toQuery(@NonNull GraphWorkbenchRequests.IncidentEdgesListRequest request) {
+    public static GraphOneHopEdgesQuery toQuery(@NonNull GraphWorkbenchRequests.OneHopEdgesListRequest request) {
         Objects.requireNonNull(request, "request");
-        return new GraphIncidentEdgesQuery(
+        return new GraphOneHopEdgesQuery(
                 request.getNodeIds().stream()
                         .map(Long::valueOf)
                         .map(GraphPublishedNodeIdCodec::toDomain)

@@ -27,7 +27,7 @@ public final class GraphWorkbenchResponses {
             List<GraphPublishedResponses.NodeData> nodes, List<GraphPublishedResponses.EdgeData> edges) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
-    public record IncidentEdgesData(
+    public record OneHopEdgesData(
             List<GraphPublishedResponses.NodeData> nodes,
             List<GraphPublishedResponses.EdgeData> edges,
             String nextCursor,

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSchemaResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphOneHopEdgesQuery;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEdge;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphNodeType;
@@ -16,6 +17,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphPublishedSta
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.readmodel.GraphWorkbenchOverviewSnapshot;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeId;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedEdgeSlice;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphPublishedNodeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdgeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeRepository;
@@ -50,6 +52,32 @@ class GraphWorkbenchApplicationServiceImplTest {
         assertThat(result.edges()).containsExactly(first, second);
         assertThat(result.nodes()).extracting(node -> node.getId().value()).containsExactly(1L, 2L, 3L);
         verify(edgeRepository).listRecentlyUpdated(200);
+    }
+
+    @Test
+    void listOneHopEdgesShouldReturnAFixedRepositoryBatchWithoutIsolatedNodes() {
+        GraphPublishedNodeRepository nodeRepository = mock(GraphPublishedNodeRepository.class);
+        GraphPublishedEdgeRepository edgeRepository = mock(GraphPublishedEdgeRepository.class);
+        GraphPublishedEdge edge = edge(101L, 1L, 2L);
+        List<GraphPublishedNodeId> nodeIds = List.of(new GraphPublishedNodeId(1L));
+        when(edgeRepository.listOneHopEdges(nodeIds, null))
+                .thenReturn(new GraphPublishedEdgeSlice(List.of(edge), null, false));
+        when(nodeRepository.listByIds(List.of(new GraphPublishedNodeId(1L), new GraphPublishedNodeId(2L))))
+                .thenReturn(List.of(node(1L), node(2L)));
+
+        var result = service(
+                        mock(GraphWorkbenchRepository.class),
+                        nodeRepository,
+                        edgeRepository,
+                        mock(GraphSchemaResolver.class),
+                        mock(GraphWorkbenchSnapshotStore.class))
+                .listOneHopEdges(new GraphOneHopEdgesQuery(nodeIds, null));
+
+        assertThat(result.edges()).containsExactly(edge);
+        assertThat(result.nodes()).extracting(node -> node.getId().value()).containsExactly(1L, 2L);
+        assertThat(result.truncated()).isFalse();
+        assertThat(result.nextCursor()).isNull();
+        verify(edgeRepository).listOneHopEdges(nodeIds, null);
     }
 
     @Test
