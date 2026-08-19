@@ -8,14 +8,6 @@
 
 ## 当前任务项
 
-- [ ] `知识图谱工作台快照存储`：建立 Redis 概览读模型边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`
-    - 范围对象：`GraphWorkbenchOverviewSnapshot.java`、`GraphWorkbenchOverviewCacheDTO.java`、`GraphWorkbenchSnapshotStore.java`、`RedisGraphWorkbenchSnapshotStore.java`
-    - 处理动作：实现 REMOTE JetCache 快照序列化、读取、替换和 token 锁。
-    - 验收点：缓存 DTO 与 snapshot 字段一一对应；锁只能由持有 token 释放；不存在本地缓存或工作台专属 TTL 配置。
-    - 重要度：9/10
-
 - [ ] `知识图谱工作台刷新器`：以指纹重建 Redis 概览
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-GRAPH-WORKBENCH-READ-ONLY-ATLAS.md`

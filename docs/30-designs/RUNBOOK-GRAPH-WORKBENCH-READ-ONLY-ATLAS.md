@@ -260,8 +260,8 @@ public interface GraphWorkbenchOverviewSource {
 public interface GraphWorkbenchSnapshotStore {
     Optional<GraphWorkbenchOverviewSnapshot> get();
     void replace(GraphWorkbenchOverviewSnapshot snapshot);
-    Optional<String> tryLock();
-    void unlock(String token);
+    Optional<String> getByLock();
+    void deleteByLockToken(String token);
 }
 
 public interface GraphWorkbenchSnapshotRefresher {
@@ -277,7 +277,7 @@ public interface GraphWorkbenchApplicationService {
 
 `GraphRecentEdgesResult` 的边必须全部为 `ACTIVE`，按 `modified_at DESC, id DESC` 排序，最多 200 条；`nodes` 必须恰好是这些边 source/target 的去重端点。`GraphOneHopEdgesResult.nodes` 必须至少包含其 `edges` 的所有端点，不能返回孤立节点。`truncated=true` 时 `nextCursor` 必须非空；否则这是接口错误。
 
-`tryLock()` 返回空值代表其他实例持锁，调用方直接结束本轮刷新；返回 token 才可 `replace()`，并且只能用同一 token 调用 `unlock()`。`GraphWorkbenchRefreshReason` 只允许 `STARTUP`、`FINGERPRINT_CHANGED`、`CACHE_MISSING`、`TOKEN_EXPIRING` 四个值。`GraphWorkbenchApplicationService.getOverview()` 只能调用 `GraphWorkbenchSnapshotStore.get()`；正式数据聚合只能由 `GraphWorkbenchOverviewSource.load()` 触发。
+`getByLock()` 返回空值代表其他实例持锁，调用方直接结束本轮刷新；返回 token 才可 `replace()`，并且只能用同一 token 调用 `deleteByLockToken()`。`GraphWorkbenchRefreshReason` 只允许 `STARTUP`、`FINGERPRINT_CHANGED`、`CACHE_MISSING`、`TOKEN_EXPIRING` 四个值。`GraphWorkbenchApplicationService.getOverview()` 只能调用 `GraphWorkbenchSnapshotStore.get()`；正式数据聚合只能由 `GraphWorkbenchOverviewSource.load()` 触发。
 
 ### Backend file map
 
@@ -289,7 +289,7 @@ public interface GraphWorkbenchApplicationService {
 | `.../application/graph/query/GraphOneHopEdgesQuery.java` | 新增 | 一跳边的固定端点集合与游标 |
 | `.../application/graph/result/GraphOneHopEdgesResult.java` | 新增 | 一跳边批次结果 |
 | `.../application/graph/service/GraphWorkbenchOverviewSource.java` | 新增 | `load()` 聚合正式概览，`getFingerprint()` 读取轻量指纹 |
-| `.../application/graph/service/GraphWorkbenchSnapshotStore.java` | 新增 | `get()`、`replace(snapshot)`、`tryLock()`、`unlock(token)`；只处理 Redis 快照与锁 |
+| `.../domain/graph/repository/GraphWorkbenchSnapshotStore.java` | 新增 | Redis 快照与锁的领域端口：`get()`、`replace(snapshot)`、`getByLock()`、`deleteByLockToken(token)` |
 | `.../application/graph/service/GraphWorkbenchSnapshotRefresher.java` | 新增 | `refreshIfRequired(reason)`：唯一执行指纹判断、加锁、聚合和写快照的应用服务 |
 | `.../application/graph/service/GraphWorkbenchRefreshReason.java` | 新增 | `STARTUP`、`FINGERPRINT_CHANGED`、`CACHE_MISSING`、`TOKEN_EXPIRING` 枚举 |
 | `.../application/graph/scheduler/GraphWorkbenchSnapshotScheduler.java` | 新增 | `ApplicationReadyEvent` 预热与 `@Scheduled(fixedDelay = 30_000L)`；只调用 refresher |
@@ -344,14 +344,14 @@ GraphWorkbenchOverviewCacheDTO
 ActivityCacheDTO
   type: String
   contentType: String | null
-  contentRefId: String | null
+  contentRefId: Long | null
   occurredAt: Instant
   summary: String
 ```
 
 缓存名称固定为 `KuzhambuCacheNames.PREFIX + "knowledge.graph.workbench.overview.v1"`，使用 JetCache `CacheType.REMOTE`，禁止 `BOTH`，以免多实例节点各自保留不一致的本地统计。过期、序列化和 Redis 连接策略沿用全局 JetCache 基线；工作台不定义独立 TTL 或刷新提前量。
 
-Redis 另保留一个不包含业务数据的互斥键：`_KUZHAMBU_knowledge.graph.workbench.refresh-lock.v1`。锁租约 30 秒，必须使用原子 `SET NX PX` 语义；持锁实例完成或失败后仅删除自己持有的锁值，禁止无条件删除其他实例的锁。
+Redis 另保留一个不包含业务数据的互斥键：`_KUZHAMBU_knowledge.graph.workbench.refresh-lock.v1`。锁租约 30 秒，使用 JetCache `CacheType.REMOTE` 的 `tryLock(key, lease, TimeUnit.SECONDS)` 获取；其远端实现必须保持原子获取与租约语义，禁止退化为“先读锁、再写锁”。持锁实例完成或失败后仅以自己取得的 token 释放锁，禁止无条件删除其他实例的锁。
 
 ### 画布响应结构
 
