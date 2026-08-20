@@ -93,7 +93,9 @@ class GraphPublicationExecutorTest {
         when(fixture.graphLoader.require(fixture.ref))
                 .thenReturn(GraphMaterialGraph.of(material, List.of(materialNode), List.of()));
         when(fixture.materialRepository.getByContentRef(fixture.ref)).thenReturn(statusMaterial);
-        when(fixture.materialRepository.updateIfLockVersion(statusMaterial, 0L)).thenReturn(1);
+        when(fixture.materialRepository.updateIfLockVersion(
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong()))
+                .thenReturn(1);
         when(fixture.nodeRepository.getByNodeKey(fixture.nodeKey)).thenReturn(publishedNode);
         when(fixture.nodeRepository.getById(publishedNode.getId())).thenReturn(publishedNode);
         when(fixture.previewTokenRepository.getByToken("preview-token"))
