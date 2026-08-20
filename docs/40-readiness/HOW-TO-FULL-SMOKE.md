@@ -10,6 +10,8 @@ RUNBOOK。验收标准以
 
 - Docker、Docker Compose、`curl`、`jq`、Node.js 已安装。
 - `deploy/.env`、`deploy/fastgpt/.env` 已按目标环境配置，且不提交凭据。
+- 若使用离线 image archives，已在 build host 生成本次代码对应的业务镜像，并在 deploy host load 后
+  强制重建受影响服务；`docker load` 本身不会更新既有容器。
 - admin-web 依赖已安装，以便 smoke 账户按正式 SM2 登录流程取得 token。
 - Sancai Portal 列表/详情接口、图谱 Portal 接口及受控图谱提取输出已经部署；缺任一接口时
   full smoke 必须失败，不可降级为静态页面检查。王圻与明代习俗的内容 Portal 列表/详情暂不验收。
@@ -32,6 +34,18 @@ scripts/smoke/verify-full-smoke-evidence.sh build/full-smoke/evidence.json
 ```
 
 只有该命令成功，才可接受 `Docker full smoke passed`。
+
+## Incremental image rollout
+
+生产或回归 Docker 环境更新业务镜像时，先以标准镜像归档交付，再重建服务。以下示例仅更新 Workers：
+
+```sh
+scripts/smoke/load-image-files.sh deploy/image-files
+scripts/deploy/recreate-image-services.sh --env deploy/.env workers
+```
+
+脚本会输出运行容器的 image ID；将其与构建产物记录一起保存。随后执行与本次变更相符的 smoke。
+不要用 `docker cp` 或 `docker commit` 代替正式交付；这类操作无法提供可复现的镜像来源。
 
 ## Evidence contract
 
@@ -68,6 +82,10 @@ ID、step、lastStatus、reason、waitedSeconds 和 deadlineSeconds。
 
 - evidence 校验失败：保留 evidence 和容器日志；按脚本提示定位缺失或不相等集合。
 - job 或 extraction 超时：记录最后状态与 deadline；不要直接改数据库、ES、FastGPT 或图谱表。
+- 图谱任务 `WORKER_STREAM` 失败：先检查 Workers 容器是否已从本次镜像重建，再检查 provider SSE
+  兼容性；不要以 HTTP 200 代替最终事件校验。
+- 图谱任务 `OUTPUT_FORMAT_FAILURE` 或“模型输出不是合法 JSON”：保留脱敏失败原因和任务 ID，修复
+  模型结构化输出后用新任务验证；不得放宽图谱 JSON schema 或修改失败任务状态来通过冒烟。
 - Portal 失败：确认请求没有管理端 token/Cookie，再检查 Discovery 的 READY 文档和版本。
 - publication job 失败：保留 job 的失败步骤和原因；本冒烟不对 FastGPT 作独立探测。
 

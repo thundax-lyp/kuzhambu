@@ -215,6 +215,7 @@ step "checking health endpoints"
 nginx_port="$(env_value "${KUZHAMBU_ENV_FILE}" NGINX_HTTP_PORT 8080)"
 wait_http_ok "http://127.0.0.1:${nginx_port}/kuzhambu-admin-api/actuator/health" "admin health" 90
 wait_http_ok "http://127.0.0.1:${nginx_port}/kuzhambu-api/actuator/health" "portal health" 90
+wait_http_ok "http://127.0.0.1:${nginx_port}/internal/workers/health" "workers health" 90
 
 step "checking portal static route"
 wait_http_ok "http://127.0.0.1:${nginx_port}/kuzhambu/" "portal web" 30

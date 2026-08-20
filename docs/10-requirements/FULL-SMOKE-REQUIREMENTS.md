@@ -26,6 +26,8 @@ scripts/import-seed-data.sh --rebuild --include-test
 - Elasticsearch、RocketMQ、workers、admin publication runtime、Knowledge → AI 异步 runtime、
   Sancai 公开 Portal 列表/详情接口及图谱 Portal 接口均已就绪。任一项未就绪，运行必须失败并说明
   缺失项。
+- Workers 健康检查必须经 Nginx 的 `/internal/workers/health` 通过。冒烟启动的容器必须在本次
+  image load/build 后创建；仅替换 Docker image tag 而复用旧容器不满足本要求。
 - Portal 校验请求不得带 `Access-Token`、Cookie 或任何管理员凭据。
 - 入口在启动时生成唯一 `smokeRunId`。正式 API 执行器只能在本次运行后创建 evidence JSON，
   并写入相同的 `smokeRunId` 与 `generatedAt`；预先存在的 evidence 文件一律拒绝。证据不得包含
@@ -65,8 +67,10 @@ job 因该下游失败或超时，仍按 publication job 失败处理。
 ### 3. Knowledge graph
 
 对每个已发布 `ContentRef` 创建一个图谱提取任务，并以该任务作为此素材唯一的验收任务。任务
-达到 `executionStatus=SUCCEEDED` 后，若 `disposition=PENDING`，用正式 candidate apply API 采纳；
-结果只能是 `ADOPTED_MERGE` 或 `ADOPTED_REPLACE`。重试是同一验收任务；重新生成的
+达到 `executionStatus=SUCCEEDED` 的前提是 Workers 流式调用完成，且最终 payload 通过该任务的
+JSON 输出 schema；`WORKER_STREAM`、`WORKER_RESULT`、`OUTPUT_FORMAT_FAILURE` 或非 JSON 模型输出
+均为失败，不得因 HTTP 200、容器健康或存在候选记录而通过。若 `disposition=PENDING`，用正式
+candidate apply API 采纳；结果只能是 `ADOPTED_MERGE` 或 `ADOPTED_REPLACE`。重试是同一验收任务；重新生成的
 `SUPERSEDED` 历史任务不参与计数，也不得重新采纳。
 
 每份素材的采纳后草稿图必须非空且通过发布预览。预览有 `BLOCKING` issue 或需要人工决策的
