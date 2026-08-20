@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.RecordAiBatchJobFa
 import com.thundax.kuzhambu.ai.application.invocation.query.AiBatchJobsQuery;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractionCommand;
-import com.thundax.kuzhambu.ai.application.scenario.configure.AiRefinementExecutorConfiguration;
+import com.thundax.kuzhambu.ai.application.scenario.configure.KnowledgeGraphExtractionExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.scenario.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeGraphExtractionTaskApplicationService;
@@ -61,7 +61,7 @@ public class KnowledgeGraphExtractionTaskApplicationServiceImpl
             AiBatchJobApplicationService aiBatchJobApplicationService,
             KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
             KnowledgeAiExtractionSnapshotResolver snapshotResolver,
-            @Qualifier(AiRefinementExecutorConfiguration.TASK_EXECUTOR) Executor taskExecutor) {
+            @Qualifier(KnowledgeGraphExtractionExecutorConfiguration.TASK_EXECUTOR) Executor taskExecutor) {
         this.aiBatchJobApplicationService = aiBatchJobApplicationService;
         this.knowledgeAiExtractionApplicationService = knowledgeAiExtractionApplicationService;
         this.snapshotResolver = snapshotResolver;

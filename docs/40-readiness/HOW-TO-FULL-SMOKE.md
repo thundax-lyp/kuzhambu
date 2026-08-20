@@ -83,7 +83,7 @@ ID、step、lastStatus、reason、waitedSeconds 和 deadlineSeconds。
 - evidence 校验失败：保留 evidence 和容器日志；按脚本提示定位缺失或不相等集合。
 - job 或 extraction 超时：记录最后状态与 deadline；不要直接改数据库、ES、FastGPT 或图谱表。
 - 图谱任务 `WORKER_STREAM` 失败：先检查 Workers 容器是否已从本次镜像重建，再检查 provider SSE
-  兼容性；不要以 HTTP 200 代替最终事件校验。
+  兼容性和 `KUZHAMBU_KNOWLEDGE_GRAPH_EXECUTOR_*` 的限流配置；不要以 HTTP 200 代替最终事件校验。
 - 图谱任务 `OUTPUT_FORMAT_FAILURE` 或“模型输出不是合法 JSON”：保留脱敏失败原因和任务 ID，修复
   模型结构化输出后用新任务验证；不得放宽图谱 JSON schema 或修改失败任务状态来通过冒烟。
 - Portal 失败：确认请求没有管理端 token/Cookie，再检查 Discovery 的 READY 文档和版本。

@@ -43,16 +43,8 @@ def requires_structured_output(request: AiInvokeRequest) -> bool:
 def openai_response_format(request: AiInvokeRequest) -> dict[str, Any] | None:
     if not requires_structured_output(request):
         return None
-    if request.outputSchema.schema_ is not None:
-        return {
-            "type": "json_schema",
-            "json_schema": {
-                "name": _response_schema_name(request),
-                "schema": request.outputSchema.schema_,
-            },
-        }
+    # "OpenAI-compatible" is not a promise that the provider implements the
+    # newer json_schema extension. The Java boundary validates outputSchema
+    # after parsing, so json_object preserves the contract for every compatible
+    # provider while avoiding an unsupported provider-side extension.
     return {"type": "json_object"}
-
-
-def _response_schema_name(request: AiInvokeRequest) -> str:
-    return f"{request.scope}_{request.capability.value}_{request.operation}".lower()

@@ -545,6 +545,8 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
 - HTTP 连接中断但未收到 `completed` 时，AI 域必须按失败或部分失败处理。
 - `error` 事件后 workers 应结束流；如无法发送 `error`，AI 域按连接中断处理。
 - Java AI 域到 workers、workers 到模型供应商的两段流式链路均按同一规则处理：每次收到 SSE 数据后重置 30 秒空闲计时；任一链路累计执行达到 300 秒时，以 `WORKER_TIMEOUT` 结束。
+- 对 OpenAI-compatible 模型，结构化输出只协商 `response_format: {"type":"json_object"}`。不能假设
+  兼容实现支持 `json_schema`；Java AI 域在解析后仍按本次请求的 `outputSchema` 做最终校验。
 
 ## Error Types
 

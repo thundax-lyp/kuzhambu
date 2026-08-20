@@ -19,7 +19,7 @@ def test_structured_capability_requires_json_response_format() -> None:
     assert openai_response_format(request) == {"type": "json_object"}
 
 
-def test_schema_output_requests_json_schema_response_format() -> None:
+def test_schema_output_requests_compatible_json_response_format() -> None:
     payload = _request_payload("tags")
     payload["outputSchema"] = {
         "type": "object",
@@ -28,17 +28,7 @@ def test_schema_output_requests_json_schema_response_format() -> None:
     }
     request = AiInvokeRequest.model_validate(payload)
 
-    assert openai_response_format(request) == {
-        "type": "json_schema",
-        "json_schema": {
-            "name": "sancai_tags_test",
-            "schema": {
-                "type": "object",
-                "properties": {"tags": {"type": "array", "items": {"type": "string"}}},
-                "required": ["tags"],
-            },
-        },
-    }
+    assert openai_response_format(request) == {"type": "json_object"}
 
 
 def test_force_json_requires_json_response_format() -> None:
