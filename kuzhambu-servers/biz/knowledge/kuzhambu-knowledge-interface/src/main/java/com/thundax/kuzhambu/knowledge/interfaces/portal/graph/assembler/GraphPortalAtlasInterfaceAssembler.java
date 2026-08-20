@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedEd
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphPublishedNode;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.graph.controller.request.GraphPortalAtlasRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.graph.controller.response.GraphPortalAtlasResponses;
+import java.util.Objects;
 import org.springframework.lang.NonNull;
 
 public final class GraphPortalAtlasInterfaceAssembler {
@@ -14,6 +15,7 @@ public final class GraphPortalAtlasInterfaceAssembler {
 
     @NonNull
     public static GraphOneHopEdgesQuery toQuery(@NonNull GraphPortalAtlasRequests.OneHopEdgesListRequest request) {
+        Objects.requireNonNull(request, "request");
         return new GraphOneHopEdgesQuery(
                 request.getNodeIds().stream()
                         .map(Long::valueOf)
@@ -25,6 +27,7 @@ public final class GraphPortalAtlasInterfaceAssembler {
 
     @NonNull
     public static GraphPortalAtlasResponses.NodeData toNodeData(@NonNull GraphPublishedNode value) {
+        Objects.requireNonNull(value, "value");
         return new GraphPortalAtlasResponses.NodeData(
                 String.valueOf(GraphPublishedNodeIdCodec.toValue(value.getId())),
                 value.getNodeType().name(),
@@ -33,6 +36,7 @@ public final class GraphPortalAtlasInterfaceAssembler {
 
     @NonNull
     public static GraphPortalAtlasResponses.EdgeData toEdgeData(@NonNull GraphPublishedEdge value) {
+        Objects.requireNonNull(value, "value");
         return new GraphPortalAtlasResponses.EdgeData(
                 String.valueOf(GraphPublishedEdgeIdCodec.toValue(value.getId())),
                 String.valueOf(GraphPublishedNodeIdCodec.toValue(value.getSourceNodeId())),
