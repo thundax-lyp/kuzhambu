@@ -166,7 +166,7 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
-    public int deleteById(GraphExtractionTaskId id) {
-        return mapper.deleteById(GraphExtractionTaskIdCodec.toValue(id));
+    public int deleteByIdAndLockVersion(GraphExtractionTaskId id, long expectedLockVersion) {
+        return mapper.deleteByIdAndLockVersion(GraphExtractionTaskIdCodec.toValue(id), expectedLockVersion);
     }
 }

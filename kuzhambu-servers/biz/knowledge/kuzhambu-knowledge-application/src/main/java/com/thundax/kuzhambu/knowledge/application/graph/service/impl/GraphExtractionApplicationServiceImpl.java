@@ -48,12 +48,14 @@ import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionA
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTaskDeleteReceipt;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.operator.GraphExtractionTaskOperator;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskDeleteReceiptRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialRepository;
 import java.time.Clock;
@@ -84,6 +86,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     private final GraphDocumentMerger documentMerger;
     private final GraphMaterialRepository materialRepository;
     private final GraphExtractionTaskRepository taskRepository;
+    private final GraphExtractionTaskDeleteReceiptRepository taskDeleteReceiptRepository;
     private final GraphExtractionTaskOperator taskOperator;
     private final GraphTaskCandidateResolver candidateResolver;
     private final TransactionTemplate batchItemTransactionTemplate;
@@ -101,6 +104,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             GraphDocumentMerger documentMerger,
             GraphMaterialRepository materialRepository,
             GraphExtractionTaskRepository taskRepository,
+            GraphExtractionTaskDeleteReceiptRepository taskDeleteReceiptRepository,
             GraphExtractionTaskOperator taskOperator,
             GraphTaskCandidateResolver candidateResolver,
             PlatformTransactionManager transactionManager) {
@@ -115,6 +119,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         this.documentMerger = documentMerger;
         this.materialRepository = materialRepository;
         this.taskRepository = taskRepository;
+        this.taskDeleteReceiptRepository = taskDeleteReceiptRepository;
         this.taskOperator = taskOperator;
         this.candidateResolver = candidateResolver;
         this.batchItemTransactionTemplate = new TransactionTemplate(transactionManager);
@@ -271,29 +276,50 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     @Override
     @Transactional
     public GraphExtractionTaskDeleteResult deleteTask(GraphExtractionDeleteCommand command) {
-        GraphExtractionTask task =
-                requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
+        requireIdempotencyKey(command == null ? null : command.idempotencyKey());
+        GraphExtractionTaskDeleteReceipt existingReceipt =
+                taskDeleteReceiptRepository.getByIdempotencyKey(command.idempotencyKey());
+        if (existingReceipt != null) {
+            return toDeleteResult(existingReceipt);
+        }
+        GraphExtractionTask task = requireVersionedTask(command.taskId(), command.taskLockVersion());
         requireExpectedStatus(task, command.expectedExecutionStatus());
-        requireIdempotencyKey(command.idempotencyKey());
         if (!task.canDelete()) {
             throw new BizException(
                     "GRAPH_TASK_STATE_CONFLICT",
                     "graph.task.state-conflict",
                     "Graph extraction task must be terminal and have no pending candidate before deletion");
         }
-        if (task.getCandidateId() != null) {
-            aiFacade.cleanupKnowledgeGraphCandidate(CleanupKnowledgeGraphCandidateFacadeRequest.builder()
-                    .candidateId(task.getCandidateId())
-                    .build());
+        GraphExtractionTaskDeleteReceipt receipt =
+                new GraphExtractionTaskDeleteReceipt(command.idempotencyKey(), task.getId(), Instant.now(clock));
+        if (!taskDeleteReceiptRepository.insert(receipt)) {
+            GraphExtractionTaskDeleteReceipt claimedReceipt =
+                    taskDeleteReceiptRepository.getByIdempotencyKeyForUpdate(command.idempotencyKey());
+            if (claimedReceipt != null) {
+                return toDeleteResult(claimedReceipt);
+            }
+            throw new BizException(
+                    "GRAPH_TASK_DELETE_RECEIPT_CONFLICT",
+                    "graph.task.delete-receipt-conflict",
+                    "Graph extraction task deletion receipt could not be claimed");
         }
-        if (taskRepository.deleteById(task.getId()) != 1) {
+        if (taskRepository.deleteByIdAndLockVersion(task.getId(), command.taskLockVersion()) != 1) {
             throw new BizException(
                     "GRAPH_TASK_LOCK_CONFLICT",
                     "graph.task.lock-conflict",
                     "Graph extraction task could not be deleted");
         }
+        if (task.getCandidateId() != null) {
+            aiFacade.cleanupKnowledgeGraphCandidate(CleanupKnowledgeGraphCandidateFacadeRequest.builder()
+                    .candidateId(task.getCandidateId())
+                    .build());
+        }
         statsRefresher.refresh(task.getContentRef());
-        return new GraphExtractionTaskDeleteResult(task.getId().value());
+        return toDeleteResult(receipt);
+    }
+
+    private GraphExtractionTaskDeleteResult toDeleteResult(GraphExtractionTaskDeleteReceipt receipt) {
+        return new GraphExtractionTaskDeleteResult(receipt.getDeletedTaskId().value());
     }
 
     @Override

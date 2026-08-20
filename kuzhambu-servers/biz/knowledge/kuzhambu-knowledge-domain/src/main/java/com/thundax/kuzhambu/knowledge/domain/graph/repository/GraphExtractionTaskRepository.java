@@ -46,5 +46,5 @@ public interface GraphExtractionTaskRepository {
 
     int updateIfLockVersion(GraphExtractionTask task, long expectedLockVersion);
 
-    int deleteById(GraphExtractionTaskId id);
+    int deleteByIdAndLockVersion(GraphExtractionTaskId id, long expectedLockVersion);
 }

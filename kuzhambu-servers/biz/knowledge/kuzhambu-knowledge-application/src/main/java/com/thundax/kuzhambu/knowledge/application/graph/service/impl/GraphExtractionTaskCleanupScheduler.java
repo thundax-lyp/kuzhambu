@@ -75,7 +75,7 @@ public class GraphExtractionTaskCleanupScheduler implements ApplicationListener<
         }
         try {
             cleanupCandidate(task);
-            return taskRepository.deleteById(task.getId()) == 1;
+            return taskRepository.deleteByIdAndLockVersion(task.getId(), task.getLockVersion()) == 1;
         } catch (RuntimeException ex) {
             return false;
         }

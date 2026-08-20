@@ -34,7 +34,8 @@ class GraphExtractionTaskCleanupSchedulerTest {
         AiFacade aiFacade = mock(AiFacade.class);
         GraphExtractionTask task = task(7001L, 9001L);
         when(repository.listPurgeableBefore(NOW, 100)).thenReturn(List.of(task));
-        when(repository.deleteById(new GraphExtractionTaskId(7001L))).thenReturn(1);
+        when(repository.deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L))
+                .thenReturn(1);
         when(aiFacade.cleanupKnowledgeGraphCandidate(any()))
                 .thenReturn(CleanupKnowledgeGraphCandidateFacadeResponse.builder()
                         .candidateId(9001L)
@@ -48,7 +49,7 @@ class GraphExtractionTaskCleanupSchedulerTest {
                 ArgumentCaptor.forClass(CleanupKnowledgeGraphCandidateFacadeRequest.class);
         verify(aiFacade).cleanupKnowledgeGraphCandidate(captor.capture());
         assertThat(captor.getValue().getCandidateId()).isEqualTo(9001L);
-        verify(repository).deleteById(new GraphExtractionTaskId(7001L));
+        verify(repository).deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L);
     }
 
     @Test
@@ -62,7 +63,7 @@ class GraphExtractionTaskCleanupSchedulerTest {
         int count = scheduler(repository, aiFacade).cleanupExpiredTasks();
 
         assertThat(count).isZero();
-        verify(repository, never()).deleteById(any());
+        verify(repository, never()).deleteByIdAndLockVersion(any(), any(Long.class));
     }
 
     @Test
@@ -71,13 +72,14 @@ class GraphExtractionTaskCleanupSchedulerTest {
         AiFacade aiFacade = mock(AiFacade.class);
         GraphExtractionTask task = task(7001L, null);
         when(repository.listPurgeableBefore(NOW, 100)).thenReturn(List.of(task));
-        when(repository.deleteById(new GraphExtractionTaskId(7001L))).thenReturn(1);
+        when(repository.deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L))
+                .thenReturn(1);
 
         int count = scheduler(repository, aiFacade).cleanupExpiredTasks();
 
         assertThat(count).isEqualTo(1);
         verify(aiFacade, never()).cleanupKnowledgeGraphCandidate(any());
-        verify(repository).deleteById(new GraphExtractionTaskId(7001L));
+        verify(repository).deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L);
     }
 
     @Test

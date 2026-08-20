@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,12 +32,14 @@ import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphSnapshotRe
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphTaskCandidateResolver;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTaskDeleteReceipt;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.operator.GraphExtractionTaskOperator;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskDeleteReceiptRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialRepository;
 import java.time.Clock;
@@ -70,6 +73,8 @@ class GraphExtractionApplicationServiceImplTest {
     private final GraphMaterialGraphLoader graphLoader = mock(GraphMaterialGraphLoader.class);
     private final GraphMaterialRepository materialRepository = mock(GraphMaterialRepository.class);
     private final GraphExtractionTaskRepository taskRepository = mock(GraphExtractionTaskRepository.class);
+    private final GraphExtractionTaskDeleteReceiptRepository taskDeleteReceiptRepository =
+            mock(GraphExtractionTaskDeleteReceiptRepository.class);
     private final GraphMaterialStatsRefresher statsRefresher = mock(GraphMaterialStatsRefresher.class);
     private final GraphTaskCandidateResolver candidateResolver = new GraphTaskCandidateResolver(aiFacade);
 
@@ -85,6 +90,7 @@ class GraphExtractionApplicationServiceImplTest {
                     mock(GraphDocumentMerger.class),
                     materialRepository,
                     taskRepository,
+                    taskDeleteReceiptRepository,
                     new GraphExtractionTaskOperator(),
                     candidateResolver,
                     TRANSACTION_MANAGER)
@@ -381,13 +387,26 @@ class GraphExtractionApplicationServiceImplTest {
         GraphExtractionTask task = task(7001L, 11L, ref);
         task.setExecutionStatus(GraphExtractionExecutionStatus.FAILED);
         when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
-        when(taskRepository.deleteById(new GraphExtractionTaskId(7001L))).thenReturn(1);
+        when(taskDeleteReceiptRepository.insert(any())).thenReturn(true);
+        when(taskRepository.deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L))
+                .thenReturn(1);
 
         var result = service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1"));
 
         assertThat(result.deletedTaskId()).isEqualTo(7001L);
-        verify(taskRepository).deleteById(new GraphExtractionTaskId(7001L));
+        verify(taskRepository).deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L);
         verify(statsRefresher).refresh(ref);
+    }
+
+    @Test
+    void shouldReturnPersistedReceiptForRepeatedDeleteRequest() {
+        when(taskDeleteReceiptRepository.getByIdempotencyKey("delete-1"))
+                .thenReturn(new GraphExtractionTaskDeleteReceipt("delete-1", new GraphExtractionTaskId(7001L), NOW));
+
+        var result = service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1"));
+
+        assertThat(result.deletedTaskId()).isEqualTo(7001L);
+        verifyNoInteractions(taskRepository);
     }
 
     private static ContentRef ref(Long id) {

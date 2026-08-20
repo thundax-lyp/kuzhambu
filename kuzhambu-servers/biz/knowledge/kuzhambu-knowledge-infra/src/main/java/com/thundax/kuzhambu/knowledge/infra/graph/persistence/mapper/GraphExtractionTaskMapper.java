@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphEx
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.projection.GraphExtractionTaskWithMaterialProjection;
 import java.time.Instant;
 import java.util.List;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -12,6 +13,9 @@ import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTaskDO> {
+
+    @Delete("delete from knowledge_graph_extraction_task where id = #{id} and lock_version = #{lockVersion}")
+    int deleteByIdAndLockVersion(@Param("id") Long id, @Param("lockVersion") Long lockVersion);
 
     @Select(
             "select * from knowledge_graph_extraction_task where idempotency_key = #{idempotencyKey} order by id asc limit 1")
