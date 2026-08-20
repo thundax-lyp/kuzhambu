@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PortalLayout } from "@/components/portal-layout";
 import { SancaiPage } from "@/pages/classics/sancai/sancai-page";
 import { DiscoveryQaPage } from "@/pages/discovery/qa/qa-page";
@@ -27,6 +27,7 @@ export const App = () => {
             <Routes>
                 <Route element={<PortalLayout />}>
                     <Route path="/" element={<HomePage />} />
+                    <Route path="/knowledge" element={<Navigate replace to="/knowledge/atlas" />} />
                     <Route path="/knowledge/atlas" element={<KnowledgeAtlasPage />} />
                     <Route path="/knowledge/lineage" element={<KnowledgeLineagePage />} />
                     <Route path="/knowledge/quality" element={<KnowledgeQualityPage />} />

@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.portal.graph;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.service.GraphPortalApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.graph.assembler.GraphPortalAtlasInterfaceAssembler;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.graph.controller.request.GraphPortalAtlasRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.graph.controller.response.GraphPortalAtlasResponses;
@@ -18,16 +18,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/api/portal/knowledge/graph/atlas")
 @WrappedApiController
 public class GraphPortalAtlasController {
-    private final GraphWorkbenchApplicationService service;
+    private final GraphPortalApplicationService portalService;
 
-    public GraphPortalAtlasController(GraphWorkbenchApplicationService service) {
-        this.service = service;
+    public GraphPortalAtlasController(GraphPortalApplicationService portalService) {
+        this.portalService = portalService;
     }
 
     @Operation(summary = "查询门户图谱总览", description = "公开访问")
     @PostMapping("overview/get")
     public GraphPortalAtlasResponses.OverviewData overview() {
-        var value = service.getOverview();
+        var value = portalService.getOverview();
         return new GraphPortalAtlasResponses.OverviewData(
                 String.valueOf(value.publishedNodeCount()), String.valueOf(value.publishedEdgeCount()),
                 String.valueOf(value.coveredMaterialCount()), String.valueOf(value.isolatedNodeCount()));
@@ -36,7 +36,7 @@ public class GraphPortalAtlasController {
     @Operation(summary = "查询门户图谱最近关系", description = "公开访问")
     @PostMapping("recent-edges/list")
     public GraphPortalAtlasResponses.GraphData recentEdges() {
-        var value = service.listRecentEdges();
+        var value = portalService.listRecentEdges();
         return new GraphPortalAtlasResponses.GraphData(
                 value.nodes().stream()
                         .map(GraphPortalAtlasInterfaceAssembler::toNodeData)
@@ -50,7 +50,7 @@ public class GraphPortalAtlasController {
     @PostMapping("one-hop-edges/list")
     public GraphPortalAtlasResponses.OneHopEdgesData oneHopEdges(
             @Valid @RequestBody GraphPortalAtlasRequests.OneHopEdgesListRequest request) {
-        var value = service.listOneHopEdges(GraphPortalAtlasInterfaceAssembler.toQuery(request));
+        var value = portalService.listOneHopEdges(GraphPortalAtlasInterfaceAssembler.toQuery(request));
         return new GraphPortalAtlasResponses.OneHopEdgesData(
                 value.nodes().stream()
                         .map(GraphPortalAtlasInterfaceAssembler::toNodeData)
