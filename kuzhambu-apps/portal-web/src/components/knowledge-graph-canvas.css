@@ -1,0 +1,144 @@
+.published-graph-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.published-graph-canvas .react-flow__renderer {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--surface-panel) 96%, transparent),
+        color-mix(in srgb, var(--surface-soft) 92%, transparent)
+    );
+}
+
+.published-graph-canvas .react-flow__node {
+    transition:
+        transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 180ms ease;
+}
+
+.published-graph-canvas .react-flow__edge {
+    transition: opacity 180ms ease;
+}
+
+.published-graph-canvas .react-flow__edge-path {
+    stroke: color-mix(in srgb, var(--accent-blue) 54%, var(--line-strong));
+    stroke-width: 1.25;
+    transition:
+        stroke 180ms ease,
+        stroke-width 180ms ease;
+}
+
+.published-graph-canvas .react-flow__edge.is-dimmed {
+    opacity: 0.12;
+}
+
+.published-graph-node {
+    display: flex;
+    position: relative;
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--accent-blue) 24%, var(--line-subtle));
+    border-radius: 50%;
+    background: var(--surface-panel);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--text-primary) 10%, transparent);
+    color: var(--text-primary);
+}
+
+.published-graph-node strong {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 50%;
+    display: block;
+    width: 76px;
+    max-width: 76px;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+.published-graph-node--person {
+    background: color-mix(in srgb, var(--surface-panel) 76%, #f2d995);
+}
+
+.published-graph-node--place {
+    background: color-mix(in srgb, var(--surface-panel) 74%, #bce2d7);
+}
+
+.published-graph-node--building,
+.published-graph-node--celestial {
+    background: color-mix(in srgb, var(--surface-panel) 74%, #c9d8ef);
+}
+
+.published-graph-node--work {
+    background: color-mix(in srgb, var(--surface-panel) 74%, #d8c9eb);
+}
+
+.published-graph-node--event {
+    background: color-mix(in srgb, var(--surface-panel) 74%, #efc9ba);
+}
+
+.published-graph-node--nature {
+    background: color-mix(in srgb, var(--surface-panel) 74%, #cfdfae);
+}
+
+.published-graph-node.is-selected {
+    border-color: var(--accent-cinnabar);
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--accent-cinnabar) 20%, transparent),
+        0 8px 20px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.published-graph-node.is-matched {
+    border-color: var(--accent-jade);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-jade) 20%, transparent);
+}
+
+.published-graph-node.is-dimmed {
+    opacity: 0.2;
+}
+
+.published-graph-node .react-flow__handle {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.published-graph-edge-label {
+    fill: var(--text-secondary);
+    font-size: 11px;
+    paint-order: stroke;
+    pointer-events: none;
+    stroke: var(--surface-panel);
+    stroke-linejoin: round;
+    stroke-width: 4px;
+}
+
+.published-graph-canvas .react-flow__controls {
+    overflow: hidden;
+    border: 1px solid var(--line-subtle);
+    border-radius: 6px;
+    box-shadow: var(--shadow-soft);
+}
+
+.published-graph-canvas .react-flow__controls-button {
+    border-bottom-color: var(--line-subtle);
+    background: var(--surface-panel);
+    fill: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .published-graph-canvas .react-flow__node,
+    .published-graph-canvas .react-flow__edge-path {
+        transition: none;
+    }
+}

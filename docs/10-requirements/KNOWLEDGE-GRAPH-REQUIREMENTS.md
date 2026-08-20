@@ -15,7 +15,7 @@
 - 当前主干已交付 Admin 的工作台、图谱治理、素材管理和提取任务四个菜单入口，以及素材删除变更和删除任务的直达页面；`knowledge:graph:view` / `knowledge:graph:edit` 已同时用于 HTTP 接口和页面动作。
 - 当前工作台已交付概览、最近关系的渐进只读画布和活动时间线。全局搜索、质量待办交互、门类层导航及从工作台分流到其他页面仍不是当前 Admin 页面已验证的能力。
 - 当前图谱治理已交付发布节点/边 CRUD、来源和操作记录查看、删除影响预览及节点合并；节点拆分和更多接口能力以服务端契约为准，不能仅凭存在路由认定为前端闭环。
-- 当前 Portal 已有 `POST /portal/knowledge/graph/material/get` 后端只读接口，但 Portal Web 尚未消费它；现存 `/knowledge/atlas` 是旧 Portal 图谱入口，不能作为本双空间图谱的端到端验收证据。
+- 当前 Portal 已有 `POST /portal/knowledge/graph/material/get` 后端只读接口，Portal Web 已在三才图会稿件详情的“知识图谱”视图消费该接口；未发布、撤回、删除和不可见素材的真实运行时空状态仍待验收。`/knowledge/atlas` 是独立的总谱预览入口，不能替代单稿件图谱的端到端验收证据。
 - `graph-result`、`refinement` 等旧 Admin 路由仍在代码中保留兼容入口，虽不在当前图谱菜单 seed 内，也不属于本模型的完成证明。
 
 ## Confirmed Product Direction

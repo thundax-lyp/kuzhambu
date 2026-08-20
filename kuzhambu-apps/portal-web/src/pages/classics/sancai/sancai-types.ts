@@ -92,3 +92,33 @@ export interface SancaiEntryQuery {
     pageNo?: number | null;
     pageSize?: number | null;
 }
+
+export interface SancaiGraphContentRef {
+    contentType: string;
+    contentRefId: string;
+}
+
+export interface SancaiGraphNodeRecord {
+    id: string;
+    nodeType: string;
+    name: string;
+    status: string;
+    lockVersion: string;
+}
+
+export interface SancaiGraphEdgeRecord {
+    id: string;
+    sourceNodeId: string;
+    targetNodeId: string;
+    relationType: string;
+    qualifiers: Record<string, unknown>;
+    status: string;
+    lockVersion: string;
+}
+
+export interface SancaiGraphRecord {
+    visible: boolean;
+    contentRef: SancaiGraphContentRef;
+    nodes: SancaiGraphNodeRecord[];
+    edges: SancaiGraphEdgeRecord[];
+}

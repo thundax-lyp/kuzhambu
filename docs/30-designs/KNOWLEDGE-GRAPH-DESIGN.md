@@ -24,7 +24,7 @@
 | Workbench | 概览快照、最近关系、一跳关系和活动时间线；前端按批绘制只读画布。 | Admin 尚未接入搜索、质量待办、门类层导航和对象详情分流。 |
 | Governance | 发布节点/边 CRUD、详情中的来源/操作记录、删除影响预览、节点合并已接通 Admin。 | 不能把服务端的节点拆分或其他接口自动视为对应前端流程已闭环。 |
 | Material and tasks | Classics 可见素材分页、草稿节点/边编辑、抽取、候选处置、发布/撤回和任务重试均有服务端接口；主要素材与任务页面已接通。 | JSON 导入导出、取消/重新抽取和删除流程需以各页面的实际入口及运行时验证确认。 |
-| Portal | `POST /portal/knowledge/graph/material/get` 已实现为按稿件可见性读取的后端接口。 | Portal Web 尚未调用该接口；旧 `/knowledge/atlas` 不属于新图谱 Portal 集成。 |
+| Portal | `POST /portal/knowledge/graph/material/get` 已实现为按稿件可见性读取的后端接口；Portal Web 已从三才图会稿件详情懒加载该接口，并以共享只读画布展示对象和关系。 | 演示数据浏览器流程已验证；未发布、撤回、删除和不可见素材的真实运行时空状态仍待验收。`/knowledge/atlas` 是独立总谱预览，不替代单稿件验收。 |
 
 ## Module Ownership
 
@@ -216,7 +216,7 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 | `/knowledge/graph/deletion-changes` | 删除前快照、用户决策和结果查询。 |
 | `/knowledge/graph/deletion-tasks` | 删除任务创建、进度、失败原因和重试。 |
 
-门户入口已提供只读资源 `POST /portal/knowledge/graph/material/get`：先执行稿件既有内容可见性校验，再按素材状态和有效映射返回该稿件图谱；该资源不暴露发布空间搜索、治理、人工来源或跨素材关系。Portal Web 尚未消费该资源，因此这里是后端边界而非已完成的 Portal 页面设计。
+门户入口已提供只读资源 `POST /portal/knowledge/graph/material/get`：先执行稿件既有内容可见性校验，再按素材状态和有效映射返回该稿件图谱；该资源不暴露发布空间搜索、治理、人工来源或跨素材关系。Portal Web 已在三才图会稿件详情提供“阅读 / 知识图谱”切换，并在首次打开图谱时调用该资源；页面展示对象搜索、只读画布、关系三元组详情以及加载、失败和空状态。
 
 JSON 导入只允许写入未发布素材草稿图。先执行格式和 Schema 校验，返回对象级错误；确认后按照用户选择的 `MERGE` 或 `REPLACE` 执行。下载仅导出当前单素材草稿节点、边、属性、限定字段和 Schema 版本，不导出发布空间、映射、审计或人工治理数据。
 
