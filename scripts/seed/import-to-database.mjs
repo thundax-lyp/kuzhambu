@@ -316,7 +316,22 @@ const planSeedTasks = async (seedFiles) => {
       base.push(...tasks);
     }
   }
-  return [base, knowledge, test];
+  const knowledgeNodes = [];
+  const knowledgeEdgesAndNodeMappings = [];
+  const knowledgeEdgeMappings = [];
+  for (const task of knowledge) {
+    if (task.table === "knowledge_graph_published_edge_material") {
+      knowledgeEdgeMappings.push(task);
+    } else if (
+      task.table === "knowledge_graph_published_edge" ||
+      task.table === "knowledge_graph_published_node_material"
+    ) {
+      knowledgeEdgesAndNodeMappings.push(task);
+    } else {
+      knowledgeNodes.push(task);
+    }
+  }
+  return [base, knowledgeNodes, knowledgeEdgesAndNodeMappings, knowledgeEdgeMappings, test];
 };
 
 const planSeedFile = async (seedFile) => {
