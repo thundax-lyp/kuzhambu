@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 from kuzhambu_workers.schemas.ai import AiCapability, AiInvokeRequest, AiOutputSchema
@@ -21,7 +22,8 @@ def structured_output_instruction(output_schema: AiOutputSchema) -> str | None:
         return None
     if output_schema.schema_ is None:
         return "请返回可解析的 JSON 结构。"
-    return "请严格返回符合 outputSchema.schema 的 JSON 结构。"
+    schema = json.dumps(output_schema.schema_, ensure_ascii=False, separators=(",", ":"))
+    return f"请只返回符合以下 JSON Schema 的 JSON, 不要添加解释或 Markdown: {schema}"
 
 
 def output_schema_payload(output_schema: AiOutputSchema) -> dict[str, Any]:

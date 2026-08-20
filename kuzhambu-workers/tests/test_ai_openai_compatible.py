@@ -30,6 +30,26 @@ def test_build_chat_completion_request_uses_model_config_and_prompt_messages() -
     assert chat_request.parameters == {"temperature": 0.2}
 
 
+def test_build_chat_completion_request_includes_structured_schema_instruction() -> None:
+    payload = _request_payload()
+    payload["outputSchema"] = {
+        "type": "object",
+        "properties": {"schemaVersion": {"type": "string"}},
+        "required": ["schemaVersion"],
+    }
+    request = AiInvokeRequest.model_validate(payload)
+
+    chat_request = build_chat_completion_request(request, stream=False)
+
+    assert chat_request.messages[0]["role"] == "system"
+    instruction = chat_request.messages[0]["content"]
+    schema_json = instruction.removeprefix(
+        "请只返回符合以下 JSON Schema 的 JSON, 不要添加解释或 Markdown: "
+    )
+    assert json.loads(schema_json) == payload["outputSchema"]
+    assert chat_request.response_format == {"type": "json_object"}
+
+
 def test_invoke_chat_completion_posts_openai_compatible_request() -> None:
     captured: dict[str, object] = {}
 
