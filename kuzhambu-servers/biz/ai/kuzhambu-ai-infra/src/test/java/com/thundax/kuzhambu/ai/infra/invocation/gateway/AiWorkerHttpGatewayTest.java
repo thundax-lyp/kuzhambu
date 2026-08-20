@@ -362,7 +362,7 @@ class AiWorkerHttpGatewayTest {
             exchange.close();
         });
         AiWorkerGatewayProperties properties = properties();
-        properties.setTimeoutMs(150);
+        properties.setStreamIdleTimeoutMs(150);
         AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties, new AiWorkerRequestSigner(), null);
         List<AiStreamEventResult> events = new ArrayList<>();
 

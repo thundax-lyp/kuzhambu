@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -137,7 +138,7 @@ public class KnowledgeGraphExtractionTaskApplicationServiceImpl
     }
 
     private void scheduleGraphExecution(KnowledgeAiExtractionCommand command) {
-        Runnable task = () -> CompletableFuture.runAsync(() -> executeGraphSafely(command), taskExecutor);
+        Runnable task = () -> submitGraphExecution(command);
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             task.run();
             return;
@@ -148,6 +149,19 @@ public class KnowledgeGraphExtractionTaskApplicationServiceImpl
                 task.run();
             }
         });
+    }
+
+    private void submitGraphExecution(KnowledgeAiExtractionCommand command) {
+        try {
+            CompletableFuture.runAsync(() -> executeGraphSafely(command), taskExecutor);
+        } catch (RejectedExecutionException exception) {
+            LOGGER.warn(
+                    "Knowledge graph extraction executor rejected job, batchId={}",
+                    AiBatchJobIdCodec.toValue(command.batchId()),
+                    exception);
+            aiBatchJobApplicationService.recordFailureIfRunning(new RecordAiBatchJobFailureCommand(
+                    command.batchId(), failureSummaryJson("Knowledge graph extraction executor is saturated")));
+        }
     }
 
     private void executeGraphSafely(KnowledgeAiExtractionCommand command) {
