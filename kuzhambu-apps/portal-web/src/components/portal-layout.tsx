@@ -44,7 +44,7 @@ const getInitialTheme = (): PortalTheme => {
 
 const navigationItems = [
     { label: "三才图会", href: "/classics/sancai" },
-    { label: "知识图谱", href: "/knowledge" },
+    { label: "知识图谱", href: "/knowledge/atlas" },
     { label: "古籍检索", href: "/discovery/search" },
     { label: "问答", href: "/discovery/qa" }
 ];
@@ -199,7 +199,7 @@ export const PortalLayout = () => {
                 <div className="portal-effect-footer-intro">
                     <img className="portal-effect-brand-logo" src={kuzhambuLogoImage} alt="" />
                     <p>汇聚古籍与图像资源，连接知识与研究线索。</p>
-                    <Link to="/knowledge">关于KUZHAMBU</Link>
+                    <Link to="/">关于KUZHAMBU</Link>
                 </div>
                 <nav className="portal-effect-footer-nav" aria-label="底部资源导航">
                     {footerGroups.map((group) => (

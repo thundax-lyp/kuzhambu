@@ -175,7 +175,7 @@ describe("KnowledgeLineagePage", () => {
         });
 
         expect(container.textContent).toContain("世系图浏览");
-        expect(container.textContent).toContain("返回知识馆");
+        expect(container.textContent).toContain("返回知识图谱");
         expect(
             container.querySelector('input[placeholder="搜索人物、谱系节点或关系"]')
         ).toBeTruthy();

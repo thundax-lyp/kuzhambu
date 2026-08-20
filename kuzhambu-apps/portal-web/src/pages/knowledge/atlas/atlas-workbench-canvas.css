@@ -1,0 +1,105 @@
+.atlas-workbench-canvas {
+    position: relative;
+    height: min(58vh, 560px);
+    min-height: 380px;
+    overflow: hidden;
+    border: 1px solid rgba(88, 78, 58, 0.16);
+    border-radius: 10px;
+    background: #fbf8f0;
+}
+
+.atlas-workbench-canvas .react-flow__renderer {
+    background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(246, 240, 229, 0.92));
+}
+
+.atlas-workbench-canvas .react-flow__node {
+    transition:
+        transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 180ms ease;
+}
+
+.atlas-workbench-canvas .react-flow__edge-path {
+    transition:
+        stroke 180ms ease,
+        stroke-width 180ms ease;
+}
+
+.atlas-workbench-node {
+    display: flex;
+    position: relative;
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    background: #fffdf8;
+    box-shadow: 0 8px 20px rgba(64, 52, 34, 0.1);
+    color: #27303a;
+}
+
+.atlas-workbench-node strong {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 50%;
+    display: block;
+    width: 64px;
+    max-width: 64px;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+.atlas-workbench-node--person {
+    background: #fff5d5;
+}
+.atlas-workbench-node--place {
+    background: #e1f4ef;
+}
+.atlas-workbench-node--building {
+    background: #e6edf9;
+}
+.atlas-workbench-node--work {
+    background: #eee7fa;
+}
+.atlas-workbench-node--event {
+    background: #f9e4dc;
+}
+.atlas-workbench-node .react-flow__handle {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.atlas-workbench-edge-label {
+    fill: #64543a;
+    font-size: 11px;
+    paint-order: stroke;
+    pointer-events: none;
+    stroke: #fbf8f0;
+    stroke-linejoin: round;
+    stroke-width: 4px;
+}
+
+.atlas-workbench-loading {
+    position: absolute;
+    right: 16px;
+    bottom: 12px;
+    margin: 0;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: rgba(255, 252, 246, 0.9);
+    color: #625d53;
+    font-size: 13px;
+}
+
+.atlas-workbench-empty {
+    margin: 0;
+    padding: 34px;
+    color: var(--text-secondary);
+    text-align: center;
+}

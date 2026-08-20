@@ -23,8 +23,8 @@ export const KnowledgeQualityPage = () => {
                         而是强调确认率、趋势、问题与来源脉络。
                     </p>
                 </div>
-                <Link className="knowledge-quality-back" to="/knowledge">
-                    返回知识首页
+                <Link className="knowledge-quality-back" to="/knowledge/atlas">
+                    返回知识图谱
                     <ArrowRight size={16} />
                 </Link>
             </header>
