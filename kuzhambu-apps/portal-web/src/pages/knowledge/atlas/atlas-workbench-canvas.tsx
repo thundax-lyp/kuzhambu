@@ -125,9 +125,11 @@ const toFlowElements = (graph: AtlasGraphRecord) => {
 };
 
 export const AtlasWorkbenchCanvas = ({
+    onNodeExpand,
     graph,
     loading
 }: {
+    onNodeExpand: (nodeId: string) => void;
     graph: AtlasGraphRecord;
     loading: boolean;
 }) => {
@@ -147,6 +149,7 @@ export const AtlasWorkbenchCanvas = ({
                 nodes={elements.nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
+                onNodeDoubleClick={(_, node) => onNodeExpand(node.id)}
                 nodeTypes={nodeTypes}
                 panOnDrag
                 proOptions={{ hideAttribution: true }}

@@ -2,49 +2,56 @@
 
 ## Status
 
-- 当前状态：已完成，存在一个页面集成口径的非阻塞差异。
-- 覆盖范围：统一标签、标签审核、标签合并、标签废弃、数据精修、实体关系、图谱版本、世系图、质量报告、Portal 只读入口、Discovery 读协作。
-- 真相源：`docs/10-requirements/KNOWLEDGE-REQUIREMENTS.md`、本文件。
+- 当前状态：标签治理已完成；双空间图谱的 Admin 主链路和 Portal 三才图会总谱预览已实现。Portal Atlas 已完成本地真实数据运行时验收；Admin 全链路真实运行时验收仍待补齐。
+- 覆盖范围：统一标签治理、Classics / Discovery 读协作，以及三才图会的图谱工作台、发布空间治理、素材草稿、抽取任务、发布撤回和删除生命周期。
+- 真相源：[`KNOWLEDGE-REQUIREMENTS.md`](../10-requirements/KNOWLEDGE-REQUIREMENTS.md)、[`KNOWLEDGE-GRAPH-REQUIREMENTS.md`](../10-requirements/KNOWLEDGE-GRAPH-REQUIREMENTS.md)、当前代码和本文件。
 
-## Completion Summary
+## Code-Calibrated Summary
 
-- Taxonomy 已完成分类、标签、待审核标签、别名、标签合并、标签废弃、批量审核和治理统计。
-- Knowledge 已为 Classics 提供统一标签解析、自动创建、内容引用同步和内容引用删除能力。
-- Knowledge 已为 Discovery 提供标签提示和实体提示。
-- 图谱抽取已完成 `RELATION`、`GRAPH`、`LINEAGE` 三类任务，支持批量、取消、重生成、候选应用和正式结果落库。
-- 精修工作台已完成实体、关系、世系节点、世系关系的确认、编辑、删除、新增、应用和人工质量标注。
-- 图谱正式结果已完成版本列表、版本详情、实体/关系/世系结果浏览和精修状态展示。
-- 质量报告已完成快照生成、问题清单、来源明细、人工标注、精修后过期提示和低质量门类重提取。
-- Portal 已完成 `/knowledge`、`/knowledge/quality`、`/knowledge/atlas`、`/knowledge/lineage` 四个只读入口。
+- Taxonomy 已覆盖分类、标签、待审核标签、别名、合并、废弃、批量审核和治理统计；Classics 通过 Knowledge 协作标签引用，Discovery 消费标签和实体提示。
+- 图谱已改为“素材草稿空间 — 整体发布映射 — 发布空间”的模型。`GraphController` 以 `/api/knowledge/graph` 提供工作台、素材、任务、发布/撤回、删除变更/任务和发布对象治理接口，全部使用 `knowledge:graph:view` 或 `knowledge:graph:edit`。
+- Admin seed 仅显示工作台、图谱治理、素材管理和提取任务；删除变更和删除任务为直达页面，不是独立菜单。
+- Admin 工作台已接通快照概览、最近关系、一跳关系的渐进只读画布和活动时间线。它目前没有页面级搜索、质量待办、门类层导航或对象详情分流。
+- 图谱治理已接通发布节点/边分页、详情、创建/编辑、删除影响预览和确认，以及节点合并；后端仍有节点拆分接口，但当前 Admin 页面不把它作为已交付流程。
+- 素材管理已由 Knowledge 服务组合 Classics 可见稿件和图谱统计，并提供素材详情、草稿节点/边编辑、候选采用、发布/撤回和批量操作的接口。提取任务页只承担跨素材任务查询和失败重试；候选处置留在素材详情。
+- Portal `/knowledge/atlas` 已替换为三才图会总谱预览：调用 `POST /api/portal/knowledge/graph/atlas/overview/get`、`recent-edges/list` 与 `one-hop-edges/list`，显示正式节点、关系和覆盖素材统计，并以渐进加载的只读力导向画布预览公开关系。节点双击只追加该节点的一跳关系，不收缩既有图；画布只渲染真实节点与关系，簇间隐藏节点只参与布局计算。
+- `POST /api/portal/knowledge/graph/material/get` 仍是按稿件可见性读取的后端接口，但当前 Portal 产品入口不再以单稿件图谱为目标；若恢复该场景，需单独接入并验收可见性空状态。
+- `graph-result`、`refinement` 等旧 Admin 路由仍在代码中，但不在当前图谱菜单 seed 内；它们不能与新双空间图谱的完成状态混写。
 
-## Open Items
+## Open Items and Validation Gaps
 
-- 无后端或页面主链路阻塞项。
-- Classics 三类内容编辑页已内联标签治理、问答对治理和 AI 候选确认；完整 taxonomy 治理仍在 `/knowledge/taxonomy` 独立页面。该差异是页面边界选择，不阻塞 Knowledge 主需求完成。
-- 后续改动权限、字段或接口返回时，应同步更新 Admin Web 契约测试和 Playwright 断言。
+- 对真实 Java、MySQL、Redis、AI 和 Classics facade 的 Admin 浏览器 smoke 尚未补齐；当前图谱证据主要是单元、契约、mock browser E2E 和定向 Maven 验证。
+- Portal Atlas 的本地真实数据预览已验证；单稿件图谱不是当前产品入口，若重新纳入范围，仍需接入 `/portal/knowledge/graph/material/get` 并验证未发布、撤回、删除和无可见性的空状态。
+- 工作台的搜索、质量待办、门类/详情导航未接入当前页面；不要以服务端端点存在代替用户流程验收。
+- 图谱删除、JSON 导入导出、取消/重新抽取、节点拆分及全量发布冲突处理需要逐项以实际页面入口和真实运行时结果复核。
+- 历史 Knowledge 质量报告、世系、旧图谱结果和精修页面不属于当前双空间图谱模型；如仍需保留，应另行说明兼容边界和下线计划。
 
 ## Validation Evidence
 
-- 2026-07-09：`mvn -pl biz/knowledge,biz/ai -am spotless:check checkstyle:check test` 通过。
-- 2026-07-09：Workers `ruff format --check`、`ruff check`、`pytest` 通过。
-- 2026-07-09：Admin Web `format:check`、`lint`、`build`、`test` 通过。
-- 2026-07-09：Knowledge Playwright 6 个页面冒烟通过。
-- 运行时证据以当前分支验证命令为准。
+| Date | Evidence | Result and boundary |
+| --- | --- | --- |
+| 2026-08-19 | `mvn -pl starter/kuzhambu-admin-starter -am test` | Passed; 覆盖受影响图谱、AI、Operations 和 starter 依赖闭包。 |
+| 2026-08-19 | Admin Web `format:check`、`lint`、`test` | Passed; Node 26，125 files / 479 tests。 |
+| 2026-08-19 | Portal Web `format:check`、`lint`、`test` | Passed; Node 26，21 files / 57 tests；不包含新图谱 Portal 接入。 |
+| 2026-08-19 | `admin-web/e2e/knowledge/graph/graph.spec.ts` | Passed; 验证工作台概览、只读画布、活动时间线和 `/knowledge/graph/**` 网络边界；使用 fixture，不证明真实后端运行时。 |
+| 2026-08-20 | `mvn -pl starter/kuzhambu-portal-starter -am -DskipTests install` | Passed; 编译 Portal starter 及新增公开总谱接口。 |
+| 2026-08-20 | Portal Web `format`、`lint`、`build`、`test` | Passed; 54 tests。 |
+| 2026-08-20 | 本地 Portal Atlas 浏览器验收 | Passed; `http://localhost:5174/knowledge/atlas` 通过运行中 Portal API 显示 44 个节点、40 条真实关系及统计数据。 |
+
+工作台专项证据见 [`KNOWLEDGE-GRAPH-WORKBENCH-EVIDENCE.md`](./KNOWLEDGE-GRAPH-WORKBENCH-EVIDENCE.md)。旧版 2026-07-09 的“图谱版本/世系/精修已完成”验证不再用于判断当前双空间图谱。
 
 ## Requirement Coverage Matrix
 
-| 子域 | 需求范围 | 状态 | 说明 |
-| --- | --- | --- | --- |
-| Taxonomy | 标签分类、标签、详情、搜索 | 已完成 | Admin Web 和后端接口已完成 |
-| Taxonomy | 待审核标签 | 已完成 | 逐条审核、批量审核、通过分类选择和拒绝已完成 |
-| Taxonomy | 标签别名、合并、废弃 | 已完成 | 影响预览、执行和历史引用迁移已完成 |
-| Taxonomy | 治理统计 | 已完成 | 使用排行、知识库分布、来源占比、月度新增已完成 |
-| Classics 协作 | 内容标签绑定 | 已完成 | 手工/AI 标签自动创建、引用同步和删除已完成 |
-| Discovery 协作 | 搜索和问答增强 | 已完成 | 标签提示、实体提示已被 Discovery 消费 |
-| 数据精修 | 草稿确认和正式回写 | 已完成 | 实体、关系、世系节点和世系关系均已覆盖 |
-| 数据精修 | 人工质量标注 | 已完成 | 写入、删除、分页和质量汇总已完成 |
-| 图谱抽取 | AI 任务与候选应用 | 已完成 | 关系、图谱、世系三类任务已完成 |
-| 图谱浏览 | Admin 正式结果 | 已完成 | 版本、实体、关系、世系结果和精修状态已完成 |
-| Portal | 图谱、世系、质量只读入口 | 已完成 | 四个 Portal 路由已接通 |
-| 质量报告 | 报告生成与重提取 | 已完成 | 快照、问题、来源、标注、低质量门类重提取已完成 |
-| Classics 页面集成 | 内联完整 taxonomy 治理 | 部分完成 | 标签/问答/候选已内联；完整 taxonomy 保留在独立页面 |
+| 子域 | 当前状态 | 代码证据与边界 |
+| --- | --- | --- |
+| Taxonomy | 已完成 | 分类、审核、别名、合并、废弃、统计及跨域标签协作保持现有实现。 |
+| 图谱权限与菜单 | 已完成 | `system.json`、Admin 路由和 `GraphController` 均使用统一 `knowledge:graph:view/edit`。 |
+| 工作台概览与局部图 | 部分完成 | 概览、最近关系、渐进画布和时间线已接通；搜索、质量待办、门类/详情导航待完成。 |
+| 发布空间治理 | 部分完成 | 节点/边 CRUD、详情、来源/操作记录、删除预览和节点合并已接通；节点拆分未形成当前 Admin 交付流。 |
+| 素材草稿与抽取 | 部分完成 | 素材分页、草稿节点/边编辑、任务创建/查询/重试、候选处置和状态约束已有代码；需真实运行时覆盖。 |
+| 整体发布与撤回 | 部分完成 | 单份和批量预览/确认接口与素材页服务层存在；需逐项验证冲突、冻结和撤回的真实事务语义。 |
+| 删除生命周期 | 部分完成 | 删除预检、变更决策、任务查询和重试接口及直达页面存在；需真实运行时验证保留贡献与撤回关联。 |
+| JSON 导入导出 | 后端已实现，前端验收缺失 | 接口存在；尚未确认当前 Admin 页面提供完整入口和运行时校验。 |
+| Portal Atlas 总谱预览 | 已完成，本地运行时已验收 | Portal 调用 Atlas overview、recent edges 和 one-hop edges 公开接口；以图标节点、悬浮名称、直线关系和渐进力导向布局展示总谱；节点双击仅展开一跳关系。 |
+| Portal 稿件图 | 后端已实现，当前产品不接入 | `GraphPortalController` 已提供按稿件可见性读取接口；如恢复单稿件入口，需补齐 Portal 调用和空状态验收。 |
+| 旧图谱页面迁移 | 未完成 | `graph-result`、`refinement` 及旧 Portal 知识展示仍在代码中，需单独迁移或明确保留。 |
