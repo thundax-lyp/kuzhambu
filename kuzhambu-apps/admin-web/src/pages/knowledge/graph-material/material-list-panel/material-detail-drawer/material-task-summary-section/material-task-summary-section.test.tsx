@@ -119,7 +119,7 @@ describe("MaterialTaskSummarySection", () => {
         fireEvent.click(screen.getByTestId("knowledge-graph-material-detail-reextract-button"));
 
         await waitFor(() => {
-            expect(service.createExtraction).toHaveBeenCalledWith({
+            expect(vi.mocked(service.createExtraction).mock.calls[0]?.[0]).toEqual({
                 contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
             });
         });
