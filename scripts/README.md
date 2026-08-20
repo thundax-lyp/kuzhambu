@@ -24,7 +24,7 @@ Docker smoke scripts live under `scripts/smoke/`.
 
 - `smoke/load-image-files.sh`: loads `deploy/image-files/*.tar` on a deploy host.
 - `smoke/fastgpt-smoke.sh`: standalone production verification for FastGPT bootstrap records and publication-critical dataset operations; it is not called by `smoke/full-smoke.sh`.
-- `smoke/full-smoke.sh`: orchestrates image loading, shared smoke network setup, FastGPT bootstrap, Kuzhambu compose startup, seed import through `scripts/import-seed-data.sh`, and full-smoke evidence verification. It passes the FastGPT-generated Kuzhambu env fragment into compose automatically. Set `KUZHAMBU_SMOKE_LOAD_IMAGES=false` only when the smoke host already has every required image loaded.
+- `smoke/full-smoke.sh`: orchestrates image loading, shared smoke network setup, FastGPT bootstrap, Kuzhambu compose startup, seed import through `scripts/import-seed-data.sh`, the executable API flow supplied by `KUZHAMBU_SMOKE_EVIDENCE_RUNNER`, and full-smoke evidence verification. It passes the FastGPT-generated Kuzhambu env fragment into compose automatically. Set `KUZHAMBU_SMOKE_LOAD_IMAGES=false` only when the smoke host already has every required image loaded.
 
 ## Docker Deployment
 

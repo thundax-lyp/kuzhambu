@@ -19,6 +19,7 @@ IMAGE_FILES_DIR="${KUZHAMBU_IMAGE_FILES_DIR:-}"
 SMOKE_MYSQL_PORT="${KUZHAMBU_SMOKE_MYSQL_PORT:-33306}"
 SEED_ENV_FILE="${KUZHAMBU_SMOKE_SEED_ENV_FILE:-/tmp/kuzhambu-smoke-seed.env}"
 SMOKE_RUN_ID="${KUZHAMBU_SMOKE_RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$(openssl rand -hex 8)}"
+EVIDENCE_RUNNER="${KUZHAMBU_SMOKE_EVIDENCE_RUNNER:-}"
 
 if [[ ! -f "${KUZHAMBU_ENV_FILE}" ]]; then
     echo "Missing Kuzhambu env file: ${KUZHAMBU_ENV_FILE}" >&2
@@ -27,6 +28,11 @@ fi
 
 if [[ ! -f "${FASTGPT_ENV_FILE}" ]]; then
     echo "Missing FastGPT env file: ${FASTGPT_ENV_FILE}" >&2
+    exit 1
+fi
+
+if [[ -z "${EVIDENCE_RUNNER}" || ! -x "${EVIDENCE_RUNNER}" ]]; then
+    echo "KUZHAMBU_SMOKE_EVIDENCE_RUNNER must name an executable full-smoke API runner" >&2
     exit 1
 fi
 
@@ -227,6 +233,17 @@ if [[ -z "${evidence_file}" ]]; then
 fi
 if [[ -e "${evidence_file}" ]]; then
     echo "Full smoke evidence file must not exist before the run: ${evidence_file}" >&2
+    exit 1
+fi
+
+step "running full smoke API flow"
+"${EVIDENCE_RUNNER}" \
+    --run-id "${SMOKE_RUN_ID}" \
+    --evidence-file "${evidence_file}" \
+    --admin-base-url "http://127.0.0.1:${nginx_port}/kuzhambu-admin-api" \
+    --portal-base-url "http://127.0.0.1:${nginx_port}/kuzhambu-api"
+if [[ ! -f "${evidence_file}" ]]; then
+    echo "Full smoke evidence runner did not create: ${evidence_file}" >&2
     exit 1
 fi
 

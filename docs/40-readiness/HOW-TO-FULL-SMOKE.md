@@ -13,6 +13,7 @@ RUNBOOK。验收标准以
 - 若使用离线 image archives，已在 build host 生成本次代码对应的业务镜像，并在 deploy host load 后
   强制重建受影响服务；`docker load` 本身不会更新既有容器。
 - admin-web 依赖已安装，以便 smoke 账户按正式 SM2 登录流程取得 token。
+- 已准备可执行的正式 API 流程执行器；它接收 run ID、evidence 路径及 Admin/Portal base URL，并在发布、图谱提取/合并/发布和 Portal 校验完成后写入 evidence。
 - Sancai Portal 列表/详情接口、图谱 Portal 接口及受控图谱提取输出已经部署；缺任一接口时
   full smoke 必须失败，不可降级为静态页面检查。王圻与明代习俗的内容 Portal 列表/详情暂不验收。
 
@@ -22,6 +23,7 @@ RUNBOOK。验收标准以
 
 ```sh
 KUZHAMBU_SMOKE_BUILD_IMAGES=true \
+KUZHAMBU_SMOKE_EVIDENCE_RUNNER=/opt/kuzhambu/bin/full-smoke-api-runner \
 KUZHAMBU_SMOKE_EVIDENCE_FILE="$PWD/build/full-smoke/evidence.json" \
 scripts/smoke/full-smoke.sh deploy/.env deploy/fastgpt/.env
 ```
