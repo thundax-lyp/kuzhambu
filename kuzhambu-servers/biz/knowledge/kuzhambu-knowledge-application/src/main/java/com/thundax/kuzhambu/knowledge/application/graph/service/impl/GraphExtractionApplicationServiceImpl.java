@@ -241,14 +241,13 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     @Override
     @Transactional
     public GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command) {
-        GraphExtractionTask previous =
-                requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
-        requireExpectedStatus(previous, command.expectedExecutionStatus());
-        requireIdempotencyKey(command.idempotencyKey());
+        requireIdempotencyKey(command == null ? null : command.idempotencyKey());
         GraphExtractionTask existing = taskRepository.getByIdempotencyKey(command.idempotencyKey());
         if (existing != null) {
             return toTaskResult(existing);
         }
+        GraphExtractionTask previous = requireVersionedTask(command.taskId(), command.taskLockVersion());
+        requireExpectedStatus(previous, command.expectedExecutionStatus());
 
         GraphMaterialContentSnapshotDto snapshot = contentResolver.resolveWorkbench(previous.getContentRef());
         GraphMaterial material = materialForExtraction(previous.getContentRef(), snapshot.title());

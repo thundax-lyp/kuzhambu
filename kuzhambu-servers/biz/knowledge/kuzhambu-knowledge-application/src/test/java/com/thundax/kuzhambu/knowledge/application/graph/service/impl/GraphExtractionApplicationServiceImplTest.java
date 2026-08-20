@@ -358,6 +358,20 @@ class GraphExtractionApplicationServiceImplTest {
     }
 
     @Test
+    void shouldReturnExistingRetryBeforeCheckingSourceTaskVersion() {
+        GraphExtractionTask existing = task(7002L, 11L, ref(1001L));
+        existing.setExecutionStatus(GraphExtractionExecutionStatus.RUNNING);
+        when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(existing);
+
+        var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 2L, "FAILED", "retry-1", 1L));
+
+        assertThat(result.taskId()).isEqualTo(7002L);
+        assertThat(result.executionStatus()).isEqualTo("RUNNING");
+        verify(taskRepository, never()).getById(any());
+        verifyNoInteractions(contentResolver, aiFacade);
+    }
+
+    @Test
     void shouldAlwaysRefreshContentSnapshotWhenRetryingFailedTask() {
         ContentRef ref = ref(1001L);
         GraphExtractionTask task = task(7001L, 11L, ref);

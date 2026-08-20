@@ -227,7 +227,9 @@ public class GraphPublicationExecutor {
             Long materialObjectId = row.path("materialObjectId").asLong();
             boolean conflict = "CONFLICT".equals(row.path("matchType").asText());
             GraphPublicationConflictDecision decision = decision(decisions, objectType, materialObjectId);
-            if (!conflict && decision != null || decision != null && !seen.add(materialObjectId)) {
+            if (conflict && decision == null
+                    || !conflict && decision != null
+                    || decision != null && !seen.add(materialObjectId)) {
                 throw GraphPublicationPreviewToken.stale();
             }
             Long matchedObjectId = row.path("matchedObjectId").isMissingNode()

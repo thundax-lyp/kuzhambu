@@ -1,12 +1,13 @@
 package com.thundax.kuzhambu.knowledge.application.graph.operator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
+import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphPublicationCommand;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
@@ -69,7 +70,7 @@ class GraphPublicationExecutorTest {
     }
 
     @Test
-    void publishShouldReuseSameKeyPreviewConflictByDefault() {
+    void publishShouldRequireExplicitDecisionForPreviewConflict() {
         Fixture fixture = new Fixture();
         GraphMaterial material = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.READY, null, 0L);
         GraphMaterial statusMaterial = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.READY, null, 0L);
@@ -111,13 +112,10 @@ class GraphPublicationExecutorTest {
         when(fixture.schemaResolver.validateForPublication(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(List.of());
 
-        var result = fixture.executor.publishOne(
-                new GraphPublicationCommand(fixture.ref, 0L, 9001L, "preview-token", List.of()));
-
-        assertThat(result.success()).isTrue();
-        assertThat(result.reusedNodeCount()).isEqualTo(1);
-        verify(fixture.previewTokenRepository)
-                .updateConsumedAtIfAvailable(org.mockito.Mockito.any(), org.mockito.Mockito.any());
+        assertThatThrownBy(() -> fixture.executor.publishOne(
+                        new GraphPublicationCommand(fixture.ref, 0L, 9001L, "preview-token", List.of())))
+                .isInstanceOf(DomainException.class)
+                .hasFieldOrPropertyWithValue("code", GraphPublicationPreviewToken.STALE_CODE);
     }
 
     private static final class Fixture {
