@@ -26,7 +26,7 @@ from kuzhambu_workers.schemas.ai import AiInvokeRequest
 from kuzhambu_workers.schemas.common import UsageSummary
 
 STREAM_IDLE_TIMEOUT_SECONDS = 30.0
-STREAM_MAX_EXECUTION_SECONDS = 300.0
+STREAM_TIMEOUT_RESPONSE_MARGIN_SECONDS = 5.0
 
 
 @dataclass(frozen=True)
@@ -247,6 +247,7 @@ def iter_chat_completion_chunks(
     headers = _request_headers(request.modelConfig.apiKey)
     start_ms = monotonic_ms()
     total_execution_timed_out = Event()
+    total_execution_seconds = _stream_total_execution_seconds(invocation.timeout_ms)
     try:
         if client is not None:
             with client.stream(
@@ -260,6 +261,7 @@ def iter_chat_completion_chunks(
                     response,
                     start_ms,
                     total_execution_timed_out,
+                    total_execution_seconds,
                 )
             return
         with httpx.Client(timeout=_stream_timeout()) as owned_client:
@@ -273,6 +275,7 @@ def iter_chat_completion_chunks(
                     response,
                     start_ms,
                     total_execution_timed_out,
+                    total_execution_seconds,
                 )
     except httpx.TimeoutException as exc:
         if total_execution_timed_out.is_set():
@@ -291,11 +294,12 @@ def _iter_response_chunks(
     response: httpx.Response,
     start_ms: int,
     total_execution_timed_out: Event,
+    total_execution_seconds: float,
 ) -> Iterator[OpenAiChatCompletionChunk]:
     _raise_for_provider_status(response)
     saw_usage = False
     total_execution_timer = Timer(
-        STREAM_MAX_EXECUTION_SECONDS,
+        total_execution_seconds,
         _close_stream_after_total_execution_timeout,
         args=(response, total_execution_timed_out),
     )
@@ -305,7 +309,7 @@ def _iter_response_chunks(
         for line in response.iter_lines():
             if (
                 total_execution_timed_out.is_set()
-                or elapsed_ms(start_ms) >= STREAM_MAX_EXECUTION_SECONDS * 1000
+                or elapsed_ms(start_ms) >= total_execution_seconds * 1000
             ):
                 raise model_timeout(detail={"timeoutType": "TOTAL_EXECUTION"})
             chunk = _parse_stream_line(line, start_ms)
@@ -339,6 +343,10 @@ def _stream_timeout() -> httpx.Timeout:
         write=STREAM_IDLE_TIMEOUT_SECONDS,
         pool=STREAM_IDLE_TIMEOUT_SECONDS,
     )
+
+
+def _stream_total_execution_seconds(timeout_ms: int) -> float:
+    return max(0.001, timeout_ms / 1000 - STREAM_TIMEOUT_RESPONSE_MARGIN_SECONDS)
 
 
 def _parse_stream_line(line: str, start_ms: int) -> OpenAiChatCompletionChunk | None:

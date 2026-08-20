@@ -62,7 +62,6 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     private static final String ERROR_WORKER_TIMEOUT = "WORKER_TIMEOUT";
     private static final String ERROR_WORKER_UNAVAILABLE = "WORKER_UNAVAILABLE";
     private static final String DEFAULT_LOCALE = "zh-CN";
-    private static final Duration STREAM_MAX_EXECUTION_TIMEOUT = Duration.ofSeconds(300);
     private static final long STREAM_IDLE_WATCHDOG_MAX_INTERVAL_MILLIS = 1000L;
     private static final ScheduledExecutorService STREAM_IDLE_WATCHDOG =
             Executors.newSingleThreadScheduledExecutor(runnable -> {
@@ -486,7 +485,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
             long idleTimeoutNanos,
             AtomicBoolean idleTimedOut) {
         long now = System.nanoTime();
-        boolean totalExecutionExpired = now - streamStartedAtNanos >= STREAM_MAX_EXECUTION_TIMEOUT.toNanos();
+        boolean totalExecutionExpired = now - streamStartedAtNanos >= idleTimeoutNanos;
         boolean idleExpired = now - lastDataAtNanos.get() >= idleTimeoutNanos;
         if (!totalExecutionExpired && !idleExpired) {
             return;

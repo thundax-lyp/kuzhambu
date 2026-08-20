@@ -131,9 +131,7 @@ def test_iter_chat_completion_chunks_rejects_invalid_chunk() -> None:
     assert raised.value.code == "MODEL_STREAM_CHUNK_INVALID"
 
 
-def test_iter_chat_completion_chunks_enforces_total_execution_limit(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_iter_chat_completion_chunks_enforces_total_execution_limit() -> None:
     class SlowStream(httpx.SyncByteStream):
         def __iter__(self):
             sleep(0.05)
@@ -148,9 +146,10 @@ def test_iter_chat_completion_chunks_enforces_total_execution_limit(
             stream=SlowStream(),
         )
 
-    monkeypatch.setattr(openai_compatible, "STREAM_MAX_EXECUTION_SECONDS", 0.01)
     client = httpx.Client(transport=httpx.MockTransport(handler))
-    request = AiInvokeRequest.model_validate(_request_payload())
+    payload = _request_payload()
+    payload["modelConfig"]["timeoutMs"] = 10
+    request = AiInvokeRequest.model_validate(payload)
 
     with pytest.raises(WorkerError) as raised:
         list(iter_chat_completion_chunks(request, client=client))
@@ -158,6 +157,10 @@ def test_iter_chat_completion_chunks_enforces_total_execution_limit(
     assert raised.value.error_type == WorkerErrorType.WORKER_TIMEOUT
     assert raised.value.code == "MODEL_TIMEOUT"
     assert raised.value.detail == {"timeoutType": "TOTAL_EXECUTION"}
+
+
+def test_stream_total_execution_uses_configured_timeout_with_response_margin() -> None:
+    assert openai_compatible._stream_total_execution_seconds(900_000) == 895.0
 
 
 def _request_payload() -> dict:
