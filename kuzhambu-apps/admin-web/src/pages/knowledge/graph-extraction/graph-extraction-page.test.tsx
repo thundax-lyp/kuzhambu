@@ -157,6 +157,27 @@ describe("GraphExtractionPage", () => {
         });
     });
 
+    it("reenables deletion after a failed request", async () => {
+        serviceState.executionStatus = "FAILED";
+        let rejectDelete: ((reason?: unknown) => void) | undefined;
+        serviceMocks.deleteTask.mockImplementationOnce(
+            () =>
+                new Promise((_, reject) => {
+                    rejectDelete = reject;
+                })
+        );
+        confirmDanger.mockImplementation(({ onConfirm }) => onConfirm());
+        renderPage();
+
+        const deleteButton = await screen.findByRole("button", { name: "删除任务 8008" });
+        fireEvent.click(deleteButton);
+        await waitFor(() => expect(deleteButton).toBeDisabled());
+
+        rejectDelete?.(new Error("network error"));
+
+        await waitFor(() => expect(deleteButton).toBeEnabled());
+    });
+
     it("does not render an empty action column without edit permission", async () => {
         replacePermissions(["knowledge:graph:view"]);
         renderPage();

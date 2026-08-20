@@ -283,9 +283,10 @@ export const GraphExtractionPage = () => {
             ariaLabel="知识抽取任务列表"
             columns={createGraphExtractionTaskColumns({
                 canRetry: canEditGraph,
-                deletingTaskId: deleteTaskMutation.variables
-                    ? String(deleteTaskMutation.variables.taskId)
-                    : null,
+                deletingTaskId:
+                    deleteTaskMutation.isPending && deleteTaskMutation.variables
+                        ? String(deleteTaskMutation.variables.taskId)
+                        : null,
                 onDelete: (task) => {
                     confirm.danger({
                         title: "删除知识抽取任务",
@@ -295,9 +296,10 @@ export const GraphExtractionPage = () => {
                         onConfirm: () => deleteTaskMutation.mutateAsync(task)
                     });
                 },
-                retryingTaskId: retryTaskMutation.variables
-                    ? String(retryTaskMutation.variables.taskId)
-                    : null,
+                retryingTaskId:
+                    retryTaskMutation.isPending && retryTaskMutation.variables
+                        ? String(retryTaskMutation.variables.taskId)
+                        : null,
                 onRetry: (task) => retryTaskMutation.mutate(task)
             })}
             dataSource={tasks}
