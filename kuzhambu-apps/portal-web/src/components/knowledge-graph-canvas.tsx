@@ -14,7 +14,7 @@ import {
     type Node,
     type NodeProps
 } from "@xyflow/react";
-import { useMemo } from "react";
+import { useMemo, type CSSProperties } from "react";
 import {
     readKnowledgeGraphNodeTypeLabel,
     readKnowledgeGraphRelationLabel
@@ -24,6 +24,7 @@ import "@xyflow/react/dist/style.css";
 import "./knowledge-graph-canvas.css";
 
 export interface KnowledgeGraphCanvasNode {
+    entryOffset?: { x: number; y: number };
     id: string;
     name?: string | null;
     nodeType?: string | null;
@@ -44,6 +45,8 @@ export interface KnowledgeGraphCanvasData {
 
 interface KnowledgeGraphNodeData extends Record<string, unknown> {
     dimmed: boolean;
+    expanded: boolean;
+    entryOffset?: { x: number; y: number };
     label: string;
     matched: boolean;
     nodeType: string;
@@ -91,11 +94,21 @@ const KnowledgeGraphNode = ({ data, selected }: NodeProps<Node<KnowledgeGraphNod
                 "published-graph-node",
                 `published-graph-node--${nodeStyle(data.nodeType)}`,
                 selected ? "is-selected" : "",
+                data.expanded ? "is-expanded" : "",
+                data.entryOffset ? "is-entering" : "",
                 data.matched ? "is-matched" : "",
                 data.dimmed ? "is-dimmed" : ""
             ]
                 .filter(Boolean)
                 .join(" ")}
+            style={
+                data.entryOffset
+                    ? ({
+                          "--published-graph-entry-x": `${data.entryOffset.x}px`,
+                          "--published-graph-entry-y": `${data.entryOffset.y}px`
+                      } as CSSProperties)
+                    : undefined
+            }
             title={`${readKnowledgeGraphNodeTypeLabel(data.nodeType)}：${data.label}`}
         >
             <Handle isConnectable={false} position={Position.Left} type="target" />
@@ -182,6 +195,7 @@ const createNeighborIds = (edges: KnowledgeGraphCanvasEdge[], selectedNodeId?: s
 const createFlowElements = (
     graph: KnowledgeGraphCanvasData,
     nodePositions: ReadonlyMap<string, { x: number; y: number }> | undefined,
+    expandedNodeIds: ReadonlySet<string> | undefined,
     searchKeyword: string,
     selectedNodeId?: string | null
 ) => {
@@ -195,6 +209,8 @@ const createFlowElements = (
             {
                 data: {
                     dimmed: Boolean(selectedNodeId && !neighbors.has(node.id)),
+                    expanded: expandedNodeIds?.has(node.id) ?? false,
+                    entryOffset: node.entryOffset,
                     label: node.name || "未命名对象",
                     matched: Boolean(
                         normalizedKeyword &&
@@ -244,6 +260,7 @@ const createFlowElements = (
 
 export const KnowledgeGraphCanvas = ({
     ariaLabel,
+    expandedNodeIds,
     graph,
     nodePositions,
     searchKeyword = "",
@@ -252,6 +269,7 @@ export const KnowledgeGraphCanvas = ({
     onNodeDoubleClick
 }: {
     ariaLabel: string;
+    expandedNodeIds?: ReadonlySet<string>;
     graph: KnowledgeGraphCanvasData;
     nodePositions?: ReadonlyMap<string, { x: number; y: number }>;
     searchKeyword?: string;
@@ -260,8 +278,15 @@ export const KnowledgeGraphCanvas = ({
     onNodeDoubleClick?: (nodeId: string) => void;
 }) => {
     const elements = useMemo(
-        () => createFlowElements(graph, nodePositions, searchKeyword, selectedNodeId),
-        [graph, nodePositions, searchKeyword, selectedNodeId]
+        () =>
+            createFlowElements(
+                graph,
+                nodePositions,
+                expandedNodeIds,
+                searchKeyword,
+                selectedNodeId
+            ),
+        [expandedNodeIds, graph, nodePositions, searchKeyword, selectedNodeId]
     );
 
     return (

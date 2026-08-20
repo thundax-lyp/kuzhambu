@@ -1,6 +1,7 @@
 import type { AtlasEdgeRecord, AtlasGraphRecord, AtlasNodeRecord } from "./atlas-workbench-types";
 
 export interface AtlasLayoutNode {
+    entryOffset?: Position;
     id: string;
     node: AtlasNodeRecord;
     position: { x: number; y: number };
@@ -35,6 +36,8 @@ interface Cluster {
 }
 
 const MAX_VISIBLE_CLUSTERS = 6;
+const INCREMENTAL_RELAXATION_ITERATIONS = 48;
+const FINAL_RELAXATION_ITERATIONS = 180;
 // 名称是视觉标注，不参与 React Flow 节点尺寸、碰撞或边的端点计算。
 export const ATLAS_NODE_SIZE = { height: 28, width: 28 };
 const DEFAULT_POSITION = { x: 480, y: 340 };
@@ -353,3 +356,418 @@ export const layoutAtlasForceGraph = (graph: AtlasGraphRecord): AtlasForceLayout
             })
     };
 };
+
+const edgeIsValid = (edge: AtlasEdgeRecord, nodes: Map<string, AtlasNodeRecord>) =>
+    Boolean(edge.sourceNodeId && edge.targetNodeId) &&
+    edge.sourceNodeId !== edge.targetNodeId &&
+    nodes.has(edge.sourceNodeId || "") &&
+    nodes.has(edge.targetNodeId || "");
+
+const positionKey = (leftRoot: string, rightRoot: string) => `${leftRoot}\u0000${rightRoot}`;
+
+/**
+ * Atlas 的增量布局状态。
+ *
+ * 首帧使用完整力导向布局建立稳定基线；后续图数据只增不减时，节点通过并查集持有簇归属。
+ * 新边连接不同簇时只移动较小簇并合并簇记录，其他簇的位置不会重新计算。
+ */
+export class AtlasIncrementalLayout {
+    private readonly edges = new Map<string, AtlasEdgeRecord>();
+    private readonly entryOrigins = new Map<string, Position>();
+    private readonly hiddenGaps = new Map<string, [string, string]>();
+    private readonly nodes = new Map<string, AtlasNodeRecord>();
+    private readonly parents = new Map<string, string>();
+    private readonly positions = new Map<string, Position>();
+    private readonly sizes = new Map<string, number>();
+    private readonly visibleClusterRoots = new Set<string>();
+    private clusterOrder: string[] = [];
+    private initialized = false;
+
+    update(graph: AtlasGraphRecord, finalRelaxation = false): AtlasForceLayoutResult {
+        if (
+            !this.initialized ||
+            (this.edges.size === 0 && graph.edges.length > 0) ||
+            this.hasRemoval(graph)
+        )
+            this.initialize(graph);
+        else
+            this.append(
+                graph,
+                finalRelaxation ? FINAL_RELAXATION_ITERATIONS : INCREMENTAL_RELAXATION_ITERATIONS
+            );
+        return this.project(graph);
+    }
+
+    getClusterId(nodeId: string) {
+        return this.parents.has(nodeId) ? this.find(nodeId) : null;
+    }
+
+    getHiddenGapCount() {
+        return this.hiddenGaps.size;
+    }
+
+    private initialize(graph: AtlasGraphRecord) {
+        this.edges.clear();
+        this.entryOrigins.clear();
+        this.hiddenGaps.clear();
+        this.nodes.clear();
+        this.parents.clear();
+        this.positions.clear();
+        this.sizes.clear();
+        this.visibleClusterRoots.clear();
+        graph.nodes.forEach((node) => this.addNode(node));
+        graph.edges
+            .filter((edge) => edgeIsValid(edge, this.nodes))
+            .forEach((edge) => {
+                this.edges.set(edge.id, edge);
+                this.union(edge.sourceNodeId || "", edge.targetNodeId || "");
+            });
+        const initial = layoutAtlasForceGraph(graph);
+        initial.nodes.forEach(({ id, position }) => {
+            this.positions.set(id, {
+                x: position.x + ATLAS_NODE_SIZE.width / 2,
+                y: position.y + ATLAS_NODE_SIZE.height / 2
+            });
+            this.visibleClusterRoots.add(this.find(id));
+        });
+        this.clusterOrder = this.orderVisibleClustersByPosition();
+        this.rebuildHiddenGaps();
+        this.initialized = true;
+    }
+
+    private append(graph: AtlasGraphRecord, relaxationIterations: number) {
+        graph.nodes.forEach((node) => {
+            if (!this.nodes.has(node.id)) this.addNode(node);
+            else this.nodes.set(node.id, node);
+        });
+        const affectedNodeIds = new Set<string>();
+        graph.edges
+            .filter((edge) => !this.edges.has(edge.id) && edgeIsValid(edge, this.nodes))
+            .forEach((edge) => {
+                this.attachEdge(edge);
+                this.edges.set(edge.id, edge);
+                if (edge.sourceNodeId) affectedNodeIds.add(edge.sourceNodeId);
+                if (edge.targetNodeId) affectedNodeIds.add(edge.targetNodeId);
+            });
+        new Set([...affectedNodeIds].map((nodeId) => this.find(nodeId))).forEach((root) =>
+            this.relaxCluster(root, relaxationIterations)
+        );
+    }
+
+    private attachEdge(edge: AtlasEdgeRecord) {
+        const sourceId = edge.sourceNodeId || "";
+        const targetId = edge.targetNodeId || "";
+        const sourceRoot = this.find(sourceId);
+        const targetRoot = this.find(targetId);
+        this.seedMissingEndpointPosition(sourceId, targetId, edge.id);
+        if (sourceRoot === targetRoot) return;
+
+        const sourceVisible = this.visibleClusterRoots.has(sourceRoot);
+        const targetVisible = this.visibleClusterRoots.has(targetRoot);
+        const movingRoot =
+            (this.sizes.get(sourceRoot) ?? 1) <= (this.sizes.get(targetRoot) ?? 1)
+                ? sourceRoot
+                : targetRoot;
+        const fixedRoot = movingRoot === sourceRoot ? targetRoot : sourceRoot;
+        const movingEndpointId = movingRoot === sourceRoot ? sourceId : targetId;
+        const fixedEndpointId = movingRoot === sourceRoot ? targetId : sourceId;
+        this.moveClusterBeside(movingRoot, movingEndpointId, fixedEndpointId, edge.id);
+
+        const mergedRoot = this.union(sourceRoot, targetRoot);
+        this.visibleClusterRoots.delete(sourceRoot);
+        this.visibleClusterRoots.delete(targetRoot);
+        if (sourceVisible || targetVisible) this.visibleClusterRoots.add(mergedRoot);
+        this.clusterOrder = this.clusterOrder
+            .map((root) =>
+                root === sourceRoot || root === targetRoot ? mergedRoot : this.find(root)
+            )
+            .filter((root, index, roots) => roots.indexOf(root) === index);
+        if ((sourceVisible || targetVisible) && !this.clusterOrder.includes(mergedRoot)) {
+            const fixedIndex = this.clusterOrder.indexOf(fixedRoot);
+            this.clusterOrder.splice(
+                fixedIndex < 0 ? this.clusterOrder.length : fixedIndex + 1,
+                0,
+                mergedRoot
+            );
+        }
+        this.rebuildHiddenGaps();
+    }
+
+    private seedMissingEndpointPosition(sourceId: string, targetId: string, edgeId: string) {
+        const source = this.positions.get(sourceId);
+        const target = this.positions.get(targetId);
+        if (source && !target) {
+            this.entryOrigins.set(targetId, source);
+            this.positions.set(targetId, this.positionNear(source, edgeId));
+        } else if (!source && target) {
+            this.entryOrigins.set(sourceId, target);
+            this.positions.set(sourceId, this.positionNear(target, edgeId));
+        } else if (!source && !target) {
+            const sourcePosition = this.positionNear(DEFAULT_POSITION, edgeId);
+            this.entryOrigins.set(sourceId, DEFAULT_POSITION);
+            this.entryOrigins.set(targetId, sourcePosition);
+            this.positions.set(sourceId, sourcePosition);
+            this.positions.set(targetId, this.positionNear(sourcePosition, `${edgeId}-target`));
+        }
+    }
+
+    private moveClusterBeside(
+        movingRoot: string,
+        movingEndpointId: string,
+        fixedEndpointId: string,
+        edgeId: string
+    ) {
+        const movingEndpoint = this.positions.get(movingEndpointId) || DEFAULT_POSITION;
+        const fixedEndpoint = this.positions.get(fixedEndpointId) || DEFAULT_POSITION;
+        let dx = movingEndpoint.x - fixedEndpoint.x;
+        let dy = movingEndpoint.y - fixedEndpoint.y;
+        if (Math.hypot(dx, dy) < 1) {
+            const seeded = this.positionNear(fixedEndpoint, edgeId);
+            dx = seeded.x - fixedEndpoint.x;
+            dy = seeded.y - fixedEndpoint.y;
+        }
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const desired = {
+            x: fixedEndpoint.x + (dx / distance) * 148,
+            y: fixedEndpoint.y + (dy / distance) * 148
+        };
+        const translation = {
+            x: desired.x - movingEndpoint.x,
+            y: desired.y - movingEndpoint.y
+        };
+        this.nodes.forEach((_, nodeId) => {
+            if (this.find(nodeId) !== movingRoot) return;
+            const position = this.positions.get(nodeId) || movingEndpoint;
+            this.positions.set(nodeId, {
+                x: position.x + translation.x,
+                y: position.y + translation.y
+            });
+        });
+    }
+
+    private relaxCluster(root: string, iterations: number) {
+        const ids = [...this.nodes.keys()].filter(
+            (nodeId) => this.find(nodeId) === root && this.positions.has(nodeId)
+        );
+        if (ids.length < 2) return;
+        const centerBefore = ids.reduce(
+            (center, nodeId) => {
+                const position = this.positions.get(nodeId) || DEFAULT_POSITION;
+                center.x += position.x / ids.length;
+                center.y += position.y / ids.length;
+                return center;
+            },
+            { x: 0, y: 0 }
+        );
+        const particles = new Map(
+            ids.map((id) => {
+                const position = this.positions.get(id) || centerBefore;
+                return [id, { ...position, hidden: false, id, vx: 0, vy: 0 } satisfies Particle];
+            })
+        );
+        const clusterEdges = [...this.edges.values()].filter(
+            (edge) =>
+                particles.has(edge.sourceNodeId || "") && particles.has(edge.targetNodeId || "")
+        );
+        for (let iteration = 0; iteration < iterations; iteration += 1) {
+            const forces = new Map<string, Position>();
+            ids.forEach((id, index) => {
+                const particle = particles.get(id)!;
+                addForce(
+                    forces,
+                    id,
+                    (centerBefore.x - particle.x) * 0.004,
+                    (centerBefore.y - particle.y) * 0.004
+                );
+                for (let otherIndex = index + 1; otherIndex < ids.length; otherIndex += 1) {
+                    const otherId = ids[otherIndex];
+                    const other = particles.get(otherId)!;
+                    const dx = other.x - particle.x;
+                    const dy = other.y - particle.y;
+                    const distance = Math.max(1, Math.hypot(dx, dy));
+                    const magnitude = Math.min(2.8, 12_000 / (distance * distance));
+                    addForce(
+                        forces,
+                        id,
+                        (-dx / distance) * magnitude,
+                        (-dy / distance) * magnitude
+                    );
+                    addForce(
+                        forces,
+                        otherId,
+                        (dx / distance) * magnitude,
+                        (dy / distance) * magnitude
+                    );
+                }
+            });
+            clusterEdges.forEach((edge) =>
+                applySpring(
+                    particles,
+                    forces,
+                    edge.sourceNodeId || "",
+                    edge.targetNodeId || "",
+                    148,
+                    0.022
+                )
+            );
+            particles.forEach((particle) => {
+                const force = forces.get(particle.id) || { x: 0, y: 0 };
+                particle.vx = (particle.vx + force.x) * 0.7;
+                particle.vy = (particle.vy + force.y) * 0.7;
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+            });
+        }
+        const centerAfter = [...particles.values()].reduce(
+            (center, particle) => {
+                center.x += particle.x / particles.size;
+                center.y += particle.y / particles.size;
+                return center;
+            },
+            { x: 0, y: 0 }
+        );
+        particles.forEach((particle) => {
+            this.positions.set(particle.id, {
+                x: particle.x + centerBefore.x - centerAfter.x,
+                y: particle.y + centerBefore.y - centerAfter.y
+            });
+        });
+    }
+
+    private positionNear(position: Position, seed: string): Position {
+        let hash = 0;
+        for (let index = 0; index < seed.length; index += 1) {
+            hash = (hash * 31 + seed.charCodeAt(index)) | 0;
+        }
+        const angle = ((Math.abs(hash) % 360) * Math.PI) / 180;
+        return {
+            x: position.x + Math.cos(angle) * 148,
+            y: position.y + Math.sin(angle) * 148
+        };
+    }
+
+    private addNode(node: AtlasNodeRecord) {
+        this.nodes.set(node.id, node);
+        this.parents.set(node.id, node.id);
+        this.sizes.set(node.id, 1);
+    }
+
+    private find(nodeId: string): string {
+        const parent = this.parents.get(nodeId) || nodeId;
+        if (parent === nodeId) return nodeId;
+        const root = this.find(parent);
+        this.parents.set(nodeId, root);
+        return root;
+    }
+
+    private union(leftId: string, rightId: string): string {
+        let leftRoot = this.find(leftId);
+        let rightRoot = this.find(rightId);
+        if (leftRoot === rightRoot) return leftRoot;
+        if ((this.sizes.get(leftRoot) ?? 1) < (this.sizes.get(rightRoot) ?? 1)) {
+            [leftRoot, rightRoot] = [rightRoot, leftRoot];
+        }
+        this.parents.set(rightRoot, leftRoot);
+        this.sizes.set(
+            leftRoot,
+            (this.sizes.get(leftRoot) ?? 1) + (this.sizes.get(rightRoot) ?? 1)
+        );
+        this.sizes.delete(rightRoot);
+        return leftRoot;
+    }
+
+    private orderVisibleClustersByPosition() {
+        const centers = new Map<string, { count: number; x: number; y: number }>();
+        this.positions.forEach((position, nodeId) => {
+            const root = this.find(nodeId);
+            const center = centers.get(root) || { count: 0, x: 0, y: 0 };
+            center.count += 1;
+            center.x += position.x;
+            center.y += position.y;
+            centers.set(root, center);
+        });
+        const overall = [...centers.values()].reduce(
+            (value, center) => ({
+                x: value.x + center.x / center.count,
+                y: value.y + center.y / center.count
+            }),
+            { x: 0, y: 0 }
+        );
+        const count = Math.max(1, centers.size);
+        overall.x /= count;
+        overall.y /= count;
+        return [...this.visibleClusterRoots].sort((left, right) => {
+            const leftCenter = centers.get(left) || { count: 1, x: 0, y: 0 };
+            const rightCenter = centers.get(right) || { count: 1, x: 0, y: 0 };
+            return (
+                Math.atan2(
+                    leftCenter.y / leftCenter.count - overall.y,
+                    leftCenter.x / leftCenter.count - overall.x
+                ) -
+                Math.atan2(
+                    rightCenter.y / rightCenter.count - overall.y,
+                    rightCenter.x / rightCenter.count - overall.x
+                )
+            );
+        });
+    }
+
+    private rebuildHiddenGaps() {
+        this.hiddenGaps.clear();
+        if (this.clusterOrder.length <= 1) return;
+        this.clusterOrder.forEach((leftRoot, index) => {
+            const rightRoot = this.clusterOrder[(index + 1) % this.clusterOrder.length];
+            this.hiddenGaps.set(positionKey(leftRoot, rightRoot), [leftRoot, rightRoot]);
+        });
+    }
+
+    private hasRemoval(graph: AtlasGraphRecord) {
+        const nodeIds = new Set(graph.nodes.map((node) => node.id));
+        const edgeIds = new Set(graph.edges.map((edge) => edge.id));
+        return (
+            [...this.nodes.keys()].some((id) => !nodeIds.has(id)) ||
+            [...this.edges.keys()].some((id) => !edgeIds.has(id))
+        );
+    }
+
+    private project(graph: AtlasGraphRecord): AtlasForceLayoutResult {
+        const visibleIds = new Set(
+            graph.nodes
+                .filter(
+                    (node) =>
+                        this.visibleClusterRoots.has(this.find(node.id)) &&
+                        this.positions.has(node.id)
+                )
+                .map((node) => node.id)
+        );
+        return {
+            edges: graph.edges
+                .filter(
+                    (edge) =>
+                        visibleIds.has(edge.sourceNodeId || "") &&
+                        visibleIds.has(edge.targetNodeId || "")
+                )
+                .map((edge) => ({ ...edge, relationLabel: relationLabel(edge.relationType) })),
+            nodes: graph.nodes
+                .filter((node) => visibleIds.has(node.id))
+                .map((node) => {
+                    const position = this.positions.get(node.id) || DEFAULT_POSITION;
+                    const entryOrigin = this.entryOrigins.get(node.id);
+                    return {
+                        entryOffset: entryOrigin
+                            ? {
+                                  x: entryOrigin.x - position.x,
+                                  y: entryOrigin.y - position.y
+                              }
+                            : undefined,
+                        id: node.id,
+                        node,
+                        position: {
+                            x: position.x - ATLAS_NODE_SIZE.width / 2,
+                            y: position.y - ATLAS_NODE_SIZE.height / 2
+                        }
+                    };
+                })
+        };
+    }
+}

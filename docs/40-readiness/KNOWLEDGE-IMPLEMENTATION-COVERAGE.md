@@ -14,7 +14,7 @@
 - Admin 工作台已接通快照概览、最近关系、一跳关系的渐进只读画布和活动时间线。它目前没有页面级搜索、质量待办、门类层导航或对象详情分流。
 - 图谱治理已接通发布节点/边分页、详情、创建/编辑、删除影响预览和确认，以及节点合并；后端仍有节点拆分接口，但当前 Admin 页面不把它作为已交付流程。
 - 素材管理已由 Knowledge 服务组合 Classics 可见稿件和图谱统计，并提供素材详情、草稿节点/边编辑、候选采用、发布/撤回和批量操作的接口。提取任务页只承担跨素材任务查询和失败重试；候选处置留在素材详情。
-- Portal `/knowledge/atlas` 已替换为三才图会总谱预览：调用 `POST /api/portal/knowledge/graph/atlas/overview/get`、`recent-edges/list` 与 `one-hop-edges/list`，显示正式节点、关系和覆盖素材统计，并以渐进加载的只读力导向画布预览公开关系。节点双击只追加该节点的一跳关系，不收缩既有图；画布只渲染真实节点与关系，簇间隐藏节点只参与布局计算。
+- Portal `/knowledge/atlas` 已替换为三才图会总谱预览：调用 `POST /api/portal/knowledge/graph/atlas/overview/get`、`recent-edges/list` 与 `one-hop-edges/list`，显示正式节点、关系和覆盖素材统计。首帧完成后每 1.2 秒按节点在既有关系数据中的总边数降序选择当前可见的核心节点渐进展开，每步最多追加 6 条关系，自动阶段最多保留 100 个节点；最后一批对受影响簇执行 180 轮局部力导向计算，节点双击仍可追加一跳关系。簇归属由增量并查集维护，常规新增边仅对所属或合并后的簇执行 48 轮局部力导向松弛，其他簇位置保持不变；新节点从其既有邻接节点发射，旧节点随局部斥力向外过渡，已展开节点以加粗边框区分。
 - 三才图会稿件详情已提供“阅读 / 知识图谱”双视图；首次打开图谱时调用 `POST /api/portal/knowledge/graph/material/get`，展示当前稿件已发布对象、关系、搜索高亮和完整关系三元组。稿件图与 Atlas 共用 `KnowledgeGraphCanvas`，但稿件详情仍独立承担加载、失败、空状态和对象关系面板。
 - `graph-result`、`refinement` 等旧 Admin 路由仍在代码中，但不在当前图谱菜单 seed 内；它们不能与新双空间图谱的完成状态混写。
 
@@ -38,6 +38,7 @@
 | 2026-08-20 | Portal Web `format`、`lint`、`build`、`test` | Passed; 54 tests。 |
 | 2026-08-20 | 本地 Portal Atlas 浏览器验收 | Passed; `http://localhost:5174/knowledge/atlas` 通过运行中 Portal API 显示 44 个节点、40 条真实关系及统计数据。 |
 | 2026-08-20 | Portal 稿件图共享画布与详情视图验证 | Passed; `format:check`、`lint`、`build` 和 20 files / 56 tests；浏览器以临时只读演示数据验证稿件图懒加载、节点选择和“来源对象—关系—目标对象”三元组，未验证真实 Portal API。 |
+| 2026-08-20 | Portal Atlas 增量簇与自动展开验证 | Passed; `format:check`、`lint`、`build` 和 21 files / 58 tests；真实 Portal API 浏览器首帧显示 44 个节点，单步自动展开后显示 46 个节点和 1 个加粗边框节点，无控制台错误。 |
 
 工作台专项证据见 [`KNOWLEDGE-GRAPH-WORKBENCH-EVIDENCE.md`](./KNOWLEDGE-GRAPH-WORKBENCH-EVIDENCE.md)。旧版 2026-07-09 的“图谱版本/世系/精修已完成”验证不再用于判断当前双空间图谱。
 
@@ -53,6 +54,6 @@
 | 整体发布与撤回 | 部分完成 | 单份和批量预览/确认接口与素材页服务层存在；需逐项验证冲突、冻结和撤回的真实事务语义。 |
 | 删除生命周期 | 部分完成 | 删除预检、变更决策、任务查询和重试接口及直达页面存在；需真实运行时验证保留贡献与撤回关联。 |
 | JSON 导入导出 | 后端已实现，前端验收缺失 | 接口存在；尚未确认当前 Admin 页面提供完整入口和运行时校验。 |
-| Portal Atlas 总谱预览 | 已完成，本地运行时已验收 | Portal 调用 Atlas overview、recent edges 和 one-hop edges 公开接口；通过共享 `KnowledgeGraphCanvas` 以图标节点、悬浮名称、直线关系和渐进力导向布局展示总谱；节点双击仅展开一跳关系。 |
+| Portal Atlas 总谱预览 | 已完成，本地运行时已验收 | Portal 调用 Atlas overview、recent edges 和 one-hop edges 公开接口；通过共享 `KnowledgeGraphCanvas` 展示总谱，复用最近关系数据定时展开，通过增量并查集维护簇合并，并保留节点双击一跳展开。 |
 | Portal 稿件图 | 前端已接入，真实运行时待验收 | 三才图会详情懒加载 `GraphPortalController` 的按稿件可见性接口，通过共享画布展示当前稿件已发布图谱，并提供搜索、对象关系三元组及加载、失败和空状态；演示数据浏览器流程已通过，真实发布和不可见空状态待验收。 |
 | 旧图谱页面迁移 | 未完成 | `graph-result`、`refinement` 及旧 Portal 知识展示仍在代码中，需单独迁移或明确保留。 |

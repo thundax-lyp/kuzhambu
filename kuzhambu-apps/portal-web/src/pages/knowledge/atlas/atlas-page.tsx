@@ -5,7 +5,8 @@ import { useAtlasProjection } from "./use-atlas-projection";
 import "./atlas-page.css";
 
 export const KnowledgeAtlasPage = () => {
-    const { expandNode, graph, graphState, overview } = useAtlasProjection();
+    const { autoExpansionComplete, expandedNodeIds, expandNode, graph, graphState, overview } =
+        useAtlasProjection();
     const metrics = [
         ["正式节点", overview?.publishedNodeCount],
         ["关系", overview?.publishedEdgeCount],
@@ -25,6 +26,8 @@ export const KnowledgeAtlasPage = () => {
                     <p className="knowledge-atlas-error">总谱暂不可用，请稍后重试。</p>
                 ) : (
                     <AtlasWorkbenchCanvas
+                        finalRelaxation={autoExpansionComplete}
+                        expandedNodeIds={expandedNodeIds}
                         graph={graph}
                         loading={graphState === "loading"}
                         onNodeExpand={expandNode}

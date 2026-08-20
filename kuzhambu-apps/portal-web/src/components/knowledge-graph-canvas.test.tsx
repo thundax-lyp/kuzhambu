@@ -16,12 +16,21 @@ vi.mock("@xyflow/react", () => ({
         nodes
     }: {
         children: React.ReactNode;
-        nodes: { id: string; position: { x: number; y: number } }[];
+        nodes: {
+            data: { entryOffset?: { x: number; y: number } };
+            id: string;
+            position: { x: number; y: number };
+        }[];
     }) => (
         <div>
             {nodes.map((node) => (
                 <span
                     key={node.id}
+                    data-entry-offset={
+                        node.data.entryOffset
+                            ? `${node.data.entryOffset.x},${node.data.entryOffset.y}`
+                            : undefined
+                    }
                     data-testid={`shared-graph-node-${node.id}`}
                     data-position={`${node.position.x},${node.position.y}`}
                 />
@@ -54,5 +63,22 @@ describe("KnowledgeGraphCanvas", () => {
             screen.getByTestId(`shared-graph-node-${id}`).getAttribute("data-position")
         );
         expect(new Set(positions).size).toBe(3);
+    });
+
+    it("passes a new node entry offset to the renderer", () => {
+        render(
+            <KnowledgeGraphCanvas
+                ariaLabel="发射动画图谱"
+                graph={{
+                    nodes: [
+                        { id: "1", name: "已有节点" },
+                        { id: "2", entryOffset: { x: -120, y: 24 }, name: "新节点" }
+                    ],
+                    edges: [{ id: "11", sourceNodeId: "1", targetNodeId: "2" }]
+                }}
+            />
+        );
+
+        expect(screen.getByTestId("shared-graph-node-2").dataset.entryOffset).toBe("-120,24");
     });
 });
