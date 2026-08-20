@@ -10,8 +10,10 @@ import { MaterialListPanel } from "./material-list-panel";
 
 vi.mock("@/pages/knowledge/graph-material/graph-material-service", () => ({
     createBatchExtraction: vi.fn(),
+    previewBatchPublication: vi.fn(),
     previewPublication: vi.fn(),
     previewWithdrawal: vi.fn(),
+    publishBatch: vi.fn(),
     publishMaterial: vi.fn(),
     retryExtraction: vi.fn(),
     withdrawMaterial: vi.fn()
@@ -179,6 +181,76 @@ describe("MaterialListPanel", () => {
             "title",
             "仅可对状态一致且可发布或可撤回的素材执行批量操作"
         );
+    });
+
+    it("publishes a batch from direct preview records and reuses same-key matches", async () => {
+        const record = graphMaterialMockListRecords[3];
+        const material = record.material!;
+        vi.mocked(service.previewBatchPublication).mockResolvedValue({
+            materials: [
+                {
+                    edges: [],
+                    issues: [],
+                    materialLockVersion: material.lockVersion!,
+                    materialRef: material.contentRef,
+                    nodes: [
+                        {
+                            matchType: "CONFLICT",
+                            matchedObjectId: "2001",
+                            materialObjectId: "1001"
+                        }
+                    ],
+                    previewToken: "preview-1004",
+                    publishable: true
+                }
+            ]
+        });
+        vi.mocked(service.publishBatch).mockResolvedValue({
+            materials: [
+                {
+                    contentRef: material.contentRef,
+                    result: {
+                        contentRef: material.contentRef,
+                        createdEdgeCount: "0",
+                        createdNodeCount: "0",
+                        materialStatus: "PUBLISHED",
+                        reusedEdgeCount: "0",
+                        reusedNodeCount: "1",
+                        success: true
+                    },
+                    success: true
+                }
+            ]
+        });
+        const onRefreshMaterials = vi.fn(async () => undefined);
+        renderPanel(
+            <MaterialListPanel dataSource={[record]} onRefreshMaterials={onRefreshMaterials} />
+        );
+        const user = userEvent.setup();
+
+        await user.click(screen.getAllByRole("checkbox")[1]);
+        await user.click(screen.getByTestId("knowledge-graph-material-batch-publication-button"));
+
+        await waitFor(() => {
+            expect(vi.mocked(service.publishBatch)).toHaveBeenCalledWith({
+                materials: [
+                    {
+                        conflictDecisions: [
+                            {
+                                action: "REUSE_MATCH",
+                                matchedObjectId: "2001",
+                                materialObjectId: "1001",
+                                objectType: "NODE"
+                            }
+                        ],
+                        contentRef: material.contentRef,
+                        materialLockVersion: material.lockVersion,
+                        previewToken: "preview-1004"
+                    }
+                ]
+            });
+        });
+        expect(onRefreshMaterials).toHaveBeenCalledTimes(1);
     });
 
     it("withdraws a published material after previewing it", async () => {

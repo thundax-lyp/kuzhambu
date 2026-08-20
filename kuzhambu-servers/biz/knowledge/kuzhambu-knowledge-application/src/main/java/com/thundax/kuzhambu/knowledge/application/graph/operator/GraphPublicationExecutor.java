@@ -227,9 +227,7 @@ public class GraphPublicationExecutor {
             Long materialObjectId = row.path("materialObjectId").asLong();
             boolean conflict = "CONFLICT".equals(row.path("matchType").asText());
             GraphPublicationConflictDecision decision = decision(decisions, objectType, materialObjectId);
-            if (conflict && decision == null
-                    || !conflict && decision != null
-                    || decision != null && !seen.add(materialObjectId)) {
+            if (!conflict && decision != null || decision != null && !seen.add(materialObjectId)) {
                 throw GraphPublicationPreviewToken.stale();
             }
             Long matchedObjectId = row.path("matchedObjectId").isMissingNode()
@@ -253,13 +251,12 @@ public class GraphPublicationExecutor {
         if (matchedObjectId == null) {
             return;
         }
-        if (decision == null) {
+        if (decision != null
+                && "REUSE_MATCH".equals(decision.action())
+                && !matchedObjectId.equals(decision.matchedObjectId())) {
             throw GraphPublicationPreviewToken.stale();
         }
-        if ("REUSE_MATCH".equals(decision.action()) && !matchedObjectId.equals(decision.matchedObjectId())) {
-            throw GraphPublicationPreviewToken.stale();
-        }
-        if ("CREATE_NEW".equals(decision.action()) && decision.matchedObjectId() != null) {
+        if (decision != null && "CREATE_NEW".equals(decision.action()) && decision.matchedObjectId() != null) {
             throw GraphPublicationPreviewToken.stale();
         }
         if ("NODE".equals(objectType)) {
@@ -268,7 +265,7 @@ public class GraphPublicationExecutor {
                 throw GraphPublicationPreviewToken.stale();
             }
             GraphPublishedNode effective = matchedNodes.get(new GraphMaterialNodeId(materialObjectId));
-            if ("REUSE_MATCH".equals(decision.action())
+            if ((decision == null || "REUSE_MATCH".equals(decision.action()))
                     && (effective == null || !current.getId().equals(effective.getId()))) {
                 throw GraphPublicationPreviewToken.stale();
             }
@@ -278,7 +275,7 @@ public class GraphPublicationExecutor {
                 throw GraphPublicationPreviewToken.stale();
             }
             GraphPublishedEdge effective = matchedEdges.get(new GraphMaterialEdgeId(materialObjectId));
-            if ("REUSE_MATCH".equals(decision.action())
+            if ((decision == null || "REUSE_MATCH".equals(decision.action()))
                     && (effective == null || !current.getId().equals(effective.getId()))) {
                 throw GraphPublicationPreviewToken.stale();
             }
