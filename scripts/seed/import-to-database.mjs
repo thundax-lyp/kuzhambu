@@ -500,7 +500,7 @@ const verifySeed = async (connection) => {
        (SELECT COUNT(*) FROM ai_model WHERE enabled = 1 AND base_url <> '' AND encrypted_api_key IS NOT NULL) AS ready_models,
        (SELECT COUNT(*) FROM ai_business_config WHERE enabled = 1) AS ai_configs,
        (SELECT api_source FROM ai_model WHERE id = 2) AS primary_ai_api_source,
-       (SELECT model_id FROM ai_business_config WHERE capability = 'KNOWLEDGE_GRAPH_EXTRACT' AND enabled = 1) AS graph_extraction_model_id,
+       (SELECT model_id FROM ai_business_config WHERE capability = 'KNOWLEDGE_GRAPH_EXTRACT' AND enabled = 1 ORDER BY priority ASC, id ASC LIMIT 1) AS graph_extraction_model_id,
        (SELECT COUNT(*) FROM classics_sancai_entry) AS sancai_entries,
        (SELECT COUNT(*) FROM classics_wangqi_document) AS wangqi_documents,
        (SELECT COUNT(*) FROM classics_ming_customs_entry) AS ming_entries`,
