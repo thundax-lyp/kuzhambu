@@ -1,500 +1,111 @@
 ---
 name: kuzhambu-pr-code-review
-description: Kuzhambu strict current-branch PR code review workflow for direct slash-command invocation. Use this whenever reviewing committed current-branch changes against `main`, especially when the diff changes runtime contracts, task/status flows, permissions, frontend forms, local-vs-remote state boundaries, async refresh behavior, wrappers around controlled inputs, or other places where behavior can drift across layers even when individual files look reasonable. It reports only actionable issues introduced or exposed by the branch diff and does not modify code.
+description: Kuzhambu strict current-branch PR code review workflow for direct slash-command invocation. Review committed changes against `main` through system commitments, failure models, runtime contract surfaces, and closed coverage ledgers. Report only actionable P0-P3 findings introduced or exposed by the branch diff. Do not modify code.
+compatibility: Requires Git and the repository Node.js 26 runtime.
 ---
 
 # Kuzhambu PR Code Review
 
-请对当前分支相对于 `main` 分支的代码变更进行一次严格的 Pull Request Review。
+对当前分支相对于 `main` 的已提交变更执行严格、只读的 Pull Request Review。把 PR 视为一组被改变的系统承诺，沿真实运行链路寻找失效点；不要把 review 做成逐行风格检查。
 
-这份 skill 不再把 review 当成“逐段阅读 diff 并做通用检查”，而是当成“对本 PR 改变的系统承诺做失效模式分析”。目标不是找风格问题，而是尽量在首轮 review 中识别：
+## 调用与边界
 
-- 契约在链路中途被改坏，但最终消费点或校验点没跟上
-- 同一能力在等价路径、多 taskType、多状态、多入口之间不一致
-- 权限展示、身份来源、后端校验、seed 数据或资源访问路径脱节
-- 前端受控表单、wrapper、局部状态、异步刷新和 effect 依赖边界失稳
-- 请求规模被放大成全量扫描、N+1 或并发请求风暴
-- 测试只覆盖 happy path，掩盖真实时序、历史数据或刷新路径问题
-- 门禁、流程、skill 或自动化脚本自身没有真实约束到它声称约束的系统行为
+- 本 skill 只用于 slash command 直接调用。
+- 只输出审查结果；不要修改或格式化代码、生成补丁、提交、推送、回复评论或委派审查。
+- 默认只审 `main...HEAD`。只有用户明确要求时才纳入工作区变更。
+- 上下文中的既有问题只有在当前 diff 引入、暴露、连通或放大它时才能成为 finding。
 
-## 调用方式
+## 1. 建立审查基线
 
-本 skill 只用于 slash command 直接调用，不定义额外自然语言触发或适用语义。
+1. 确认当前目录位于 Kuzhambu 仓库内。
+2. 阅读 `docs/AGENTS.md`，按其中路由最小化加载治理文档。
+3. 运行并完整读取：
 
-## 前置步骤
+   ```sh
+   node "$(git rev-parse --show-toplevel)/.codex/skills/kuzhambu-pr-code-review/scripts/collect-review-context.mjs" context --base main
+   node "$(git rev-parse --show-toplevel)/.codex/skills/kuzhambu-pr-code-review/scripts/collect-review-context.mjs" diff --base main
+   ```
 
-1. Confirm the current working directory is inside the Kuzhambu repository.
-2. Read `docs/AGENTS.md` for document routing.
+   `context` 已过滤空数据和 Git 展示噪声，并整理基线、工作区变更、提交、模块、changed files 和 diff statistics。`diff` 输出待审 patch。
 
-## 必须先执行并阅读
+4. 如果完整 patch 过大，依据 `context` 的模块清单分段读取，直到覆盖全部 changed files：
 
-按顺序执行并阅读以下命令输出：
+   ```sh
+   node "$(git rev-parse --show-toplevel)/.codex/skills/kuzhambu-pr-code-review/scripts/collect-review-context.mjs" diff --base main --module '<module>'
+   ```
+
+   必要时用 `--path '<repo-relative-path>'` 进一步缩小范围。分段读取不能代替 changed-file 全覆盖。
+
+5. 保存 `snapshot` 中的 `head`、`base_sha`、`merge_base`、`diff_hash` 和完整 changed-file 集，作为关闭审查时的比较基线。
+
+如果工作区存在未提交或未跟踪内容：
+
+- 用户只要求审查分支或 PR 时，不纳入 findings，并在 summary 中说明排除范围。
+- 用户明确要求审查工作区时，额外读取对应 diff 和文件；不要把它混入已提交 diff 的 ledger。
+
+如果 committed diff 为空，按 0 个 changed file、0 个 contract surface、coverage complete 输出 `No actionable findings.`，并说明当前分支相对 `main` 没有已提交差异。
+
+## 2. 加载必要上下文
+
+始终以 `docs/AGENTS.md` 为文档路由入口。按 changed files 和真实契约影响选择文档：
+
+- Java servers：`ARCHITECTURE.md`、`SERVERS-ARCHITECTURE.md`；按需补充架构细则、数据库规则、统一 ID 设计和相关接口文档。
+- admin-web：`ARCHITECTURE.md`、`ADMIN-WEB-RULES.md`；涉及 UI、布局、组件、动效、视觉资产或测试标识时再读 `UI-RULES.md`。
+- portal-web：`ARCHITECTURE.md`、`PORTAL-WEB-RULES.md`；涉及 UI 时再读 `UI-RULES.md`。
+- Python workers：`ARCHITECTURE.md`、`WORKERS-RULES.md`；跨服务协议或 worker 能力变化时再读相关 requirement、design 和 interface。
+- 文档、TODO、PR、skill、CI 或收口流程：读取直接相关的 document、TODO 或 PR 治理文档。
+- 排序语义发生变化时，读取 `SORT-ORDERING-SPECIAL-DESIGN.md`。仅出现 `priority`、`status`、`Request` 等词但未改变相关语义，不触发专项文档。
+
+## 3. 识别系统承诺
+
+结合 diff、commit message、测试、文档、接口、路由和配置变更，把 PR 归纳成 1-5 条稳定语义，而不是文件列表。常见承诺包括：
+
+- 用户能力：入口、操作、批量、详情、分享、下载、预览或 apply 能力仍可达，或被明确移除。
+- 接口响应：正常、非法、业务拒绝、权限失败和技术失败保持既定状态码、错误码与消息语义。
+- 状态流转：任务、候选、版本、日志、SSE、轮询和终态结果在所有路径上一致。
+- 数据语义：业务 ID、外部 key、资源引用、token、原始文本、历史值和 partial value 不被错误归一化。
+- 权限语义：菜单、路由、按钮、直接访问、后端鉴权、seed 和资源 URL 使用一致的权限事实源。
+- 验证或交付：门禁、测试、CI、skill、push、rebase 和 review 流程实际约束其声称覆盖的行为。
+
+替换、删除、迁移、收敛或重新组织能力时，同时记录被替换、绕过或收窄的旧承诺，并验证新路径是否等价承载。
+
+## 4. 选择失效模型并建立运行时模型
+
+完整读取 [`references/failure-models.md`](./references/failure-models.md)，选择 1-3 个最相关的主风险模型。
+
+随后读取 [`references/review-checks.md`](./references/review-checks.md)：先对全部 changed hunks 执行必经基础检查，再执行由系统承诺、主风险模型和 changed hunk 真实触发的运行时模型、专项检查和模块检查。触发字段检查时，必须追到首个真实 validator 和最终 consumer/sink，不能停在 DTO 或 assembler 构造成功处。
+
+## 5. 审查完整 diff
+
+1. 从 producer、adapter、validator、consumer/sink、fallback、历史数据、持久化、迁移、等价路径、测试和文档中建立必要的 contract surfaces。
+2. 检查所有 changed files，并读取足够的上下文、调用点和测试来证明问题是否成立。
+3. 对账新增路径与被替换、删除、绕过或收窄的旧路径。
+4. 至少推演一个与本 PR 有关的反例：历史数据、异常、权限差异、并发、刷新时序、任务交错、性能规模或治理失败。
+5. 只报告满足以下条件的问题：
+   - 影响正确性、安全、性能、架构或维护性；
+   - 离散、可操作，并有具体触发路径和可观察影响；
+   - 由本分支引入、暴露或实质加重；
+   - 作者知道后大概率会修复。
+
+不要报告纯风格、个人偏好、无后果的“可更优雅”、无法证明的推测或与 diff 无关的既有问题。相同根因合并成一条 finding。
+
+## 6. 关闭 coverage ledger
+
+按 [`references/coverage-and-output.md`](./references/coverage-and-output.md) 建立并关闭：
+
+- changed-file ledger：完整覆盖脚本返回的 changed files；
+- contract-surface ledger：覆盖每条系统承诺、每个主风险模型和每个被触发的专项检查。
+
+`mechanical` 和 `not-applicable` 是读完对应 diff 后的审查结论，不是免审标签。任何 `deferred`、缺失条目、数量不守恒或缺失映射都表示 coverage incomplete。
+
+## 7. 重新校验并输出
+
+输出前重新运行：
 
 ```sh
-git status
-git diff --stat main...HEAD
-git diff --name-status main...HEAD
-git diff main...HEAD
+node "$(git rev-parse --show-toplevel)/.codex/skills/kuzhambu-pr-code-review/scripts/collect-review-context.mjs" snapshot --base main
 ```
 
-如果 `git status` 显示未提交变更或未跟踪文件，先判断它们是否属于本次待审内容：
+比较 `head`、`base_sha`、`merge_base`、`diff_hash` 和完整 changed-file 集。任一项变化都使原 ledger 失效；必须按新 diff 重建并重新审查。
 
-- 如果用户明确要求审查工作区变更，再额外读取相关 `git diff` / 文件内容。
-- 如果用户只要求审查“本分支”或 PR，默认只审 `main...HEAD`，并在 summary 中简短说明工作区还有未提交/未跟踪内容未纳入审查。
-
-如果 `git diff main...HEAD` 为空，把 changed-file 总数和 ledger 总数都记为 0、contract surfaces 记为 none、coverage 记为 complete，再输出 `No actionable findings.`，并在 summary 中说明当前分支相对 `main` 无已提交代码差异。
-
-## 上下文加载
-
-遵循 `docs/AGENTS.md` 的最小文档加载原则。根据 diff 类型读取必要治理文档：
-
-- Java servers 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/SERVERS-ARCHITECTURE.md`；涉及目录、命名、模块归属或依赖方向时，再读 `docs/00-governance/SERVERS-ARCHITECTURE-RULES.md`；涉及数据库、表字段、索引、MyBatis、查询、分页、迁移或缓存真相源时，再读 `docs/00-governance/SERVERS-DATABASE-RULES.md`；涉及业务 ID、ULID、强类型标识或 token 边界时，再读 `docs/00-governance/SERVERS-UNIFIED-ID-DESIGN.md`。
-- admin-web 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/ADMIN-WEB-RULES.md`；涉及 UI、CSS、页面布局、组件、动效、视觉资产、hero、`testId` 或 `data-testid` 时，再读 `docs/00-governance/UI-RULES.md`。
-- portal-web 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/PORTAL-WEB-RULES.md`；涉及 UI、CSS、页面布局、组件、动效、视觉资产、hero、`testId` 或 `data-testid` 时，再读 `docs/00-governance/UI-RULES.md`。
-- Python workers 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/WORKERS-RULES.md`；涉及 worker 能力、接口、流式输出、AI/render 边界或跨服务协议时，再读 `docs/10-requirements/WORKERS-REQUIREMENTS.md`、`docs/30-designs/WORKERS-DESIGN.md` 和相关 `docs/20-interfaces/WORKERS-*-INTERFACE.md`。
-- 文档、TODO、PR 或收口流程变更：读取 `docs/00-governance/DOCUMENT-RULES.md`、`docs/00-governance/TODO-RULES.md` 或 `docs/00-governance/PR-RULES.md` 中与 diff 直接相关的文件。
-
-如果 diff 涉及以下任一关键词或相关接口行为，先阅读 `docs/30-designs/SORT-ORDERING-SPECIAL-DESIGN.md`，并以该专项设计作为排序规则依据：
-
-- `Sortable`
-- `priority`
-- `orderedIds`
-- `*SortRequest`
-- 排序接口、排序拖拽、排序保存或排序回显
-
-## 审查总流程
-
-本 skill 的主流程固定为 7 步，顺序不要跳：
-
-1. **解析 diff 并建立文件基线**：记录当前 `HEAD`、`main`、`git merge-base main HEAD` 和完整 diff hash，从 `git diff --name-status main...HEAD` 取得文件集并按模块归类。
-2. **识别系统承诺**：把 diff 转换成被改变的用户能力、接口语义、状态语义、数据语义、权限语义、验证语义或流程语义。
-3. **归类失效模式**：不要直接找 bug，先判断这个 PR 最可能落入哪些风险模型。
-4. **建立运行时模型和 contract surfaces**：为每条系统承诺、命中的风险模型和触发的强制专项检查建立可追踪的 contract surfaces。
-5. **审查并更新 ledger**：对账新增路径与被替换、删除、绕过或收窄的旧路径，并持续更新 changed-file 和 contract-surface 状态。
-6. **推演边界与时间线**：至少检查一组历史数据、异常路径、并发、刷新时序或治理失败路径。
-7. **重新取 diff 并关闭审查**：重新计算完整基线元组；任一值变化都重建 ledger 并重新审查，否则执行 closure gate 并输出 findings。
-
-如果第 2 步没有识别出系统承诺，或第 4 步没有形成清晰的运行时模型，不要急着给结论。
-
-## 写边界
-
-- 本任务只输出审查结果。
-- 不要修改代码、格式化代码、提交代码、回复评论或生成修复补丁。
-- 即使已经定位到明确缺陷，也先把它作为 finding 报告，而不是直接修复。
-
-## 先理解 PR 意图
-
-在报告问题之前，先通过以下信息推断本分支的主要目标：
-
-- `git diff --stat main...HEAD` 的文件分布
-- `git diff main...HEAD` 中新增、删除和修改的行为
-- commit message、测试文件名、文档变更、接口/路由/配置变更
-
-审查时围绕“本 PR 想完成什么”“diff 实际改变了什么系统承诺”“哪些旧承诺被替换或删除”判断风险，不要把 review 做成逐行风格建议。
-
-如果本 PR 新增或修改共享抽象、公共接口、跨层协议、路由/配置判断、数据访问规则、worker capability、前端表单 wrapper、局部状态 hook 或异步任务流，先提炼它们的运行时契约，再按契约审查调用点和边界情况。
-
-## 系统承诺识别
-
-在选择失效模式之前，先把 PR diff 归纳成 1-5 条系统承诺。系统承诺是当前分支声称让系统保持或改变的稳定语义，不是文件列表。
-
-常见系统承诺包括：
-
-- 用户能力承诺：某个用户入口、操作、批量能力、详情能力、分享/下载/预览/应用能力仍可达或被有意移除。
-- 接口响应承诺：同类输入、非法输入、业务拒绝、权限失败和技术失败继续返回既定状态码、错误码和错误消息。
-- 状态流转承诺：任务、候选、版本、日志、SSE、轮询和终态结果在所有路径上表达同一状态语义。
-- 数据语义承诺：业务 ID、外部 key、资源引用、token、原始文本、partial composite value 和持久化历史值保留各自语义，不被统一转换抹平。
-- 权限语义承诺：菜单、路由、按钮、直接访问、后端鉴权、seed 和资源 URL 以同一个权限事实源约束能力。
-- 验证语义承诺：新增门禁、测试、CI、脚本或 skill 实际覆盖它声称覆盖的对象，并且不会误放行、误拦截或基于过期事实报告成功。
-- 交付流程承诺：push、rebase、force-with-lease、review feedback、CI observation 和 PR 描述同步不会破坏远端状态或让过期信息成为最终结论。
-
-后续 review 必须验证这些承诺在 producer、adapter、validator、consumer、fallback、测试、文档和自动化中一致成立。发现统一封装、统一 fallback、统一 catch、统一 normalize、统一状态映射或统一门禁规则时，优先检查它是否错误合并了不同语义类别。
-
-## 失效模式分类
-
-开始源代码审查前，完整读取 [`references/failure-models.md`](./references/failure-models.md)，从其中选择 1-3 个与本 PR 最相关的主风险模型。后续 review 和 contract-surface ledger 必须使用所选模型的标识与语义。
-
-## 运行时建模要求
-
-命中哪类风险模型，就必须产出哪类最小分析结果。分析结果不必写进最终回复，但必须在内部先做完。
-
-读取跨层上下文是允许的，但上下文代码、旧路径、旧 seed、旧 wrapper、旧消费者本身不自动构成本次 PR finding。只有当当前 diff 满足以下任一条件时，才可以把问题计入 findings：
-
-- 当前 diff 直接引入了缺陷
-- 当前 diff 改变了旧契约，导致旧消费者现在失效
-- 当前 diff 把原本潜伏的问题连通、放大或变成用户可见问题
-- 当前 diff 声称完成了某个闭环，但实际只改了上游或中游，没有改到真实消费点
-
-如果只是借上下文顺手发现既有问题，但无法证明它由当前分支引入或暴露，不要计入 findings；必要时只作为 open question 提及，或忽略。
-
-### 1. 契约链路表
-
-只要 diff 改了字段默认值、可空性、删字段、硬编码、schema、配置来源、状态字段或 request/response 契约，就必须追完整条链路：
-
-- source of truth 是什么
-- producer 在哪里生成
-- adapter / assembler / wrapper 在哪里转发或改写
-- 第一个真实校验点在哪里
-- 第一个真实消费点在哪里
-- 失败是早失败还是晚失败
-
-**硬规则**：不要停在“字段成功构造”这层。必须找到首个真实校验点和最终真实消费点。
-
-### 2. 一致性对账表
-
-只要同一 feature 同时涉及 taskType、status、version、candidate、permission、preview、download、route、resource URL 或 action，就必须列出：
-
-- 列表/树状态使用什么语义
-- 详情状态使用什么语义
-- action / apply / submit 使用什么语义
-- fallback / preview / dialog / new tab 使用什么语义
-- 等价路径之间是否完全一致
-
-### 3. 状态与时间线表
-
-只要有任务、版本、候选、apply、轮询、refetch、fallback、local draft、effect 同步，就必须至少推演 3 条时间线：
-
-1. 旧数据完成后，新数据开始
-2. 新数据开始后，旧数据才回写或 apply
-3. 不同 taskType / section / tab / refresh 交错发生
-
-如果某个时间线会导致页面状态、按钮动作或持久化结果错位，应作为 finding。
-
-### 4. 前端状态边界表
-
-只要改动 admin-web / portal-web 表单、section、drawer、modal、hook 或 wrapper，就必须先回答：
-
-- 哪个组件拥有真实 draft state
-- 哪个组件只是展示或 patch
-- 表单 direct child 还是不是真实受控控件
-- wrapper 是否透明转发 `value/onChange` / `checked/onChange`
-- `initialValues`、`setFieldsValue`、`resetFields` 分别承担什么语义
-- refetch / mutation success 是否会覆盖未保存编辑
-- child unmount 后 parent 展示是否回退到 live/fallback state
-- effect 依赖里的 callback / object identity 是否稳定
-
-### 5. 系统承诺对账表
-
-只要 PR 是替换、删除、迁移、收敛或重新组织能力，就必须列出：
-
-- 被新增或强化的承诺是什么
-- 被替换、删除、绕过或收窄的旧承诺是什么
-- 旧承诺是否被新路径等价承载
-- 如果旧承诺被有意移除，需求、权限、文档、测试和用户入口是否同步表达移除语义
-- 是否存在后端能力、权限 seed、前端入口、测试或文档之间的残留不一致
-
-### 6. 治理能力表
-
-只要 PR 修改门禁、CI、脚本、agent、skill、PR 流程或文档治理规则，就必须列出：
-
-- 该治理能力声称约束什么对象和行为
-- 实际输入源是什么：diff、文件路径、声明类型、编译产物、远端状态、CI 状态、review 评论或用户确认
-- 它会放行什么，拦截什么，跳过什么
-- 当前仓库是否已有样本能证明它不会误放行或误拦截
-- 失败、中断、远端变更或信息过期时，是否能停止并恢复到可审查状态
-
-## 强制专项检查
-
-### A. 字段 producer-to-sink tracing
-
-触发条件：
-
-- diff 改动 `Command`、`Request`、`Response`、`DTO`、`Result`、schema、prompt variables、配置 helper、seed、权限字段、资源 URL、taskType、status
-
-必须动作：
-
-- 用 `rg` 搜这个字段 / 常量 / key 的所有读取点
-- 找到首个真实校验点
-- 找到最终真实消费点
-- 检查测试是否覆盖到消费点，而不是只覆盖构造点
-
-### B. 前端表单 direct-child / wrapper 透明性
-
-触发条件：
-
-- `Form.Item` / `KuzhambuFormItem` 子树结构变更
-- 新增 wrapper 组件包裹输入控件
-
-必须动作：
-
-- 检查 named item 的 direct child 是否仍是实际受控控件，或 wrapper 是否完整转发控件协议
-- 对 select、switch、picker、upload、custom field 等非简单 input 特别警惕
-
-### C. partial patch / refresh / draft 覆盖
-
-触发条件：
-
-- `setFieldsValue`、`resetFields`、`initialValues`、`useEffect` 写表单
-- refetch、mutation success、切换对象、切 tab、切 section
-
-必须动作：
-
-- 推演“同一对象刷新”和“切换到不同对象”两种路径
-- 检查 omitted null fields、partial payload、server NON_NULL 返回是否导致旧值残留
-- 检查 refetch 是否覆盖未保存草稿
-
-### D. 权限与认证路径一致性
-
-触发条件：
-
-- 菜单、permission、role、subject、owner、token、download URL、new tab、资源访问路径变更
-
-必须动作：
-
-- 检查 UI 门控与后端鉴权是否一致
-- 检查身份字段是否来自服务端认证主体
-- 检查 preview、download、open-in-new-tab 是否仍能带上认证语义
-- seed 数据必须追权限展开和消费逻辑，不要只看 SQL / JSON 表面
-
-### E. 性能放大器扫描
-
-触发条件：
-
-- 搜索、树、列表、分页、聚合、跨域 facade 调用、React Query key、循环内调用
-
-必须动作：
-
-- 判断是否把 O(1) / O(page) 放大成 O(N) 或 O(N * remote)
-- 检查是否在 root-only、空过滤、每次键入、每条记录上触发昂贵查询
-- 检查请求是否可 debounce、batch、memoize、skip 或只在必要场景触发
-
-## Coverage ledger
-
-在输出 findings 前维护以下两个 ledger。Ledger 可以直接保留在最终回复中，不需要创建额外文件。
-
-### Changed-file ledger
-
-从 `git diff --name-status main...HEAD` 取得完整文件清单。审查过程中必须把每个 changed file 归入一个模块，并且只能使用一个终态：
-
-- `reviewed`：已经结合 diff 和必要上下文完成行为审查。
-- `mechanical`：纯格式、批量数据重排、生成物或无独立行为的机械变更；必须写明判定依据。
-- `not-applicable`：对识别出的系统承诺没有影响；必须写明原因。
-- `deferred`：缺少必要上下文或未完成审查；必须写明具体缺口。
-
-重命名文件按一条 rename 记录，不要把同一次 rename 当成删除和新增重复计数。测试、seed、配置、迁移、脚本和文档文件同样必须计入。
-
-按以下稳定规则确定模块，不要临时选择不同粒度：
-
-- 根目录治理和仓库级配置：`repo-governance`
-- `docs/**`：`docs`
-- `db/**` 和 seed/import 脚本：`db-seed`
-- `deploy/**`：`deploy`
-- `kuzhambu-servers/**`：`servers:<最小可识别 Maven reactor module 或直接 owning module>`
-- `kuzhambu-apps/<app>/**`：`apps:<app>`
-- `kuzhambu-workers/**`：`workers`
-- 其余路径：`other`，并逐文件说明无法归入上述模块的原因
-
-最终回复按模块汇总文件数，不要默认展开全部文件。每个模块至少报告 `total`、`reviewed`、`mechanical`、`not-applicable` 和 `deferred` 数量；所有模块的 `total` 之和必须等于 diff changed-file 总数，每个模块的各终态数量之和必须等于该模块的 `total`。
-
-对 `mechanical` 和 `not-applicable` 按模块输出简短的“数量 + 原因”分组；同一模块存在多种原因时分别计数，这些原因组的数量之和必须等于对应状态数量。只逐文件列出以下例外：
-
-- `deferred` 文件。
-- 无法可靠归入模块的文件。
-- 需要作为 finding、contract surface 或跨模块链路证据定位的文件。
-
-### Contract-surface ledger
-
-从第 2 步识别出的系统承诺和命中的失效模式派生 contract surfaces。每个 surface 必须说明具体范围，例如 producer、adapter、validator、consumer、fallback、历史数据、持久化、迁移、等价调用路径、测试或文档，并且只能使用一个终态：
-
-- `reviewed`：surface 的相关链路和负空间已经完成对账。
-- `not-applicable`：经检查不影响本 PR；必须写明原因。
-- `deferred`：链路不完整、缺少证据或尚未完成；必须写明具体缺口。
-
-不要预置与当前 PR 无关的大型固定 checklist。Contract surface 必须能回溯到本 PR 改变的系统承诺；同一个承诺跨越多个持久化面、调用路径或协议边界时，拆成足以暴露独立遗漏的多条记录。
-
-强制映射规则：
-
-- 每条系统承诺必须映射到至少一个 contract surface。
-- 每个命中的主风险模型必须映射到至少一个 contract surface。
-- 每个被 diff 触发的强制专项检查必须映射到至少一个 contract surface。
-- 每个 surface 必须至少记录一个 changed-file anchor，以及首个真实 validator、最终 consumer/sink 或可以证明链路终止的明确边界。
-- 找不到 validator、consumer/sink 或明确终点时，surface 必须标记为 `deferred`，不能标记为 `reviewed`。
-
-### Ledger closure gate
-
-- 每个 changed file 在内部归类中、每个已识别的 contract surface 都必须有明确终态。
-- Changed-file 模块计数必须满足总数守恒；计数不一致等同于存在缺失条目。
-- 系统承诺、命中的风险模型和触发的强制专项检查必须全部满足 contract-surface 映射规则；缺少映射等同于 coverage incomplete。
-- `mechanical`、`not-applicable` 和 `deferred` 不能没有理由。
-- 任何缺失条目、无终态条目或 `deferred` 条目都表示 coverage incomplete。
-- Coverage incomplete 时，禁止输出 `No actionable findings.`，禁止无条件建议合并；改为输出 `No confirmed findings, but review coverage is incomplete.`，并在 validation gaps 中列出未完成项。
-- 只有两个 ledger 全部闭合且不存在 `deferred` 时，才允许输出 `No actionable findings.`。
-- 审查开始时记录基线元组：`HEAD`、`main`、`git merge-base main HEAD`、`git diff --binary main...HEAD | git hash-object --stdin` 和 `git diff --name-status main...HEAD` 文件集。
-- 输出前重新计算完整基线元组。即使 `HEAD` 和 changed-file 集合没有变化，只要 `main`、merge base 或完整 diff hash 任一变化，旧 ledger 也立即作废，必须按新 diff 重新归类和审查。
-
-## 边界与时序推演清单
-
-遇到以下改动时，至少手工推演一轮反例：
-
-- **状态/任务/版本**：旧任务 later apply、新任务先开始、不同 taskType 交错
-- **表单/局部状态**：同一对象刷新、切换到另一对象、child unmount、mutation success 后 refetch
-- **权限/身份**：只读角色、无 edit 权限、手工伪造客户端 actor、new tab 访问受保护资源
-- **搜索/树/列表**：root-only、空关键字、快速连续输入、命中大量记录
-- **协议/字段**：字段缺失、null、省略字段、历史数据、旧枚举、空集合、默认配置未命中
-
-## 重点检查
-
-### 1. 正确性
-
-- 逻辑错误、边界条件遗漏、空值处理错误
-- 异常处理不完整，或错误被吞掉导致调用方误判成功
-- 并发、状态同步、生命周期、事务边界和资源释放问题
-- 是否破坏已有功能、数据兼容性、接口兼容性或迁移路径
-- 前后端字段、枚举、路由、DTO、接口契约是否一致
-
-### 2. 架构与结构
-
-- 文件名、文件路径和模块归属是否准确清晰
-- 包结构、模块职责和依赖方向是否符合项目边界
-- 是否存在职责混乱、循环依赖、不必要的抽象或错误的层级穿透
-- 新增代码是否放在正确的工程组、层级和模块中
-- 是否让既有大文件继续膨胀，或把可独立的用户流程塞进不合适的组件/服务
-
-### 3. 安全性与稳定性
-
-- 输入校验、权限检查、越权访问、敏感信息泄露
-- 注入、路径遍历、不安全反序列化、不可信文件处理等风险
-- 运行时配置、默认值和失败降级是否会造成不可预期行为
-- 管理端权限、用户边界、文件上传/下载、OSS、导出、AI API key、第三方 base URL 和日志脱敏
-
-### 4. Java servers 契约
-
-如果 diff 涉及 Java servers，必须检查：
-
-- Controller / application / domain / infra 的依赖方向是否符合治理文档
-- 应用服务事务边界是否覆盖完整写操作，是否把外部 IO 放进不必要的事务
-- Repository 查询条件是否保持权限、业务范围、生命周期状态、分页边界和排序边界
-- DTO / command / response 是否与前端、worker 或公开接口协议一致
-- 强类型 ID、ULID、token、外部 ID 是否没有退化成裸字符串误用
-- 异常、幂等、重复提交、并发更新是否有明确语义
-
-### 5. Frontend 运行时语义
-
-如果 diff 涉及 admin-web / portal-web，必须检查：
-
-- 受控表单 direct child / wrapper 透明性是否仍成立
-- `initialValues`、`setFieldsValue`、`resetFields` 的语义是否清晰且互不覆盖
-- 本地 draft 是否会被 refetch、mutation success、切换对象或切 tab 覆盖
-- callback / object identity 是否会触发 effect 重跑、循环更新或重复写 state
-- preview / download / modal / new tab / route 路径是否仍带着正确的权限与认证语义
-- 新增测试是否覆盖用户可观察行为，而不是只验证内部 helper
-
-### 6. Python workers 契约
-
-如果 diff 涉及 Python workers，必须检查：
-
-- worker capability 输入/输出 schema 是否与 `docs/20-interfaces/` 协议一致
-- 流式输出事件顺序、结束事件、错误事件和 partial result 是否稳定
-- 超时、重试、取消、异常回传是否会让 Java 调用方误判成功或挂起
-- 大文件、大响应和长任务是否有资源上限和清理逻辑
-
-### 7. 测试
-
-- 新增或变更行为是否有测试覆盖
-- 测试是否覆盖失败路径、边界情况、刷新路径、权限差异、历史数据或交错时序
-- 测试是否真正验证用户可观察行为，而不是只绑定实现细节
-- 如果 diff 修改构建、CI、测试框架、校验脚本或依赖版本，重点审查验证链路是否仍能覆盖目标模块
-
-## 报告规则
-
-- Findings 必须放在最前面，按严重程度从高到低排序。
-- 只报告明确、可操作、值得开发者修改的问题。
-- 不要报告纯格式问题，除非它明显影响理解或维护。
-- 不要为了凑数量提出建议。
-- 不报告“可以更优雅”“可以顺手重构”“命名个人偏好”这类没有明确用户可见后果或维护风险的问题。
-- 不把缺少重构、抽象不够漂亮、文件还可以继续拆分当作 bug；只有当它造成真实职责错位、回归风险或后续维护阻塞时才报告。
-- 不确定的问题不要描述为确定缺陷；可以作为 open question 放在 findings 后、coverage ledger 前。
-- 相同根因的问题合并报告，避免对同一缺陷重复计数。
-- 优先报告 bug、回归风险、安全问题、权限问题、状态/时序问题和性能放大问题，而不是个人风格偏好。
-- 每条 finding 必须包含最小文件位置。行号优先使用 diff 或文件中的具体行；无法精确到单行时，使用最小必要范围。
-- Finding 的位置优先指向当前 diff 新增或修改行附近；如果根因在新增调用方，优先报告调用方，不要把旧代码作为主要位置。
-- 如果发现的问题依赖推断，明确说明推断依据。
-
-## 每个问题的格式
-
-```md
-### [P0/P1/P2/P3] 简短标题
-
-* 文件：`路径`
-* 行号：具体行号或最小代码范围
-* 问题：说明哪里有问题。
-* 影响：说明在什么情况下会发生，以及可能造成什么后果。
-* 建议：给出简洁、具体的修复方向。
-```
-
-## Open questions
-
-如果存在影响判断但无法从代码和文档确认的问题，在 findings 后、coverage ledger 前输出：
-
-```md
-## Open questions
-
-* 问题：需要用户或作者确认的具体事项。
-```
-
-不要把 open question 计入 P0/P1/P2/P3。
-
-## 优先级定义
-
-- P0：必须立即修复，会导致严重事故、安全漏洞或数据损坏。
-- P1：高概率造成明显错误、严重回归、权限失控或重要流程不可用。
-- P2：真实存在但影响范围有限的问题。
-- P3：低风险的维护性、结构性或长期演进问题。
-
-## 最后输出
-
-在所有 findings 之后输出：
-
-```md
-## Coverage ledger
-
-### Changed files
-
-* `<module>` — total: N; reviewed: N; mechanical: N; not-applicable: N; deferred: N
-  * mechanical: N — <module-level reason>
-  * not-applicable: N — <module-level reason>
-* Total — diff files: N; ledger files: N
-
-Exceptions:
-
-* `deferred` — `path/to/file`: <reason>
-
-### Contract surfaces
-
-* `reviewed` — <commitment/risk/special-check mapping> — <surface>: anchor `<changed-file>`; validator `<location>`; consumer/sink `<location>`
-* `deferred` — <mapping> — <surface>: <missing evidence or endpoint>
-
-### Validation gaps
-
-* <None, or every deferred/missing coverage item and reason.>
-
-## Review summary
-
-* 本次审查范围：当前分支相对 `main` 的已提交 diff；如有排除项，明确说明
-* 我理解的 PR 目标：一句话概述
-* 主风险模型：列出本次命中的 1-3 个失效模式
-* Coverage 状态：complete / incomplete
-* 是否建议合并：是 / 修复后合并 / 不建议合并
-* P0 数量
-* P1 数量
-* P2 数量
-* P3 数量
-* 最高风险领域：契约链路 / 多路径一致性 / 权限与身份 / 状态时序 / 性能 / 前端受控语义 / 测试 / 无
-* 最主要的风险概述：一到三句话
-```
-
-如果没有发现值得报告的问题，明确输出：
-
-```text
-No actionable findings.
-```
-
-这句话仅允许在 coverage complete 时使用。然后仍输出完整的 `## Coverage ledger` 和 `## Review summary`，说明建议合并、各优先级数量为 0，以及主要剩余风险或测试缺口。
-
-如果没有 confirmed finding 但 coverage incomplete，改为输出：
-
-```text
-No confirmed findings, but review coverage is incomplete.
-```
-
-然后列出完整 ledger、所有 deferred/缺失项及其原因，并将“是否建议合并”设为“补齐审查后再决定”或更严格结论。
+基线稳定后，严格使用 [`references/coverage-and-output.md`](./references/coverage-and-output.md) 的 finding、ledger 和 summary 格式。保留 P0、P1、P2、P3 四级：P3 只用于低风险但确实值得作者修改的维护性、结构性或演进问题，不能用来容纳风格偏好。
