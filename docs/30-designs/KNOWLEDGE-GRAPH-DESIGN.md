@@ -14,6 +14,18 @@
 - 不实现 Schema 后台管理或对外暴露 Schema。
 - 不实现发布空间全量导入导出、素材版本管理、正文证据片段定位或发布空间向素材空间自动回写。
 
+## Current Code Baseline
+
+本设计描述目标结构；以下是 2026-08-20 对当前主干的校准，交付状态以 readiness 为准。
+
+| Surface | 已有实现 | 尚不作为完成证据 |
+| --- | --- | --- |
+| Admin menu | `工作台`、`图谱治理`、`素材管理`、`提取任务` 四项 seed 和路由已存在；删除变更、删除任务保留直达页。 | `graph-result`、`refinement` 旧路由尚未删除，不能与新模型混用。 |
+| Workbench | 概览快照、最近关系、一跳关系和活动时间线；前端按批绘制只读画布。 | Admin 尚未接入搜索、质量待办、门类层导航和对象详情分流。 |
+| Governance | 发布节点/边 CRUD、详情中的来源/操作记录、删除影响预览、节点合并已接通 Admin。 | 不能把服务端的节点拆分或其他接口自动视为对应前端流程已闭环。 |
+| Material and tasks | Classics 可见素材分页、草稿节点/边编辑、抽取、候选处置、发布/撤回和任务重试均有服务端接口；主要素材与任务页面已接通。 | JSON 导入导出、取消/重新抽取和删除流程需以各页面的实际入口及运行时验证确认。 |
+| Portal | `POST /portal/knowledge/graph/material/get` 已实现为按稿件可见性读取的后端接口。 | Portal Web 尚未调用该接口；旧 `/knowledge/atlas` 不属于新图谱 Portal 集成。 |
+
 ## Module Ownership
 
 代码归属 `kuzhambu-servers/biz/knowledge/`。Knowledge 是图谱表的唯一写入方；Classics 仍拥有素材正文、生命周期与访问控制主事实。
@@ -27,7 +39,7 @@ Knowledge graph
   ├─ publish mapping
   └─ published graph (read and governance)
        ↓
-Admin workbench / material workspace / portal material view
+Admin workbench / material workspace / portal material API
 ```
 
 Knowledge 发起图谱抽取必须通过 AI 域 application 协作语义，不得直接调用 Python worker。AI worker 只执行能力，不解析 Knowledge 的业务发布协议。
@@ -204,7 +216,7 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 | `/knowledge/graph/deletion-changes` | 删除前快照、用户决策和结果查询。 |
 | `/knowledge/graph/deletion-tasks` | 删除任务创建、进度、失败原因和重试。 |
 
-门户入口另提供只读资源 `/portal/knowledge/graph/materials/{contentType}/{contentRefId}`：先执行稿件既有内容可见性校验，再按素材状态和有效映射返回该稿件图谱；该资源不暴露发布空间搜索、治理、人工来源或跨素材关系。
+门户入口已提供只读资源 `POST /portal/knowledge/graph/material/get`：先执行稿件既有内容可见性校验，再按素材状态和有效映射返回该稿件图谱；该资源不暴露发布空间搜索、治理、人工来源或跨素材关系。Portal Web 尚未消费该资源，因此这里是后端边界而非已完成的 Portal 页面设计。
 
 JSON 导入只允许写入未发布素材草稿图。先执行格式和 Schema 校验，返回对象级错误；确认后按照用户选择的 `MERGE` 或 `REPLACE` 执行。下载仅导出当前单素材草稿节点、边、属性、限定字段和 Schema 版本，不导出发布空间、映射、审计或人工治理数据。
 
@@ -217,7 +229,7 @@ Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 
 菜单固定为“知识治理 / 知识图谱 / 工作台、图谱治理、素材管理、提取任务”。素材管理包含素材列表、单素材草稿图、删除任务和删除变更入口；删除任务、删除变更不再作为菜单层级。提取任务使用跨素材的普通列表，展示任务运行状态和候选预览，表格操作仅对失败任务提供重试；创建、取消、重生成和候选处置均在素材管理完成。
 
-工作台只读取正式发布空间，用于概览、搜索、局部图浏览、来源追溯与质量待办分流，不提供直接治理写操作。图谱治理只处理发布空间的跨素材节点、关系和人工来源变更；合并、拆分、删除必须先显示影响对象、关系、映射和待处理事项，再允许确认应用。素材管理只处理来源素材、草稿、整体发布/撤回及删除生命周期；提取任务不直接编辑草稿，也不执行发布空间治理。
+工作台只读取正式发布空间，不提供直接治理写操作。当前页面已接通概览、局部图浏览和活动时间线；搜索、来源追溯与质量待办分流仍是目标交互。图谱治理只处理发布空间的跨素材节点、关系和人工来源变更；已接通的高风险删除和节点合并必须先显示影响，再允许确认。素材管理只处理来源素材、草稿、整体发布/撤回及删除生命周期；提取任务不直接编辑草稿，也不执行发布空间治理。
 
 发布预览在素材画布内完成：绿色新建、橙色关联、红色冲突、蓝色已发布。红色对象点击后在右侧抽屉展示素材对象、候选发布对象、关键差异和动作；存在未决冲突时禁止确认。
 
@@ -227,7 +239,7 @@ Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 
 1. 新建上述图谱表、Schema 代码和新接口，不复用旧表的状态语义。
 2. 按已确认的迁移规则导入仍需保留的三才图会数据；未定义迁移规则的数据不得自动映射为已发布知识。
-3. 前端切换到新菜单与接口后，删除旧图谱入口、API、测试和旧表写入路径。
+3. 前端已切换到新菜单与主要接口；旧 `graph-result`、`refinement` 路由和旧 Portal atlas 仍需在调用方完成迁移后删除，期间不得把它们解释为新模型页面。
 4. 确认没有调用方后，再按数据库治理规则删除旧表或归档其只读历史。
 
 迁移规则、数据核对清单和切换顺序属于独立 RUNBOOK，不在本设计中假定。
@@ -236,7 +248,7 @@ Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 
 - 单元测试：Schema Key 与约束、草稿合并、发布匹配、冲突、乐观锁、属性首选、合并、拆分、撤回和删除决策。
 - 集成测试：Classics 可见稿件分页与 Knowledge 批量补齐、发布事务原子性、单素材活动任务互斥、任务原地重试、候选处置、7 天清理、AI 域快照协作、删除任务幂等重试、素材删除后映射状态、权限拒绝。
-- 前端 E2E：素材列表统计快照、素材/任务 `SegmentedDrawer`、任务队列和按素材分组、抽取到草稿、候选合并/覆盖/丢弃、发布预览冲突、冻结与撤回、发布治理、删除列表决策、最近发布渐进渲染、200 节点截断与 JSON 导入校验。
+- 前端 E2E：当前已覆盖工作台概览、只读画布、活动时间线和业务网络边界；素材列表统计快照、候选处置、发布/撤回、删除决策、Portal 素材图和 JSON 导入仍需以真实后端运行时补齐，不得用 mock E2E 替代。
 - 数据迁移验证：迁移前后素材数、节点/边数、映射数和人工治理操作抽样核对；旧入口移除后确认不存在旧模型写入。
 
 ## Related Documents
