@@ -12,6 +12,8 @@ public final class GraphExtractionResponses {
             String id,
             GraphMaterialResponses.ContentRefData materialRef,
             String materialTitle,
+            String categoryName,
+            String volumeName,
             String lockVersion,
             String executionStatus,
             String disposition,
@@ -29,6 +31,9 @@ public final class GraphExtractionResponses {
             String completedAt,
             String disposedAt,
             String purgeAfter) {}
+
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    public record TaskDeleteData(String deletedTaskId) {}
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     public record StageData(

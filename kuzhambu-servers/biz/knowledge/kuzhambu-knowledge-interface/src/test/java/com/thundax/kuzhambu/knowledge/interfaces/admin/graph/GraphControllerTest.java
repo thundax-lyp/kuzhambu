@@ -80,6 +80,7 @@ class GraphControllerTest {
         assertThat(permission("materialNodeCreate")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("taskPage")).isEqualTo("knowledge:graph:view");
         assertThat(permission("taskGet")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("taskDelete")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("extractionCreate")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("candidateApply")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publicationPublish")).isEqualTo("knowledge:graph:edit");

@@ -19,7 +19,47 @@ public record GraphExtractionTaskResult(
         Instant completedAt,
         Instant disposedAt,
         Instant purgeAfter,
-        String materialTitle) {
+        String materialTitle,
+        String categoryName,
+        String volumeName) {
+
+    public GraphExtractionTaskResult(
+            Long taskId,
+            ContentRef contentRef,
+            String executionStatus,
+            String disposition,
+            int attemptNo,
+            long lockVersion,
+            String batchId,
+            Long candidateId,
+            String currentStage,
+            int progress,
+            String failureReason,
+            Instant requestedAt,
+            Instant completedAt,
+            Instant disposedAt,
+            Instant purgeAfter,
+            String materialTitle) {
+        this(
+                taskId,
+                contentRef,
+                executionStatus,
+                disposition,
+                attemptNo,
+                lockVersion,
+                batchId,
+                candidateId,
+                currentStage,
+                progress,
+                failureReason,
+                requestedAt,
+                completedAt,
+                disposedAt,
+                purgeAfter,
+                materialTitle,
+                null,
+                null);
+    }
 
     public GraphExtractionTaskResult(
             Long taskId,
@@ -52,6 +92,8 @@ public record GraphExtractionTaskResult(
                 completedAt,
                 disposedAt,
                 purgeAfter,
+                null,
+                null,
                 null);
     }
 }

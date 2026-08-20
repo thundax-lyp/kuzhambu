@@ -83,6 +83,25 @@ public class GraphExtractionTask {
         attemptNo++;
     }
 
+    public void markRegeneratedBy(GraphExtractionTaskId nextTaskId) {
+        requireExecutionStatus(
+                GraphExtractionExecutionStatus.FAILED, "Only failed graph extraction tasks can regenerate");
+        if (nextTaskId == null) {
+            throw new DomainException("Regenerated graph extraction task id is required");
+        }
+        supersededByTaskId = nextTaskId;
+    }
+
+    public boolean canDelete() {
+        if (executionStatus == GraphExtractionExecutionStatus.FAILED
+                || executionStatus == GraphExtractionExecutionStatus.CANCELLED) {
+            return true;
+        }
+        return executionStatus == GraphExtractionExecutionStatus.SUCCEEDED
+                && disposition != null
+                && disposition != GraphExtractionDisposition.PENDING;
+    }
+
     public void cancel(Instant completedAt) {
         if (executionStatus != GraphExtractionExecutionStatus.PENDING
                 && executionStatus != GraphExtractionExecutionStatus.RUNNING) {

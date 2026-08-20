@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
@@ -20,6 +21,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionC
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateDiscardCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialApplyMode;
@@ -37,6 +39,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyn
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDeleteResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
@@ -233,29 +236,64 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     @Override
     @Transactional
     public GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command) {
+        GraphExtractionTask previous =
+                requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
+        requireExpectedStatus(previous, command.expectedExecutionStatus());
+        requireIdempotencyKey(command.idempotencyKey());
+        GraphExtractionTask existing = taskRepository.getByIdempotencyKey(command.idempotencyKey());
+        if (existing != null) {
+            return toTaskResult(existing);
+        }
+
+        GraphMaterialContentSnapshotDto snapshot = contentResolver.resolveWorkbench(previous.getContentRef());
+        GraphMaterial material = materialForExtraction(previous.getContentRef(), snapshot.title());
+        rejectActiveTask(material);
+        GraphExtractionTask nextTask =
+                newTask(material, snapshot, command.idempotencyKey(), previous.getBatchId(), command.requestedBy());
+        taskOperator.regenerate(previous, nextTask);
+        GraphExtractionTaskId nextTaskId = taskRepository.insert(nextTask);
+        nextTask.setId(nextTaskId);
+        taskOperator.markRegeneratedBy(previous, nextTaskId);
+        updateTask(previous, command.taskLockVersion());
+        material.setCurrentExtractionTaskId(nextTaskId);
+        updateMaterial(material);
+        AiBatchJobActionFacadeResponse aiBatch = aiFacade.submitKnowledgeGraphExtraction(
+                extractionRequest(previous.getContentRef(), snapshot, command.requestedBy()));
+        if (aiBatch != null && aiBatch.getBatchId() != null) {
+            nextTask.setAiBatchId(aiBatch.getBatchId());
+            nextTask.start();
+            updateTask(nextTask, nextTask.getLockVersion());
+        }
+        statsRefresher.refresh(previous.getContentRef());
+        return toTaskResult(nextTask);
+    }
+
+    @Override
+    @Transactional
+    public GraphExtractionTaskDeleteResult deleteTask(GraphExtractionDeleteCommand command) {
         GraphExtractionTask task =
                 requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
         requireExpectedStatus(task, command.expectedExecutionStatus());
-        if (!hasUsableContentSnapshot(task.getContentSnapshotJson())) {
-            task.setContentSnapshotJson(snapshotJson(contentResolver.resolveWorkbench(task.getContentRef())));
+        requireIdempotencyKey(command.idempotencyKey());
+        if (!task.canDelete()) {
+            throw new BizException(
+                    "GRAPH_TASK_STATE_CONFLICT",
+                    "graph.task.state-conflict",
+                    "Graph extraction task must be terminal and have no pending candidate before deletion");
         }
-        taskOperator.retry(task);
-        updateTask(task, command.taskLockVersion());
-        GraphMaterial material = materialRepository.getByContentRef(task.getContentRef());
-        if (material == null) {
-            throw new BizException("Graph material does not exist");
+        if (task.getCandidateId() != null) {
+            aiFacade.cleanupKnowledgeGraphCandidate(CleanupKnowledgeGraphCandidateFacadeRequest.builder()
+                    .candidateId(task.getCandidateId())
+                    .build());
         }
-        material.setCurrentExtractionTaskId(task.getId());
-        updateMaterial(material);
-        AiBatchJobActionFacadeResponse aiBatch =
-                aiFacade.submitKnowledgeGraphExtraction(extractionRequest(task, command.requestedBy()));
-        if (aiBatch != null && aiBatch.getBatchId() != null) {
-            task.setAiBatchId(aiBatch.getBatchId());
-            task.start();
-            updateTask(task, task.getLockVersion());
+        if (taskRepository.deleteById(task.getId()) != 1) {
+            throw new BizException(
+                    "GRAPH_TASK_LOCK_CONFLICT",
+                    "graph.task.lock-conflict",
+                    "Graph extraction task could not be deleted");
         }
         statsRefresher.refresh(task.getContentRef());
-        return toTaskResult(task);
+        return new GraphExtractionTaskDeleteResult(task.getId().value());
     }
 
     @Override
@@ -576,6 +614,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         if (task == null) {
             return null;
         }
+        String snapshotTitle = snapshotText(task.getContentSnapshotJson(), "title");
         return new GraphExtractionTaskResult(
                 task.getId() == null ? null : task.getId().value(),
                 task.getContentRef(),
@@ -594,7 +633,9 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 task.getCompletedAt(),
                 task.getDisposedAt(),
                 task.getPurgeAfter(),
-                materialTitle);
+                snapshotTitle == null ? materialTitle : snapshotTitle,
+                snapshotText(task.getContentSnapshotJson(), "categoryName"),
+                snapshotText(task.getContentSnapshotJson(), "volumeName"));
     }
 
     private GraphExtractionTask syncTaskFromAi(GraphExtractionTask task) {
@@ -720,14 +761,16 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         }
     }
 
-    private boolean hasUsableContentSnapshot(String snapshotJson) {
-        if (snapshotJson == null || snapshotJson.isBlank()) {
-            return false;
+    private String snapshotText(String snapshotJson, String fieldName) {
+        if (snapshotJson == null || snapshotJson.isBlank() || fieldName == null || fieldName.isBlank()) {
+            return null;
         }
         try {
-            return !objectMapper.readTree(snapshotJson).path("title").asText().isBlank();
+            String value =
+                    objectMapper.readTree(snapshotJson).path(fieldName).asText().trim();
+            return value.isBlank() ? null : value;
         } catch (JsonProcessingException ex) {
-            return false;
+            return null;
         }
     }
 

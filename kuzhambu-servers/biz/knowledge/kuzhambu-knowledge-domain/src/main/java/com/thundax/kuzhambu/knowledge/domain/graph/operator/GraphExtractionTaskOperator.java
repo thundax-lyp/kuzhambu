@@ -13,6 +13,10 @@ public class GraphExtractionTaskOperator {
         task.retry();
     }
 
+    public void markRegeneratedBy(GraphExtractionTask task, GraphExtractionTaskId nextTaskId) {
+        task.markRegeneratedBy(nextTaskId);
+    }
+
     public void cancel(GraphExtractionTask task, Instant completedAt) {
         task.cancel(completedAt);
     }

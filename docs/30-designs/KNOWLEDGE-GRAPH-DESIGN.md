@@ -118,7 +118,7 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 
 `properties_json` 与 `qualifiers_json` 是开放多值 JSON 载体：草稿写入只校验其为对象，细分属性和值域作为告警而非拒绝条件；它们不替代可查询的 Key、类型和关系字段。
 
-`execution_status` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`；`disposition` 在成功后固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`。运行状态和采纳状态不得复用同一字段。服务启动恢复将原 `RUNNING` 任务写为 `PENDING`，定时同步确认 AI 批任务仍执行后才写为 `RUNNING`；确认失败时保持 `PENDING`。`FAILED -> PENDING` 是同一任务的原地重试，递增 `attempt_no` 并保留尝试历史；重新抽取创建新任务，通过 `regenerated_from_task_id` 关联来源。`batch_id`、`regenerated_from_task_id`、`superseded_by_task_id`、`triggered_by_task_id` 用于任务详情的关联任务读取。
+`execution_status` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`；`disposition` 在成功后固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`。运行状态和采纳状态不得复用同一字段。服务启动恢复将原 `RUNNING` 任务写为 `PENDING`，定时同步确认 AI 批任务仍执行后才写为 `RUNNING`；确认失败时保持 `PENDING`。用户手动重试失败任务时重新读取当前正文和当前有效 AI 配置，创建新任务并通过 `regenerated_from_task_id` / `superseded_by_task_id` 关联原任务；系统内部对瞬时传输故障的自动重试仍由 AI 域在原调用边界内处理。`batch_id`、`regenerated_from_task_id`、`superseded_by_task_id`、`triggered_by_task_id` 用于任务详情的关联任务读取。
 
 ### Published Space
 
@@ -153,7 +153,7 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 2. 通过 Classics facade 读取并固定内容快照，以及模型、提示词、变量和输出 Schema 快照；经 AI 域创建异步调用，写入 `GraphExtractionTask`，并将素材的 `current_extraction_task_id` 指向该任务。
 3. 回调或轮询成功后，应用层先执行宽松结构校验并生成 AI 域候选。任务转为 `SUCCEEDED + disposition:PENDING`，清空素材的活动任务指针；候选未处置前不得改变草稿图。
 4. 用户选择 `MERGE` 或 `REPLACE` 时，以素材 `lock_version` 校验当前草稿未被并发修改，再把候选写入草稿图并记录处置结果；选择丢弃则只记录 `DISCARDED`。被后续候选替代的旧候选标记 `SUPERSEDED`。
-5. 失败任务保留冻结输入并可原地重试：递增尝试次数、清空本次运行错误、重置到 `PENDING`；已发布素材必须先撤回，不能绕过冻结直接抽取。正文或运行配置变化时，显式重新抽取创建新任务。
+5. 用户手动重试失败任务时，重新读取当前正文、模型、提示词版本、变量和输出 Schema，创建新任务并关联原失败任务；原任务不覆盖。已发布素材必须先撤回，不能直接抽取。失败、取消或已处置任务可由用户主动删除，活动任务和待采纳成功任务不得删除。
 
 ### Task Cleanup
 

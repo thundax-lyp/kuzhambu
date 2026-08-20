@@ -50,6 +50,8 @@ public class GraphMaterialContentResolver {
     private GraphMaterialContentSnapshotDto toSnapshot(ClassicsPublicContentFacadeDto content) {
         return new GraphMaterialContentSnapshotDto(
                 ContentRefCodec.toDomain(content.getContentType(), Long.valueOf(content.getContentId())),
+                content.getCategoryName(),
+                content.getVolumeName(),
                 content.getTitle(),
                 content.getSummary(),
                 safeList(content.getTextSegments()),

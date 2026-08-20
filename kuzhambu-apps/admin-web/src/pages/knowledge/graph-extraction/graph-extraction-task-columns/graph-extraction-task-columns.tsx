@@ -1,7 +1,11 @@
 import { Popover, Typography } from "antd";
 import { KuzhambuTag } from "@/components";
 import { normalizeId } from "@/types/id";
-import type { KuzhambuTableColumn, KuzhambuTagType } from "@/components";
+import type {
+    KuzhambuTableColumn,
+    KuzhambuTableRowActionOption,
+    KuzhambuTagType
+} from "@/components";
 import type { GraphExtractionTaskRecord } from "@/pages/knowledge/graph-extraction/graph-extraction-types";
 
 const { Text } = Typography;
@@ -57,7 +61,11 @@ const readDispositionType = (disposition?: string | null): KuzhambuTagType => {
 const readTaskExecutionStatus = (task: GraphExtractionTaskRecord) =>
     task.executionStatus || task.status || "UNKNOWN";
 
-const readMaterialTitle = (task: GraphExtractionTaskRecord) => task.materialTitle?.trim() || "-";
+const readMaterialPath = (task: GraphExtractionTaskRecord) =>
+    [task.categoryName, task.volumeName, task.materialTitle]
+        .map((value) => value?.trim())
+        .filter(Boolean)
+        .join(" / ") || "-";
 
 const readFailureReason = (task: GraphExtractionTaskRecord) =>
     task.failureReason || task.errorMessage || task.errorType || "暂无失败原因";
@@ -78,31 +86,35 @@ const formatTimestamp = (value?: number | string | null) => {
 const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId || task.id);
 const isTaskFailed = (task: GraphExtractionTaskRecord) =>
     readTaskExecutionStatus(task) === "FAILED";
+const isTaskDeletable = (task: GraphExtractionTaskRecord) => {
+    const status = readTaskExecutionStatus(task);
+    return (
+        status === "FAILED" ||
+        status === "CANCELLED" ||
+        (status === "SUCCEEDED" && Boolean(task.disposition) && task.disposition !== "PENDING")
+    );
+};
 
 interface GraphExtractionTaskColumnOptions {
     canRetry?: boolean;
+    deletingTaskId?: string | null;
     retryingTaskId?: string | null;
+    onDelete: (task: GraphExtractionTaskRecord) => void;
     onRetry: (task: GraphExtractionTaskRecord) => void;
 }
 
 export const createGraphExtractionTaskColumns = ({
     canRetry = false,
+    deletingTaskId = null,
+    onDelete,
     onRetry,
     retryingTaskId = null
 }: GraphExtractionTaskColumnOptions): KuzhambuTableColumn<GraphExtractionTaskRecord>[] => {
     const columns: KuzhambuTableColumn<GraphExtractionTaskRecord>[] = [
         {
             key: "material",
-            render: (_, task) => <Text strong>{readMaterialTitle(task)}</Text>,
-            title: "任务素材"
-        },
-        {
-            key: "categoryName",
-            render: (_, task) => (
-                <KuzhambuTag type="neutral">{task.categoryName || "-"}</KuzhambuTag>
-            ),
-            title: "素材分类",
-            width: 120
+            render: (_, task) => <Text strong>{readMaterialPath(task)}</Text>,
+            title: "素材路径"
         },
         {
             key: "executionStatus",
@@ -157,16 +169,32 @@ export const createGraphExtractionTaskColumns = ({
         ...columns,
         {
             key: "actions",
-            options: (task) => [
-                {
-                    ariaLabel: `重试任务 ${readTaskId(task)}`,
-                    disabled: !isTaskFailed(task) || retryingTaskId === readTaskId(task),
-                    key: "retry",
-                    onClick: () => onRetry(task),
-                    testId: "knowledge-graph-extraction-graph-extraction-task-retry-button",
-                    text: "重试"
+            options: (task) => {
+                const taskId = readTaskId(task);
+                const options: KuzhambuTableRowActionOption<GraphExtractionTaskRecord>[] = [];
+                if (isTaskFailed(task)) {
+                    options.push({
+                        ariaLabel: `重试任务 ${taskId}`,
+                        disabled: retryingTaskId === taskId,
+                        key: "retry",
+                        onClick: () => onRetry(task),
+                        testId: "knowledge-graph-extraction-graph-extraction-task-retry-button",
+                        text: "重试"
+                    });
                 }
-            ]
+                if (isTaskDeletable(task)) {
+                    options.push({
+                        ariaLabel: `删除任务 ${taskId}`,
+                        disabled: deletingTaskId === taskId,
+                        key: "delete",
+                        onClick: () => onDelete(task),
+                        testId: "knowledge-graph-extraction-graph-extraction-task-delete-button",
+                        text: "删除",
+                        type: "danger"
+                    });
+                }
+                return options;
+            }
         }
     ];
 };

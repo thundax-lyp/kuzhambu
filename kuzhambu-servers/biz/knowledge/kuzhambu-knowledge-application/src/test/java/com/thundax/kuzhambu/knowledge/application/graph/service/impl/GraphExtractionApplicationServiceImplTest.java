@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionBatchCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphMaterialContentSnapshotDto;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphDocumentMerger;
@@ -325,29 +326,9 @@ class GraphExtractionApplicationServiceImplTest {
         task.setContentSnapshotJson(new ObjectMapper().writeValueAsString(snapshot(ref)));
         GraphMaterial material = material(11L, ref, null);
         when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
-        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
-        when(materialRepository.getByContentRef(ref)).thenReturn(material);
-        when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
-        when(aiFacade.submitKnowledgeGraphExtraction(any()))
-                .thenReturn(
-                        AiBatchJobActionFacadeResponse.builder().batchId(9002L).build());
-
-        var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 3L, "FAILED", "retry-1", 1L));
-
-        assertThat(result.executionStatus()).isEqualTo("RUNNING");
-        assertThat(result.attemptNo()).isEqualTo(2);
-        assertThat(task.getAiBatchId()).isEqualTo(9002L);
-        assertThat(material.getCurrentExtractionTaskId()).isEqualTo(new GraphExtractionTaskId(7001L));
-        verify(aiFacade).submitKnowledgeGraphExtraction(any());
-    }
-
-    @Test
-    void shouldRefreshMissingContentSnapshotWhenRetryingFailedTask() {
-        ContentRef ref = ref(1001L);
-        GraphExtractionTask task = task(7001L, 11L, ref);
-        task.setExecutionStatus(GraphExtractionExecutionStatus.FAILED);
-        GraphMaterial material = material(11L, ref, null);
-        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(null);
+        when(taskRepository.listByMaterialId(11L)).thenReturn(List.of(task));
+        when(taskRepository.insert(any())).thenReturn(new GraphExtractionTaskId(7002L));
         when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(materialRepository.getByContentRef(ref)).thenReturn(material);
         when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
@@ -356,10 +337,57 @@ class GraphExtractionApplicationServiceImplTest {
                 .thenReturn(
                         AiBatchJobActionFacadeResponse.builder().batchId(9002L).build());
 
-        service.retryTask(new GraphExtractionRetryCommand(7001L, 3L, "FAILED", "retry-1", 1L));
+        var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 3L, "FAILED", "retry-1", 1L));
 
-        assertThat(task.getContentSnapshotJson()).contains("素材1001");
+        assertThat(result.executionStatus()).isEqualTo("RUNNING");
+        assertThat(result.taskId()).isEqualTo(7002L);
+        assertThat(result.attemptNo()).isEqualTo(1);
+        assertThat(result.categoryName()).isEqualTo("分类");
+        assertThat(result.volumeName()).isEqualTo("卷一");
+        assertThat(task.getAiBatchId()).isEqualTo(9001L);
+        assertThat(task.getSupersededByTaskId()).isEqualTo(new GraphExtractionTaskId(7002L));
+        assertThat(material.getCurrentExtractionTaskId()).isEqualTo(new GraphExtractionTaskId(7002L));
         verify(contentResolver).resolveWorkbench(ref);
+        verify(aiFacade).submitKnowledgeGraphExtraction(any());
+    }
+
+    @Test
+    void shouldAlwaysRefreshContentSnapshotWhenRetryingFailedTask() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setExecutionStatus(GraphExtractionExecutionStatus.FAILED);
+        GraphMaterial material = material(11L, ref, null);
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(null);
+        when(taskRepository.listByMaterialId(11L)).thenReturn(List.of(task));
+        when(taskRepository.insert(any())).thenReturn(new GraphExtractionTaskId(7002L));
+        when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(materialRepository.getByContentRef(ref)).thenReturn(material);
+        when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
+        when(contentResolver.resolveWorkbench(ref)).thenReturn(snapshot(ref));
+        when(aiFacade.submitKnowledgeGraphExtraction(any()))
+                .thenReturn(
+                        AiBatchJobActionFacadeResponse.builder().batchId(9002L).build());
+
+        var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 3L, "FAILED", "retry-1", 1L));
+
+        assertThat(result.materialTitle()).isEqualTo("素材1001");
+        verify(contentResolver).resolveWorkbench(ref);
+    }
+
+    @Test
+    void shouldDeleteTerminalTask() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setExecutionStatus(GraphExtractionExecutionStatus.FAILED);
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskRepository.deleteById(new GraphExtractionTaskId(7001L))).thenReturn(1);
+
+        var result = service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1"));
+
+        assertThat(result.deletedTaskId()).isEqualTo(7001L);
+        verify(taskRepository).deleteById(new GraphExtractionTaskId(7001L));
+        verify(statsRefresher).refresh(ref);
     }
 
     private static ContentRef ref(Long id) {
@@ -368,7 +396,7 @@ class GraphExtractionApplicationServiceImplTest {
 
     private static GraphMaterialContentSnapshotDto snapshot(ContentRef ref) {
         return new GraphMaterialContentSnapshotDto(
-                ref, "素材" + ref.getContentId(), "摘要", List.of("正文"), List.of(), "DRAFT", "PRIVATE", 1);
+                ref, "分类", "卷一", "素材" + ref.getContentId(), "摘要", List.of("正文"), List.of(), "DRAFT", "PRIVATE", 1);
     }
 
     private static GraphMaterial material(Long id, ContentRef ref, GraphExtractionTaskId currentTaskId) {

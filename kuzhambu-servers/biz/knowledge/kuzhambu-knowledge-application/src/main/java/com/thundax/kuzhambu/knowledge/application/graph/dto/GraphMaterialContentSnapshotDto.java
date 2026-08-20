@@ -5,10 +5,25 @@ import java.util.List;
 
 public record GraphMaterialContentSnapshotDto(
         ContentRef contentRef,
+        String categoryName,
+        String volumeName,
         String title,
         String summary,
         List<String> textSegments,
         List<String> tagNames,
         String status,
         String visibility,
-        Integer currentVersionNo) {}
+        Integer currentVersionNo) {
+
+    public GraphMaterialContentSnapshotDto(
+            ContentRef contentRef,
+            String title,
+            String summary,
+            List<String> textSegments,
+            List<String> tagNames,
+            String status,
+            String visibility,
+            Integer currentVersionNo) {
+        this(contentRef, null, null, title, summary, textSegments, tagNames, status, visibility, currentVersionNo);
+    }
+}

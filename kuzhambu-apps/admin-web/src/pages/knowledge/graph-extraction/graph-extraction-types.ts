@@ -32,6 +32,7 @@ export interface GraphExtractionTaskRecord {
     resultSummary?: GraphExtractionResultSummaryRecord | null;
     materialTitle?: string | null;
     categoryName?: string | null;
+    volumeName?: string | null;
     failureReason?: string | null;
     errorMessage?: string | null;
     errorType?: string | null;
@@ -51,4 +52,8 @@ export interface GraphExtractionTaskConflictRecord {
 export interface GraphExtractionTaskActionResultRecord {
     conflict?: GraphExtractionTaskConflictRecord;
     task?: GraphExtractionTaskRecord;
+}
+
+export interface GraphExtractionTaskDeleteResultRecord {
+    deletedTaskId: string;
 }

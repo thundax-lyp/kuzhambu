@@ -4,6 +4,7 @@ import type {
     GraphContentRefRecord,
     GraphContentType,
     GraphExtractionTaskActionResultRecord,
+    GraphExtractionTaskDeleteResultRecord,
     GraphExtractionTaskRecord,
     GraphTaskDisposition,
     GraphTaskExecutionStatus
@@ -11,6 +12,7 @@ import type {
 
 const TASK_PAGE_PATH = "/knowledge/graph/task/page";
 const TASK_RETRY_PATH = "/knowledge/graph/task/retry";
+const TASK_DELETE_PATH = "/knowledge/graph/task/delete";
 
 export type GraphExtractionTaskListMode = "NONE" | "MATERIAL";
 
@@ -41,6 +43,9 @@ export interface GraphExtractionService {
     retryTask: (
         command: GraphExtractionTaskStateCommand
     ) => Promise<GraphExtractionTaskActionResultRecord>;
+    deleteTask: (
+        command: GraphExtractionTaskStateCommand
+    ) => Promise<GraphExtractionTaskDeleteResultRecord>;
 }
 
 const createIdempotencyKey = () => {
@@ -102,8 +107,25 @@ export const httpGraphExtractionService: GraphExtractionService = {
             }
         });
         return { task };
-    }
+    },
+    deleteTask: async (command) =>
+        postJson<
+            GraphExtractionTaskDeleteResultRecord,
+            GraphExtractionTaskStateCommand & {
+                idempotencyKey: string;
+                taskId: string;
+                taskLockVersion: string;
+            }
+        >(TASK_DELETE_PATH, {
+            body: {
+                expectedExecutionStatus: command.expectedExecutionStatus,
+                idempotencyKey: createIdempotencyKey(),
+                taskId: command.taskId ?? command.sourceTaskId ?? "",
+                taskLockVersion: command.taskLockVersion ?? ""
+            }
+        })
 };
 
+export const deleteTask = httpGraphExtractionService.deleteTask;
 export const pageTasks = httpGraphExtractionService.pageTasks;
 export const retryTask = httpGraphExtractionService.retryTask;

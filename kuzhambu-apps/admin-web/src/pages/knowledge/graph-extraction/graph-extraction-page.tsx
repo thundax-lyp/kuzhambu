@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Input } from "antd";
 import { useState } from "react";
 import { usePermission } from "@/auth/hooks/use-permission";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -143,6 +144,7 @@ const readTaskQueryFromSearch = (): GraphExtractionTaskPageQuery => {
 
 export const GraphExtractionPage = () => {
     const { message } = App.useApp();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const canViewGraph = usePermission("knowledge:graph:view");
     const canEditGraph = usePermission("knowledge:graph:edit");
@@ -173,10 +175,23 @@ export const GraphExtractionPage = () => {
                 message.warning(result.conflict.message);
                 return;
             }
-            message.success("任务已重试");
+            message.success("已使用最新内容和 AI 配置创建重试任务");
         },
         onError: (error) => {
             message.error(error instanceof Error ? error.message : "任务重试失败");
+        }
+    });
+    const deleteTaskMutation = useMutation({
+        mutationFn: (task: GraphExtractionTaskRecord) =>
+            service.deleteTask(createTaskStateCommand(task, task.executionStatus)),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ["knowledge", "graph-extraction", "tasks"]
+            });
+            message.success("任务删除成功");
+        },
+        onError: (error) => {
+            message.error(error instanceof Error ? error.message : "任务删除失败");
         }
     });
     const tasks = taskPageQuery.data?.records || [];
@@ -268,6 +283,18 @@ export const GraphExtractionPage = () => {
             ariaLabel="知识抽取任务列表"
             columns={createGraphExtractionTaskColumns({
                 canRetry: canEditGraph,
+                deletingTaskId: deleteTaskMutation.variables
+                    ? String(deleteTaskMutation.variables.taskId)
+                    : null,
+                onDelete: (task) => {
+                    confirm.danger({
+                        title: "删除知识抽取任务",
+                        message: "确认删除这条任务记录？",
+                        description: "删除后任务执行记录将从列表移除，且无法恢复。",
+                        okText: "删除",
+                        onConfirm: () => deleteTaskMutation.mutateAsync(task)
+                    });
+                },
                 retryingTaskId: retryTaskMutation.variables
                     ? String(retryTaskMutation.variables.taskId)
                     : null,

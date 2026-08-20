@@ -129,4 +129,20 @@ describe("knowledge graph extraction service request contracts", () => {
             taskLockVersion: "3"
         });
     });
+
+    it("adds idempotency key, lock version and expected state to task deletion", async () => {
+        installFetchRecorder({ deletedTaskId: "7003" });
+
+        await service.deleteTask({
+            expectedExecutionStatus: "FAILED",
+            taskId: "7003",
+            taskLockVersion: "3"
+        });
+        expectLastCall("POST", "/knowledge/graph/task/delete", {
+            expectedExecutionStatus: "FAILED",
+            idempotencyKey: "00000000-0000-4000-8000-000000000002",
+            taskId: "7003",
+            taskLockVersion: "3"
+        });
+    });
 });
