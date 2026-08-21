@@ -2,15 +2,11 @@
 
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 import { readFileSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 
-const scriptDir = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(scriptDir, "../..");
-const requireFromAdmin = createRequire(resolve(repoRoot, "kuzhambu-apps/admin-web/package.json"));
-const { sm2 } = requireFromAdmin("sm-crypto");
+const { sm2 } = createRequire(import.meta.url)("sm-crypto");
 const types = ["SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS"];
 const args = parseArgs(process.argv.slice(2));
 for (const name of ["run-id", "evidence-file", "seed-env-file", "admin-base-url", "portal-base-url"]) {
@@ -65,6 +61,7 @@ try {
   });
 } finally {
   evidence.generatedAt = Date.now();
+  await mkdir(dirname(args["evidence-file"]), { recursive: true });
   await writeFile(args["evidence-file"], `${JSON.stringify(evidence, null, 2)}\n`, { flag: "wx" });
 }
 if (evidence.failures.length > 0) process.exitCode = 1;
