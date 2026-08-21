@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdge
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdgeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeMaterialRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeRepository;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class GraphPortalApplicationServiceImpl implements GraphPortalApplicationService {
+
+    private static final int RECENT_EDGE_LIMIT = 200;
 
     private final GraphMaterialRepository materialRepository;
     private final GraphPublishedNodeRepository nodeRepository;
@@ -143,8 +146,26 @@ public class GraphPortalApplicationServiceImpl implements GraphPortalApplication
 
     @Override
     public GraphRecentEdgesResult listRecentEdges() {
-        GraphRecentEdgesResult source = workbenchService.listRecentEdges();
-        VisibleGraph graph = visibleGraph(source.nodes(), source.edges());
+        List<ContentRef> visibleMaterialRefs =
+                materialRepository.listContentRefsByStatus(GraphMaterialStatus.PUBLISHED).stream()
+                        .filter(contentResolver::isPortalVisible)
+                        .toList();
+        List<GraphPublishedEdge> recentVisibleEdges = visibleMaterialRefs.stream()
+                .flatMap(ref -> edgeMaterialRepository.listByMaterial(ref).stream())
+                .map(GraphPublishedEdgeMaterial::getPublishedEdgeId)
+                .distinct()
+                .map(edgeRepository::getById)
+                .filter(edge -> edge != null && edge.getStatus() == GraphPublishedStatus.ACTIVE)
+                .sorted(Comparator.comparing(GraphPublishedEdge::getModifiedAt)
+                        .reversed()
+                        .thenComparing(edge -> edge.getId().value(), Comparator.reverseOrder()))
+                .limit(RECENT_EDGE_LIMIT)
+                .toList();
+        List<GraphPublishedNode> endpointNodes = nodeRepository.listByIds(recentVisibleEdges.stream()
+                .flatMap(edge -> List.of(edge.getSourceNodeId(), edge.getTargetNodeId()).stream())
+                .distinct()
+                .toList());
+        VisibleGraph graph = visibleGraph(endpointNodes, recentVisibleEdges);
         return new GraphRecentEdgesResult(graph.nodes(), graph.edges());
     }
 

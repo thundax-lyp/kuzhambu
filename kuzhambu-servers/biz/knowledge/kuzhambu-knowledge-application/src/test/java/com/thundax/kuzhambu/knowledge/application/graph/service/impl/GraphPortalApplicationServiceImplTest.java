@@ -79,27 +79,25 @@ class GraphPortalApplicationServiceImplTest {
     }
 
     @Test
-    void shouldExcludeRecentEdgesWithoutPortalVisiblePublishedMaterial() {
+    void shouldSelectRecentEdgesFromPortalVisiblePublishedMaterials() {
         GraphPublishedNode visibleSource = node(1L);
         GraphPublishedNode visibleTarget = node(2L);
-        GraphPublishedNode hiddenTarget = node(3L);
         GraphPublishedEdge visibleEdge = edge(11L, 1L, 2L);
-        GraphPublishedEdge hiddenEdge = edge(12L, 1L, 3L);
-        when(workbenchService.listRecentEdges())
-                .thenReturn(new GraphRecentEdgesResult(
-                        List.of(visibleSource, visibleTarget, hiddenTarget), List.of(visibleEdge, hiddenEdge)));
+        when(materialRepository.listContentRefsByStatus(GraphMaterialStatus.PUBLISHED))
+                .thenReturn(List.of(VISIBLE_REF, HIDDEN_REF));
+        when(contentResolver.isPortalVisible(VISIBLE_REF)).thenReturn(true);
+        when(contentResolver.isPortalVisible(HIDDEN_REF)).thenReturn(false);
+        when(edgeMaterialRepository.listByMaterial(VISIBLE_REF)).thenReturn(List.of(edgeMaterial(11L, VISIBLE_REF)));
+        when(edgeRepository.getById(new GraphPublishedEdgeId(11L))).thenReturn(visibleEdge);
+        when(nodeRepository.listByIds(List.of(new GraphPublishedNodeId(1L), new GraphPublishedNodeId(2L))))
+                .thenReturn(List.of(visibleSource, visibleTarget));
         when(nodeMaterialRepository.listByPublishedNodeId(new GraphPublishedNodeId(1L)))
                 .thenReturn(List.of(nodeMaterial(1L, VISIBLE_REF)));
         when(nodeMaterialRepository.listByPublishedNodeId(new GraphPublishedNodeId(2L)))
                 .thenReturn(List.of(nodeMaterial(2L, VISIBLE_REF)));
-        when(nodeMaterialRepository.listByPublishedNodeId(new GraphPublishedNodeId(3L)))
-                .thenReturn(List.of(nodeMaterial(3L, HIDDEN_REF)));
         when(edgeMaterialRepository.listByPublishedEdgeId(new GraphPublishedEdgeId(11L)))
                 .thenReturn(List.of(edgeMaterial(11L, VISIBLE_REF)));
         when(materialRepository.getByContentRef(VISIBLE_REF)).thenReturn(material(VISIBLE_REF));
-        when(materialRepository.getByContentRef(HIDDEN_REF)).thenReturn(material(HIDDEN_REF));
-        when(contentResolver.isPortalVisible(VISIBLE_REF)).thenReturn(true);
-        when(contentResolver.isPortalVisible(HIDDEN_REF)).thenReturn(false);
 
         GraphRecentEdgesResult result = service.listRecentEdges();
 
