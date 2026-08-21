@@ -32,7 +32,7 @@ scripts/import-seed-data.sh --rebuild --include-test
 - 入口在启动时生成唯一 `smokeRunId`。正式 API 执行器只能在本次运行后创建 evidence JSON，
   并写入相同的 `smokeRunId` 与 `generatedAt`；预先存在的 evidence 文件一律拒绝。证据不得包含
   密码、token、私钥、FastGPT API key 或完整连接串。
-- `full-smoke.sh` 必须调用 `KUZHAMBU_SMOKE_EVIDENCE_RUNNER` 指定的可执行 API 流程执行器，不得跳过业务流程直接校验一个尚未生成的 evidence 文件。
+- `full-smoke.sh` 必须调用仓库内固定的 `scripts/smoke/full-smoke-api-runner.mjs` API 流程执行器；不得由环境变量替换执行器，也不得跳过业务流程直接生成 evidence。
 
 ## Required Flow
 
