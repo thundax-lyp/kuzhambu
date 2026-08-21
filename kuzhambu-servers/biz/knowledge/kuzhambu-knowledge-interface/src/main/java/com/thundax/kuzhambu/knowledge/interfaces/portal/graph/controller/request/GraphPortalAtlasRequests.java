@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.portal.graph.controller.reques
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -21,9 +22,10 @@ public final class GraphPortalAtlasRequests {
     public static class OneHopEdgesListRequest {
         @NotEmpty
         @Size(max = 400)
-        private List<@Pattern(regexp = "^\\d+$") String> nodeIds;
+        private List<@Pattern(regexp = "^\\d+$") @DecimalMax("9223372036854775807") String> nodeIds;
 
         @Pattern(regexp = "^\\d+$")
+        @DecimalMax("9223372036854775807")
         private String afterEdgeId;
     }
 }
