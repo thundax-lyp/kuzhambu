@@ -70,6 +70,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class GraphExtractionApplicationServiceImpl implements GraphExtractionApplicationService {
+    private static final String CREATE_IDEMPOTENCY_SCOPE = "MATERIAL_EXTRACTION_CREATE";
+    private static final String RETRY_IDEMPOTENCY_SCOPE = "TASK_RETRY";
+    private static final String REGENERATE_IDEMPOTENCY_SCOPE = "TASK_REGENERATE";
 
     private static final String AI_SCOPE = "KNOWLEDGE_GRAPH";
     private static final String AI_CAPABILITY = "KNOWLEDGE_GRAPH_EXTRACT";
@@ -135,7 +138,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     @Transactional
     public GraphExtractionTaskResult createExtraction(GraphExtractionCommand command) {
         requireIdempotencyKey(command == null ? null : command.idempotencyKey());
-        GraphExtractionTask existing = taskRepository.getByIdempotencyKey(command.idempotencyKey());
+        GraphExtractionTask existing = taskRepository.getByIdempotencyScopeAndRequestedByAndKey(
+                CREATE_IDEMPOTENCY_SCOPE, command.requestedBy(), command.idempotencyKey());
         if (existing != null) {
             return toTaskResult(existing);
         }
@@ -145,7 +149,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         rejectActiveTask(material);
         GraphExtractionTask task =
                 newTask(material, snapshot, command.idempotencyKey(), command.batchId(), command.requestedBy());
-        GraphExtractionTaskId taskId = taskRepository.insert(task);
+        GraphExtractionTaskId taskId = taskRepository.insert(task, CREATE_IDEMPOTENCY_SCOPE, command.requestedBy());
         task.setId(taskId);
         material.setCurrentExtractionTaskId(taskId);
         updateMaterial(material);
@@ -242,7 +246,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     @Transactional
     public GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command) {
         requireIdempotencyKey(command == null ? null : command.idempotencyKey());
-        GraphExtractionTask existing = taskRepository.getByIdempotencyKey(command.idempotencyKey());
+        GraphExtractionTask existing = taskRepository.getByIdempotencyScopeAndRequestedByAndKey(
+                RETRY_IDEMPOTENCY_SCOPE, command.requestedBy(), command.idempotencyKey());
         if (existing != null) {
             requireIdempotencyTarget(
                     new GraphExtractionTaskId(command.taskId()), existing.getRegeneratedFromTaskId(), "retry");
@@ -257,7 +262,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphExtractionTask nextTask =
                 newTask(material, snapshot, command.idempotencyKey(), previous.getBatchId(), command.requestedBy());
         taskOperator.regenerate(previous, nextTask);
-        GraphExtractionTaskId nextTaskId = taskRepository.insert(nextTask);
+        GraphExtractionTaskId nextTaskId =
+                taskRepository.insert(nextTask, RETRY_IDEMPOTENCY_SCOPE, command.requestedBy());
         nextTask.setId(nextTaskId);
         taskOperator.markRegeneratedBy(previous, nextTaskId);
         updateTask(previous, command.taskLockVersion());
@@ -441,7 +447,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             requireExpectedDisposition(previous, command.expectedDisposition());
         }
         requireIdempotencyKey(command.idempotencyKey());
-        GraphExtractionTask existing = taskRepository.getByIdempotencyKey(command.idempotencyKey());
+        GraphExtractionTask existing = taskRepository.getByIdempotencyScopeAndRequestedByAndKey(
+                REGENERATE_IDEMPOTENCY_SCOPE, command.requestedBy(), command.idempotencyKey());
         if (existing != null) {
             return toTaskResult(existing);
         }
@@ -451,7 +458,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphExtractionTask nextTask =
                 newTask(material, snapshot, command.idempotencyKey(), previous.getBatchId(), command.requestedBy());
         taskOperator.regenerate(previous, nextTask);
-        GraphExtractionTaskId nextTaskId = taskRepository.insert(nextTask);
+        GraphExtractionTaskId nextTaskId =
+                taskRepository.insert(nextTask, REGENERATE_IDEMPOTENCY_SCOPE, command.requestedBy());
         nextTask.setId(nextTaskId);
         taskOperator.supersede(previous, nextTaskId, Instant.now(clock), purgeAfter());
         updateTask(previous, command.taskLockVersion());

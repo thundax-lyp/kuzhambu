@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -103,7 +104,7 @@ class GraphExtractionApplicationServiceImplTest {
         when(contentResolver.resolveWorkbench(ref)).thenReturn(snapshot(ref));
         when(materialRepository.getByContentRef(ref)).thenReturn(material(11L, ref, null));
         when(taskRepository.listByMaterialId(11L)).thenReturn(List.of());
-        when(taskRepository.insert(any())).thenReturn(new GraphExtractionTaskId(7001L));
+        when(taskRepository.insert(any(), any(), any())).thenReturn(new GraphExtractionTaskId(7001L));
         when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(aiFacade.submitKnowledgeGraphExtraction(any()))
@@ -134,7 +135,7 @@ class GraphExtractionApplicationServiceImplTest {
         when(materialRepository.getByContentRef(second))
                 .thenReturn(material(12L, second, new GraphExtractionTaskId(8001L)));
         when(taskRepository.listByMaterialId(11L)).thenReturn(List.of());
-        when(taskRepository.insert(any())).thenReturn(new GraphExtractionTaskId(7001L));
+        when(taskRepository.insert(any(), any(), any())).thenReturn(new GraphExtractionTaskId(7001L));
         when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(aiFacade.submitKnowledgeGraphExtraction(any()))
@@ -333,9 +334,10 @@ class GraphExtractionApplicationServiceImplTest {
         task.setContentSnapshotJson(new ObjectMapper().writeValueAsString(snapshot(ref)));
         GraphMaterial material = material(11L, ref, null);
         when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
-        when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(null);
+        when(taskRepository.getByIdempotencyScopeAndRequestedByAndKey("TASK_RETRY", 1L, "retry-1"))
+                .thenReturn(null);
         when(taskRepository.listByMaterialId(11L)).thenReturn(List.of(task));
-        when(taskRepository.insert(any())).thenReturn(new GraphExtractionTaskId(7002L));
+        when(taskRepository.insert(any(), any(), any())).thenReturn(new GraphExtractionTaskId(7002L));
         when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(materialRepository.getByContentRef(ref)).thenReturn(material);
         when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
@@ -354,6 +356,7 @@ class GraphExtractionApplicationServiceImplTest {
         assertThat(task.getAiBatchId()).isEqualTo(9001L);
         assertThat(task.getSupersededByTaskId()).isEqualTo(new GraphExtractionTaskId(7002L));
         assertThat(material.getCurrentExtractionTaskId()).isEqualTo(new GraphExtractionTaskId(7002L));
+        verify(taskRepository).insert(any(), eq("TASK_RETRY"), eq(1L));
         verify(contentResolver).resolveWorkbench(ref);
         verify(aiFacade).submitKnowledgeGraphExtraction(any());
     }
@@ -363,7 +366,8 @@ class GraphExtractionApplicationServiceImplTest {
         GraphExtractionTask existing = task(7002L, 11L, ref(1001L));
         existing.setExecutionStatus(GraphExtractionExecutionStatus.RUNNING);
         existing.setRegeneratedFromTaskId(new GraphExtractionTaskId(7001L));
-        when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(existing);
+        when(taskRepository.getByIdempotencyScopeAndRequestedByAndKey("TASK_RETRY", 1L, "retry-1"))
+                .thenReturn(existing);
 
         var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 2L, "FAILED", "retry-1", 1L));
 
@@ -377,7 +381,8 @@ class GraphExtractionApplicationServiceImplTest {
     void shouldRejectRetryIdempotencyKeyOwnedByAnotherTask() {
         GraphExtractionTask existing = task(7002L, 11L, ref(1001L));
         existing.setRegeneratedFromTaskId(new GraphExtractionTaskId(7999L));
-        when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(existing);
+        when(taskRepository.getByIdempotencyScopeAndRequestedByAndKey("TASK_RETRY", 1L, "retry-1"))
+                .thenReturn(existing);
 
         assertThatThrownBy(() -> service.retryTask(new GraphExtractionRetryCommand(7001L, 2L, "FAILED", "retry-1", 1L)))
                 .isInstanceOf(BizException.class)
@@ -391,9 +396,10 @@ class GraphExtractionApplicationServiceImplTest {
         task.setExecutionStatus(GraphExtractionExecutionStatus.FAILED);
         GraphMaterial material = material(11L, ref, null);
         when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
-        when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(null);
+        when(taskRepository.getByIdempotencyScopeAndRequestedByAndKey("TASK_RETRY", 1L, "retry-1"))
+                .thenReturn(null);
         when(taskRepository.listByMaterialId(11L)).thenReturn(List.of(task));
-        when(taskRepository.insert(any())).thenReturn(new GraphExtractionTaskId(7002L));
+        when(taskRepository.insert(any(), any(), any())).thenReturn(new GraphExtractionTaskId(7002L));
         when(taskRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);
         when(materialRepository.getByContentRef(ref)).thenReturn(material);
         when(materialRepository.updateIfLockVersion(any(), any(Long.class))).thenReturn(1);

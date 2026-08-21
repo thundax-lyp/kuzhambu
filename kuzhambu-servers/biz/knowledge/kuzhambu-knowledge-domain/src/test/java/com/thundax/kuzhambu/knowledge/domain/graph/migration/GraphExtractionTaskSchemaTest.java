@@ -57,6 +57,16 @@ class GraphExtractionTaskSchemaTest {
                         "UNIQUE KEY `uk_knowledge_graph_extraction_task_delete_receipt_key` (`idempotency_key`)");
     }
 
+    @Test
+    void taskIdempotencyShouldPersistOperationAndOperatorScope() throws IOException {
+        String schema = schema();
+
+        assertTrue(schema.contains("`idempotency_scope` varchar(64) DEFAULT NULL,"));
+        assertTrue(
+                schema.contains(
+                        "KEY `idx_knowledge_graph_extraction_task_idempotency` (`idempotency_scope`, `requested_by`, `idempotency_key`)"));
+    }
+
     private static String schema() throws IOException {
         return Files.readString(repoRoot().resolve("db/schema/knowledge.sql"));
     }

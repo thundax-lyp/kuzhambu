@@ -18,8 +18,11 @@ public interface GraphExtractionTaskMapper extends BaseMapper<GraphExtractionTas
     int deleteByIdAndLockVersion(@Param("id") Long id, @Param("lockVersion") Long lockVersion);
 
     @Select(
-            "select * from knowledge_graph_extraction_task where idempotency_key = #{idempotencyKey} order by id asc limit 1")
-    GraphExtractionTaskDO selectByIdempotencyKey(@Param("idempotencyKey") String idempotencyKey);
+            "select * from knowledge_graph_extraction_task where idempotency_scope = #{idempotencyScope} and requested_by = #{requestedBy} and idempotency_key = #{idempotencyKey} order by id asc limit 1")
+    GraphExtractionTaskDO selectByIdempotencyScopeAndRequestedByAndKey(
+            @Param("idempotencyScope") String idempotencyScope,
+            @Param("requestedBy") Long requestedBy,
+            @Param("idempotencyKey") String idempotencyKey);
 
     @Select(
             """
