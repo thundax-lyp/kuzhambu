@@ -244,6 +244,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         requireIdempotencyKey(command == null ? null : command.idempotencyKey());
         GraphExtractionTask existing = taskRepository.getByIdempotencyKey(command.idempotencyKey());
         if (existing != null) {
+            requireIdempotencyTarget(
+                    new GraphExtractionTaskId(command.taskId()), existing.getRegeneratedFromTaskId(), "retry");
             return toTaskResult(existing);
         }
         GraphExtractionTask previous = requireVersionedTask(command.taskId(), command.taskLockVersion());
@@ -279,6 +281,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphExtractionTaskDeleteReceipt existingReceipt =
                 taskDeleteReceiptRepository.getByIdempotencyKey(command.idempotencyKey());
         if (existingReceipt != null) {
+            requireIdempotencyTarget(
+                    new GraphExtractionTaskId(command.taskId()), existingReceipt.getDeletedTaskId(), "delete");
             return toDeleteResult(existingReceipt);
         }
         GraphExtractionTask task = requireVersionedTask(command.taskId(), command.taskLockVersion());
@@ -295,6 +299,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             GraphExtractionTaskDeleteReceipt claimedReceipt =
                     taskDeleteReceiptRepository.getByIdempotencyKeyForUpdate(command.idempotencyKey());
             if (claimedReceipt != null) {
+                requireIdempotencyTarget(
+                        new GraphExtractionTaskId(command.taskId()), claimedReceipt.getDeletedTaskId(), "delete");
                 return toDeleteResult(claimedReceipt);
             }
             throw new BizException(
@@ -319,6 +325,17 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
 
     private GraphExtractionTaskDeleteResult toDeleteResult(GraphExtractionTaskDeleteReceipt receipt) {
         return new GraphExtractionTaskDeleteResult(receipt.getDeletedTaskId().value());
+    }
+
+    private void requireIdempotencyTarget(
+            GraphExtractionTaskId requestedTaskId, GraphExtractionTaskId persistedTaskId, String operation) {
+        if (requestedTaskId != null && requestedTaskId.equals(persistedTaskId)) {
+            return;
+        }
+        throw new BizException(
+                "GRAPH_TASK_IDEMPOTENCY_CONFLICT",
+                "graph.task.idempotency-conflict",
+                "Graph extraction task %s idempotency key belongs to another request".formatted(operation));
     }
 
     @Override

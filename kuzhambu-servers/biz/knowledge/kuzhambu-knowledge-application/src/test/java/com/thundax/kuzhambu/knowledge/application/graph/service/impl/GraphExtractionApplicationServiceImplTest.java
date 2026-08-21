@@ -361,6 +361,7 @@ class GraphExtractionApplicationServiceImplTest {
     void shouldReturnExistingRetryBeforeCheckingSourceTaskVersion() {
         GraphExtractionTask existing = task(7002L, 11L, ref(1001L));
         existing.setExecutionStatus(GraphExtractionExecutionStatus.RUNNING);
+        existing.setRegeneratedFromTaskId(new GraphExtractionTaskId(7001L));
         when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(existing);
 
         var result = service.retryTask(new GraphExtractionRetryCommand(7001L, 2L, "FAILED", "retry-1", 1L));
@@ -369,6 +370,17 @@ class GraphExtractionApplicationServiceImplTest {
         assertThat(result.executionStatus()).isEqualTo("RUNNING");
         verify(taskRepository, never()).getById(any());
         verifyNoInteractions(contentResolver, aiFacade);
+    }
+
+    @Test
+    void shouldRejectRetryIdempotencyKeyOwnedByAnotherTask() {
+        GraphExtractionTask existing = task(7002L, 11L, ref(1001L));
+        existing.setRegeneratedFromTaskId(new GraphExtractionTaskId(7999L));
+        when(taskRepository.getByIdempotencyKey("retry-1")).thenReturn(existing);
+
+        assertThatThrownBy(() -> service.retryTask(new GraphExtractionRetryCommand(7001L, 2L, "FAILED", "retry-1", 1L)))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("belongs to another request");
     }
 
     @Test
@@ -421,6 +433,16 @@ class GraphExtractionApplicationServiceImplTest {
 
         assertThat(result.deletedTaskId()).isEqualTo(7001L);
         verifyNoInteractions(taskRepository);
+    }
+
+    @Test
+    void shouldRejectDeleteIdempotencyKeyOwnedByAnotherTask() {
+        when(taskDeleteReceiptRepository.getByIdempotencyKey("delete-1"))
+                .thenReturn(new GraphExtractionTaskDeleteReceipt("delete-1", new GraphExtractionTaskId(7999L), NOW));
+
+        assertThatThrownBy(() -> service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1")))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("belongs to another request");
     }
 
     private static ContentRef ref(Long id) {
