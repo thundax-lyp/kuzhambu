@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -19,6 +22,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeWorkerRout
 import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
@@ -394,6 +398,38 @@ class AiWorkerHttpGatewayTest {
         assertEquals("MODEL_TRANSPORT_FAILURE", capturedEvent.get().getErrorType());
         assertEquals("模型服务不可用", capturedEvent.get().getErrorMessage());
         assertEquals("WORKER_STREAM", capturedEvent.get().getFailureStage());
+    }
+
+    @Test
+    void streamShouldApplyModelDeadlineBeforeResponseHeaders() throws IOException {
+        startServer("/internal/ai/stream", exchange -> {
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+            }
+            respond(exchange, 200, STREAM_COMPLETED_EVENT);
+        });
+        AiWorkerModelConfigResolver resolver = mock(AiWorkerModelConfigResolver.class);
+        when(resolver.resolveConfig(any()))
+                .thenReturn(new AiWorkerModelConfigResolver.ResolvedModelConfig(
+                        null,
+                        "default",
+                        new AiModelId(20L),
+                        "openai-compatible",
+                        null,
+                        null,
+                        AiModelName.of("model-a"),
+                        List.of(),
+                        null,
+                        100L));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), resolver);
+        AtomicReference<AiStreamEventResult> event = new AtomicReference<>();
+
+        client.stream(command(), event::set);
+
+        assertEquals("error", event.get().getEventType());
+        assertEquals("WORKER_TIMEOUT", event.get().getErrorType());
     }
 
     @Test
