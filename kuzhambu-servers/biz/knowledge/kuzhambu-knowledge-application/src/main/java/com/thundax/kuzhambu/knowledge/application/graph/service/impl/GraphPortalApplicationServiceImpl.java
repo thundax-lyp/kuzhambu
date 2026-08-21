@@ -25,7 +25,6 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdge
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedEdgeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeMaterialRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeRepository;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -83,9 +82,11 @@ public class GraphPortalApplicationServiceImpl implements GraphPortalApplication
                 .toList();
         Set<GraphPublishedNodeId> nodeIds = new LinkedHashSet<>(
                 nodes.stream().map(GraphPublishedNode::getId).toList());
-        List<GraphPublishedEdge> edges = edgeMaterialRepository.listByMaterial(materialRef).stream()
-                .map(GraphPublishedEdgeMaterial::getPublishedEdgeId)
-                .map(edgeRepository::getById)
+        List<GraphPublishedEdge> edges = edgeRepository
+                .listByIds(edgeMaterialRepository.listByMaterial(materialRef).stream()
+                        .map(GraphPublishedEdgeMaterial::getPublishedEdgeId)
+                        .toList())
+                .stream()
                 .filter(edge -> edge != null && edge.getStatus() == GraphPublishedStatus.ACTIVE)
                 .filter(edge -> nodeIds.contains(edge.getSourceNodeId()) && nodeIds.contains(edge.getTargetNodeId()))
                 .toList();
@@ -94,32 +95,30 @@ public class GraphPortalApplicationServiceImpl implements GraphPortalApplication
 
     @Override
     public GraphPortalOverviewResult getOverview() {
-        List<ContentRef> visibleMaterialRefs =
-                materialRepository.listContentRefsByStatus(GraphMaterialStatus.PUBLISHED).stream()
-                        .filter(contentResolver::isPortalVisible)
-                        .toList();
-        Map<ContentRef, List<GraphPublishedNodeId>> nodeIdsByMaterial = new LinkedHashMap<>();
-        Map<ContentRef, List<GraphPublishedEdgeId>> edgeIdsByMaterial = new LinkedHashMap<>();
-        Set<GraphPublishedNodeId> nodeIds = new LinkedHashSet<>();
-        Set<GraphPublishedEdgeId> edgeIds = new LinkedHashSet<>();
-        for (ContentRef materialRef : visibleMaterialRefs) {
-            List<GraphPublishedNodeId> materialNodeIds = nodeMaterialRepository.listByMaterial(materialRef).stream()
-                    .map(GraphPublishedNodeMaterial::getPublishedNodeId)
-                    .toList();
-            List<GraphPublishedEdgeId> materialEdgeIds = edgeMaterialRepository.listByMaterial(materialRef).stream()
-                    .map(GraphPublishedEdgeMaterial::getPublishedEdgeId)
-                    .toList();
-            nodeIdsByMaterial.put(materialRef, materialNodeIds);
-            edgeIdsByMaterial.put(materialRef, materialEdgeIds);
-            nodeIds.addAll(materialNodeIds);
-            edgeIds.addAll(materialEdgeIds);
-        }
+        List<ContentRef> visibleMaterialRefs = visiblePublishedMaterialRefs();
+        List<GraphPublishedNodeMaterial> nodeMaterials = nodeMaterialRepository.listByMaterials(visibleMaterialRefs);
+        List<GraphPublishedEdgeMaterial> edgeMaterials = edgeMaterialRepository.listByMaterials(visibleMaterialRefs);
+        Map<ContentRef, List<GraphPublishedNodeId>> nodeIdsByMaterial = nodeMaterials.stream()
+                .collect(Collectors.groupingBy(
+                        GraphPublishedNodeMaterial::getMaterialRef,
+                        LinkedHashMap::new,
+                        Collectors.mapping(GraphPublishedNodeMaterial::getPublishedNodeId, Collectors.toList())));
+        Map<ContentRef, List<GraphPublishedEdgeId>> edgeIdsByMaterial = edgeMaterials.stream()
+                .collect(Collectors.groupingBy(
+                        GraphPublishedEdgeMaterial::getMaterialRef,
+                        LinkedHashMap::new,
+                        Collectors.mapping(GraphPublishedEdgeMaterial::getPublishedEdgeId, Collectors.toList())));
+        Set<GraphPublishedNodeId> nodeIds = nodeMaterials.stream()
+                .map(GraphPublishedNodeMaterial::getPublishedNodeId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<GraphPublishedEdgeId> edgeIds = edgeMaterials.stream()
+                .map(GraphPublishedEdgeMaterial::getPublishedEdgeId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         Set<GraphPublishedNodeId> activeNodeIds = nodeRepository.listByIds(List.copyOf(nodeIds)).stream()
                 .filter(node -> node != null && node.getStatus() == GraphPublishedStatus.ACTIVE)
                 .map(GraphPublishedNode::getId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        List<GraphPublishedEdge> activeEdges = edgeIds.stream()
-                .map(edgeRepository::getById)
+        List<GraphPublishedEdge> activeEdges = edgeRepository.listByIds(List.copyOf(edgeIds)).stream()
                 .filter(edge -> edge != null && edge.getStatus() == GraphPublishedStatus.ACTIVE)
                 .filter(edge -> activeNodeIds.contains(edge.getSourceNodeId())
                         && activeNodeIds.contains(edge.getTargetNodeId()))
@@ -132,8 +131,10 @@ public class GraphPortalApplicationServiceImpl implements GraphPortalApplication
             connectedNodeIds.add(edge.getTargetNodeId());
         }
         long coveredMaterialCount = visibleMaterialRefs.stream()
-                .filter(ref -> nodeIdsByMaterial.get(ref).stream().anyMatch(activeNodeIds::contains)
-                        || edgeIdsByMaterial.get(ref).stream().anyMatch(activeEdgeIds::contains))
+                .filter(ref ->
+                        nodeIdsByMaterial.getOrDefault(ref, List.of()).stream().anyMatch(activeNodeIds::contains)
+                                || edgeIdsByMaterial.getOrDefault(ref, List.of()).stream()
+                                        .anyMatch(activeEdgeIds::contains))
                 .count();
         return new GraphPortalOverviewResult(
                 activeNodeIds.size(),
@@ -146,57 +147,60 @@ public class GraphPortalApplicationServiceImpl implements GraphPortalApplication
 
     @Override
     public GraphRecentEdgesResult listRecentEdges() {
-        List<ContentRef> visibleMaterialRefs =
-                materialRepository.listContentRefsByStatus(GraphMaterialStatus.PUBLISHED).stream()
-                        .filter(contentResolver::isPortalVisible)
-                        .toList();
-        List<GraphPublishedEdge> recentVisibleEdges = visibleMaterialRefs.stream()
-                .flatMap(ref -> edgeMaterialRepository.listByMaterial(ref).stream())
-                .map(GraphPublishedEdgeMaterial::getPublishedEdgeId)
-                .distinct()
-                .map(edgeRepository::getById)
-                .filter(edge -> edge != null && edge.getStatus() == GraphPublishedStatus.ACTIVE)
-                .sorted(Comparator.comparing(GraphPublishedEdge::getModifiedAt)
-                        .reversed()
-                        .thenComparing(edge -> edge.getId().value(), Comparator.reverseOrder()))
-                .limit(RECENT_EDGE_LIMIT)
-                .toList();
+        List<ContentRef> visibleMaterialRefs = visiblePublishedMaterialRefs();
+        List<GraphPublishedEdge> recentVisibleEdges =
+                edgeRepository.listRecentlyUpdatedByMaterials(visibleMaterialRefs, RECENT_EDGE_LIMIT);
         List<GraphPublishedNode> endpointNodes = nodeRepository.listByIds(recentVisibleEdges.stream()
                 .flatMap(edge -> List.of(edge.getSourceNodeId(), edge.getTargetNodeId()).stream())
                 .distinct()
                 .toList());
-        VisibleGraph graph = visibleGraph(endpointNodes, recentVisibleEdges);
+        VisibleGraph graph = visibleGraph(endpointNodes, recentVisibleEdges, Set.copyOf(visibleMaterialRefs));
         return new GraphRecentEdgesResult(graph.nodes(), graph.edges());
     }
 
     @Override
     public GraphOneHopEdgesResult listOneHopEdges(GraphOneHopEdgesQuery query) {
         GraphOneHopEdgesResult source = workbenchService.listOneHopEdges(query);
-        VisibleGraph graph = visibleGraph(source.nodes(), source.edges());
+        VisibleGraph graph = visibleGraph(source.nodes(), source.edges(), Set.copyOf(visiblePublishedMaterialRefs()));
         return new GraphOneHopEdgesResult(graph.nodes(), graph.edges(), source.nextCursor(), source.truncated());
     }
 
-    private VisibleGraph visibleGraph(List<GraphPublishedNode> nodes, List<GraphPublishedEdge> edges) {
-        Map<ContentRef, Boolean> materialVisibility = new LinkedHashMap<>();
+    private VisibleGraph visibleGraph(
+            List<GraphPublishedNode> nodes, List<GraphPublishedEdge> edges, Set<ContentRef> visibleMaterialRefs) {
+        List<GraphPublishedNode> safeNodes = nodes == null ? List.of() : nodes;
+        List<GraphPublishedEdge> safeEdges = edges == null ? List.of() : edges;
+        Set<GraphPublishedNodeId> mappedNodeIds =
+                nodeMaterialRepository
+                        .listByPublishedNodeIds(safeNodes.stream()
+                                .map(GraphPublishedNode::getId)
+                                .toList())
+                        .stream()
+                        .filter(mapping -> visibleMaterialRefs.contains(mapping.getMaterialRef()))
+                        .map(GraphPublishedNodeMaterial::getPublishedNodeId)
+                        .collect(Collectors.toSet());
+        Set<GraphPublishedEdgeId> mappedEdgeIds =
+                edgeMaterialRepository
+                        .listByPublishedEdgeIds(safeEdges.stream()
+                                .map(GraphPublishedEdge::getId)
+                                .toList())
+                        .stream()
+                        .filter(mapping -> visibleMaterialRefs.contains(mapping.getMaterialRef()))
+                        .map(GraphPublishedEdgeMaterial::getPublishedEdgeId)
+                        .collect(Collectors.toSet());
         Map<GraphPublishedNodeId, GraphPublishedNode> visibleNodesById = new LinkedHashMap<>();
-        for (GraphPublishedNode node : nodes == null ? List.<GraphPublishedNode>of() : nodes) {
+        for (GraphPublishedNode node : safeNodes) {
             if (node != null
                     && node.getStatus() == GraphPublishedStatus.ACTIVE
-                    && nodeMaterialRepository.listByPublishedNodeId(node.getId()).stream()
-                            .map(GraphPublishedNodeMaterial::getMaterialRef)
-                            .anyMatch(ref -> isPortalVisibleMaterial(ref, materialVisibility))) {
+                    && mappedNodeIds.contains(node.getId())) {
                 visibleNodesById.put(node.getId(), node);
             }
         }
-        List<GraphPublishedEdge> visibleEdges = (edges == null ? List.<GraphPublishedEdge>of() : edges)
-                .stream()
-                        .filter(edge -> edge != null && edge.getStatus() == GraphPublishedStatus.ACTIVE)
-                        .filter(edge -> visibleNodesById.containsKey(edge.getSourceNodeId())
-                                && visibleNodesById.containsKey(edge.getTargetNodeId()))
-                        .filter(edge -> edgeMaterialRepository.listByPublishedEdgeId(edge.getId()).stream()
-                                .map(GraphPublishedEdgeMaterial::getMaterialRef)
-                                .anyMatch(ref -> isPortalVisibleMaterial(ref, materialVisibility)))
-                        .toList();
+        List<GraphPublishedEdge> visibleEdges = safeEdges.stream()
+                .filter(edge -> edge != null && edge.getStatus() == GraphPublishedStatus.ACTIVE)
+                .filter(edge -> visibleNodesById.containsKey(edge.getSourceNodeId())
+                        && visibleNodesById.containsKey(edge.getTargetNodeId()))
+                .filter(edge -> mappedEdgeIds.contains(edge.getId()))
+                .toList();
         Set<GraphPublishedNodeId> acceptedNodeIds = new LinkedHashSet<>();
         for (GraphPublishedEdge edge : visibleEdges) {
             acceptedNodeIds.add(edge.getSourceNodeId());
@@ -206,13 +210,11 @@ public class GraphPortalApplicationServiceImpl implements GraphPortalApplication
                 acceptedNodeIds.stream().map(visibleNodesById::get).toList(), visibleEdges);
     }
 
-    private boolean isPortalVisibleMaterial(ContentRef ref, Map<ContentRef, Boolean> materialVisibility) {
-        return materialVisibility.computeIfAbsent(ref, key -> {
-            GraphMaterial material = materialRepository.getByContentRef(key);
-            return material != null
-                    && material.getStatus() == GraphMaterialStatus.PUBLISHED
-                    && contentResolver.isPortalVisible(key);
-        });
+    private List<ContentRef> visiblePublishedMaterialRefs() {
+        Set<ContentRef> visibleContentRefs = contentResolver.listPortalVisibleContentRefs();
+        return materialRepository.listContentRefsByStatus(GraphMaterialStatus.PUBLISHED).stream()
+                .filter(visibleContentRefs::contains)
+                .toList();
     }
 
     private record VisibleGraph(List<GraphPublishedNode> nodes, List<GraphPublishedEdge> edges) {}

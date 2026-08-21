@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphMaterialContentResolver;
+import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphRecentEdgesResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphWorkbenchApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
@@ -26,6 +27,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNode
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphPublishedNodeRepository;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class GraphPortalApplicationServiceImplTest {
@@ -59,16 +61,16 @@ class GraphPortalApplicationServiceImplTest {
         GraphPublishedEdge edge = edge(11L, 1L, 2L);
         when(materialRepository.listContentRefsByStatus(GraphMaterialStatus.PUBLISHED))
                 .thenReturn(List.of(VISIBLE_REF, HIDDEN_REF));
-        when(contentResolver.isPortalVisible(VISIBLE_REF)).thenReturn(true);
-        when(contentResolver.isPortalVisible(HIDDEN_REF)).thenReturn(false);
-        when(nodeMaterialRepository.listByMaterial(VISIBLE_REF))
+        when(contentResolver.listPortalVisibleContentRefs()).thenReturn(Set.of(VISIBLE_REF));
+        when(nodeMaterialRepository.listByMaterials(List.of(VISIBLE_REF)))
                 .thenReturn(List.of(
                         nodeMaterial(1L, VISIBLE_REF), nodeMaterial(2L, VISIBLE_REF), nodeMaterial(3L, VISIBLE_REF)));
-        when(edgeMaterialRepository.listByMaterial(VISIBLE_REF)).thenReturn(List.of(edgeMaterial(11L, VISIBLE_REF)));
+        when(edgeMaterialRepository.listByMaterials(List.of(VISIBLE_REF)))
+                .thenReturn(List.of(edgeMaterial(11L, VISIBLE_REF)));
         when(nodeRepository.listByIds(List.of(
                         new GraphPublishedNodeId(1L), new GraphPublishedNodeId(2L), new GraphPublishedNodeId(3L))))
                 .thenReturn(List.of(source, target, isolated));
-        when(edgeRepository.getById(new GraphPublishedEdgeId(11L))).thenReturn(edge);
+        when(edgeRepository.listByIds(List.of(new GraphPublishedEdgeId(11L)))).thenReturn(List.of(edge));
 
         var result = service.getOverview();
 
@@ -85,24 +87,46 @@ class GraphPortalApplicationServiceImplTest {
         GraphPublishedEdge visibleEdge = edge(11L, 1L, 2L);
         when(materialRepository.listContentRefsByStatus(GraphMaterialStatus.PUBLISHED))
                 .thenReturn(List.of(VISIBLE_REF, HIDDEN_REF));
-        when(contentResolver.isPortalVisible(VISIBLE_REF)).thenReturn(true);
-        when(contentResolver.isPortalVisible(HIDDEN_REF)).thenReturn(false);
-        when(edgeMaterialRepository.listByMaterial(VISIBLE_REF)).thenReturn(List.of(edgeMaterial(11L, VISIBLE_REF)));
-        when(edgeRepository.getById(new GraphPublishedEdgeId(11L))).thenReturn(visibleEdge);
+        when(contentResolver.listPortalVisibleContentRefs()).thenReturn(Set.of(VISIBLE_REF));
+        when(edgeRepository.listRecentlyUpdatedByMaterials(List.of(VISIBLE_REF), 200))
+                .thenReturn(List.of(visibleEdge));
         when(nodeRepository.listByIds(List.of(new GraphPublishedNodeId(1L), new GraphPublishedNodeId(2L))))
                 .thenReturn(List.of(visibleSource, visibleTarget));
-        when(nodeMaterialRepository.listByPublishedNodeId(new GraphPublishedNodeId(1L)))
-                .thenReturn(List.of(nodeMaterial(1L, VISIBLE_REF)));
-        when(nodeMaterialRepository.listByPublishedNodeId(new GraphPublishedNodeId(2L)))
-                .thenReturn(List.of(nodeMaterial(2L, VISIBLE_REF)));
-        when(edgeMaterialRepository.listByPublishedEdgeId(new GraphPublishedEdgeId(11L)))
+        when(nodeMaterialRepository.listByPublishedNodeIds(
+                        List.of(new GraphPublishedNodeId(1L), new GraphPublishedNodeId(2L))))
+                .thenReturn(List.of(nodeMaterial(1L, VISIBLE_REF), nodeMaterial(2L, VISIBLE_REF)));
+        when(edgeMaterialRepository.listByPublishedEdgeIds(List.of(new GraphPublishedEdgeId(11L))))
                 .thenReturn(List.of(edgeMaterial(11L, VISIBLE_REF)));
-        when(materialRepository.getByContentRef(VISIBLE_REF)).thenReturn(material(VISIBLE_REF));
 
         GraphRecentEdgesResult result = service.listRecentEdges();
 
         assertThat(result.nodes()).containsExactly(visibleSource, visibleTarget);
         assertThat(result.edges()).containsExactly(visibleEdge);
+    }
+
+    @Test
+    void shouldReadPublishedMaterialGraphsForWangqiAndMingCustoms() {
+        ContentRef wangqi = new ContentRef("WANGQI_DOCUMENT", 4001L);
+        ContentRef ming = new ContentRef("MING_CUSTOMS", 5001L);
+        GraphPublishedNode source = node(1L);
+        GraphPublishedNode target = node(2L);
+        GraphPublishedEdge edge = edge(11L, 1L, 2L);
+        for (ContentRef ref : List.of(wangqi, ming)) {
+            when(materialRepository.getByContentRef(ref)).thenReturn(material(ref));
+            when(contentResolver.isPortalVisible(ref)).thenReturn(true);
+            when(nodeMaterialRepository.listByMaterial(ref))
+                    .thenReturn(List.of(nodeMaterial(1L, ref), nodeMaterial(2L, ref)));
+            when(edgeMaterialRepository.listByMaterial(ref)).thenReturn(List.of(edgeMaterial(11L, ref)));
+        }
+        when(nodeRepository.listByIds(List.of(new GraphPublishedNodeId(1L), new GraphPublishedNodeId(2L))))
+                .thenReturn(List.of(source, target));
+        when(edgeRepository.listByIds(List.of(new GraphPublishedEdgeId(11L)))).thenReturn(List.of(edge));
+
+        assertThat(service.getMaterialGraph(new GraphMaterialQuery(null, wangqi))
+                        .visible())
+                .isTrue();
+        assertThat(service.getMaterialGraph(new GraphMaterialQuery(null, ming)).visible())
+                .isTrue();
     }
 
     private static GraphMaterial material(ContentRef ref) {

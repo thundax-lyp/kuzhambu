@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphPublishedEdgeDO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -20,6 +21,25 @@ public interface GraphPublishedEdgeMapper extends BaseMapper<GraphPublishedEdgeD
             limit #{limit}
             """)
     List<GraphPublishedEdgeDO> listRecentlyUpdated(@Param("limit") int limit);
+
+    @Select(
+            """
+            <script>
+            select distinct edge.*
+            from knowledge_graph_published_edge edge
+            join knowledge_graph_published_edge_material material
+              on material.published_edge_id = edge.id
+            where edge.status = 'ACTIVE'
+              and
+              <foreach collection="materialRefs" item="ref" open="(" separator=" or " close=")">
+                (material.content_type = #{ref.contentType} and material.content_ref_id = #{ref.contentId})
+              </foreach>
+            order by edge.modified_at desc, edge.id desc
+            limit #{limit}
+            </script>
+            """)
+    List<GraphPublishedEdgeDO> listRecentlyUpdatedByMaterials(
+            @Param("materialRefs") List<ContentRef> materialRefs, @Param("limit") int limit);
 
     @Select(
             """

@@ -4,17 +4,21 @@ import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.codec.ContentRefCodec;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.graph.dto.GraphMaterialContentSnapshotDto;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GraphMaterialContentResolver {
 
-    private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
+    private static final Set<String> SUPPORTED_CONTENT_TYPES =
+            Set.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS");
     private static final String STATUS_PUBLISHED = "PUBLISHED";
 
     private final ClassicsFacade classicsFacade;
@@ -24,7 +28,7 @@ public class GraphMaterialContentResolver {
     }
 
     public GraphMaterialContentSnapshotDto resolveWorkbench(ContentRef ref) {
-        requireSancaiEntry(ref);
+        requireSupportedContent(ref);
         ClassicsPublicContentFacadeResponse response = classicsFacade.getWorkbenchContent(toRequest(ref));
         ClassicsPublicContentFacadeDto content = content(response);
         if (content == null) {
@@ -34,10 +38,27 @@ public class GraphMaterialContentResolver {
     }
 
     public boolean isPortalVisible(ContentRef ref) {
-        requireSancaiEntry(ref);
+        requireSupportedContent(ref);
         ClassicsPublicContentFacadeResponse response = classicsFacade.getPublicContent(toRequest(ref));
         ClassicsPublicContentFacadeDto content = content(response);
         return content != null && STATUS_PUBLISHED.equals(content.getStatus());
+    }
+
+    public Set<ContentRef> listPortalVisibleContentRefs() {
+        ClassicsPublicContentsFacadeResponse response = classicsFacade.listPublicContents();
+        if (response == null || response.getContents() == null) {
+            return Set.of();
+        }
+        Set<ContentRef> refs = new LinkedHashSet<>();
+        for (ClassicsPublicContentFacadeDto content : response.getContents()) {
+            if (content == null
+                    || !SUPPORTED_CONTENT_TYPES.contains(content.getContentType())
+                    || !STATUS_PUBLISHED.equals(content.getStatus())) {
+                continue;
+            }
+            refs.add(ContentRefCodec.toDomain(content.getContentType(), Long.valueOf(content.getContentId())));
+        }
+        return Set.copyOf(refs);
     }
 
     private ClassicsPublicContentFacadeRequest toRequest(ContentRef ref) {
@@ -69,9 +90,9 @@ public class GraphMaterialContentResolver {
         return values == null ? List.of() : List.copyOf(values);
     }
 
-    private void requireSancaiEntry(ContentRef ref) {
-        if (ref == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(ContentRefCodec.toContentType(ref))) {
-            throw new BizException("Graph material only supports SANCAI_ENTRY content");
+    private void requireSupportedContent(ContentRef ref) {
+        if (ref == null || !SUPPORTED_CONTENT_TYPES.contains(ContentRefCodec.toContentType(ref))) {
+            throw new BizException("Graph material content type is unsupported");
         }
     }
 }

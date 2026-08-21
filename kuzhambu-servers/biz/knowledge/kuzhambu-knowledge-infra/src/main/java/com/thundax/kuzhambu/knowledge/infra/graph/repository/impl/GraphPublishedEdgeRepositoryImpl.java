@@ -56,9 +56,34 @@ public class GraphPublishedEdgeRepositoryImpl implements GraphPublishedEdgeRepos
     }
 
     @Override
+    public List<GraphPublishedEdge> listByIds(List<GraphPublishedEdgeId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return mapper
+                .selectBatchIds(
+                        ids.stream().map(GraphPublishedEdgeIdCodec::toValue).toList())
+                .stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<GraphPublishedEdge> listRecentlyUpdated(int limit) {
         int effectiveLimit = limit <= 0 ? 1 : limit;
         return mapper.listRecentlyUpdated(effectiveLimit).stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<GraphPublishedEdge> listRecentlyUpdatedByMaterials(
+            List<com.thundax.kuzhambu.common.core.content.valueobject.ContentRef> materialRefs, int limit) {
+        if (materialRefs == null || materialRefs.isEmpty()) {
+            return List.of();
+        }
+        int effectiveLimit = limit <= 0 ? 1 : limit;
+        return mapper.listRecentlyUpdatedByMaterials(materialRefs, effectiveLimit).stream()
                 .map(GraphPersistenceAssembler::toDomain)
                 .toList();
     }
