@@ -370,7 +370,7 @@ public class GraphController {
     public GraphExtractionResponses.TaskDeleteData taskDelete(
             @Valid @RequestBody GraphExtractionRequests.TaskActionRequest request) {
         return GraphInterfaceAssembler.toTaskDeleteData(
-                extractionService.deleteTask(GraphInterfaceAssembler.toDeleteCommand(request)));
+                extractionService.deleteTask(GraphInterfaceAssembler.toDeleteCommand(request, currentSubjectLong())));
     }
 
     @Operation(summary = "取消图谱提取任务", description = "knowledge:graph:edit")

@@ -13,6 +13,7 @@ public final class GraphExtractionTaskDeleteReceiptPersistenceAssembler {
         }
         return new GraphExtractionTaskDeleteReceiptDO(
                 null,
+                entity.getOperatorId(),
                 entity.getIdempotencyKey(),
                 GraphExtractionTaskIdCodec.toValue(entity.getDeletedTaskId()),
                 entity.getCompletedAt());
@@ -23,6 +24,7 @@ public final class GraphExtractionTaskDeleteReceiptPersistenceAssembler {
             return null;
         }
         return new GraphExtractionTaskDeleteReceipt(
+                dataObject.getOperatorId(),
                 dataObject.getIdempotencyKey(),
                 GraphExtractionTaskIdCodec.toDomain(dataObject.getDeletedTaskId()),
                 dataObject.getCompletedAt());

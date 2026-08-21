@@ -44,6 +44,19 @@ class GraphExtractionTaskSchemaTest {
                 "UNIQUE KEY `uk_knowledge_graph_extraction_task_active_material` (`active_task_material_id`)"));
     }
 
+    @Test
+    void deletionReceiptShouldScopeIdempotencyToOperator() throws IOException {
+        String schema = schema();
+
+        assertTrue(schema.contains("`operator_id` bigint NOT NULL,"));
+        assertTrue(
+                schema.contains(
+                        "UNIQUE KEY `uk_knowledge_graph_extraction_task_delete_receipt_operator_key` (`operator_id`, `idempotency_key`)"));
+        assertThat(schema)
+                .doesNotContain(
+                        "UNIQUE KEY `uk_knowledge_graph_extraction_task_delete_receipt_key` (`idempotency_key`)");
+    }
+
     private static String schema() throws IOException {
         return Files.readString(repoRoot().resolve("db/schema/knowledge.sql"));
     }

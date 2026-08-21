@@ -9,10 +9,12 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface GraphExtractionTaskDeleteReceiptMapper extends BaseMapper<GraphExtractionTaskDeleteReceiptDO> {
     @Select(
-            "select * from knowledge_graph_extraction_task_delete_receipt where idempotency_key = #{idempotencyKey} limit 1")
-    GraphExtractionTaskDeleteReceiptDO selectByIdempotencyKey(@Param("idempotencyKey") String idempotencyKey);
+            "select * from knowledge_graph_extraction_task_delete_receipt where operator_id = #{operatorId} and idempotency_key = #{idempotencyKey} limit 1")
+    GraphExtractionTaskDeleteReceiptDO selectByOperatorIdAndIdempotencyKey(
+            @Param("operatorId") Long operatorId, @Param("idempotencyKey") String idempotencyKey);
 
     @Select(
-            "select * from knowledge_graph_extraction_task_delete_receipt where idempotency_key = #{idempotencyKey} limit 1 for update")
-    GraphExtractionTaskDeleteReceiptDO selectByIdempotencyKeyForUpdate(@Param("idempotencyKey") String idempotencyKey);
+            "select * from knowledge_graph_extraction_task_delete_receipt where operator_id = #{operatorId} and idempotency_key = #{idempotencyKey} limit 1 for update")
+    GraphExtractionTaskDeleteReceiptDO selectByOperatorIdAndIdempotencyKeyForUpdate(
+            @Param("operatorId") Long operatorId, @Param("idempotencyKey") String idempotencyKey);
 }

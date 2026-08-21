@@ -16,6 +16,7 @@ public class GraphExtractionTaskDeleteReceiptDO {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    private Long operatorId;
     private String idempotencyKey;
     private Long deletedTaskId;
     private Instant completedAt;

@@ -199,11 +199,12 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task_delete_receipt` (
     `id` bigint NOT NULL AUTO_INCREMENT,
+    `operator_id` bigint NOT NULL,
     `idempotency_key` varchar(128) NOT NULL,
     `deleted_task_id` bigint NOT NULL,
     `completed_at` BIGINT NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_knowledge_graph_extraction_task_delete_receipt_key` (`idempotency_key`)
+    UNIQUE KEY `uk_knowledge_graph_extraction_task_delete_receipt_operator_key` (`operator_id`, `idempotency_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取任务删除幂等回执';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_version` (

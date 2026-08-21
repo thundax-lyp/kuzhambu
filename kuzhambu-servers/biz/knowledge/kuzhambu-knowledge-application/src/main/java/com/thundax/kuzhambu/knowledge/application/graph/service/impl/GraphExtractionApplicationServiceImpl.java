@@ -278,8 +278,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     @Transactional
     public GraphExtractionTaskDeleteResult deleteTask(GraphExtractionDeleteCommand command) {
         requireIdempotencyKey(command == null ? null : command.idempotencyKey());
-        GraphExtractionTaskDeleteReceipt existingReceipt =
-                taskDeleteReceiptRepository.getByIdempotencyKey(command.idempotencyKey());
+        GraphExtractionTaskDeleteReceipt existingReceipt = taskDeleteReceiptRepository.getByOperatorIdAndIdempotencyKey(
+                command.requestedBy(), command.idempotencyKey());
         if (existingReceipt != null) {
             requireIdempotencyTarget(
                     new GraphExtractionTaskId(command.taskId()), existingReceipt.getDeletedTaskId(), "delete");
@@ -293,11 +293,12 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                     "graph.task.state-conflict",
                     "Graph extraction task must be terminal and have no pending candidate before deletion");
         }
-        GraphExtractionTaskDeleteReceipt receipt =
-                new GraphExtractionTaskDeleteReceipt(command.idempotencyKey(), task.getId(), Instant.now(clock));
+        GraphExtractionTaskDeleteReceipt receipt = new GraphExtractionTaskDeleteReceipt(
+                command.requestedBy(), command.idempotencyKey(), task.getId(), Instant.now(clock));
         if (!taskDeleteReceiptRepository.insert(receipt)) {
             GraphExtractionTaskDeleteReceipt claimedReceipt =
-                    taskDeleteReceiptRepository.getByIdempotencyKeyForUpdate(command.idempotencyKey());
+                    taskDeleteReceiptRepository.getByOperatorIdAndIdempotencyKeyForUpdate(
+                            command.requestedBy(), command.idempotencyKey());
             if (claimedReceipt != null) {
                 requireIdempotencyTarget(
                         new GraphExtractionTaskId(command.taskId()), claimedReceipt.getDeletedTaskId(), "delete");

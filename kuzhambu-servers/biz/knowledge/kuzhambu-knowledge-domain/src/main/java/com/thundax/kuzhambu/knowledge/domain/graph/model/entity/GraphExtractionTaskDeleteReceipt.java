@@ -12,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GraphExtractionTaskDeleteReceipt {
+    private Long operatorId;
     private String idempotencyKey;
     private GraphExtractionTaskId deletedTaskId;
     private Instant completedAt;

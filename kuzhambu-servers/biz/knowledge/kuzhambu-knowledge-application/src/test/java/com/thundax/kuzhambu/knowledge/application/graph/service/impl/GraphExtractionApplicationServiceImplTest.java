@@ -47,6 +47,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -417,7 +418,7 @@ class GraphExtractionApplicationServiceImplTest {
         when(taskRepository.deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L))
                 .thenReturn(1);
 
-        var result = service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1"));
+        var result = service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1", 1L));
 
         assertThat(result.deletedTaskId()).isEqualTo(7001L);
         verify(taskRepository).deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L);
@@ -426,10 +427,11 @@ class GraphExtractionApplicationServiceImplTest {
 
     @Test
     void shouldReturnPersistedReceiptForRepeatedDeleteRequest() {
-        when(taskDeleteReceiptRepository.getByIdempotencyKey("delete-1"))
-                .thenReturn(new GraphExtractionTaskDeleteReceipt("delete-1", new GraphExtractionTaskId(7001L), NOW));
+        when(taskDeleteReceiptRepository.getByOperatorIdAndIdempotencyKey(1L, "delete-1"))
+                .thenReturn(
+                        new GraphExtractionTaskDeleteReceipt(1L, "delete-1", new GraphExtractionTaskId(7001L), NOW));
 
-        var result = service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1"));
+        var result = service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1", 1L));
 
         assertThat(result.deletedTaskId()).isEqualTo(7001L);
         verifyNoInteractions(taskRepository);
@@ -437,12 +439,33 @@ class GraphExtractionApplicationServiceImplTest {
 
     @Test
     void shouldRejectDeleteIdempotencyKeyOwnedByAnotherTask() {
-        when(taskDeleteReceiptRepository.getByIdempotencyKey("delete-1"))
-                .thenReturn(new GraphExtractionTaskDeleteReceipt("delete-1", new GraphExtractionTaskId(7999L), NOW));
+        when(taskDeleteReceiptRepository.getByOperatorIdAndIdempotencyKey(1L, "delete-1"))
+                .thenReturn(
+                        new GraphExtractionTaskDeleteReceipt(1L, "delete-1", new GraphExtractionTaskId(7999L), NOW));
 
-        assertThatThrownBy(() -> service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1")))
+        assertThatThrownBy(
+                        () -> service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "delete-1", 1L)))
                 .isInstanceOf(BizException.class)
                 .hasMessageContaining("belongs to another request");
+    }
+
+    @Test
+    void shouldScopeDeleteReceiptLookupAndInsertToOperator() {
+        ContentRef ref = ref(1001L);
+        GraphExtractionTask task = task(7001L, 11L, ref);
+        task.setExecutionStatus(GraphExtractionExecutionStatus.FAILED);
+        when(taskRepository.getById(new GraphExtractionTaskId(7001L))).thenReturn(task);
+        when(taskDeleteReceiptRepository.insert(any())).thenReturn(true);
+        when(taskRepository.deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L))
+                .thenReturn(1);
+
+        service.deleteTask(new GraphExtractionDeleteCommand(7001L, 3L, "FAILED", "shared-key", 2L));
+
+        verify(taskDeleteReceiptRepository).getByOperatorIdAndIdempotencyKey(2L, "shared-key");
+        ArgumentCaptor<GraphExtractionTaskDeleteReceipt> captor =
+                ArgumentCaptor.forClass(GraphExtractionTaskDeleteReceipt.class);
+        verify(taskDeleteReceiptRepository).insert(captor.capture());
+        assertThat(captor.getValue().getOperatorId()).isEqualTo(2L);
     }
 
     private static ContentRef ref(Long id) {

@@ -16,15 +16,16 @@ public class GraphExtractionTaskDeleteReceiptRepositoryImpl implements GraphExtr
     }
 
     @Override
-    public GraphExtractionTaskDeleteReceipt getByIdempotencyKey(String idempotencyKey) {
+    public GraphExtractionTaskDeleteReceipt getByOperatorIdAndIdempotencyKey(Long operatorId, String idempotencyKey) {
         return GraphExtractionTaskDeleteReceiptPersistenceAssembler.toDomain(
-                mapper.selectByIdempotencyKey(idempotencyKey));
+                mapper.selectByOperatorIdAndIdempotencyKey(operatorId, idempotencyKey));
     }
 
     @Override
-    public GraphExtractionTaskDeleteReceipt getByIdempotencyKeyForUpdate(String idempotencyKey) {
+    public GraphExtractionTaskDeleteReceipt getByOperatorIdAndIdempotencyKeyForUpdate(
+            Long operatorId, String idempotencyKey) {
         return GraphExtractionTaskDeleteReceiptPersistenceAssembler.toDomain(
-                mapper.selectByIdempotencyKeyForUpdate(idempotencyKey));
+                mapper.selectByOperatorIdAndIdempotencyKeyForUpdate(operatorId, idempotencyKey));
     }
 
     @Override

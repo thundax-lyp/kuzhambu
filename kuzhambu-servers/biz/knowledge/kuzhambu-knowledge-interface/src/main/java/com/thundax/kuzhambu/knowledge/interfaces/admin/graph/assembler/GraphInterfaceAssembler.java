@@ -513,13 +513,15 @@ public final class GraphInterfaceAssembler {
 
     @NonNull
     public static GraphExtractionDeleteCommand toDeleteCommand(
-            @NonNull GraphExtractionRequests.TaskActionRequest request) {
+            @NonNull GraphExtractionRequests.TaskActionRequest request, @NonNull Long requestedBy) {
         Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
         return new GraphExtractionDeleteCommand(
                 Long.valueOf(request.getTaskId()),
                 Long.parseLong(request.getTaskLockVersion()),
                 request.getExpectedExecutionStatus(),
-                request.getIdempotencyKey());
+                request.getIdempotencyKey(),
+                requestedBy);
     }
 
     @NonNull
