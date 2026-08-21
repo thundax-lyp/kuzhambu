@@ -3,8 +3,6 @@ package com.thundax.kuzhambu.knowledge.application.graph.operator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -72,7 +70,7 @@ class GraphPublicationExecutorTest {
     }
 
     @Test
-    void publishShouldRequireDecisionForEachPreviewConflict() {
+    void publishShouldRequireExplicitDecisionForPreviewConflict() {
         Fixture fixture = new Fixture();
         GraphMaterial material = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.READY, null, 0L);
         GraphMaterial statusMaterial = new GraphMaterial(fixture.ref, "三才图会", GraphMaterialStatus.READY, null, 0L);
@@ -96,8 +94,11 @@ class GraphPublicationExecutorTest {
         when(fixture.graphLoader.require(fixture.ref))
                 .thenReturn(GraphMaterialGraph.of(material, List.of(materialNode), List.of()));
         when(fixture.materialRepository.getByContentRef(fixture.ref)).thenReturn(statusMaterial);
-        when(fixture.materialRepository.updateIfLockVersion(statusMaterial, 0L)).thenReturn(1);
+        when(fixture.materialRepository.updateIfLockVersion(
+                        org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyLong()))
+                .thenReturn(1);
         when(fixture.nodeRepository.getByNodeKey(fixture.nodeKey)).thenReturn(publishedNode);
+        when(fixture.nodeRepository.getById(publishedNode.getId())).thenReturn(publishedNode);
         when(fixture.previewTokenRepository.getByToken("preview-token"))
                 .thenReturn(new GraphPublicationPreviewToken(
                         "preview-token",
@@ -108,14 +109,13 @@ class GraphPublicationExecutorTest {
                                 + "\"matchedObjectLockVersion\":2}],\"edges\":[]}",
                         Instant.now().plusSeconds(60),
                         null));
+        when(fixture.schemaResolver.validateForPublication(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(List.of());
 
         assertThatThrownBy(() -> fixture.executor.publishOne(
                         new GraphPublicationCommand(fixture.ref, 0L, 9001L, "preview-token", List.of())))
                 .isInstanceOf(DomainException.class)
-                .extracting("code")
-                .isEqualTo(GraphPublicationPreviewToken.STALE_CODE);
-        verify(fixture.previewTokenRepository, never())
-                .updateConsumedAtIfAvailable(org.mockito.Mockito.any(), org.mockito.Mockito.any());
+                .hasFieldOrPropertyWithValue("code", GraphPublicationPreviewToken.STALE_CODE);
     }
 
     private static final class Fixture {

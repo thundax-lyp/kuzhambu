@@ -123,7 +123,7 @@ describe("MaterialDetailDrawer", () => {
 
         await user.click(screen.getByText("知识图谱"));
         expect(
-            screen.getByTestId("knowledge-graph-material-detail-draft-graph-section")
+            await screen.findByTestId("knowledge-graph-material-detail-draft-graph-section")
         ).toBeInTheDocument();
         expect(screen.getAllByText("图谱信息").length).toBeGreaterThan(0);
         expect(screen.getByTestId("knowledge-graph-material-canvas-mock")).toHaveTextContent(
@@ -132,7 +132,7 @@ describe("MaterialDetailDrawer", () => {
 
         await user.click(screen.getByText("任务"));
         expect(
-            screen.getByTestId("knowledge-graph-material-detail-tasks-section")
+            await screen.findByTestId("knowledge-graph-material-detail-tasks-section")
         ).toBeInTheDocument();
         expect(screen.getByText("任务摘要")).toBeInTheDocument();
         expect(screen.queryByText("任务摘要待接入。")).not.toBeInTheDocument();
@@ -204,7 +204,9 @@ describe("MaterialDetailDrawer", () => {
 
         await user.click(screen.getByText("任务"));
 
-        expect(screen.getByTestId("knowledge-graph-material-detail-tasks-section")).toBeVisible();
+        expect(
+            await screen.findByTestId("knowledge-graph-material-detail-tasks-section")
+        ).toBeVisible();
         expect(screen.queryByRole("button", { name: "删除变更" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "删除任务" })).not.toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "删除预检" })).not.toBeInTheDocument();

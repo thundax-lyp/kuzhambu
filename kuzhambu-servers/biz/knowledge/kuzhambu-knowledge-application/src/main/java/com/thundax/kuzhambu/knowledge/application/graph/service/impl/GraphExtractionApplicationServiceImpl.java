@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeGraphExtractionJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
@@ -20,6 +21,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionC
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateDiscardCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialApplyMode;
@@ -37,6 +39,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyn
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDeleteResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
@@ -45,12 +48,14 @@ import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionA
 import com.thundax.kuzhambu.knowledge.application.graph.support.GraphApplicationAssembler;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.aggregate.GraphMaterialGraph;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTaskDeleteReceipt;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphMaterial;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionExecutionStatus;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphSourceType;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.operator.GraphExtractionTaskOperator;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskDeleteReceiptRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphMaterialRepository;
 import java.time.Clock;
@@ -65,6 +70,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class GraphExtractionApplicationServiceImpl implements GraphExtractionApplicationService {
+    private static final String CREATE_IDEMPOTENCY_SCOPE = "MATERIAL_EXTRACTION_CREATE";
+    private static final String RETRY_IDEMPOTENCY_SCOPE = "TASK_RETRY";
+    private static final String REGENERATE_IDEMPOTENCY_SCOPE = "TASK_REGENERATE";
 
     private static final String AI_SCOPE = "KNOWLEDGE_GRAPH";
     private static final String AI_CAPABILITY = "KNOWLEDGE_GRAPH_EXTRACT";
@@ -81,6 +89,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     private final GraphDocumentMerger documentMerger;
     private final GraphMaterialRepository materialRepository;
     private final GraphExtractionTaskRepository taskRepository;
+    private final GraphExtractionTaskDeleteReceiptRepository taskDeleteReceiptRepository;
     private final GraphExtractionTaskOperator taskOperator;
     private final GraphTaskCandidateResolver candidateResolver;
     private final TransactionTemplate batchItemTransactionTemplate;
@@ -98,6 +107,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             GraphDocumentMerger documentMerger,
             GraphMaterialRepository materialRepository,
             GraphExtractionTaskRepository taskRepository,
+            GraphExtractionTaskDeleteReceiptRepository taskDeleteReceiptRepository,
             GraphExtractionTaskOperator taskOperator,
             GraphTaskCandidateResolver candidateResolver,
             PlatformTransactionManager transactionManager) {
@@ -112,6 +122,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         this.documentMerger = documentMerger;
         this.materialRepository = materialRepository;
         this.taskRepository = taskRepository;
+        this.taskDeleteReceiptRepository = taskDeleteReceiptRepository;
         this.taskOperator = taskOperator;
         this.candidateResolver = candidateResolver;
         this.batchItemTransactionTemplate = new TransactionTemplate(transactionManager);
@@ -127,7 +138,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     @Transactional
     public GraphExtractionTaskResult createExtraction(GraphExtractionCommand command) {
         requireIdempotencyKey(command == null ? null : command.idempotencyKey());
-        GraphExtractionTask existing = taskRepository.getByIdempotencyKey(command.idempotencyKey());
+        GraphExtractionTask existing = taskRepository.getByIdempotencyScopeAndRequestedByAndKey(
+                CREATE_IDEMPOTENCY_SCOPE, command.requestedBy(), command.idempotencyKey());
         if (existing != null) {
             return toTaskResult(existing);
         }
@@ -137,7 +149,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         rejectActiveTask(material);
         GraphExtractionTask task =
                 newTask(material, snapshot, command.idempotencyKey(), command.batchId(), command.requestedBy());
-        GraphExtractionTaskId taskId = taskRepository.insert(task);
+        GraphExtractionTaskId taskId = taskRepository.insert(task, CREATE_IDEMPOTENCY_SCOPE, command.requestedBy());
         task.setId(taskId);
         material.setCurrentExtractionTaskId(taskId);
         updateMaterial(material);
@@ -233,29 +245,104 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
     @Override
     @Transactional
     public GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command) {
-        GraphExtractionTask task =
-                requireVersionedTask(command == null ? null : command.taskId(), command.taskLockVersion());
-        requireExpectedStatus(task, command.expectedExecutionStatus());
-        if (!hasUsableContentSnapshot(task.getContentSnapshotJson())) {
-            task.setContentSnapshotJson(snapshotJson(contentResolver.resolveWorkbench(task.getContentRef())));
+        requireIdempotencyKey(command == null ? null : command.idempotencyKey());
+        GraphExtractionTask existing = taskRepository.getByIdempotencyScopeAndRequestedByAndKey(
+                RETRY_IDEMPOTENCY_SCOPE, command.requestedBy(), command.idempotencyKey());
+        if (existing != null) {
+            requireIdempotencyTarget(
+                    new GraphExtractionTaskId(command.taskId()), existing.getRegeneratedFromTaskId(), "retry");
+            return toTaskResult(existing);
         }
-        taskOperator.retry(task);
-        updateTask(task, command.taskLockVersion());
-        GraphMaterial material = materialRepository.getByContentRef(task.getContentRef());
-        if (material == null) {
-            throw new BizException("Graph material does not exist");
-        }
-        material.setCurrentExtractionTaskId(task.getId());
+        GraphExtractionTask previous = requireVersionedTask(command.taskId(), command.taskLockVersion());
+        requireExpectedStatus(previous, command.expectedExecutionStatus());
+
+        GraphMaterialContentSnapshotDto snapshot = contentResolver.resolveWorkbench(previous.getContentRef());
+        GraphMaterial material = materialForExtraction(previous.getContentRef(), snapshot.title());
+        rejectActiveTask(material);
+        GraphExtractionTask nextTask =
+                newTask(material, snapshot, command.idempotencyKey(), previous.getBatchId(), command.requestedBy());
+        taskOperator.regenerate(previous, nextTask);
+        GraphExtractionTaskId nextTaskId =
+                taskRepository.insert(nextTask, RETRY_IDEMPOTENCY_SCOPE, command.requestedBy());
+        nextTask.setId(nextTaskId);
+        taskOperator.markRegeneratedBy(previous, nextTaskId);
+        updateTask(previous, command.taskLockVersion());
+        material.setCurrentExtractionTaskId(nextTaskId);
         updateMaterial(material);
-        AiBatchJobActionFacadeResponse aiBatch =
-                aiFacade.submitKnowledgeGraphExtraction(extractionRequest(task, command.requestedBy()));
+        AiBatchJobActionFacadeResponse aiBatch = aiFacade.submitKnowledgeGraphExtraction(
+                extractionRequest(previous.getContentRef(), snapshot, command.requestedBy()));
         if (aiBatch != null && aiBatch.getBatchId() != null) {
-            task.setAiBatchId(aiBatch.getBatchId());
-            task.start();
-            updateTask(task, task.getLockVersion());
+            nextTask.setAiBatchId(aiBatch.getBatchId());
+            nextTask.start();
+            updateTask(nextTask, nextTask.getLockVersion());
+        }
+        statsRefresher.refresh(previous.getContentRef());
+        return toTaskResult(nextTask);
+    }
+
+    @Override
+    @Transactional
+    public GraphExtractionTaskDeleteResult deleteTask(GraphExtractionDeleteCommand command) {
+        requireIdempotencyKey(command == null ? null : command.idempotencyKey());
+        GraphExtractionTaskDeleteReceipt existingReceipt = taskDeleteReceiptRepository.getByOperatorIdAndIdempotencyKey(
+                command.requestedBy(), command.idempotencyKey());
+        if (existingReceipt != null) {
+            requireIdempotencyTarget(
+                    new GraphExtractionTaskId(command.taskId()), existingReceipt.getDeletedTaskId(), "delete");
+            return toDeleteResult(existingReceipt);
+        }
+        GraphExtractionTask task = requireVersionedTask(command.taskId(), command.taskLockVersion());
+        requireExpectedStatus(task, command.expectedExecutionStatus());
+        if (!task.canDelete()) {
+            throw new BizException(
+                    "GRAPH_TASK_STATE_CONFLICT",
+                    "graph.task.state-conflict",
+                    "Graph extraction task must be terminal and have no pending candidate before deletion");
+        }
+        GraphExtractionTaskDeleteReceipt receipt = new GraphExtractionTaskDeleteReceipt(
+                command.requestedBy(), command.idempotencyKey(), task.getId(), Instant.now(clock));
+        if (!taskDeleteReceiptRepository.insert(receipt)) {
+            GraphExtractionTaskDeleteReceipt claimedReceipt =
+                    taskDeleteReceiptRepository.getByOperatorIdAndIdempotencyKeyForUpdate(
+                            command.requestedBy(), command.idempotencyKey());
+            if (claimedReceipt != null) {
+                requireIdempotencyTarget(
+                        new GraphExtractionTaskId(command.taskId()), claimedReceipt.getDeletedTaskId(), "delete");
+                return toDeleteResult(claimedReceipt);
+            }
+            throw new BizException(
+                    "GRAPH_TASK_DELETE_RECEIPT_CONFLICT",
+                    "graph.task.delete-receipt-conflict",
+                    "Graph extraction task deletion receipt could not be claimed");
+        }
+        if (taskRepository.deleteByIdAndLockVersion(task.getId(), command.taskLockVersion()) != 1) {
+            throw new BizException(
+                    "GRAPH_TASK_LOCK_CONFLICT",
+                    "graph.task.lock-conflict",
+                    "Graph extraction task could not be deleted");
+        }
+        if (task.getCandidateId() != null) {
+            aiFacade.cleanupKnowledgeGraphCandidate(CleanupKnowledgeGraphCandidateFacadeRequest.builder()
+                    .candidateId(task.getCandidateId())
+                    .build());
         }
         statsRefresher.refresh(task.getContentRef());
-        return toTaskResult(task);
+        return toDeleteResult(receipt);
+    }
+
+    private GraphExtractionTaskDeleteResult toDeleteResult(GraphExtractionTaskDeleteReceipt receipt) {
+        return new GraphExtractionTaskDeleteResult(receipt.getDeletedTaskId().value());
+    }
+
+    private void requireIdempotencyTarget(
+            GraphExtractionTaskId requestedTaskId, GraphExtractionTaskId persistedTaskId, String operation) {
+        if (requestedTaskId != null && requestedTaskId.equals(persistedTaskId)) {
+            return;
+        }
+        throw new BizException(
+                "GRAPH_TASK_IDEMPOTENCY_CONFLICT",
+                "graph.task.idempotency-conflict",
+                "Graph extraction task %s idempotency key belongs to another request".formatted(operation));
     }
 
     @Override
@@ -360,7 +447,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
             requireExpectedDisposition(previous, command.expectedDisposition());
         }
         requireIdempotencyKey(command.idempotencyKey());
-        GraphExtractionTask existing = taskRepository.getByIdempotencyKey(command.idempotencyKey());
+        GraphExtractionTask existing = taskRepository.getByIdempotencyScopeAndRequestedByAndKey(
+                REGENERATE_IDEMPOTENCY_SCOPE, command.requestedBy(), command.idempotencyKey());
         if (existing != null) {
             return toTaskResult(existing);
         }
@@ -370,7 +458,8 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         GraphExtractionTask nextTask =
                 newTask(material, snapshot, command.idempotencyKey(), previous.getBatchId(), command.requestedBy());
         taskOperator.regenerate(previous, nextTask);
-        GraphExtractionTaskId nextTaskId = taskRepository.insert(nextTask);
+        GraphExtractionTaskId nextTaskId =
+                taskRepository.insert(nextTask, REGENERATE_IDEMPOTENCY_SCOPE, command.requestedBy());
         nextTask.setId(nextTaskId);
         taskOperator.supersede(previous, nextTaskId, Instant.now(clock), purgeAfter());
         updateTask(previous, command.taskLockVersion());
@@ -576,6 +665,7 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         if (task == null) {
             return null;
         }
+        String snapshotTitle = snapshotText(task.getContentSnapshotJson(), "title");
         return new GraphExtractionTaskResult(
                 task.getId() == null ? null : task.getId().value(),
                 task.getContentRef(),
@@ -594,7 +684,9 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
                 task.getCompletedAt(),
                 task.getDisposedAt(),
                 task.getPurgeAfter(),
-                materialTitle);
+                snapshotTitle == null ? materialTitle : snapshotTitle,
+                snapshotText(task.getContentSnapshotJson(), "categoryName"),
+                snapshotText(task.getContentSnapshotJson(), "volumeName"));
     }
 
     private GraphExtractionTask syncTaskFromAi(GraphExtractionTask task) {
@@ -720,14 +812,16 @@ public class GraphExtractionApplicationServiceImpl implements GraphExtractionApp
         }
     }
 
-    private boolean hasUsableContentSnapshot(String snapshotJson) {
-        if (snapshotJson == null || snapshotJson.isBlank()) {
-            return false;
+    private String snapshotText(String snapshotJson, String fieldName) {
+        if (snapshotJson == null || snapshotJson.isBlank() || fieldName == null || fieldName.isBlank()) {
+            return null;
         }
         try {
-            return !objectMapper.readTree(snapshotJson).path("title").asText().isBlank();
+            String value =
+                    objectMapper.readTree(snapshotJson).path(fieldName).asText().trim();
+            return value.isBlank() ? null : value;
         } catch (JsonProcessingException ex) {
-            return false;
+            return null;
         }
     }
 

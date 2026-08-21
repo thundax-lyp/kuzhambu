@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, Network } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SancaiGraphView } from "./sancai-graph-view";
 import * as sancaiService from "./sancai-service";
 import type { SancaiCategoryRecord, SancaiEntryRecord } from "./sancai-types";
 
@@ -66,6 +67,7 @@ const readEntryImages = (entry?: SancaiEntryRecord | null) => {
 export const SancaiPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+    const [detailView, setDetailView] = useState<"reading" | "graph">("reading");
     const selectedEntryId = readEntryIdParam(searchParams);
 
     const categoriesQuery = useQuery({
@@ -116,6 +118,12 @@ export const SancaiPage = () => {
     const selectedEntry =
         detailQuery.data || entries.find((entry) => entry.id === activeEntryId) || entries[0];
     const selectedEntryImages = readEntryImages(selectedEntry);
+    const graphQuery = useQuery({
+        queryKey: ["portal", "classics", "sancai", "entry-graph", activeEntryId],
+        queryFn: () => sancaiService.getEntryGraph(activeEntryId ?? 0),
+        enabled: detailView === "graph" && activeEntryId !== null,
+        ...STABLE_BOOK_QUERY_OPTIONS
+    });
 
     const clearSelectedEntryParam = () => {
         const next = new URLSearchParams(searchParams);
@@ -224,75 +232,154 @@ export const SancaiPage = () => {
                             ) : null}
                         </div>
 
-                        <Card className="sancai-entry-detail" aria-label="三才图会条目详情">
+                        <Card
+                            className={
+                                detailView === "graph"
+                                    ? "sancai-entry-detail is-graph-view"
+                                    : "sancai-entry-detail"
+                            }
+                            aria-label="三才图会条目详情"
+                        >
                             {selectedEntry ? (
                                 <>
-                                    <h2>{readTitle(selectedEntry, "条目")}</h2>
-                                    {selectedEntryImages.length ? (
+                                    <header className="sancai-detail-header">
+                                        <h2>{readTitle(selectedEntry, "条目")}</h2>
                                         <div
-                                            className="sancai-figure-list"
-                                            aria-label="三才图会正文图版"
+                                            className="sancai-detail-tabs"
+                                            aria-label="稿件详情视图"
+                                            role="tablist"
                                         >
-                                            {selectedEntryImages.map((image) => (
-                                                <figure
-                                                    key={image.key}
-                                                    className={
-                                                        image.currentUsed
-                                                            ? "sancai-entry-figure is-cover"
-                                                            : "sancai-entry-figure"
-                                                    }
-                                                >
-                                                    <img alt={image.alt} src={image.url} />
-                                                    <figcaption>{image.caption}</figcaption>
-                                                </figure>
-                                            ))}
+                                            <button
+                                                aria-controls="sancai-reading-panel"
+                                                aria-selected={detailView === "reading"}
+                                                id="sancai-reading-tab"
+                                                role="tab"
+                                                type="button"
+                                                onClick={() => setDetailView("reading")}
+                                            >
+                                                <BookOpen aria-hidden="true" size={15} />
+                                                阅读
+                                            </button>
+                                            <button
+                                                aria-controls="sancai-graph-panel"
+                                                aria-selected={detailView === "graph"}
+                                                id="sancai-graph-tab"
+                                                role="tab"
+                                                type="button"
+                                                onClick={() => setDetailView("graph")}
+                                            >
+                                                <Network aria-hidden="true" size={15} />
+                                                知识图谱
+                                                {graphQuery.data?.visible ? (
+                                                    <span>{graphQuery.data.nodes.length}</span>
+                                                ) : null}
+                                            </button>
                                         </div>
-                                    ) : null}
-                                    {selectedEntry.tags?.length ? (
+                                    </header>
+                                    {detailView === "reading" ? (
                                         <div
-                                            className="sancai-tag-list"
-                                            aria-label="三才图会条目标签"
+                                            className="sancai-reading-panel"
+                                            aria-labelledby="sancai-reading-tab"
+                                            id="sancai-reading-panel"
+                                            role="tabpanel"
                                         >
-                                            {selectedEntry.tags.map((tag) => (
-                                                <span
-                                                    key={tag.id ?? tag.tagName}
-                                                    className="sancai-tag"
+                                            {selectedEntryImages.length ? (
+                                                <div
+                                                    className="sancai-figure-list"
+                                                    aria-label="三才图会正文图版"
                                                 >
-                                                    {tag.tagName}
-                                                </span>
-                                            ))}
+                                                    {selectedEntryImages.map((image) => (
+                                                        <figure
+                                                            key={image.key}
+                                                            className={
+                                                                image.currentUsed
+                                                                    ? "sancai-entry-figure is-cover"
+                                                                    : "sancai-entry-figure"
+                                                            }
+                                                        >
+                                                            <img alt={image.alt} src={image.url} />
+                                                            <figcaption>{image.caption}</figcaption>
+                                                        </figure>
+                                                    ))}
+                                                </div>
+                                            ) : null}
+                                            {selectedEntry.tags?.length ? (
+                                                <div
+                                                    className="sancai-tag-list"
+                                                    aria-label="三才图会条目标签"
+                                                >
+                                                    {selectedEntry.tags.map((tag) => (
+                                                        <span
+                                                            key={tag.id ?? tag.tagName}
+                                                            className="sancai-tag"
+                                                        >
+                                                            {tag.tagName}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : null}
+                                            {selectedEntry.summary?.trim() ? (
+                                                <section className="sancai-detail-section">
+                                                    <h3>提要</h3>
+                                                    <p>{selectedEntry.summary}</p>
+                                                </section>
+                                            ) : null}
+                                            {selectedEntry.originalText?.trim() ? (
+                                                <section className="sancai-detail-section">
+                                                    <h3>原文</h3>
+                                                    <p>{selectedEntry.originalText}</p>
+                                                </section>
+                                            ) : null}
+                                            {selectedEntry.translationText?.trim() ? (
+                                                <section className="sancai-detail-section">
+                                                    <h3>译文</h3>
+                                                    <p>{selectedEntry.translationText}</p>
+                                                </section>
+                                            ) : null}
+                                            {selectedEntry.currentVisualAsset?.visualDescription?.trim() ||
+                                            selectedEntry.currentVisualAsset?.fusionDescription?.trim() ? (
+                                                <section className="sancai-detail-section">
+                                                    <h3>图像说明</h3>
+                                                    <p>
+                                                        {selectedEntry.currentVisualAsset
+                                                            ?.visualDescription ||
+                                                            selectedEntry.currentVisualAsset
+                                                                ?.fusionDescription}
+                                                    </p>
+                                                </section>
+                                            ) : null}
                                         </div>
-                                    ) : null}
-                                    {selectedEntry.summary?.trim() ? (
-                                        <section className="sancai-detail-section">
-                                            <h3>提要</h3>
-                                            <p>{selectedEntry.summary}</p>
-                                        </section>
-                                    ) : null}
-                                    {selectedEntry.originalText?.trim() ? (
-                                        <section className="sancai-detail-section">
-                                            <h3>原文</h3>
-                                            <p>{selectedEntry.originalText}</p>
-                                        </section>
-                                    ) : null}
-                                    {selectedEntry.translationText?.trim() ? (
-                                        <section className="sancai-detail-section">
-                                            <h3>译文</h3>
-                                            <p>{selectedEntry.translationText}</p>
-                                        </section>
-                                    ) : null}
-                                    {selectedEntry.currentVisualAsset?.visualDescription?.trim() ||
-                                    selectedEntry.currentVisualAsset?.fusionDescription?.trim() ? (
-                                        <section className="sancai-detail-section">
-                                            <h3>图像说明</h3>
-                                            <p>
-                                                {selectedEntry.currentVisualAsset
-                                                    ?.visualDescription ||
-                                                    selectedEntry.currentVisualAsset
-                                                        ?.fusionDescription}
-                                            </p>
-                                        </section>
-                                    ) : null}
+                                    ) : (
+                                        <div
+                                            className="sancai-graph-panel"
+                                            aria-labelledby="sancai-graph-tab"
+                                            id="sancai-graph-panel"
+                                            role="tabpanel"
+                                        >
+                                            {graphQuery.isLoading ? (
+                                                <div className="sancai-graph-state">
+                                                    <p>正在加载稿件图谱...</p>
+                                                </div>
+                                            ) : null}
+                                            {graphQuery.isError ? (
+                                                <div className="sancai-graph-state">
+                                                    <p>稿件图谱加载失败，请稍后重试。</p>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => graphQuery.refetch()}
+                                                    >
+                                                        重新加载
+                                                    </Button>
+                                                </div>
+                                            ) : null}
+                                            {graphQuery.data ? (
+                                                <SancaiGraphView
+                                                    key={selectedEntry.id}
+                                                    graph={graphQuery.data}
+                                                />
+                                            ) : null}
+                                        </div>
+                                    )}
                                 </>
                             ) : (
                                 <p className="sancai-muted">请选择一个条目查看详情</p>

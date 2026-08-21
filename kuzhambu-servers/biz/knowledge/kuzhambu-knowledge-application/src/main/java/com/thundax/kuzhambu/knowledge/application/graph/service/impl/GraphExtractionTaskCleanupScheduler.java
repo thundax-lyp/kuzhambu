@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
-import com.thundax.kuzhambu.ai.facade.AiFacade;
-import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFacadeRequest;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphExtractionTaskCleanupOperator;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
@@ -23,16 +22,16 @@ public class GraphExtractionTaskCleanupScheduler implements ApplicationListener<
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphExtractionTaskCleanupScheduler.class);
 
     private final GraphExtractionTaskRepository taskRepository;
-    private final AiFacade aiFacade;
+    private final GraphExtractionTaskCleanupOperator cleanupOperator;
     private final GraphExtractionApplicationService extractionService;
     private Clock clock = Clock.systemUTC();
 
     public GraphExtractionTaskCleanupScheduler(
             GraphExtractionTaskRepository taskRepository,
-            AiFacade aiFacade,
+            GraphExtractionTaskCleanupOperator cleanupOperator,
             GraphExtractionApplicationService extractionService) {
         this.taskRepository = taskRepository;
-        this.aiFacade = aiFacade;
+        this.cleanupOperator = cleanupOperator;
         this.extractionService = extractionService;
     }
 
@@ -74,19 +73,10 @@ public class GraphExtractionTaskCleanupScheduler implements ApplicationListener<
             return false;
         }
         try {
-            cleanupCandidate(task);
-            return taskRepository.deleteById(task.getId()) == 1;
+            cleanupOperator.cleanup(task);
+            return true;
         } catch (RuntimeException ex) {
             return false;
         }
-    }
-
-    private void cleanupCandidate(GraphExtractionTask task) {
-        if (task.getCandidateId() == null) {
-            return;
-        }
-        aiFacade.cleanupKnowledgeGraphCandidate(CleanupKnowledgeGraphCandidateFacadeRequest.builder()
-                .candidateId(task.getCandidateId())
-                .build());
     }
 }

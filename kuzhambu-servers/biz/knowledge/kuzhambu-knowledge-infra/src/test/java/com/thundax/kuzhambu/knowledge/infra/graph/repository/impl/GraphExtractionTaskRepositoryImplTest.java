@@ -57,6 +57,15 @@ class GraphExtractionTaskRepositoryImplTest {
         assertEquals(true, sql.contains("limit #{limit}"));
     }
 
+    @Test
+    void idempotencySqlShouldScopeLookupToOperationAndOperator() throws Exception {
+        String sql = selectSql("selectByIdempotencyScopeAndRequestedByAndKey", String.class, Long.class, String.class);
+
+        assertEquals(true, sql.contains("idempotency_scope = #{idempotencyScope}"));
+        assertEquals(true, sql.contains("requested_by = #{requestedBy}"));
+        assertEquals(true, sql.contains("idempotency_key = #{idempotencyKey}"));
+    }
+
     private static String selectSql(String methodName, Class<?>... parameterTypes) throws Exception {
         Method method = GraphExtractionTaskMapper.class.getMethod(methodName, parameterTypes);
         return method.getAnnotation(org.apache.ibatis.annotations.Select.class).value()[0];

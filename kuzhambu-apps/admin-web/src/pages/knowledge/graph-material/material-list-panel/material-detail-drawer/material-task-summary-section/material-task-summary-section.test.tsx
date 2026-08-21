@@ -90,6 +90,43 @@ describe("MaterialTaskSummarySection", () => {
         expect(await screen.findByText("抽取任务已创建 #7101")).toBeInTheDocument();
     });
 
+    it("creates a fresh extraction task instead of retrying a failed snapshot", async () => {
+        replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
+        vi.mocked(service.createExtraction).mockResolvedValue({
+            attemptNo: "1",
+            currentStage: "已提交",
+            disposition: "PENDING",
+            executionStatus: "PENDING",
+            id: "7102",
+            lockVersion: "1",
+            materialRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" },
+            progress: 0
+        });
+        const failedTask = {
+            ...graphMaterialMockDetails[1].taskSummary!.latestTask!,
+            executionStatus: "FAILED" as const
+        };
+        const detail = {
+            ...graphMaterialMockDetails[1],
+            extractionTasks: [failedTask],
+            taskSummary: {
+                ...graphMaterialMockDetails[1].taskSummary!,
+                latestTask: failedTask
+            }
+        };
+        renderPanel(detail);
+
+        fireEvent.click(screen.getByTestId("knowledge-graph-material-detail-reextract-button"));
+
+        await waitFor(() => {
+            expect(vi.mocked(service.createExtraction).mock.calls[0]?.[0]).toEqual({
+                contentRef: { contentRefId: "1002", contentType: "SANCAI_ENTRY" }
+            });
+        });
+        expect(service.retryExtraction).not.toHaveBeenCalled();
+        expect(await screen.findByText("抽取任务已创建 #7102")).toBeInTheDocument();
+    });
+
     it("merges a completed pending candidate into the material graph", async () => {
         replacePermissions(["knowledge:graph:view", "knowledge:graph:edit"]);
         vi.mocked(service.applyCandidate).mockResolvedValue({});

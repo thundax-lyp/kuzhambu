@@ -316,7 +316,22 @@ const planSeedTasks = async (seedFiles) => {
       base.push(...tasks);
     }
   }
-  return [base, knowledge, test];
+  const knowledgeNodes = [];
+  const knowledgeEdgesAndNodeMappings = [];
+  const knowledgeEdgeMappings = [];
+  for (const task of knowledge) {
+    if (task.table === "knowledge_graph_published_edge_material") {
+      knowledgeEdgeMappings.push(task);
+    } else if (
+      task.table === "knowledge_graph_published_edge" ||
+      task.table === "knowledge_graph_published_node_material"
+    ) {
+      knowledgeEdgesAndNodeMappings.push(task);
+    } else {
+      knowledgeNodes.push(task);
+    }
+  }
+  return [base, knowledgeNodes, knowledgeEdgesAndNodeMappings, knowledgeEdgeMappings, test];
 };
 
 const planSeedFile = async (seedFile) => {
@@ -484,6 +499,8 @@ const verifySeed = async (connection) => {
     `SELECT
        (SELECT COUNT(*) FROM ai_model WHERE enabled = 1 AND base_url <> '' AND encrypted_api_key IS NOT NULL) AS ready_models,
        (SELECT COUNT(*) FROM ai_business_config WHERE enabled = 1) AS ai_configs,
+       (SELECT api_source FROM ai_model WHERE id = 2) AS primary_ai_api_source,
+       (SELECT model_id FROM ai_business_config WHERE capability = 'KNOWLEDGE_GRAPH_EXTRACT' AND enabled = 1 ORDER BY priority ASC, id ASC LIMIT 1) AS graph_extraction_model_id,
        (SELECT COUNT(*) FROM classics_sancai_entry) AS sancai_entries,
        (SELECT COUNT(*) FROM classics_wangqi_document) AS wangqi_documents,
        (SELECT COUNT(*) FROM classics_ming_customs_entry) AS ming_entries`,
@@ -493,6 +510,16 @@ const verifySeed = async (connection) => {
   }
   if (Number(row.ai_configs) < 1) {
     throw new Error("AI business configs were not imported");
+  }
+  if (row.primary_ai_api_source !== "OPENAI_COMPATIBLE") {
+    throw new Error(
+      "AI primary model 2 must use OPENAI_COMPATIBLE; check KUZHAMBU_AI_PRIMARY_API_SOURCE",
+    );
+  }
+  if (Number(row.graph_extraction_model_id) !== 2) {
+    throw new Error(
+      "KNOWLEDGE_GRAPH_EXTRACT must use reproducible primary model 2 seed configuration",
+    );
   }
   if (
     Number(row.sancai_entries) < 1 ||

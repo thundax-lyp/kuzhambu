@@ -34,7 +34,9 @@ public class GraphExtractionTaskDO {
     private String currentStage;
     private Integer progress;
     private String failureReason;
+    private String idempotencyScope;
     private String idempotencyKey;
+    private Long requestedBy;
     private Long regeneratedFromTaskId;
     private Long supersededByTaskId;
     private Long triggeredByTaskId;

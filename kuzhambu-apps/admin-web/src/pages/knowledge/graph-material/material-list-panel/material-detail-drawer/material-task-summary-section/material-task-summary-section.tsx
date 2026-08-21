@@ -264,32 +264,56 @@ export const MaterialTaskSummarySection = ({ detail }: MaterialTaskSummarySectio
                 title="任务摘要"
                 size="small"
                 extra={
-                    <KuzhambuButton
-                        ariaLabel={`抽取素材 ${detail.source.title}`}
-                        disabled={
-                            !canExtractMaterial ||
-                            extractionMutation.isPending ||
-                            retryExtractionMutation.isPending ||
-                            hasActiveExtractionTask(latestTask?.executionStatus)
-                        }
-                        icon={<RobotOutlined />}
-                        loading={extractionMutation.isPending || retryExtractionMutation.isPending}
-                        testId="knowledge-graph-material-detail-extract-button"
-                        type="primary"
-                        onClick={() => {
-                            if (latestTask?.executionStatus === "FAILED") {
-                                retryExtractionMutation.mutate({
-                                    expectedExecutionStatus: "FAILED",
-                                    taskId: latestTask.id,
-                                    taskLockVersion: latestTask.lockVersion
-                                });
-                                return;
+                    <KuzhambuSpace size={8}>
+                        {latestTask?.executionStatus === "FAILED" ? (
+                            <KuzhambuButton
+                                ariaLabel={`重新抽取素材 ${detail.source.title}`}
+                                disabled={
+                                    !canExtractMaterial ||
+                                    extractionMutation.isPending ||
+                                    retryExtractionMutation.isPending
+                                }
+                                icon={<RobotOutlined />}
+                                loading={extractionMutation.isPending}
+                                testId="knowledge-graph-material-detail-reextract-button"
+                                onClick={() =>
+                                    extractionMutation.mutate({
+                                        contentRef: detail.source.contentRef
+                                    })
+                                }
+                            >
+                                重新抽取
+                            </KuzhambuButton>
+                        ) : null}
+                        <KuzhambuButton
+                            ariaLabel={`抽取素材 ${detail.source.title}`}
+                            disabled={
+                                !canExtractMaterial ||
+                                extractionMutation.isPending ||
+                                retryExtractionMutation.isPending ||
+                                hasActiveExtractionTask(latestTask?.executionStatus)
                             }
-                            extractionMutation.mutate({ contentRef: detail.source.contentRef });
-                        }}
-                    >
-                        {latestTask?.executionStatus === "FAILED" ? "重试" : "抽取"}
-                    </KuzhambuButton>
+                            icon={<RobotOutlined />}
+                            loading={
+                                extractionMutation.isPending || retryExtractionMutation.isPending
+                            }
+                            testId="knowledge-graph-material-detail-extract-button"
+                            type="primary"
+                            onClick={() => {
+                                if (latestTask?.executionStatus === "FAILED") {
+                                    retryExtractionMutation.mutate({
+                                        expectedExecutionStatus: "FAILED",
+                                        taskId: latestTask.id,
+                                        taskLockVersion: latestTask.lockVersion
+                                    });
+                                    return;
+                                }
+                                extractionMutation.mutate({ contentRef: detail.source.contentRef });
+                            }}
+                        >
+                            {latestTask?.executionStatus === "FAILED" ? "重试" : "抽取"}
+                        </KuzhambuButton>
+                    </KuzhambuSpace>
                 }
             >
                 <KuzhambuDescriptions

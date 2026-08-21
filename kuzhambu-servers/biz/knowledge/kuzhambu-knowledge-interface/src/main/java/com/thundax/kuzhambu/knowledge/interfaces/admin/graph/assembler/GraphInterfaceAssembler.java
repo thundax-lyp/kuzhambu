@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionC
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateDiscardCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialApplyMode;
@@ -64,6 +65,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdra
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionCandidatePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionStageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDeleteResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphGovernanceImpactResult;
@@ -510,6 +512,26 @@ public final class GraphInterfaceAssembler {
     }
 
     @NonNull
+    public static GraphExtractionDeleteCommand toDeleteCommand(
+            @NonNull GraphExtractionRequests.TaskActionRequest request, @NonNull Long requestedBy) {
+        Objects.requireNonNull(request, "request");
+        Objects.requireNonNull(requestedBy, "requestedBy");
+        return new GraphExtractionDeleteCommand(
+                Long.valueOf(request.getTaskId()),
+                Long.parseLong(request.getTaskLockVersion()),
+                request.getExpectedExecutionStatus(),
+                request.getIdempotencyKey(),
+                requestedBy);
+    }
+
+    @NonNull
+    public static GraphExtractionResponses.TaskDeleteData toTaskDeleteData(
+            @NonNull GraphExtractionTaskDeleteResult value) {
+        Objects.requireNonNull(value, "value");
+        return new GraphExtractionResponses.TaskDeleteData(string(value.deletedTaskId()));
+    }
+
+    @NonNull
     public static GraphExtractionResponses.TaskData toTaskData(@NonNull GraphExtractionTaskResult value) {
         Objects.requireNonNull(value, "value");
         return toTaskDataInternal(value);
@@ -527,6 +549,8 @@ public final class GraphInterfaceAssembler {
                 string(value.taskId()),
                 toNullableContentRefData(value.contentRef()),
                 value.materialTitle(),
+                value.categoryName(),
+                value.volumeName(),
                 String.valueOf(value.lockVersion()),
                 value.executionStatus(),
                 value.disposition(),

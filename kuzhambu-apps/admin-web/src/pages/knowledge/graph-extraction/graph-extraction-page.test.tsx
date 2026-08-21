@@ -8,6 +8,12 @@ const serviceState = vi.hoisted(() => ({
     executionStatus: "SUCCEEDED"
 }));
 
+const confirmDanger = vi.hoisted(() => vi.fn());
+
+vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
+    useKuzhambuConfirm: () => ({ danger: confirmDanger })
+}));
+
 const serviceMocks = vi.hoisted(() => ({
     pageTasks: vi.fn(async (query?: { groupBy?: string }) => ({
         count: query?.groupBy === "MATERIAL" ? 2 : 1,
@@ -25,7 +31,9 @@ const serviceMocks = vi.hoisted(() => ({
                     contentRefId: "1001",
                     contentType: "SANCAI_ENTRY"
                 },
+                categoryName: "人物",
                 materialTitle: "三才稿件",
+                volumeName: "卷一",
                 progress: 100,
                 status: "SUCCEEDED",
                 taskId: "8008"
@@ -34,7 +42,8 @@ const serviceMocks = vi.hoisted(() => ({
         totalCount: query?.groupBy === "MATERIAL" ? 2 : 1,
         totalPage: 1
     })),
-    retryTask: vi.fn(async () => ({ task: { status: "PENDING", taskId: "8008" } }))
+    deleteTask: vi.fn(async () => ({ deletedTaskId: "8008" })),
+    retryTask: vi.fn(async () => ({ task: { status: "PENDING", taskId: "8009" } }))
 }));
 
 vi.mock("./graph-extraction-service", () => ({
@@ -84,7 +93,7 @@ describe("GraphExtractionPage", () => {
                 pageSize: 20
             });
         });
-        expect(await screen.findByText("三才稿件")).toBeInTheDocument();
+        expect(await screen.findByText("人物 / 卷一 / 三才稿件")).toBeInTheDocument();
         expect(screen.getByText("素材标题")).toBeInTheDocument();
         expect(screen.getAllByText("运行状态")[0]).toBeInTheDocument();
         expect(screen.getAllByText("采纳状态")[0]).toBeInTheDocument();
@@ -96,7 +105,7 @@ describe("GraphExtractionPage", () => {
     it("refreshes the task list", async () => {
         renderPage();
 
-        await screen.findByText("三才稿件");
+        await screen.findByText("人物 / 卷一 / 三才稿件");
         expect(serviceMocks.pageTasks).toHaveBeenCalledTimes(1);
 
         fireEvent.click(screen.getByTestId("knowledge-graph-extraction-refresh-button"));
@@ -130,11 +139,50 @@ describe("GraphExtractionPage", () => {
         });
     });
 
+    it("deletes a terminal task after confirmation", async () => {
+        serviceState.executionStatus = "FAILED";
+        confirmDanger.mockImplementation(({ onConfirm }) => onConfirm());
+        renderPage();
+
+        fireEvent.click(await screen.findByRole("button", { name: "删除任务 8008" }));
+
+        await waitFor(() => {
+            expect(serviceMocks.deleteTask).toHaveBeenCalledWith({
+                expectedExecutionStatus: "FAILED",
+                sourceTaskId: "8008",
+                taskId: "8008",
+                taskLockVersion: "1"
+            });
+            expect(serviceMocks.pageTasks).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    it("reenables deletion after a failed request", async () => {
+        serviceState.executionStatus = "FAILED";
+        let rejectDelete: ((reason?: unknown) => void) | undefined;
+        serviceMocks.deleteTask.mockImplementationOnce(
+            () =>
+                new Promise((_, reject) => {
+                    rejectDelete = reject;
+                })
+        );
+        confirmDanger.mockImplementation(({ onConfirm }) => onConfirm());
+        renderPage();
+
+        const deleteButton = await screen.findByRole("button", { name: "删除任务 8008" });
+        fireEvent.click(deleteButton);
+        await waitFor(() => expect(deleteButton).toBeDisabled());
+
+        rejectDelete?.(new Error("network error"));
+
+        await waitFor(() => expect(deleteButton).toBeEnabled());
+    });
+
     it("does not render an empty action column without edit permission", async () => {
         replacePermissions(["knowledge:graph:view"]);
         renderPage();
 
-        await screen.findByText("三才稿件");
+        await screen.findByText("人物 / 卷一 / 三才稿件");
 
         expect(screen.queryByRole("columnheader", { name: "操作" })).not.toBeInTheDocument();
     });

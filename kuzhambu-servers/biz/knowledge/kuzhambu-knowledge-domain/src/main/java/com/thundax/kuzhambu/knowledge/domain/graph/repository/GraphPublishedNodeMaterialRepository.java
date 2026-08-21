@@ -8,7 +8,11 @@ import java.util.List;
 public interface GraphPublishedNodeMaterialRepository {
     List<GraphPublishedNodeMaterial> listByPublishedNodeId(GraphPublishedNodeId publishedNodeId);
 
+    List<GraphPublishedNodeMaterial> listByPublishedNodeIds(List<GraphPublishedNodeId> publishedNodeIds);
+
     List<GraphPublishedNodeMaterial> listByMaterial(ContentRef materialRef);
+
+    List<GraphPublishedNodeMaterial> listByMaterials(List<ContentRef> materialRefs);
 
     int insert(GraphPublishedNodeMaterial relation);
 

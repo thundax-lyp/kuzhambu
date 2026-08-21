@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.ai.facade.request.CleanupKnowledgeGraphCandidateFaca
 import com.thundax.kuzhambu.ai.facade.response.CleanupKnowledgeGraphCandidateFacadeResponse;
 import com.thundax.kuzhambu.common.core.content.valueobject.ContentRef;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.graph.operator.GraphExtractionTaskCleanupOperator;
 import com.thundax.kuzhambu.knowledge.application.graph.service.GraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphExtractionDisposition;
@@ -34,7 +35,8 @@ class GraphExtractionTaskCleanupSchedulerTest {
         AiFacade aiFacade = mock(AiFacade.class);
         GraphExtractionTask task = task(7001L, 9001L);
         when(repository.listPurgeableBefore(NOW, 100)).thenReturn(List.of(task));
-        when(repository.deleteById(new GraphExtractionTaskId(7001L))).thenReturn(1);
+        when(repository.deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L))
+                .thenReturn(1);
         when(aiFacade.cleanupKnowledgeGraphCandidate(any()))
                 .thenReturn(CleanupKnowledgeGraphCandidateFacadeResponse.builder()
                         .candidateId(9001L)
@@ -48,7 +50,7 @@ class GraphExtractionTaskCleanupSchedulerTest {
                 ArgumentCaptor.forClass(CleanupKnowledgeGraphCandidateFacadeRequest.class);
         verify(aiFacade).cleanupKnowledgeGraphCandidate(captor.capture());
         assertThat(captor.getValue().getCandidateId()).isEqualTo(9001L);
-        verify(repository).deleteById(new GraphExtractionTaskId(7001L));
+        verify(repository).deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L);
     }
 
     @Test
@@ -62,7 +64,27 @@ class GraphExtractionTaskCleanupSchedulerTest {
         int count = scheduler(repository, aiFacade).cleanupExpiredTasks();
 
         assertThat(count).isZero();
-        verify(repository, never()).deleteById(any());
+        verify(repository, never()).deleteByIdAndLockVersion(any(), any(Long.class));
+    }
+
+    @Test
+    void cleanupShouldFailTransactionWhenOptimisticDeleteLosesRace() {
+        GraphExtractionTaskRepository repository = mock(GraphExtractionTaskRepository.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        GraphExtractionTask task = task(7001L, 9001L);
+        when(repository.listPurgeableBefore(NOW, 100)).thenReturn(List.of(task));
+        when(repository.deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L))
+                .thenReturn(0);
+        when(aiFacade.cleanupKnowledgeGraphCandidate(any()))
+                .thenReturn(CleanupKnowledgeGraphCandidateFacadeResponse.builder()
+                        .candidateId(9001L)
+                        .cleaned(true)
+                        .build());
+
+        assertThat(scheduler(repository, aiFacade).cleanupExpiredTasks()).isZero();
+
+        verify(aiFacade).cleanupKnowledgeGraphCandidate(any());
+        verify(repository).deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L);
     }
 
     @Test
@@ -71,13 +93,14 @@ class GraphExtractionTaskCleanupSchedulerTest {
         AiFacade aiFacade = mock(AiFacade.class);
         GraphExtractionTask task = task(7001L, null);
         when(repository.listPurgeableBefore(NOW, 100)).thenReturn(List.of(task));
-        when(repository.deleteById(new GraphExtractionTaskId(7001L))).thenReturn(1);
+        when(repository.deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L))
+                .thenReturn(1);
 
         int count = scheduler(repository, aiFacade).cleanupExpiredTasks();
 
         assertThat(count).isEqualTo(1);
         verify(aiFacade, never()).cleanupKnowledgeGraphCandidate(any());
-        verify(repository).deleteById(new GraphExtractionTaskId(7001L));
+        verify(repository).deleteByIdAndLockVersion(new GraphExtractionTaskId(7001L), 3L);
     }
 
     @Test
@@ -86,7 +109,9 @@ class GraphExtractionTaskCleanupSchedulerTest {
         AiFacade aiFacade = mock(AiFacade.class);
         GraphExtractionApplicationService extractionService = mock(GraphExtractionApplicationService.class);
 
-        new GraphExtractionTaskCleanupScheduler(repository, aiFacade, extractionService).onApplicationEvent(null);
+        new GraphExtractionTaskCleanupScheduler(
+                        repository, new GraphExtractionTaskCleanupOperator(repository, aiFacade), extractionService)
+                .onApplicationEvent(null);
 
         verify(extractionService).recoverActiveTasksAtStartup();
     }
@@ -98,7 +123,9 @@ class GraphExtractionTaskCleanupSchedulerTest {
         GraphExtractionApplicationService extractionService = mock(GraphExtractionApplicationService.class);
         when(extractionService.recoverActiveTasksAtStartup()).thenThrow(new BizException("AI service unavailable"));
 
-        new GraphExtractionTaskCleanupScheduler(repository, aiFacade, extractionService).onApplicationEvent(null);
+        new GraphExtractionTaskCleanupScheduler(
+                        repository, new GraphExtractionTaskCleanupOperator(repository, aiFacade), extractionService)
+                .onApplicationEvent(null);
 
         verify(extractionService).recoverActiveTasksAtStartup();
     }
@@ -106,7 +133,9 @@ class GraphExtractionTaskCleanupSchedulerTest {
     private static GraphExtractionTaskCleanupScheduler scheduler(
             GraphExtractionTaskRepository repository, AiFacade aiFacade) {
         return new GraphExtractionTaskCleanupScheduler(
-                        repository, aiFacade, mock(GraphExtractionApplicationService.class))
+                        repository,
+                        new GraphExtractionTaskCleanupOperator(repository, aiFacade),
+                        mock(GraphExtractionApplicationService.class))
                 .useClock(Clock.fixed(NOW, ZoneOffset.UTC));
     }
 

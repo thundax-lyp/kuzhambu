@@ -167,7 +167,19 @@ Deploy host image publication:
 
 ```sh
 scripts/smoke/load-image-files.sh deploy/image-files
-docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d
+scripts/deploy/recreate-image-services.sh --env deploy/.env
+```
+
+`docker load` 只替换本地镜像标签，不会替换正在运行的容器。每次业务镜像更新后必须运行
+`recreate-image-services.sh`（或使用等价的 `docker compose up --force-recreate`）重新创建受影响服务，
+并保留脚本输出的 image ID 作为部署证据。不要使用 `docker cp`、`docker commit` 或直接修改容器文件
+作为常规部署方式；它们只可用于经批准的应急处置，随后仍须由正式镜像交付替代。
+
+例如只更新 Workers：
+
+```sh
+scripts/smoke/load-image-files.sh deploy/image-files
+scripts/deploy/recreate-image-services.sh --env deploy/.env workers
 ```
 
 When FastGPT bootstrap generated a Kuzhambu env fragment, include it explicitly:
@@ -184,6 +196,9 @@ Smoke on a host that already has all required images:
 ```sh
 KUZHAMBU_SMOKE_LOAD_IMAGES=false scripts/smoke/full-smoke.sh deploy/.env deploy/fastgpt/.env
 ```
+
+full smoke 每次都会创建新容器，并在启动应用后检查 admin、portal 和 workers 健康接口；生产或回归环境的
+增量镜像更新仍必须使用上述强制重建步骤，不能把一次成功的 health check 当作代码版本已经更新的证明。
 
 Dockerfile base images are configurable because CI and deployment hosts may have different registry access. These base images are build inputs, not release artifacts. Defaults are `node:22-bookworm-slim`, `nginx:1.27-alpine`, `maven:3.9.11-eclipse-temurin-17`, `eclipse-temurin:17-jre`, and `python:3.10-slim`. Override `KUZHAMBU_WEB_BUILD_IMAGE`, `KUZHAMBU_WEB_RUNTIME_IMAGE`, `KUZHAMBU_SERVER_BUILD_IMAGE`, `KUZHAMBU_SERVER_RUNTIME_IMAGE`, or `KUZHAMBU_WORKERS_BASE_IMAGE` without changing Dockerfiles.
 

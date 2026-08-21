@@ -253,13 +253,12 @@ public class GraphPublicationExecutor {
         if (matchedObjectId == null) {
             return;
         }
-        if (decision == null) {
+        if (decision != null
+                && "REUSE_MATCH".equals(decision.action())
+                && !matchedObjectId.equals(decision.matchedObjectId())) {
             throw GraphPublicationPreviewToken.stale();
         }
-        if ("REUSE_MATCH".equals(decision.action()) && !matchedObjectId.equals(decision.matchedObjectId())) {
-            throw GraphPublicationPreviewToken.stale();
-        }
-        if ("CREATE_NEW".equals(decision.action()) && decision.matchedObjectId() != null) {
+        if (decision != null && "CREATE_NEW".equals(decision.action()) && decision.matchedObjectId() != null) {
             throw GraphPublicationPreviewToken.stale();
         }
         if ("NODE".equals(objectType)) {
@@ -268,7 +267,7 @@ public class GraphPublicationExecutor {
                 throw GraphPublicationPreviewToken.stale();
             }
             GraphPublishedNode effective = matchedNodes.get(new GraphMaterialNodeId(materialObjectId));
-            if ("REUSE_MATCH".equals(decision.action())
+            if ((decision == null || "REUSE_MATCH".equals(decision.action()))
                     && (effective == null || !current.getId().equals(effective.getId()))) {
                 throw GraphPublicationPreviewToken.stale();
             }
@@ -278,7 +277,7 @@ public class GraphPublicationExecutor {
                 throw GraphPublicationPreviewToken.stale();
             }
             GraphPublishedEdge effective = matchedEdges.get(new GraphMaterialEdgeId(materialObjectId));
-            if ("REUSE_MATCH".equals(decision.action())
+            if ((decision == null || "REUSE_MATCH".equals(decision.action()))
                     && (effective == null || !current.getId().equals(effective.getId()))) {
                 throw GraphPublicationPreviewToken.stale();
             }

@@ -5,6 +5,34 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SancaiPage } from "./sancai-page";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+vi.mock("@xyflow/react", () => ({
+    Background: () => null,
+    BackgroundVariant: { Dots: "dots" },
+    Controls: () => null,
+    Handle: () => null,
+    MarkerType: { ArrowClosed: "arrowclosed" },
+    Position: { Left: "left", Right: "right" },
+    ReactFlow: ({
+        children,
+        nodes,
+        onNodeClick
+    }: {
+        children: React.ReactNode;
+        nodes: { data: { label: string }; id: string }[];
+        onNodeClick: (event: unknown, node: { data: { label: string }; id: string }) => void;
+    }) => (
+        <div>
+            {nodes.map((node) => (
+                <button key={node.id} type="button" onClick={(event) => onNodeClick(event, node)}>
+                    {node.data.label}
+                </button>
+            ))}
+            {children}
+        </div>
+    )
+}));
+
 const apiResponse = (data: unknown) =>
     Promise.resolve(
         new Response(JSON.stringify({ code: "COMMON-00000", message: "success", data }), {
@@ -133,6 +161,42 @@ const installFetchMock = () => {
                         translationText: "天是万物的开端。",
                         summary: "天地门条目",
                         lifecycleStatus: "PUBLISHED"
+                    }
+                ]
+            });
+        }
+        if (url.includes("/portal/knowledge/graph/material/get")) {
+            return apiResponse({
+                visible: true,
+                contentRef: {
+                    contentType: "SANCAI_ENTRY",
+                    contentRefId: String(body.contentRefId)
+                },
+                nodes: [
+                    {
+                        id: "11",
+                        lockVersion: "1",
+                        name: "天",
+                        nodeType: "CONCEPT",
+                        status: "ACTIVE"
+                    },
+                    {
+                        id: "12",
+                        lockVersion: "1",
+                        name: "日",
+                        nodeType: "CELESTIAL_BODY",
+                        status: "ACTIVE"
+                    }
+                ],
+                edges: [
+                    {
+                        id: "21",
+                        lockVersion: "1",
+                        qualifiers: { period: "明代" },
+                        relationType: "PART_OF",
+                        sourceNodeId: "12",
+                        status: "ACTIVE",
+                        targetNodeId: "11"
                     }
                 ]
             });
@@ -275,6 +339,42 @@ describe("SancaiPage", () => {
         expect(getEntryCall).toBeTruthy();
         expect(JSON.parse(String(getEntryCall?.[1]?.body))).toMatchObject({
             id: 300000000003
+        });
+    });
+
+    it("loads the published manuscript graph only after opening the graph view", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        const detail = await screen.findByLabelText("三才图会条目详情");
+        expect(await within(detail).findByRole("tab", { name: "阅读" })).toBeTruthy();
+        expect(await within(detail).findByRole("tab", { name: "知识图谱" })).toBeTruthy();
+        expect(
+            vi
+                .mocked(globalThis.fetch)
+                .mock.calls.some(([input]) => String(input).includes("/graph/material/get"))
+        ).toBe(false);
+
+        await user.click(within(detail).getByRole("tab", { name: "知识图谱" }));
+
+        const graph = await within(detail).findByLabelText("稿件知识图谱");
+        expect(within(graph).getByText("2 个对象")).toBeTruthy();
+        expect(within(graph).getByText("1 条关系")).toBeTruthy();
+        await user.click(within(graph).getByRole("button", { name: "天" }));
+        const inspector = within(graph).getByLabelText("图谱对象详情");
+        expect(within(inspector).getByRole("heading", { name: "天" })).toBeTruthy();
+        expect(within(inspector).getByText("组成")).toBeTruthy();
+        expect(within(inspector).getByText("日")).toBeTruthy();
+        expect(within(inspector).getByLabelText("日 组成 天")).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "上一篇" })).toBeNull();
+        expect(screen.queryByRole("button", { name: "下一篇" })).toBeNull();
+
+        const graphCall = vi
+            .mocked(globalThis.fetch)
+            .mock.calls.find(([input]) => String(input).includes("/graph/material/get"));
+        expect(JSON.parse(String(graphCall?.[1]?.body))).toEqual({
+            contentRefId: "1001",
+            contentType: "SANCAI_ENTRY"
         });
     });
 });

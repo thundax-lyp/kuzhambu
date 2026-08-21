@@ -108,6 +108,13 @@ Run the narrowest relevant validation available. If no validation exists, docume
 
 Review the complete PR diff from its merge base. Judge the final code against the delivery intent, contracts, architecture rules, and surrounding system behavior. Complete all applicable review passes before reporting findings; do not stop after the first issues.
 
+### Review Exclusions
+
+- Exclude every file under `scripts/smoke/**` from PR code review. These scripts are intentionally mutable delivery executors and must not produce review findings, inline comments, or follow-up review work.
+- Mark changed `scripts/smoke/**` files as `not-applicable` or `excluded` in review coverage instead of reviewing their implementation.
+- Validate smoke behavior only through the documented smoke execution and its generated evidence. Record an unavailable runtime as a validation gap; do not convert inspection of the excluded scripts into code-review findings.
+- Modify `scripts/smoke/**` only when the user explicitly requests smoke implementation work or asks to fix a concrete smoke execution failure.
+
 Review:
 
 - **Behavior:** user flows, background and asynchronous workflows, failure paths, and regressions.

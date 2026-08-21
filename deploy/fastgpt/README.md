@@ -44,7 +44,6 @@ Then run:
 ```sh
 cd deploy/fastgpt
 ./bootstrap-fastgpt.sh .env
-../../scripts/smoke/fastgpt-smoke.sh .env generated/kuzhambu-fastgpt.env
 ```
 
 The bootstrap is idempotent. It writes or updates:
@@ -62,11 +61,9 @@ starting Kuzhambu compose so `KUZHAMBU_KNOWLEDGE_ENABLED=true`,
 `KUZHAMBU_KNOWLEDGE_FASTGPT_APPID`, and
 `KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID` match the running FastGPT cluster.
 
-`scripts/smoke/fastgpt-smoke.sh` verifies the bootstrap result before Kuzhambu starts. It checks active LLM and
-embedding records, OpenAPI key health, dataset visibility, and the publication-critical collection
-operations: create, disable, list, pushData, enable and delete. The smoke accepts `pushData`
-`insertLen` as the write proof and does not wait for FastGPT internal training, vectorization or
-retrieval visibility.
+`scripts/smoke/fastgpt-smoke.sh` remains the standalone production verification for the bootstrap
+result. It checks active LLM and embedding records, OpenAPI key health, dataset visibility, and the
+publication-critical collection operations. It is deliberately not invoked by the Kuzhambu full smoke.
 
 The recommended Docker startup order for an isolated full-stack smoke is to run the repository-level
 orchestrator from the repository root:
@@ -76,8 +73,8 @@ scripts/smoke/full-smoke.sh deploy/.env deploy/fastgpt/.env
 ```
 
 The script creates a shared smoke network, removes `container_name` from the FastGPT compose override,
-bootstraps FastGPT, runs the FastGPT smoke, loads Kuzhambu image files, initializes the database and
-checks Kuzhambu HTTP health.
+bootstraps FastGPT, loads Kuzhambu image files, initializes the database and executes the Kuzhambu
+full-smoke flow. FastGPT is a publication runtime dependency, not an independently tested smoke target.
 
 If you run the two compose projects manually, use this order:
 
@@ -86,7 +83,8 @@ If you run the two compose projects manually, use this order:
 2. Start the blank FastGPT compose cluster.
 3. Run `deploy/fastgpt/bootstrap-fastgpt.sh` to configure LLM, embedding, OpenAPI key,
    dataset and app.
-4. Run `scripts/smoke/fastgpt-smoke.sh` against the generated env.
+4. Optionally run `scripts/smoke/fastgpt-smoke.sh` against the generated env as standalone FastGPT
+   production verification.
 5. Use `deploy/fastgpt/generated/kuzhambu-fastgpt.env` as an additional Kuzhambu compose
    env source.
 6. Start the Kuzhambu compose cluster.

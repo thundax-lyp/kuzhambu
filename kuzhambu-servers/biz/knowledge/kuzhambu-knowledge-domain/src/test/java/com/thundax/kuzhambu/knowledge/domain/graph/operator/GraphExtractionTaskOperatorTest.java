@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.knowledge.domain.graph.operator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
@@ -86,6 +88,27 @@ class GraphExtractionTaskOperatorTest {
         GraphExtractionTask next = task(GraphExtractionExecutionStatus.PENDING, null);
         service.regenerate(previous, next);
         assertEquals(previous.getId(), next.getRegeneratedFromTaskId());
+    }
+
+    @Test
+    void failedTaskRegenerationShouldLinkTheReplacementAndKeepTheFailure() {
+        GraphExtractionTask previous = task(GraphExtractionExecutionStatus.FAILED, null);
+
+        service.markRegeneratedBy(previous, new GraphExtractionTaskId(2L));
+
+        assertEquals(GraphExtractionExecutionStatus.FAILED, previous.getExecutionStatus());
+        assertEquals(new GraphExtractionTaskId(2L), previous.getSupersededByTaskId());
+    }
+
+    @Test
+    void deleteShouldOnlyBeAvailableForTerminalTasksWithoutPendingCandidateDisposition() {
+        assertTrue(task(GraphExtractionExecutionStatus.FAILED, null).canDelete());
+        assertTrue(task(GraphExtractionExecutionStatus.CANCELLED, null).canDelete());
+        assertTrue(task(GraphExtractionExecutionStatus.SUCCEEDED, GraphExtractionDisposition.DISCARDED)
+                .canDelete());
+        assertFalse(task(GraphExtractionExecutionStatus.RUNNING, null).canDelete());
+        assertFalse(task(GraphExtractionExecutionStatus.SUCCEEDED, GraphExtractionDisposition.PENDING)
+                .canDelete());
     }
 
     private GraphExtractionTask task(

@@ -31,8 +31,33 @@ public class GraphPublishedEdgeMaterialRepositoryImpl implements GraphPublishedE
     }
 
     @Override
+    public List<GraphPublishedEdgeMaterial> listByPublishedEdgeIds(List<GraphPublishedEdgeId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        QueryWrapper<GraphPublishedEdgeMaterialDO> w = new QueryWrapper<>();
+        return mapper
+                .selectList(w.in(
+                        "published_edge_id",
+                        ids.stream().map(GraphPublishedEdgeIdCodec::toValue).toList()))
+                .stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<GraphPublishedEdgeMaterial> listByMaterial(ContentRef ref) {
         return mapper.selectList(byMaterial(ref)).stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<GraphPublishedEdgeMaterial> listByMaterials(List<ContentRef> refs) {
+        if (refs == null || refs.isEmpty()) {
+            return List.of();
+        }
+        return mapper.listByMaterials(refs).stream()
                 .map(GraphPersistenceAssembler::toDomain)
                 .toList();
     }

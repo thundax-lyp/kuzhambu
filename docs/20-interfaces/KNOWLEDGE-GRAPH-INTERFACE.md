@@ -54,7 +54,7 @@
 
 - `status`：素材固定为 `DRAFT`、`PUBLISHING`、`PUBLISHED`、`WITHDRAWING`、`FAILED`；发布对象为 `ACTIVE`、`DELETED`；删除任务为 `PRECHECKED`、`AWAITING_DECISION`、`PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`。素材不得返回 `READY`；`DRAFT` 表示未抽取、编辑中或已撤回且可编辑。`FAILED` 必须返回 `failureReason` 和 `failedOperation:"PUBLISH"|"WITHDRAW"`；其他状态两字段均返回 `null`。
 - `materialStats` 是素材列表读模型。`statsRevision` 小于素材 `lockVersion` 时，客户端显示“统计更新中”，但不得自行聚合节点、关系或任务表。
-- `task.executionStatus` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`。`PENDING` 表示尚未确认 AI 批任务正在执行，包括新建、重试和服务启动恢复后的任务；仅在 AI 批任务确认仍执行后转为 `RUNNING`。成功任务的 `disposition` 固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`；非成功任务 `disposition` 返回 `null`。`FAILED -> PENDING` 是同一任务的重试，递增 `attemptNo`；重新抽取才创建新任务。`lockVersion` 用于全部任务状态和候选处置命令的乐观锁校验。
+- `task.executionStatus` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`。`PENDING` 表示尚未确认 AI 批任务正在执行，包括新建、重试和服务启动恢复后的任务；仅在 AI 批任务确认仍执行后转为 `RUNNING`。成功任务的 `disposition` 固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`；非成功任务 `disposition` 返回 `null`。用户手动重试 `FAILED` 任务时重新读取当前正文、模型、提示词版本、变量和输出 Schema，创建新任务，并以 `regeneratedFromTaskId` / `supersededByTaskId` 保留关联；原失败任务不原地覆盖。`lockVersion` 用于全部任务状态和候选处置命令的乐观锁校验。
 - `properties` 和 `qualifiers` 是 JSON object；只接受 `KNOWLEDGE-GRAPH-SCHEMA.json` 定义的节点、关系和字段。
 - `materialNode` / `materialEdge` 不含对象级 `lockVersion`；草稿全部写操作只使用 `materialLockVersion`。只有 `publishedNode` / `publishedEdge` 含对象级 `lockVersion`。
 - 写入成功返回最新对象；乐观锁冲突返回业务码 `GRAPH_PREVIEW_STALE` 或 `GRAPH_LOCK_CONFLICT`，前端必须刷新后重新操作。
@@ -79,7 +79,7 @@
 
 `candidatePreview` 固定为 `{candidateId,nodes,edges,issues,diff,dispositionRecord?}`。其中 `nodes` 为 `[{candidateObjectId,nodeType,name,properties}]`，`edges` 为 `[{candidateObjectId,sourceCandidateNodeId,targetCandidateNodeId,relationType,qualifiers}]`，`diff` 为 `[{candidateObjectId,objectType:"NODE"|"EDGE",changeType:"ADD"|"UPDATE"|"REMOVE"|"CONFLICT",draftObjectId?,changedFields?,issues}]`。`REMOVE` 仅在 `REPLACE` 预览中返回。`dispositionRecord` 固定为 `{disposition,reason?,disposedAt?,auditLogId?}`；任务成功但候选尚未处置时它为 `null`。候选不存在、已由 AI 域清理或当前用户失去来源可见性时，`task/get` 返回 `candidate:null` 及业务码 `GRAPH_CANDIDATE_UNAVAILABLE`，不得返回残留候选载荷。
 
-图谱提取任务的创建或状态变更命令必须带 `idempotencyKey`。既有任务的动作还必须带 `{taskId,taskLockVersion,expectedExecutionStatus,expectedDisposition?}`；服务端在一个原子状态转换中校验版本和预期状态。`retry` 的预期运行状态只能为 `FAILED`，`cancel` 只能为 `PENDING` 或 `RUNNING`，`regenerate` 只能为 `SUCCEEDED`。版本不一致返回 `GRAPH_TASK_LOCK_CONFLICT`，状态或采纳状态不满足返回 `GRAPH_TASK_STATE_CONFLICT`，素材已有活动任务返回 `GRAPH_TASK_ACTIVE_EXISTS`。同一操作者、同一路径和同一 `idempotencyKey` 的重复请求返回首次成功结果，不重复创建任务或投递执行。
+图谱提取任务的创建或状态变更命令必须带 `idempotencyKey`。既有任务的动作还必须带 `{taskId,taskLockVersion,expectedExecutionStatus,expectedDisposition?}`；服务端在一个原子状态转换中校验版本和预期状态。`retry` 的预期运行状态只能为 `FAILED`，并创建使用当前快照的新任务；`cancel` 只能为 `PENDING` 或 `RUNNING`；`regenerate` 只能为 `SUCCEEDED`；`delete` 只允许 `FAILED`、`CANCELLED` 或采纳状态已经处置的 `SUCCEEDED` 任务。版本不一致返回 `GRAPH_TASK_LOCK_CONFLICT`，状态或采纳状态不满足返回 `GRAPH_TASK_STATE_CONFLICT`，素材已有活动任务返回 `GRAPH_TASK_ACTIVE_EXISTS`。同一操作者、同一路径和同一 `idempotencyKey` 的重复请求返回首次成功结果，不重复创建任务或投递执行。
 
 `batchExtractionResult` 与 `batchWithdrawalResult` 固定为 `{batchId?,materials:[{contentRef,success,result?,failureCode?,failureMessage?}]}`。`materials` 按请求顺序返回，禁止服务端重排或去重；每份素材独立校验和执行，任一失败不得阻止其余素材继续处理。
 
@@ -102,7 +102,8 @@
 | `/knowledge/graph/task/get` | `{taskId}` | `{task,source,materialStats,stages,relatedTasks,candidate?}` | 任务 `SegmentedDrawer` 详情 |
 | `/knowledge/graph/material/extraction/create` | `{contentRef,idempotencyKey}` | `task` | 创建单素材提取；同一素材至多一条活动任务 |
 | `/knowledge/graph/task/batch/create` | `{selection:{contentRefs?:[contentRef],volumeCode?:string},idempotencyKey}`，`contentRefs` 与 `volumeCode` 二选一 | `batchExtractionResult` | 批量或整卷创建；服务端只处理当前用户可见且可抽取的素材 |
-| `/knowledge/graph/task/retry` / `cancel` | `{taskId,taskLockVersion,expectedExecutionStatus,idempotencyKey}` | `task` | 原地重试或取消 |
+| `/knowledge/graph/task/retry` / `cancel` | `{taskId,taskLockVersion,expectedExecutionStatus,idempotencyKey}` | `task` | 使用当前快照创建重试任务，或取消活动任务 |
+| `/knowledge/graph/task/delete` | `{taskId,taskLockVersion,expectedExecutionStatus,idempotencyKey}` | `{deletedTaskId}` | 删除失败、取消或已处置的终态任务 |
 | `/knowledge/graph/task/candidate/apply` / `discard` / `regenerate` | apply `{taskId,taskLockVersion,expectedExecutionStatus:"SUCCEEDED",expectedDisposition:"PENDING",applyMode:"MERGE"|"REPLACE",materialLockVersion,idempotencyKey}`；discard 同上再加 `reason?`；regenerate `{taskId,taskLockVersion,expectedExecutionStatus,expectedDisposition?,idempotencyKey}` | `task` 或 `{task,material}` | 候选采用、丢弃或创建新任务 |
 | `/knowledge/graph/material/import/preview` / `apply` | preview `{contentRef,graphJson}`；apply `{contentRef,graphJson,applyMode:"MERGE"|"REPLACE",materialLockVersion}` | `{importedGraph,createdNodeCount,updatedNodeCount,createdEdgeCount,updatedEdgeCount,issues,importable}` / graph | JSON 导入 |
 | `/knowledge/graph/material/export` | `{contentRef}` | `{fileName,graphJson}` | JSON 下载 |
@@ -123,7 +124,7 @@
 | `/knowledge/graph/deletion-change/precheck` / `page` / `decision` | precheck `{contentRef}`；decision `{changeId,decision:"PRESERVE_CONTRIBUTION"|"WITHDRAW_ASSOCIATIONS",lockVersion}` | change / Page<change> / task | 删除变更列表 |
 | `/knowledge/graph/deletion-task/page` / `get` / `retry` | page `{status?,pageNo,pageSize}`；retry `{taskId,lockVersion}` | Page<task> / task | 删除后台任务 |
 
-`task` 固定为 `{id,materialRef,lockVersion,executionStatus,disposition,attemptNo,progress,currentStage,candidateId?,resultSummary?,failureReason?,batchId?,regeneratedFromTaskId?,supersededByTaskId?,triggeredByTaskId?,requestedAt,completedAt?,disposedAt?,purgeAfter?}`。`stages` 固定为 `[extractionStage]`，`candidate` 固定为 `candidatePreview|null`。`relatedTasks` 仅返回重新抽取来源、替代关系、同批任务和上游触发任务的 `{id,materialRef,executionStatus,disposition,requestedAt}`。候选应用必须携带当前 `materialLockVersion`；冲突时返回 `GRAPH_LOCK_CONFLICT`，不得覆盖已更新草稿。`conflictDecisions` 只在本次发布有效；存在 `BLOCKING` issue 或未决冲突时 `publish` 必须拒绝。
+`task` 固定为 `{id,materialRef,materialTitle?,categoryName?,volumeName?,lockVersion,executionStatus,disposition,attemptNo,progress,currentStage,candidateId?,resultSummary?,failureReason?,batchId?,regeneratedFromTaskId?,supersededByTaskId?,triggeredByTaskId?,requestedAt,completedAt?,disposedAt?,purgeAfter?}`。`materialTitle`、`categoryName` 和 `volumeName` 来自任务提交时冻结的来源快照，页面按 `categoryName / volumeName / materialTitle` 显示完整素材路径并省略空层级。`stages` 固定为 `[extractionStage]`，`candidate` 固定为 `candidatePreview|null`。`relatedTasks` 仅返回重新抽取来源、替代关系、同批任务和上游触发任务的 `{id,materialRef,executionStatus,disposition,requestedAt}`。候选应用必须携带当前 `materialLockVersion`；冲突时返回 `GRAPH_LOCK_CONFLICT`，不得覆盖已更新草稿。`conflictDecisions` 只在本次发布有效；存在 `BLOCKING` issue 或未决冲突时 `publish` 必须拒绝。
 
 ## Portal Resource
 

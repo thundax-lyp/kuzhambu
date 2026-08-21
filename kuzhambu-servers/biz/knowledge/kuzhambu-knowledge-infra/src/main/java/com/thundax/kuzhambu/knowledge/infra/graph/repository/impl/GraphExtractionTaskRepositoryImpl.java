@@ -33,8 +33,10 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
-    public GraphExtractionTask getByIdempotencyKey(String idempotencyKey) {
-        return GraphExtractionTaskPersistenceAssembler.toDomain(mapper.selectByIdempotencyKey(idempotencyKey));
+    public GraphExtractionTask getByIdempotencyScopeAndRequestedByAndKey(
+            String idempotencyScope, Long requestedBy, String idempotencyKey) {
+        return GraphExtractionTaskPersistenceAssembler.toDomain(
+                mapper.selectByIdempotencyScopeAndRequestedByAndKey(idempotencyScope, requestedBy, idempotencyKey));
     }
 
     @Override
@@ -154,8 +156,10 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
-    public GraphExtractionTaskId insert(GraphExtractionTask task) {
+    public GraphExtractionTaskId insert(GraphExtractionTask task, String idempotencyScope, Long requestedBy) {
         GraphExtractionTaskDO dataObject = GraphExtractionTaskPersistenceAssembler.toObject(task);
+        dataObject.setIdempotencyScope(idempotencyScope);
+        dataObject.setRequestedBy(requestedBy);
         mapper.insert(dataObject);
         return GraphExtractionTaskIdCodec.toDomain(dataObject.getId());
     }
@@ -166,7 +170,7 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
     }
 
     @Override
-    public int deleteById(GraphExtractionTaskId id) {
-        return mapper.deleteById(GraphExtractionTaskIdCodec.toValue(id));
+    public int deleteByIdAndLockVersion(GraphExtractionTaskId id, long expectedLockVersion) {
+        return mapper.deleteByIdAndLockVersion(GraphExtractionTaskIdCodec.toValue(id), expectedLockVersion);
     }
 }

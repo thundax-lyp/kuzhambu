@@ -174,6 +174,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     `batch_id` varchar(64) DEFAULT NULL,
     `ai_batch_id` bigint DEFAULT NULL,
     `candidate_id` bigint DEFAULT NULL,
+    `idempotency_scope` varchar(64) DEFAULT NULL,
     `idempotency_key` varchar(128) DEFAULT NULL,
     `regenerated_from_task_id` bigint DEFAULT NULL,
     `superseded_by_task_id` bigint DEFAULT NULL,
@@ -193,9 +194,19 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
     KEY `idx_knowledge_graph_extraction_task_batch` (`batch_id`),
     KEY `idx_knowledge_graph_extraction_task_ai_batch` (`ai_batch_id`),
     KEY `idx_knowledge_graph_extraction_task_purge_after` (`purge_after`),
-    KEY `idx_knowledge_graph_extraction_task_idempotency` (`idempotency_key`),
+    KEY `idx_knowledge_graph_extraction_task_idempotency` (`idempotency_scope`, `requested_by`, `idempotency_key`),
     UNIQUE KEY `uk_knowledge_graph_extraction_task_active_material` (`active_task_material_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取管道任务';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task_delete_receipt` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `operator_id` bigint NOT NULL,
+    `idempotency_key` varchar(128) NOT NULL,
+    `deleted_task_id` bigint NOT NULL,
+    `completed_at` BIGINT NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_extraction_task_delete_receipt_operator_key` (`operator_id`, `idempotency_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取任务删除幂等回执';
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_material_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,

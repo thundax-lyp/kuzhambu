@@ -7,12 +7,14 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionC
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCandidateDiscardCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRegenerateCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionRetryCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphActiveTaskSyncQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDeleteResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
@@ -28,6 +30,8 @@ public interface GraphExtractionApplicationService {
     GraphExtractionTaskDetailResult getTask(GraphTaskDetailQuery query);
 
     GraphExtractionTaskResult retryTask(GraphExtractionRetryCommand command);
+
+    GraphExtractionTaskDeleteResult deleteTask(GraphExtractionDeleteCommand command);
 
     int syncActiveTasks();
 

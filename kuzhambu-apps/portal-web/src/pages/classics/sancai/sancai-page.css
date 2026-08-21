@@ -250,15 +250,120 @@
 }
 
 .sancai-entry-detail {
+    display: grid;
     width: 100%;
     max-width: 100%;
     min-width: 0;
     min-height: 0;
-    overflow-y: auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
     border: 1px solid var(--line-subtle);
     border-radius: 6px;
     background: color-mix(in srgb, var(--surface-panel) 92%, var(--surface-soft));
-    padding: 20px;
+    padding: 0;
+}
+
+.sancai-detail-header {
+    display: flex;
+    min-width: 0;
+    min-height: 68px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    border-bottom: 1px solid var(--line-subtle);
+    padding: 12px 18px;
+}
+
+.sancai-detail-header h2 {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 24px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sancai-detail-tabs {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid var(--line-subtle);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--surface-soft) 84%, var(--surface-panel));
+    padding: 3px;
+}
+
+.sancai-detail-tabs button {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    gap: 6px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.sancai-detail-tabs button:hover {
+    color: var(--text-primary);
+}
+
+.sancai-detail-tabs button[aria-selected="true"] {
+    background: var(--surface-panel);
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 9%, transparent);
+    color: var(--text-primary);
+}
+
+.sancai-detail-tabs button:focus-visible {
+    outline: 2px solid var(--accent-jade);
+    outline-offset: 1px;
+}
+
+.sancai-detail-tabs button span {
+    display: inline-grid;
+    min-width: 19px;
+    height: 19px;
+    place-items: center;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-jade) 13%, transparent);
+    color: var(--accent-jade);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.sancai-reading-panel {
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 2px 20px 20px;
+}
+
+.sancai-graph-panel {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.sancai-graph-panel > .sancai-graph-view {
+    height: 100%;
+}
+
+.sancai-graph-state {
+    display: grid;
+    min-height: 430px;
+    align-content: center;
+    justify-items: center;
+    gap: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.sancai-graph-state p {
+    margin: 0;
 }
 
 .sancai-figure-list {
@@ -411,6 +516,26 @@
     }
 
     .sancai-entry-detail {
+        overflow: visible;
+    }
+
+    .sancai-entry-detail,
+    .sancai-entry-detail.is-graph-view {
+        display: block;
+    }
+
+    .sancai-detail-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .sancai-detail-tabs {
+        align-self: flex-start;
+    }
+
+    .sancai-reading-panel,
+    .sancai-graph-panel {
         overflow: visible;
     }
 

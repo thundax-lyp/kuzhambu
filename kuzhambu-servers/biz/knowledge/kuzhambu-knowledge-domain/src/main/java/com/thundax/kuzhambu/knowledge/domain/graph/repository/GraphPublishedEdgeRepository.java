@@ -17,7 +17,12 @@ public interface GraphPublishedEdgeRepository {
 
     List<GraphPublishedEdge> listByNodeIds(List<GraphPublishedNodeId> nodeIds);
 
+    List<GraphPublishedEdge> listByIds(List<GraphPublishedEdgeId> ids);
+
     List<GraphPublishedEdge> listRecentlyUpdated(int limit);
+
+    List<GraphPublishedEdge> listRecentlyUpdatedByMaterials(
+            List<com.thundax.kuzhambu.common.core.content.valueobject.ContentRef> materialRefs, int limit);
 
     GraphPublishedEdgeSlice listOneHopEdges(List<GraphPublishedNodeId> nodeIds, GraphPublishedEdgeId afterEdgeId);
 

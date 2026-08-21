@@ -62,7 +62,6 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     private static final String ERROR_WORKER_TIMEOUT = "WORKER_TIMEOUT";
     private static final String ERROR_WORKER_UNAVAILABLE = "WORKER_UNAVAILABLE";
     private static final String DEFAULT_LOCALE = "zh-CN";
-    private static final Duration STREAM_MAX_EXECUTION_TIMEOUT = Duration.ofSeconds(300);
     private static final long STREAM_IDLE_WATCHDOG_MAX_INTERVAL_MILLIS = 1000L;
     private static final ScheduledExecutorService STREAM_IDLE_WATCHDOG =
             Executors.newSingleThreadScheduledExecutor(runnable -> {
@@ -93,14 +92,15 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     @Override
     public AiInvokeResult invoke(AiInvokeCommand command) {
         try {
-            String body = objectMapper.writeValueAsString(toRequest(command, false));
+            AiWorkerHttpPayloads.InvokeRequest payload = toRequest(command, false);
+            String body = objectMapper.writeValueAsString(payload);
             String invokePath = resolveInvokePath(command);
             HttpRequest request = buildPostRequest(
                     invokePath,
                     RequestIdCodec.toValue(command.trace().requestId()),
                     TraceIdCodec.toValue(command.trace().traceId()),
                     body,
-                    true);
+                    payload.getModelConfig().getTimeoutMs());
             HttpResponse<String> response =
                     httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!isSuccessful(response.statusCode())) {
@@ -126,21 +126,26 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
         AtomicBoolean idleTimedOut = new AtomicBoolean(false);
         try {
-            String body = objectMapper.writeValueAsString(toRequest(command, true));
+            AiWorkerHttpPayloads.InvokeRequest payload = toRequest(command, true);
+            long totalExecutionTimeoutMs =
+                    effectiveExecutionTimeoutMs(payload.getModelConfig().getTimeoutMs());
+            long executionDeadlineNanos = System.nanoTime()
+                    + Duration.ofMillis(totalExecutionTimeoutMs).toNanos();
+            String body = objectMapper.writeValueAsString(payload);
             String streamPath = resolveStreamPath(command);
             HttpRequest request = buildPostRequest(
                     streamPath,
                     RequestIdCodec.toValue(command.trace().requestId()),
                     TraceIdCodec.toValue(command.trace().traceId()),
                     body,
-                    false);
-            HttpResponse<InputStream> response = sendStreamRequest(request);
+                    totalExecutionTimeoutMs);
+            HttpResponse<InputStream> response = sendStreamRequest(request, executionDeadlineNanos);
             if (!isSuccessful(response.statusCode())) {
                 emitError(
                         eventConsumer, command, httpFailure(command, response.statusCode(), readAll(response.body())));
                 return;
             }
-            readSseWithIdleTimeout(response.body(), eventConsumer, command, idleTimedOut);
+            readSseWithIdleTimeout(response.body(), eventConsumer, command, idleTimedOut, executionDeadlineNanos);
         } catch (JsonProcessingException | IllegalArgumentException | DomainException ex) {
             emitError(eventConsumer, command, failure(command, ERROR_WORKER_PROTOCOL_FAILURE, ex.getMessage()));
         } catch (HttpTimeoutException ex) {
@@ -315,7 +320,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     }
 
     private HttpRequest buildPostRequest(
-            String path, String requestId, String traceId, String body, boolean applyRequestTimeout) {
+            String path, String requestId, String traceId, String body, Long requestTimeoutMs) {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String signature = requestSigner.sign("POST", path, timestamp, requestId, body, properties.getInternalSecret());
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(uri(path))
@@ -328,8 +333,8 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
                 .header("X-Kuzhambu-Timestamp", timestamp)
                 .header("X-Kuzhambu-Signature", signature)
                 .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
-        if (applyRequestTimeout) {
-            requestBuilder.timeout(Duration.ofMillis(properties.getTimeoutMs()));
+        if (requestTimeoutMs != null && requestTimeoutMs > 0L) {
+            requestBuilder.timeout(Duration.ofMillis(requestTimeoutMs));
         }
         return requestBuilder.build();
     }
@@ -410,12 +415,12 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         }
     }
 
-    private HttpResponse<InputStream> sendStreamRequest(HttpRequest request)
+    private HttpResponse<InputStream> sendStreamRequest(HttpRequest request, long executionDeadlineNanos)
             throws IOException, InterruptedException, HttpTimeoutException {
         CompletableFuture<HttpResponse<InputStream>> responseFuture =
                 httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream());
         try {
-            return responseFuture.get(properties.getTimeoutMs(), TimeUnit.MILLISECONDS);
+            return responseFuture.get(remainingExecutionMillis(executionDeadlineNanos), TimeUnit.MILLISECONDS);
         } catch (TimeoutException exception) {
             responseFuture.cancel(true);
             throw new HttpTimeoutException("Worker stream did not return an initial response in time");
@@ -432,15 +437,16 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
             InputStream inputStream,
             Consumer<AiStreamEventResult> eventConsumer,
             AiInvokeCommand command,
-            AtomicBoolean idleTimedOut)
+            AtomicBoolean idleTimedOut,
+            long executionDeadlineNanos)
             throws IOException {
         AtomicLong lastDataAtNanos = new AtomicLong(System.nanoTime());
-        long streamStartedAtNanos = System.nanoTime();
-        long idleTimeoutNanos = Duration.ofMillis(properties.getTimeoutMs()).toNanos();
-        long watchdogIntervalMillis = Math.min(properties.getTimeoutMs(), STREAM_IDLE_WATCHDOG_MAX_INTERVAL_MILLIS);
+        long idleTimeoutMillis = properties.getStreamIdleTimeoutMs();
+        long idleTimeoutNanos = Duration.ofMillis(idleTimeoutMillis).toNanos();
+        long watchdogIntervalMillis = Math.min(idleTimeoutMillis, STREAM_IDLE_WATCHDOG_MAX_INTERVAL_MILLIS);
         ScheduledFuture<?> idleWatchdog = STREAM_IDLE_WATCHDOG.scheduleAtFixedRate(
                 () -> closeExpiredStream(
-                        inputStream, streamStartedAtNanos, lastDataAtNanos, idleTimeoutNanos, idleTimedOut),
+                        inputStream, executionDeadlineNanos, lastDataAtNanos, idleTimeoutNanos, idleTimedOut),
                 watchdogIntervalMillis,
                 watchdogIntervalMillis,
                 TimeUnit.MILLISECONDS);
@@ -481,12 +487,12 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
 
     private void closeExpiredStream(
             InputStream inputStream,
-            long streamStartedAtNanos,
+            long executionDeadlineNanos,
             AtomicLong lastDataAtNanos,
             long idleTimeoutNanos,
             AtomicBoolean idleTimedOut) {
         long now = System.nanoTime();
-        boolean totalExecutionExpired = now - streamStartedAtNanos >= STREAM_MAX_EXECUTION_TIMEOUT.toNanos();
+        boolean totalExecutionExpired = now >= executionDeadlineNanos;
         boolean idleExpired = now - lastDataAtNanos.get() >= idleTimeoutNanos;
         if (!totalExecutionExpired && !idleExpired) {
             return;
@@ -497,6 +503,18 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         } catch (IOException exception) {
             LOGGER.debug("Failed to close idle worker stream", exception);
         }
+    }
+
+    private long effectiveExecutionTimeoutMs(Long modelTimeoutMs) {
+        return modelTimeoutMs == null || modelTimeoutMs <= 0L ? properties.getTimeoutMs() : modelTimeoutMs;
+    }
+
+    private long remainingExecutionMillis(long executionDeadlineNanos) throws HttpTimeoutException {
+        long remainingNanos = executionDeadlineNanos - System.nanoTime();
+        if (remainingNanos <= 0L) {
+            throw new HttpTimeoutException("Worker stream exceeded its execution limit");
+        }
+        return Math.max(1L, TimeUnit.NANOSECONDS.toMillis(remainingNanos));
     }
 
     private void dispatchSseEvent(

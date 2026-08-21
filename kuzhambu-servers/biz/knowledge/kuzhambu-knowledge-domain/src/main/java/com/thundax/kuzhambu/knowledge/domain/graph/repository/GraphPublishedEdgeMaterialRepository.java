@@ -8,7 +8,11 @@ import java.util.List;
 public interface GraphPublishedEdgeMaterialRepository {
     List<GraphPublishedEdgeMaterial> listByPublishedEdgeId(GraphPublishedEdgeId publishedEdgeId);
 
+    List<GraphPublishedEdgeMaterial> listByPublishedEdgeIds(List<GraphPublishedEdgeId> publishedEdgeIds);
+
     List<GraphPublishedEdgeMaterial> listByMaterial(ContentRef materialRef);
+
+    List<GraphPublishedEdgeMaterial> listByMaterials(List<ContentRef> materialRefs);
 
     int insert(GraphPublishedEdgeMaterial relation);
 

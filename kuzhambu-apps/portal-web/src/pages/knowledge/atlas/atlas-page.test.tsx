@@ -1,37 +1,35 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act } from "react";
-import type { ReactNode } from "react";
-import { createRoot } from "react-dom/client";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { KnowledgeAtlasPage } from "./atlas-page";
 
-const { getKnowledgeAtlas } = vi.hoisted(() => ({
-    getKnowledgeAtlas: vi.fn()
-}));
-
 /* eslint-disable @typescript-eslint/naming-convention */
 vi.mock("@xyflow/react", () => ({
-    Background: () => <div data-testid="graph-background" />,
+    Background: () => null,
     BackgroundVariant: { Dots: "dots" },
-    Controls: () => <div data-testid="graph-controls" />,
+    Controls: () => null,
+    Handle: () => null,
     MarkerType: { ArrowClosed: "arrowclosed" },
-    MiniMap: () => <div data-testid="graph-minimap" />,
+    MiniMap: () => null,
+    Position: { Left: "left", Right: "right" },
     ReactFlow: ({
         children,
         nodes,
-        onNodeClick
+        onNodeDoubleClick
     }: {
-        children: ReactNode;
-        nodes: { data: { href?: string | null; label?: string }; id: string }[];
-        onNodeClick?: (
-            event: unknown,
-            node: { data: { href?: string | null; label?: string }; id: string }
-        ) => void;
+        children: React.ReactNode;
+        nodes: { data: { expanded: boolean; label: string }; id: string }[];
+        onNodeDoubleClick: (event: unknown, node: { data: { label: string }; id: string }) => void;
     }) => (
-        <div data-testid="react-flow">
+        <div>
             {nodes.map((node) => (
-                <button key={node.id} type="button" onClick={() => onNodeClick?.({}, node)}>
+                <button
+                    key={node.id}
+                    type="button"
+                    data-expanded={node.data.expanded}
+                    onDoubleClick={(event) => onNodeDoubleClick(event, node)}
+                >
                     {node.data.label}
                 </button>
             ))}
@@ -39,292 +37,214 @@ vi.mock("@xyflow/react", () => ({
         </div>
     )
 }));
-/* eslint-enable @typescript-eslint/naming-convention */
 
-vi.mock("./atlas-service", () => ({
-    KNOWLEDGE_ATLAS_FALLBACK: {
-        availableFilters: {
-            entityTypes: ["PERSON", "CREATURE"],
-            knowledgeBases: ["SANCAI_ENTRY"],
-            relationTypes: ["ANCESTOR"],
-            tagNames: ["上古"],
-            timeRanges: ["90d"]
-        },
-        breadcrumbItems: [
-            { href: "/knowledge/atlas?level=overview", label: "图谱总览", level: "overview" }
-        ],
-        categoryView: null,
-        canvasView: {
-            description: "固定展示三才图会十四个正式门类，空门类保留可进入空态。",
-            edges: [],
-            empty: false,
-            emptyDescription: null,
-            emptyTitle: null,
-            focusNodeId: "root:sancai",
-            mode: "overview",
-            nodes: [
-                {
-                    categoryCode: null,
-                    entityId: null,
-                    href: "/knowledge/atlas?level=overview",
-                    id: "root:sancai",
-                    kind: "root",
-                    label: "三才图会",
-                    metricLabel: "门类",
-                    metricValue: 14,
-                    status: "active",
-                    subtitle: "固定十四门类",
-                    weight: 1,
-                    x: 0,
-                    y: 0
-                }
-            ],
-            title: "十四门类知识图谱"
-        },
-        currentLevel: "overview",
-        detailView: null,
-        overviewView: {
-            categoryCards: [
-                {
-                    appliedVersionCount: 2,
-                    categoryCode: "ANIMALS",
-                    categoryName: "鸟兽",
-                    entityCount: 2,
-                    entryHref: "/knowledge/atlas?level=category&categoryCode=ANIMALS",
-                    latestVersionNo: 3,
-                    relationCount: 1
-                }
-            ],
-            summarySubtitle: "先看门类分布，再进入单门类浏览与单实体详情。",
-            summaryTitle: "十四门类知识鸟瞰"
-        }
-    },
-    getKnowledgeAtlas
-}));
+const response = (data: unknown) =>
+    Promise.resolve(new Response(JSON.stringify({ code: "COMMON-00000", data }), { status: 200 }));
 
-const renderPage = (initialEntry = "/knowledge/atlas") => {
-    const container = document.createElement("div");
-    document.body.appendChild(container);
-    const root = createRoot(container);
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: {
-                gcTime: 0,
-                retry: false
+afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+});
+
+describe("KnowledgeAtlasPage", () => {
+    it("shows the workbench metrics and progressively loaded graph preview", async () => {
+        let oneHopCallCount = 0;
+        vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+            const url = String(input);
+            if (url.includes("overview/get")) {
+                return response({
+                    publishedNodeCount: "12",
+                    publishedEdgeCount: "18",
+                    coveredMaterialCount: "6",
+                    isolatedNodeCount: "2"
+                });
             }
-        }
-    });
-
-    act(() => {
-        root.render(
-            <QueryClientProvider client={queryClient}>
-                <MemoryRouter initialEntries={[initialEntry]}>
+            if (url.includes("recent-edges/list")) {
+                return response({
+                    nodes: [
+                        { id: "1", name: "黄帝", nodeType: "PERSON" },
+                        { id: "2", name: "华夏", nodeType: "PLACE" }
+                    ],
+                    edges: [
+                        { id: "11", sourceNodeId: "1", targetNodeId: "2", relationType: "活动于" }
+                    ]
+                });
+            }
+            oneHopCallCount += 1;
+            if (oneHopCallCount === 2) {
+                return response({
+                    nodes: [{ id: "3", name: "轩辕", nodeType: "PERSON" }],
+                    edges: [
+                        {
+                            id: "12",
+                            sourceNodeId: "1",
+                            targetNodeId: "3",
+                            relationType: "PARENT_OF"
+                        }
+                    ],
+                    nextCursor: null,
+                    truncated: false
+                });
+            }
+            return response({ nodes: [], edges: [], nextCursor: null, truncated: false });
+        });
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        render(
+            <QueryClientProvider client={client}>
+                <MemoryRouter>
                     <KnowledgeAtlasPage />
                 </MemoryRouter>
             </QueryClientProvider>
         );
+
+        expect(await screen.findByRole("heading", { name: "三才图会总谱" })).toBeTruthy();
+        await waitFor(() => expect(screen.getByText("12")).toBeTruthy());
+        expect(screen.getByLabelText("三才图会总谱预览")).toBeTruthy();
+        fireEvent.doubleClick(screen.getByRole("button", { name: "黄帝" }));
+        expect(await screen.findByRole("button", { name: "轩辕" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "华夏" })).toBeTruthy();
     });
 
-    return { container, root };
-};
-
-const flushQuery = async () => {
-    await act(async () => {
-        await Promise.resolve();
-        await new Promise((resolve) => {
-            window.setTimeout(resolve, 0);
-        });
-        await Promise.resolve();
-        await new Promise((resolve) => {
-            window.setTimeout(resolve, 0);
-        });
-    });
-};
-
-const mockCanvasView = (
-    mode: "overview" | "category" | "detail",
-    title: string,
-    label: string
-) => ({
-    description: "图谱画布说明",
-    edges: [],
-    empty: false,
-    emptyDescription: null,
-    emptyTitle: null,
-    focusNodeId: `${mode}:focus`,
-    mode,
-    nodes: [
-        {
-            categoryCode: mode === "category" ? "ANIMALS" : null,
-            entityId: mode === "detail" ? 3001 : null,
-            href: mode === "detail" ? "/knowledge/atlas?level=detail&entityId=3001" : null,
-            id: `${mode}:focus`,
-            kind: mode === "overview" ? "root" : mode,
-            label,
-            metricLabel: "实体",
-            metricValue: 1,
-            status: "active",
-            subtitle: "mock",
-            weight: 1,
-            x: 0,
-            y: 0
-        }
-    ],
-    title
-});
-
-describe("KnowledgeAtlasPage", () => {
-    afterEach(() => {
-        document.body.innerHTML = "";
-        getKnowledgeAtlas.mockReset();
-    });
-
-    it("restores overview level from url state", async () => {
-        getKnowledgeAtlas.mockResolvedValue({
-            availableFilters: {
-                entityTypes: ["PERSON", "CREATURE"],
-                knowledgeBases: ["SANCAI_ENTRY"],
-                relationTypes: ["ANCESTOR"],
-                tagNames: ["上古"],
-                timeRanges: ["90d"]
-            },
-            breadcrumbItems: [
-                { href: "/knowledge/atlas?level=overview", label: "图谱总览", level: "overview" }
-            ],
-            categoryView: null,
-            canvasView: mockCanvasView("overview", "十四门类知识图谱", "三才图会"),
-            currentLevel: "overview",
-            detailView: null,
-            overviewView: {
-                categoryCards: [
-                    {
-                        appliedVersionCount: 2,
-                        categoryCode: "ANIMALS",
-                        categoryName: "鸟兽",
-                        entityCount: 2,
-                        entryHref: "/knowledge/atlas?level=category&categoryCode=ANIMALS",
-                        latestVersionNo: 3,
-                        relationCount: 1
-                    }
-                ],
-                summarySubtitle: "先看门类分布，再进入单门类浏览与单实体详情。",
-                summaryTitle: "十四门类知识鸟瞰"
+    it("automatically expands core nodes by degree until the 100-node limit", async () => {
+        vi.useFakeTimers();
+        const relatedNodes = Array.from({ length: 120 }, (_, index) => ({
+            id: String(index + 2),
+            name: `节点 ${index + 1}`,
+            nodeType: "CONCEPT"
+        }));
+        vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+            const url = String(input);
+            if (url.includes("overview/get")) {
+                return response({
+                    publishedNodeCount: "121",
+                    publishedEdgeCount: "120",
+                    coveredMaterialCount: "1",
+                    isolatedNodeCount: "0"
+                });
             }
+            if (url.includes("recent-edges/list")) {
+                return response({
+                    nodes: [{ id: "1", name: "中心节点", nodeType: "CONCEPT" }, ...relatedNodes],
+                    edges: relatedNodes.map((node, index) => ({
+                        id: String(index + 101),
+                        sourceNodeId: "1",
+                        targetNodeId: node.id,
+                        relationType: "关联"
+                    }))
+                });
+            }
+            return response({ nodes: [], edges: [], nextCursor: null, truncated: false });
         });
-
-        const { container, root } = renderPage("/knowledge/atlas?level=overview");
-        await flushQuery();
-
-        expect(container.textContent).toContain("图谱浏览台");
-        expect(container.textContent).toContain("总览卷宗");
-        expect(container.textContent).toContain("十四门类知识鸟瞰");
-        expect(container.textContent).toContain("十四门类知识图谱");
-        expect(container.textContent).toContain("应用版本");
-        expect(container.textContent).toContain("进入门类");
-        const overviewLinks = Array.from(container.querySelectorAll("a")).map((link) =>
-            link.getAttribute("href")
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        render(
+            <QueryClientProvider client={client}>
+                <MemoryRouter>
+                    <KnowledgeAtlasPage />
+                </MemoryRouter>
+            </QueryClientProvider>
         );
-        expect(overviewLinks).toContain("/knowledge/atlas?level=overview");
-        expect(getKnowledgeAtlas).toHaveBeenCalledWith({
-            categoryCode: null,
-            entityId: null,
-            level: "overview"
-        });
 
-        act(() => {
-            root.unmount();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(0);
         });
+        expect(screen.getByRole("button", { name: "节点 40" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "中心节点" }).dataset.expanded).toBe("false");
+        expect(screen.queryByRole("button", { name: "节点 41" })).toBeNull();
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(1_200);
+        });
+        expect(screen.getByRole("button", { name: "节点 41" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "节点 42" })).toBeTruthy();
+        expect(screen.getByRole("button", { name: "中心节点" }).dataset.expanded).toBe("true");
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(10_800);
+        });
+        expect(screen.getByRole("button", { name: "节点 99" })).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "节点 100" })).toBeNull();
+        expect(screen.getAllByRole("button")).toHaveLength(100);
     });
 
-    it("restores category level from url state", async () => {
-        getKnowledgeAtlas.mockResolvedValue({
-            availableFilters: {
-                entityTypes: ["CREATURE"],
-                knowledgeBases: ["SANCAI_ENTRY"],
-                relationTypes: ["KIN"],
-                tagNames: ["鸟兽"],
-                timeRanges: ["90d"]
+    it("selects the visible node with the highest source degree first", async () => {
+        vi.useFakeTimers();
+        const fillerEdges = Array.from({ length: 38 }, (_, index) => ({
+            id: `filler-${index}`,
+            relationType: "关联",
+            sourceNodeId: `filler-source-${index}`,
+            targetNodeId: `filler-target-${index}`
+        }));
+        const nodes = [
+            { id: "low", name: "低度节点", nodeType: "CONCEPT" },
+            { id: "low-visible", name: "低度已显示", nodeType: "CONCEPT" },
+            { id: "high", name: "核心节点", nodeType: "CONCEPT" },
+            { id: "high-visible", name: "核心已显示", nodeType: "CONCEPT" },
+            ...fillerEdges.flatMap((edge, index) => [
+                { id: edge.sourceNodeId, name: `填充源 ${index}`, nodeType: "CONCEPT" },
+                { id: edge.targetNodeId, name: `填充目标 ${index}`, nodeType: "CONCEPT" }
+            ]),
+            { id: "low-new", name: "低度新节点", nodeType: "CONCEPT" },
+            ...Array.from({ length: 3 }, (_, index) => ({
+                id: `high-new-${index}`,
+                name: `核心新节点 ${index}`,
+                nodeType: "CONCEPT"
+            }))
+        ];
+        const edges = [
+            {
+                id: "low-visible",
+                sourceNodeId: "low",
+                targetNodeId: "low-visible",
+                relationType: "关联"
             },
-            breadcrumbItems: [
-                { href: "/knowledge/atlas?level=overview", label: "图谱总览", level: "overview" },
-                {
-                    href: "/knowledge/atlas?level=category&categoryCode=ANIMALS",
-                    label: "鸟兽",
-                    level: "category"
-                }
-            ],
-            categoryView: {
-                categoryCode: "ANIMALS",
-                categoryName: "鸟兽",
-                entityHighlights: [
-                    {
-                        confirmationStatus: "CONFIRMED",
-                        entityId: "3001",
-                        entityName: "鸾",
-                        entityType: "CREATURE",
-                        entryHref: "/knowledge/atlas?level=detail&entityId=3001"
-                    }
-                ],
-                latestVersionId: 71,
-                latestVersionNo: 3,
-                relationGroups: [
-                    {
-                        groupKey: "KIN",
-                        groupLabel: "鸟兽关联",
-                        relations: [
-                            {
-                                relationLabel: "KIN",
-                                relationType: "KIN",
-                                sourceId: "bird:luan",
-                                sourceLabel: "鸾",
-                                targetId: "bird:feng",
-                                targetLabel: "凤",
-                                weight: 0.92
-                            }
-                        ]
-                    }
-                ],
-                sourceReferences: [
-                    {
-                        href: "/knowledge/atlas",
-                        snippet: "当前门类来自最近一次已应用图谱版本，可继续进入单实体详情。",
-                        sourceId: "1001",
-                        sourceTitle: "鸟兽",
-                        sourceType: "SANCAI_ENTRY",
-                        updatedAt: null
-                    }
-                ]
+            {
+                id: "high-visible",
+                sourceNodeId: "high",
+                targetNodeId: "high-visible",
+                relationType: "关联"
             },
-            canvasView: mockCanvasView("category", "鸟兽知识图谱", "鸟兽"),
-            currentLevel: "category",
-            detailView: null,
-            overviewView: null
+            ...fillerEdges,
+            {
+                id: "low-hidden",
+                sourceNodeId: "low",
+                targetNodeId: "low-new",
+                relationType: "关联"
+            },
+            ...Array.from({ length: 3 }, (_, index) => ({
+                id: `high-hidden-${index}`,
+                sourceNodeId: "high",
+                targetNodeId: `high-new-${index}`,
+                relationType: "关联"
+            }))
+        ];
+        vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+            if (String(input).includes("overview/get")) {
+                return response({
+                    coveredMaterialCount: "1",
+                    isolatedNodeCount: "0",
+                    publishedEdgeCount: String(edges.length),
+                    publishedNodeCount: String(nodes.length)
+                });
+            }
+            if (String(input).includes("recent-edges/list")) return response({ edges, nodes });
+            return response({ nodes: [], edges: [], nextCursor: null, truncated: false });
         });
-
-        const { container, root } = renderPage(
-            "/knowledge/atlas?level=category&categoryCode=ANIMALS"
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        render(
+            <QueryClientProvider client={client}>
+                <MemoryRouter>
+                    <KnowledgeAtlasPage />
+                </MemoryRouter>
+            </QueryClientProvider>
         );
-        await flushQuery();
 
-        expect(container.textContent).toContain("鸟兽");
-        expect(container.textContent).toContain("鸟兽知识图谱");
-        expect(container.textContent).toContain("版本编号");
-        expect(container.textContent).toContain("鸟兽关联");
-        expect(container.textContent).toContain("当前门类来自最近一次已应用图谱版本");
-        expect(container.textContent).toContain("进入详情");
-        const categoryLinks = Array.from(container.querySelectorAll("a")).map((link) =>
-            link.getAttribute("href")
-        );
-        expect(categoryLinks).toContain("/knowledge/atlas?level=overview");
-        expect(categoryLinks).toContain("/knowledge/atlas?level=category&categoryCode=ANIMALS");
-        expect(getKnowledgeAtlas).toHaveBeenCalledWith({
-            categoryCode: "ANIMALS",
-            entityId: null,
-            level: "category"
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(0);
         });
-
-        act(() => {
-            root.unmount();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(1_200);
         });
+        expect(screen.getByRole("button", { name: "核心新节点 0" })).toBeTruthy();
+        expect(screen.queryByRole("button", { name: "低度新节点" })).toBeNull();
     });
 });

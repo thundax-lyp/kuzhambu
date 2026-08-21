@@ -56,6 +56,16 @@ scripts/smoke/load-image-files.sh deploy/image-files
 
 The script fails if the directory is missing or contains no `*.tar` archives.
 
+加载归档不会替换正在运行的容器。加载更新后的业务镜像后，必须重建受影响服务，并将脚本输出的
+image ID 连同部署证据一起保留：
+
+```sh
+scripts/deploy/recreate-image-services.sh --env deploy/.env workers
+```
+
+不传 service 名称时，脚本重建全部 Kuzhambu 业务服务。不得将 `docker cp` 或 `docker commit` 作为
+常规镜像交付路径。
+
 ## Verify
 
 ```sh

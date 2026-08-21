@@ -1,0 +1,28 @@
+.atlas-workbench-canvas {
+    position: relative;
+    height: min(58vh, 560px);
+    min-height: 380px;
+    overflow: hidden;
+    border: 1px solid rgba(88, 78, 58, 0.16);
+    border-radius: 10px;
+    background: #fbf8f0;
+}
+
+.atlas-workbench-loading {
+    position: absolute;
+    right: 16px;
+    bottom: 12px;
+    margin: 0;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: rgba(255, 252, 246, 0.9);
+    color: #625d53;
+    font-size: 13px;
+}
+
+.atlas-workbench-empty {
+    margin: 0;
+    padding: 34px;
+    color: var(--text-secondary);
+    text-align: center;
+}

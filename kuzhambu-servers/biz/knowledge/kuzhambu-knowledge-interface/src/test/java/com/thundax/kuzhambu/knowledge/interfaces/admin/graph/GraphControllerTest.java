@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.common.web.exception.ApiException;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphBatchWithdrawalCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.GraphExtractionDeleteCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialDeletionDecisionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.GraphMaterialNodeCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphMaterialListQuery;
@@ -23,6 +24,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskDetailQue
 import com.thundax.kuzhambu.knowledge.application.graph.query.GraphTaskQuery;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphBatchWithdrawalResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionCandidatePreviewResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDeleteResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskDetailResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphMaterialResult;
@@ -42,6 +44,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.enums.GraphMaterialStat
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialDeletionChangeId;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphMaterialDeletionTaskId;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphDeletionRequests;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphMaterialRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphPublicationRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphWorkbenchRequests;
@@ -80,6 +83,7 @@ class GraphControllerTest {
         assertThat(permission("materialNodeCreate")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("taskPage")).isEqualTo("knowledge:graph:view");
         assertThat(permission("taskGet")).isEqualTo("knowledge:graph:view");
+        assertThat(permission("taskDelete")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("extractionCreate")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("candidateApply")).isEqualTo("knowledge:graph:edit");
         assertThat(permission("publicationPublish")).isEqualTo("knowledge:graph:edit");
@@ -99,6 +103,31 @@ class GraphControllerTest {
     @Test
     void shouldExposeOneHopEdgesInsteadOfIncidentEdges() throws Exception {
         assertThat(postMapping("oneHopEdges")).isEqualTo("workbench/one-hop-edges/list");
+    }
+
+    @Test
+    void shouldScopeTaskDeletionToCurrentOperator() {
+        GraphExtractionApplicationService extractionService = mock(GraphExtractionApplicationService.class);
+        GraphController controller = new GraphController(
+                mock(GraphWorkbenchApplicationService.class),
+                mock(GraphMaterialApplicationService.class),
+                extractionService,
+                mock(GraphPublicationApplicationService.class),
+                mock(GraphPublishedApplicationService.class),
+                mock(GraphMaterialDeletionApplicationService.class));
+        GraphExtractionRequests.TaskActionRequest request = new GraphExtractionRequests.TaskActionRequest();
+        request.setTaskId("7001");
+        request.setTaskLockVersion("3");
+        request.setExpectedExecutionStatus("FAILED");
+        request.setIdempotencyKey("delete-1");
+        when(extractionService.deleteTask(any())).thenReturn(new GraphExtractionTaskDeleteResult(7001L));
+
+        controller.taskDelete(request);
+
+        ArgumentCaptor<GraphExtractionDeleteCommand> captor =
+                ArgumentCaptor.forClass(GraphExtractionDeleteCommand.class);
+        verify(extractionService).deleteTask(captor.capture());
+        assertThat(captor.getValue().requestedBy()).isEqualTo(900001L);
     }
 
     @Test

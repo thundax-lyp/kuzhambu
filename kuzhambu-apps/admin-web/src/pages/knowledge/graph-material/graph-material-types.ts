@@ -195,7 +195,7 @@ export interface GraphBatchWithdrawalResultRecord {
 }
 
 export interface GraphBatchPublicationPreviewRecord {
-    materials: GraphBatchMaterialResultRecord<GraphPublicationPreviewRecord>[];
+    materials: GraphPublicationPreviewRecord[];
 }
 
 export interface GraphBatchPublicationResultRecord {

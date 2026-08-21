@@ -356,6 +356,23 @@ public class GraphController {
                 extractionService.retryTask(GraphInterfaceAssembler.toRetryCommand(request, currentSubjectLong())));
     }
 
+    @Operation(summary = "删除图谱提取任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "图谱提取任务删除")
+    @PostMapping("task/delete")
+    public GraphExtractionResponses.TaskDeleteData taskDelete(
+            @Valid @RequestBody GraphExtractionRequests.TaskActionRequest request) {
+        return GraphInterfaceAssembler.toTaskDeleteData(
+                extractionService.deleteTask(GraphInterfaceAssembler.toDeleteCommand(request, currentSubjectLong())));
+    }
+
     @Operation(summary = "取消图谱提取任务", description = "knowledge:graph:edit")
     @ApiImplicitParams({
         @ApiImplicitParam(

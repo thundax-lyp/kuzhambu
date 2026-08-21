@@ -5,11 +5,13 @@ import type {
     SancaiEntryImageRecord,
     SancaiEntryQuery,
     SancaiEntryRecord,
+    SancaiGraphRecord,
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "./sancai-types";
 
 const SANCAI_PATH = "/portal/classics/sancai";
+const SANCAI_GRAPH_PATH = "/portal/knowledge/graph/material/get";
 
 export const listCategories = () => {
     return postJson<SancaiCategoryRecord[]>(`${SANCAI_PATH}/categories/list`, {}).then(
@@ -41,6 +43,13 @@ export const getEntry = (id: number) => {
         currentVisualAsset: normalizeVisualAsset(entry.currentVisualAsset),
         images: entry.images?.map(normalizeImage)
     }));
+};
+
+export const getEntryGraph = (entryId: number) => {
+    return postJson<SancaiGraphRecord>(SANCAI_GRAPH_PATH, {
+        contentRefId: String(entryId),
+        contentType: "SANCAI_ENTRY"
+    });
 };
 
 const normalizeImage = (image: SancaiEntryImageRecord): SancaiEntryImageRecord => ({

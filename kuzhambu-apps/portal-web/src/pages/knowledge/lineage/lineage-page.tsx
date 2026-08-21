@@ -177,9 +177,9 @@ export const KnowledgeLineagePage = () => {
                     <h1>世系图浏览</h1>
                     <p>沿人物谱系、亲缘关系与来源摘录阅读正式世系结果。</p>
                 </div>
-                <Link className="knowledge-lineage-back" to="/knowledge">
+                <Link className="knowledge-lineage-back" to="/knowledge/atlas">
                     <ArrowLeft size={16} />
-                    返回知识馆
+                    返回知识图谱
                 </Link>
             </header>
 

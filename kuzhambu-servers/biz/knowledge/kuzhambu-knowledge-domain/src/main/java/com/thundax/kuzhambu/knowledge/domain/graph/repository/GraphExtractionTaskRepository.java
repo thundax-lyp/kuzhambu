@@ -13,7 +13,8 @@ import java.util.List;
 public interface GraphExtractionTaskRepository {
     GraphExtractionTask getById(GraphExtractionTaskId id);
 
-    GraphExtractionTask getByIdempotencyKey(String idempotencyKey);
+    GraphExtractionTask getByIdempotencyScopeAndRequestedByAndKey(
+            String idempotencyScope, Long requestedBy, String idempotencyKey);
 
     List<GraphExtractionTask> listByMaterialId(Long materialId);
 
@@ -42,9 +43,9 @@ public interface GraphExtractionTaskRepository {
 
     List<GraphExtractionTask> listPurgeableBefore(Instant deadline, int limit);
 
-    GraphExtractionTaskId insert(GraphExtractionTask task);
+    GraphExtractionTaskId insert(GraphExtractionTask task, String idempotencyScope, Long requestedBy);
 
     int updateIfLockVersion(GraphExtractionTask task, long expectedLockVersion);
 
-    int deleteById(GraphExtractionTaskId id);
+    int deleteByIdAndLockVersion(GraphExtractionTaskId id, long expectedLockVersion);
 }

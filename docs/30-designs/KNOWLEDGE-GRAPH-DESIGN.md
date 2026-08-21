@@ -14,6 +14,18 @@
 - 不实现 Schema 后台管理或对外暴露 Schema。
 - 不实现发布空间全量导入导出、素材版本管理、正文证据片段定位或发布空间向素材空间自动回写。
 
+## Current Code Baseline
+
+本设计描述目标结构；以下是 2026-08-20 对当前主干的校准，交付状态以 readiness 为准。
+
+| Surface | 已有实现 | 尚不作为完成证据 |
+| --- | --- | --- |
+| Admin menu | `工作台`、`图谱治理`、`素材管理`、`提取任务` 四项 seed 和路由已存在；删除变更、删除任务保留直达页。 | `graph-result`、`refinement` 旧路由尚未删除，不能与新模型混用。 |
+| Workbench | 概览快照、最近关系、一跳关系和活动时间线；前端按批绘制只读画布。 | Admin 尚未接入搜索、质量待办、门类层导航和对象详情分流。 |
+| Governance | 发布节点/边 CRUD、详情中的来源/操作记录、删除影响预览、节点合并已接通 Admin。 | 不能把服务端的节点拆分或其他接口自动视为对应前端流程已闭环。 |
+| Material and tasks | Classics 可见素材分页、草稿节点/边编辑、抽取、候选处置、发布/撤回和任务重试均有服务端接口；主要素材与任务页面已接通。 | JSON 导入导出、取消/重新抽取和删除流程需以各页面的实际入口及运行时验证确认。 |
+| Portal | `POST /portal/knowledge/graph/material/get` 已实现为按稿件可见性读取的后端接口；Portal Web 已从三才图会稿件详情懒加载该接口，并以共享只读画布展示对象和关系。 | 演示数据浏览器流程已验证；未发布、撤回、删除和不可见素材的真实运行时空状态仍待验收。`/knowledge/atlas` 是独立总谱预览，不替代单稿件验收。 |
+
 ## Module Ownership
 
 代码归属 `kuzhambu-servers/biz/knowledge/`。Knowledge 是图谱表的唯一写入方；Classics 仍拥有素材正文、生命周期与访问控制主事实。
@@ -27,7 +39,7 @@ Knowledge graph
   ├─ publish mapping
   └─ published graph (read and governance)
        ↓
-Admin workbench / material workspace / portal material view
+Admin workbench / material workspace / portal material API
 ```
 
 Knowledge 发起图谱抽取必须通过 AI 域 application 协作语义，不得直接调用 Python worker。AI worker 只执行能力，不解析 Knowledge 的业务发布协议。
@@ -106,7 +118,7 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 
 `properties_json` 与 `qualifiers_json` 是开放多值 JSON 载体：草稿写入只校验其为对象，细分属性和值域作为告警而非拒绝条件；它们不替代可查询的 Key、类型和关系字段。
 
-`execution_status` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`；`disposition` 在成功后固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`。运行状态和采纳状态不得复用同一字段。服务启动恢复将原 `RUNNING` 任务写为 `PENDING`，定时同步确认 AI 批任务仍执行后才写为 `RUNNING`；确认失败时保持 `PENDING`。`FAILED -> PENDING` 是同一任务的原地重试，递增 `attempt_no` 并保留尝试历史；重新抽取创建新任务，通过 `regenerated_from_task_id` 关联来源。`batch_id`、`regenerated_from_task_id`、`superseded_by_task_id`、`triggered_by_task_id` 用于任务详情的关联任务读取。
+`execution_status` 固定为 `PENDING`、`RUNNING`、`SUCCEEDED`、`FAILED`、`CANCELLED`；`disposition` 在成功后固定为 `PENDING`、`ADOPTED_MERGE`、`ADOPTED_REPLACE`、`DISCARDED`、`SUPERSEDED`。运行状态和采纳状态不得复用同一字段。服务启动恢复将原 `RUNNING` 任务写为 `PENDING`，定时同步确认 AI 批任务仍执行后才写为 `RUNNING`；确认失败时保持 `PENDING`。用户手动重试失败任务时重新读取当前正文和当前有效 AI 配置，创建新任务并通过 `regenerated_from_task_id` / `superseded_by_task_id` 关联原任务；系统内部对瞬时传输故障的自动重试仍由 AI 域在原调用边界内处理。`batch_id`、`regenerated_from_task_id`、`superseded_by_task_id`、`triggered_by_task_id` 用于任务详情的关联任务读取。
 
 ### Published Space
 
@@ -141,7 +153,7 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 2. 通过 Classics facade 读取并固定内容快照，以及模型、提示词、变量和输出 Schema 快照；经 AI 域创建异步调用，写入 `GraphExtractionTask`，并将素材的 `current_extraction_task_id` 指向该任务。
 3. 回调或轮询成功后，应用层先执行宽松结构校验并生成 AI 域候选。任务转为 `SUCCEEDED + disposition:PENDING`，清空素材的活动任务指针；候选未处置前不得改变草稿图。
 4. 用户选择 `MERGE` 或 `REPLACE` 时，以素材 `lock_version` 校验当前草稿未被并发修改，再把候选写入草稿图并记录处置结果；选择丢弃则只记录 `DISCARDED`。被后续候选替代的旧候选标记 `SUPERSEDED`。
-5. 失败任务保留冻结输入并可原地重试：递增尝试次数、清空本次运行错误、重置到 `PENDING`；已发布素材必须先撤回，不能绕过冻结直接抽取。正文或运行配置变化时，显式重新抽取创建新任务。
+5. 用户手动重试失败任务时，重新读取当前正文、模型、提示词版本、变量和输出 Schema，创建新任务并关联原失败任务；原任务不覆盖。已发布素材必须先撤回，不能直接抽取。失败、取消或已处置任务可由用户主动删除，活动任务和待采纳成功任务不得删除。
 
 ### Task Cleanup
 
@@ -204,7 +216,9 @@ Deletion: PRECHECKED → AWAITING_DECISION → PENDING → RUNNING → SUCCEEDED
 | `/knowledge/graph/deletion-changes` | 删除前快照、用户决策和结果查询。 |
 | `/knowledge/graph/deletion-tasks` | 删除任务创建、进度、失败原因和重试。 |
 
-门户入口另提供只读资源 `/portal/knowledge/graph/materials/{contentType}/{contentRefId}`：先执行稿件既有内容可见性校验，再按素材状态和有效映射返回该稿件图谱；该资源不暴露发布空间搜索、治理、人工来源或跨素材关系。
+门户入口已提供只读资源 `POST /portal/knowledge/graph/material/get`：先执行稿件既有内容可见性校验，再按素材状态和有效映射返回该稿件图谱；该资源不暴露发布空间搜索、治理、人工来源或跨素材关系。Portal Web 已在三才图会稿件详情提供“阅读 / 知识图谱”切换，并在首次打开图谱时调用该资源；页面展示对象搜索、只读画布、关系三元组详情以及加载、失败和空状态。
+
+Portal Atlas 首帧对已返回的最近关系建立簇与确定性位置，随后按节点在既有关系数据中的总边数降序选择当前可见的核心节点，并按定时节奏持续弹射其未显示关系。自动展开最多保留 100 个节点，最后一批按剩余节点容量裁剪；达到上限后停止定时器，并将最后受影响簇的局部力导向计算从常规 48 轮提高到 180 轮，使最终位置继续趋于平衡，节点双击探索仍保留。节点通过并查集持有簇归属；同簇新增边只触发该簇的局部力导向松弛，跨簇时先平移并合并较小簇，再对合并簇局部松弛并更新受影响的隐藏簇间连接，其他簇保持原位。新节点以所连接的既有节点为发射原点进入最终位置，受局部斥力影响的旧节点同步向外过渡；已触发自动或手动展开的节点通过加粗边框与未展开节点区分。
 
 JSON 导入只允许写入未发布素材草稿图。先执行格式和 Schema 校验，返回对象级错误；确认后按照用户选择的 `MERGE` 或 `REPLACE` 执行。下载仅导出当前单素材草稿节点、边、属性、限定字段和 Schema 版本，不导出发布空间、映射、审计或人工治理数据。
 
@@ -217,7 +231,7 @@ Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 
 菜单固定为“知识治理 / 知识图谱 / 工作台、图谱治理、素材管理、提取任务”。素材管理包含素材列表、单素材草稿图、删除任务和删除变更入口；删除任务、删除变更不再作为菜单层级。提取任务使用跨素材的普通列表，展示任务运行状态和候选预览，表格操作仅对失败任务提供重试；创建、取消、重生成和候选处置均在素材管理完成。
 
-工作台只读取正式发布空间，用于概览、搜索、局部图浏览、来源追溯与质量待办分流，不提供直接治理写操作。图谱治理只处理发布空间的跨素材节点、关系和人工来源变更；合并、拆分、删除必须先显示影响对象、关系、映射和待处理事项，再允许确认应用。素材管理只处理来源素材、草稿、整体发布/撤回及删除生命周期；提取任务不直接编辑草稿，也不执行发布空间治理。
+工作台只读取正式发布空间，不提供直接治理写操作。当前页面已接通概览、局部图浏览和活动时间线；搜索、来源追溯与质量待办分流仍是目标交互。图谱治理只处理发布空间的跨素材节点、关系和人工来源变更；已接通的高风险删除和节点合并必须先显示影响，再允许确认。素材管理只处理来源素材、草稿、整体发布/撤回及删除生命周期；提取任务不直接编辑草稿，也不执行发布空间治理。
 
 发布预览在素材画布内完成：绿色新建、橙色关联、红色冲突、蓝色已发布。红色对象点击后在右侧抽屉展示素材对象、候选发布对象、关键差异和动作；存在未决冲突时禁止确认。
 
@@ -227,7 +241,7 @@ Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 
 1. 新建上述图谱表、Schema 代码和新接口，不复用旧表的状态语义。
 2. 按已确认的迁移规则导入仍需保留的三才图会数据；未定义迁移规则的数据不得自动映射为已发布知识。
-3. 前端切换到新菜单与接口后，删除旧图谱入口、API、测试和旧表写入路径。
+3. 前端已切换到新菜单与主要接口；旧 `graph-result`、`refinement` 路由和旧 Portal atlas 仍需在调用方完成迁移后删除，期间不得把它们解释为新模型页面。
 4. 确认没有调用方后，再按数据库治理规则删除旧表或归档其只读历史。
 
 迁移规则、数据核对清单和切换顺序属于独立 RUNBOOK，不在本设计中假定。
@@ -236,7 +250,7 @@ Admin 使用现有 `knowledge:graph:view` 与 `knowledge:graph:edit`：
 
 - 单元测试：Schema Key 与约束、草稿合并、发布匹配、冲突、乐观锁、属性首选、合并、拆分、撤回和删除决策。
 - 集成测试：Classics 可见稿件分页与 Knowledge 批量补齐、发布事务原子性、单素材活动任务互斥、任务原地重试、候选处置、7 天清理、AI 域快照协作、删除任务幂等重试、素材删除后映射状态、权限拒绝。
-- 前端 E2E：素材列表统计快照、素材/任务 `SegmentedDrawer`、任务队列和按素材分组、抽取到草稿、候选合并/覆盖/丢弃、发布预览冲突、冻结与撤回、发布治理、删除列表决策、最近发布渐进渲染、200 节点截断与 JSON 导入校验。
+- 前端 E2E：当前已覆盖工作台概览、只读画布、活动时间线和业务网络边界；素材列表统计快照、候选处置、发布/撤回、删除决策、Portal 素材图和 JSON 导入仍需以真实后端运行时补齐，不得用 mock E2E 替代。
 - 数据迁移验证：迁移前后素材数、节点/边数、映射数和人工治理操作抽样核对；旧入口移除后确认不存在旧模型写入。
 
 ## Related Documents

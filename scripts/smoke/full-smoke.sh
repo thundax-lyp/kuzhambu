@@ -18,6 +18,8 @@ LOAD_IMAGES="${KUZHAMBU_SMOKE_LOAD_IMAGES:-}"
 IMAGE_FILES_DIR="${KUZHAMBU_IMAGE_FILES_DIR:-}"
 SMOKE_MYSQL_PORT="${KUZHAMBU_SMOKE_MYSQL_PORT:-33306}"
 SEED_ENV_FILE="${KUZHAMBU_SMOKE_SEED_ENV_FILE:-/tmp/kuzhambu-smoke-seed.env}"
+SMOKE_RUN_ID="${KUZHAMBU_SMOKE_RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$(openssl rand -hex 8)}"
+EVIDENCE_RUNNER="${SCRIPT_DIR}/full-smoke-api-runner.mjs"
 
 if [[ ! -f "${KUZHAMBU_ENV_FILE}" ]]; then
     echo "Missing Kuzhambu env file: ${KUZHAMBU_ENV_FILE}" >&2
@@ -26,6 +28,11 @@ fi
 
 if [[ ! -f "${FASTGPT_ENV_FILE}" ]]; then
     echo "Missing FastGPT env file: ${FASTGPT_ENV_FILE}" >&2
+    exit 1
+fi
+
+if [[ ! -f "${EVIDENCE_RUNNER}" ]]; then
+    echo "Repository full-smoke API runner is missing: ${EVIDENCE_RUNNER}" >&2
     exit 1
 fi
 
@@ -188,12 +195,6 @@ step "bootstrapping FastGPT"
 FASTGPT_COMPOSE_PROJECT_NAME="${FASTGPT_PROJECT}" \
     "${FASTGPT_DIR}/bootstrap-fastgpt.sh" "${FASTGPT_ENV_FILE}" "${FASTGPT_COMPOSE_OVERRIDE}"
 
-step "smoking FastGPT"
-FASTGPT_COMPOSE_PROJECT_NAME="${FASTGPT_PROJECT}" \
-    "${SCRIPT_DIR}/fastgpt-smoke.sh" "${FASTGPT_ENV_FILE}" \
-    "${FASTGPT_DIR}/generated/kuzhambu-fastgpt.env" \
-    "${FASTGPT_COMPOSE_OVERRIDE}"
-
 if [[ "${BUILD_IMAGES}" == "true" ]]; then
     step "building Kuzhambu images"
     compose build admin-web portal-web admin-starter portal-starter workers elasticsearch
@@ -220,8 +221,34 @@ step "checking health endpoints"
 nginx_port="$(env_value "${KUZHAMBU_ENV_FILE}" NGINX_HTTP_PORT 8080)"
 wait_http_ok "http://127.0.0.1:${nginx_port}/kuzhambu-admin-api/actuator/health" "admin health" 90
 wait_http_ok "http://127.0.0.1:${nginx_port}/kuzhambu-api/actuator/health" "portal health" 90
+wait_http_ok "http://127.0.0.1:${nginx_port}/internal/workers/health" "workers health" 90
 
 step "checking portal static route"
 wait_http_ok "http://127.0.0.1:${nginx_port}/kuzhambu/" "portal web" 30
+
+evidence_file="${KUZHAMBU_SMOKE_EVIDENCE_FILE:-}"
+if [[ -z "${evidence_file}" ]]; then
+    echo "KUZHAMBU_SMOKE_EVIDENCE_FILE is required for full smoke verification" >&2
+    exit 1
+fi
+if [[ -e "${evidence_file}" ]]; then
+    echo "Full smoke evidence file must not exist before the run: ${evidence_file}" >&2
+    exit 1
+fi
+
+step "running full smoke API flow"
+node "${EVIDENCE_RUNNER}" \
+    --run-id "${SMOKE_RUN_ID}" \
+    --evidence-file "${evidence_file}" \
+    --seed-env-file "${SEED_ENV_FILE}" \
+    --admin-base-url "http://127.0.0.1:${nginx_port}/kuzhambu-admin-api" \
+    --portal-base-url "http://127.0.0.1:${nginx_port}/kuzhambu-api"
+if [[ ! -f "${evidence_file}" ]]; then
+    echo "Full smoke evidence runner did not create: ${evidence_file}" >&2
+    exit 1
+fi
+
+step "verifying full smoke evidence"
+"${SCRIPT_DIR}/verify-full-smoke-evidence.sh" --run-id "${SMOKE_RUN_ID}" "${evidence_file}"
 
 echo "Docker full smoke passed"

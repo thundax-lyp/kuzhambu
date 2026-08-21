@@ -15,7 +15,7 @@ const renderLayout = (initialPath = "/") => {
                 <Routes>
                     <Route element={<PortalLayout />}>
                         <Route path="/" element={<main>Portal content</main>} />
-                        <Route path="/knowledge" element={<main>Knowledge content</main>} />
+                        <Route path="/knowledge/atlas" element={<main>Knowledge content</main>} />
                         <Route path="/classics/sancai" element={<main>Sancai content</main>} />
                     </Route>
                 </Routes>
@@ -76,7 +76,7 @@ describe("PortalLayout", () => {
     it("does not apply the saved dark theme on unsupported routes", () => {
         window.localStorage.setItem("kuzhambu.portal.theme", "dark");
 
-        const { container, root } = renderLayout("/knowledge");
+        const { container, root } = renderLayout("/knowledge/atlas");
 
         expect(
             container.querySelector<HTMLButtonElement>("[data-testid='portal-header-theme-toggle']")

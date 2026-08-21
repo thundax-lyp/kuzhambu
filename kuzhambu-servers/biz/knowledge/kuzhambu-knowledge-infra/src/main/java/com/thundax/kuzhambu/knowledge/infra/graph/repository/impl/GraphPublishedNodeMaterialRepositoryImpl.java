@@ -31,8 +31,33 @@ public class GraphPublishedNodeMaterialRepositoryImpl implements GraphPublishedN
     }
 
     @Override
+    public List<GraphPublishedNodeMaterial> listByPublishedNodeIds(List<GraphPublishedNodeId> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        QueryWrapper<GraphPublishedNodeMaterialDO> w = new QueryWrapper<>();
+        return mapper
+                .selectList(w.in(
+                        "published_node_id",
+                        ids.stream().map(GraphPublishedNodeIdCodec::toValue).toList()))
+                .stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<GraphPublishedNodeMaterial> listByMaterial(ContentRef ref) {
         return mapper.selectList(byMaterial(ref)).stream()
+                .map(GraphPersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<GraphPublishedNodeMaterial> listByMaterials(List<ContentRef> refs) {
+        if (refs == null || refs.isEmpty()) {
+            return List.of();
+        }
+        return mapper.listByMaterials(refs).stream()
                 .map(GraphPersistenceAssembler::toDomain)
                 .toList();
     }

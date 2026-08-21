@@ -236,26 +236,19 @@ export const MaterialListPanel = ({
             const preview = await service.previewBatchPublication({
                 contentRefs: materials.map((material) => material.contentRef)
             });
-            const blocked = preview.materials.find(
-                (item) => !item.success || !item.result?.publishable
-            );
+            const blocked = preview.materials.find((item) => !item.publishable);
             if (blocked) {
-                throw new Error(blocked.failureMessage ?? "存在未通过预检的素材，无法批量发布。");
+                throw new Error(
+                    blocked.issues[0]?.message ?? "存在未通过预检的素材，无法批量发布。"
+                );
             }
             return service.publishBatch({
-                materials: preview.materials.flatMap((item) => {
-                    const result = item.result;
-                    return result
-                        ? [
-                              {
-                                  conflictDecisions: buildReuseConflictDecisions(result),
-                                  contentRef: result.materialRef,
-                                  materialLockVersion: result.materialLockVersion,
-                                  previewToken: result.previewToken
-                              }
-                          ]
-                        : [];
-                })
+                materials: preview.materials.map((item) => ({
+                    conflictDecisions: buildReuseConflictDecisions(item),
+                    contentRef: item.materialRef,
+                    materialLockVersion: item.materialLockVersion,
+                    previewToken: item.previewToken
+                }))
             });
         },
         onSuccess: (result, variables) => {

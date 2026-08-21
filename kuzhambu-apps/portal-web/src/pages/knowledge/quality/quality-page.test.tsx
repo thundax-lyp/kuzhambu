@@ -125,7 +125,7 @@ describe("KnowledgeQualityPage", () => {
         const links = Array.from(container.querySelectorAll("a")).map((link) =>
             link.getAttribute("href")
         );
-        expect(links).toContain("/knowledge");
+        expect(links).toContain("/knowledge/atlas");
 
         act(() => {
             root.unmount();

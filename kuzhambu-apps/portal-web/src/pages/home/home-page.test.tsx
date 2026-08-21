@@ -41,7 +41,7 @@ describe("HomePage", () => {
         expect(links).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ href: "/classics/sancai", text: "浏览三才图会" }),
-                expect.objectContaining({ href: "/knowledge", text: "知识图谱" }),
+                expect.objectContaining({ href: "/knowledge/atlas", text: "知识图谱" }),
                 expect.objectContaining({
                     href: "/discovery/search",
                     text: "搜索条目、图像、人物、地名、典籍...搜索"
@@ -60,7 +60,7 @@ describe("HomePage", () => {
                     href: "/discovery/search",
                     text: "长安与洛阳：两京建置与城市格局比较86 条相关"
                 }),
-                expect.objectContaining({ href: "/knowledge", text: "关于KUZHAMBU" })
+                expect.objectContaining({ href: "/", text: "关于KUZHAMBU" })
             ])
         );
 

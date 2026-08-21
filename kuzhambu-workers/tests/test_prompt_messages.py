@@ -67,7 +67,8 @@ def test_structured_output_instruction_for_schema_is_explicit() -> None:
     )
 
     assert (
-        structured_output_instruction(schema) == "请严格返回符合 outputSchema.schema 的 JSON 结构。"
+        structured_output_instruction(schema)
+        == '请只返回符合以下 JSON Schema 的 JSON, 不要添加解释或 Markdown: {"required":["answer"]}'
     )
     assert output_schema_payload(schema) == {
         "type": "object",
